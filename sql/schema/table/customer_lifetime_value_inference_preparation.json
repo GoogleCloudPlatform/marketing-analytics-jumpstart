@@ -1,0 +1,482 @@
+[
+    {
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "user_id",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "month_of_the_year",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "week_of_the_year",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "day_of_the_month",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "day_of_week",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "hour_of_day",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "nth_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "nth_hour",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "nth_week",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "nth_month",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_category",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_mobile_brand_name",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_mobile_model_name",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_os",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_os_version",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_language",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_web_browser",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "device_web_browser_version",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "geo_sub_continent",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "geo_country",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "geo_region",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "geo_city",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "geo_metro",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "last_traffic_source_medium",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "last_traffic_source_name",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "last_traffic_source_source",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "first_traffic_source_medium",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "first_traffic_source_name",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "first_traffic_source_source",
+      "type": "STRING",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "has_signed_in_with_user_id",
+      "type": "BOOLEAN",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "active_users_past_1_30_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "active_users_past_30_60_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "active_users_past_60_90_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "active_users_past_90_120_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "active_users_past_120_150_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "active_users_past_150_180_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "purchases_past_1_30_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "purchases_past_30_60_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "purchases_past_60_90_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "purchases_past_90_120_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "purchases_past_120_150_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "purchases_past_150_180_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "visits_past_1_30_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "visits_past_30_60_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "visits_past_60_90_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "visits_past_90_120_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "visits_past_120_150_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "visits_past_150_180_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "view_items_past_1_30_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "view_items_past_30_60_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "view_items_past_60_90_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "view_items_past_90_120_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "view_items_past_120_150_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "view_items_past_150_180_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "add_to_carts_past_1_30_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "add_to_carts_past_30_60_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "add_to_carts_past_60_90_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "add_to_carts_past_90_120_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "add_to_carts_past_120_150_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "add_to_carts_past_150_180_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "checkouts_past_1_30_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "checkouts_past_30_60_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "checkouts_past_60_90_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "checkouts_past_90_120_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "checkouts_past_120_150_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "checkouts_past_150_180_day",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "ltv_revenue_past_1_30_day",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "ltv_revenue_past_30_90_day",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "ltv_revenue_past_90_180_day",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_purchasers_users",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_average_daily_purchasers",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_active_users",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_DAU",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_MAU",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_WAU",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_dau_per_mau",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_dau_per_wau",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_wau_per_mau",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_users_engagement_duration_seconds",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_average_engagement_time",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_average_engagement_time_per_session",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_average_sessions_per_user",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_ARPPU",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_ARPU",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_average_daily_revenue",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_max_daily_revenue",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_min_daily_revenue",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_new_users",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_returning_users",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_first_time_purchasers",
+      "type": "INTEGER",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_first_time_purchaser_conversion",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_first_time_purchasers_per_new_user",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_avg_user_conversion_rate",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    },
+    {
+      "name": "lifetime_avg_session_conversion_rate",
+      "type": "FLOAT",
+      "description": "user_pseudo_id"
+    }
+  ]

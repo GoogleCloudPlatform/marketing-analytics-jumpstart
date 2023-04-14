@@ -1,0 +1,317 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+
+# compile pipeline
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m base_component_image.build-push -c ${_CONFIG_YAML}
+  id: 'buildComponents'
+
+#- name: 'python:3.9-slim'
+#  entrypoint: 'bash'
+#  args:
+#    - '-c'
+#    - |
+#      pip install poetry \
+#      && poetry install \
+#      && poetry run kfp component build python/pipelines/components/vertex --build-image --push-image
+#  id: 'buildComponents'
+
+# Run unit tests tests and code coverage
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      pip install poetry \
+      && poetry install \
+      && poetry run pytest -c pyproject.toml -m "unit"
+  id: 'unitTests'
+  waitFor: ['buildComponents']
+
+
+# Run integration tests tests and code coverage
+#- name: 'python:3.9-slim'
+#  entrypoint: 'bash'
+#  args:
+#    - '-c'
+#    - |
+#      pip install poetry \
+#      && poetry install \
+#      && poetry run pytest -c pyproject.toml -m "inte and not (pipeline_run)"
+#  id: 'inteTests'
+#  waitFor: ['buildComponents']
+
+# compile FE pipeline
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.feature-creation.execution -o feature_engineering.yaml
+  waitFor: ['unitTests']
+  id: 'CompileFEPipeline'
+
+
+# upload FE pipeline
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f feature_engineering.yaml -t $SHORT_SHA -t latest
+  waitFor: ['CompileFEPipeline']
+  id: 'UploadFEPipeline'
+
+
+# schedule FE pipeline
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.feature-creation.execution 
+  waitFor: ['UploadFEPipeline']
+  id: 'scheduleFEPipeline'
+
+
+#  PROPENSITY ---------------------------------------------
+
+#  PROPENSITY Training ------------------------------------
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
+  waitFor: ['unitTests']
+  id: 'CompilePropensityTrainingPipeline'
+
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f propensity_training.yaml -t $SHORT_SHA -t latest
+  waitFor: ['CompilePropensityTrainingPipeline']
+  id: 'UploadPropensityTrainingPipeline'
+  
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.training  
+  waitFor: ['UploadPropensityTrainingPipeline']
+  id: 'SchedulePropensityTrainingPipeline'
+
+
+#  PROPENSITY Prediction -----------------------------------
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
+  waitFor: ['unitTests']
+  id: 'CompilePropensityPredictionPipeline'
+
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f propensity_prediction.yaml -t $SHORT_SHA -t latest
+  waitFor: ['CompilePropensityPredictionPipeline']
+  id: 'UploadPropensityPredictionPipeline'
+  
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.prediction  
+  waitFor: ['UploadPropensityPredictionPipeline']
+  id: 'SchedulePropensityPredictionPipeline'
+
+
+#  CLV ---------------------------------------------------
+
+#     CLV Training ---------------------------------------
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.training -o clv_training.yaml
+  waitFor: ['unitTests']
+  id: 'CompileCLVTrainingPipeline'
+
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f clv_training.yaml -t $SHORT_SHA -t latest
+  waitFor: ['CompileCLVTrainingPipeline']
+  id: 'UploadCLVTrainingPipeline'
+  
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.training  
+  waitFor: ['UploadCLVTrainingPipeline']
+  id: 'ScheduleCLVTrainingPipeline'
+
+
+#     CLV Prediction ---------------------------------------
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
+  waitFor: ['unitTests']
+  id: 'CompileCLVPredictionPipeline'
+
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f clv_prediction.yaml -t $SHORT_SHA -t latest
+  waitFor: ['CompileCLVPredictionPipeline']
+  id: 'UploadCLVPredictionPipeline'
+  
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.prediction  
+  waitFor: ['UploadCLVPredictionPipeline']
+  id: 'ScheduleCLVPredictionPipeline'
+
+
+# Audience Segmentation -------------------------------------
+
+#     Audience Segmentation Training ------------------------
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
+  waitFor: ['unitTests']
+  id: 'CompileSegmentationTrainingPipeline'
+
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f segmentation_training.yaml -t $SHORT_SHA -t latest
+  waitFor: ['CompileSegmentationTrainingPipeline']
+  id: 'UploadSegmentationTrainingPipeline'
+  
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.training  
+  waitFor: ['UploadSegmentationTrainingPipeline']
+  id: 'ScheduleSegmentationTrainingPipeline'
+
+#     Audience Segmentation Prediction ----------------------
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
+  waitFor: ['unitTests']
+  id: 'CompileSegmentationPredictionPipeline'
+
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f segmentation_prediction.yaml -t $SHORT_SHA -t latest
+  waitFor: ['CompileSegmentationPredictionPipeline']
+  id: 'UploadSegmentationPredictionPipeline'
+  
+- name: 'python:3.9-slim'
+  entrypoint: 'bash'
+  args:
+      - '-c'
+      - |
+        pip install poetry \
+        && poetry install \
+        && cd python ; poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.prediction  
+  waitFor: ['UploadSegmentationPredictionPipeline']
+  id: 'ScheduleSegmentationPredictionPipeline'
+
+#substitutions:
+# not needed as they are set during trigger setup using terraform. those are set based on the falues in the /config/dev.yaml and prod.yaml

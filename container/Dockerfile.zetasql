@@ -1,0 +1,4 @@
+FROM wbsouza/zetasql-formatter:latest
+
+ENTRYPOINT ["format"]
+CMD ["."]

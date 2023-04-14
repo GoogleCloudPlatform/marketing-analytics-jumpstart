@@ -1,0 +1,92 @@
+[
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "feature description"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE",
+    "description": "feature description"
+  },
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_0",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_1",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_2",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_3",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_4",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_5",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_6",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_7",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_8",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_9",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_10",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_11",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_12",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_13",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "purchase_day_14",
+    "type": "INTEGER",
+    "description": "feature description"
+  }
+]

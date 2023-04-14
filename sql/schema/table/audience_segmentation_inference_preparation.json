@@ -1,0 +1,357 @@
+[
+    {
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "user_id",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "feature description"
+    },
+    {
+      "name": "month_of_the_year",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "week_of_the_year",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "day_of_the_month",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "day_of_week",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "hour_of_day",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "nth_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "nth_hour",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "nth_week",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "nth_month",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "device_category",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "device_mobile_brand_name",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "device_mobile_model_name",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "device_os",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "device_os_version",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "device_language",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "device_web_browser",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "device_web_browser_version",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "geo_sub_continent",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "geo_country",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "geo_region",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "geo_city",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "geo_metro",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "last_traffic_source_medium",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "last_traffic_source_name",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "last_traffic_source_source",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "first_traffic_source_medium",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "first_traffic_source_name",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "first_traffic_source_source",
+      "type": "STRING",
+      "description": "feature description"
+    },
+    {
+      "name": "has_signed_in_with_user_id",
+      "type": "BOOLEAN",
+      "description": "feature description"
+    },
+    {
+      "name": "active_users_past_1_7_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "active_users_past_8_14_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "purchases_past_1_7_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "purchases_past_8_14_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "visits_past_1_7_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "visits_past_8_14_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "view_items_past_1_7_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "view_items_past_8_14_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "add_to_carts_past_1_7_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "add_to_carts_past_8_14_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "checkouts_past_1_7_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "checkouts_past_8_14_day",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "ltv_revenue_past_1_7_day",
+      "type": "FLOAT",
+      "description": "feature column description"
+    },
+    {
+      "name": "ltv_revenue_past_7_15_day",
+      "type": "FLOAT",
+      "description": "feature column description"
+    },
+    {
+      "name": "purchasers_users",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "average_daily_purchasers",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "active_users",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "DAU",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "MAU",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "WAU",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "dau_per_mau",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "dau_per_wau",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "wau_per_mau",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "users_engagement_duration_seconds",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "average_engagement_time",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "average_engagement_time_per_session",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "average_sessions_per_user",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "ARPPU",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "ARPU",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "average_daily_revenue",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "max_daily_revenue",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "min_daily_revenue",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "new_users",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "returning_users",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "first_time_purchasers",
+      "type": "INTEGER",
+      "description": "feature description"
+    },
+    {
+      "name": "first_time_purchaser_conversion",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "first_time_purchasers_per_new_user",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "avg_user_conversion_rate",
+      "type": "FLOAT",
+      "description": "feature description"
+    },
+    {
+      "name": "avg_session_conversion_rate",
+      "type": "FLOAT",
+      "description": "feature description"
+    }
+  ]

@@ -1,0 +1,46 @@
+{
+  "name": "Activation Dataflow flex template",
+  "description": "Marketing Analytics - Activation pipeline",
+  "parameters": [
+    {
+      "name": "project",
+      "label": "Google Cloud Project ID",
+      "helpText": "Name of the project to use"
+    },
+    {
+      "name": "activation_type",
+      "label": "activation type",
+      "helpText": "specify the activation use case"
+    },
+    {
+      "name": "activation_type_configuration",
+      "label": "activation type configuration file",
+      "helpText": "GCS path to the configuration file for all activation types"
+    },
+    {
+      "name": "source_table",
+      "label": "Input source table",
+      "helpText": "table specification for the source data."
+    },
+    {
+      "name": "temp_location",
+      "label": "pipeline temp location",
+      "helpText": "Pipeline temporary storage location."
+    },
+    {
+      "name": "ga4_measurement_id",
+      "label": "Measurement Protocol ID",
+      "helpText": "Measurement ID in GA4."
+    },
+    {
+      "name": "ga4_api_secret",
+      "label": "Measurement Protocol client secret",
+      "helpText": "Client secret for sending to GA4."
+    },
+    {
+      "name": "log_db_dataset",
+      "label": "BigQuery dataset for activation logging",
+      "helpText": "dataset where log_table is created."
+    }
+  ]
+}

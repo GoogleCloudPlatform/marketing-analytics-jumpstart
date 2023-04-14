@@ -1,0 +1,137 @@
+[
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "feature column description"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchasers_users",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "average_daily_purchasers",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "DAU",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "MAU",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "WAU",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "dau_per_mau",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "dau_per_wau",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "wau_per_mau",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "users_engagement_duration_seconds",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "average_engagement_time",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "average_engagement_time_per_session",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "average_sessions_per_user",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "ARPPU",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "ARPU",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "average_daily_revenue",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "max_daily_revenue",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "min_daily_revenue",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "new_users",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "returning_users",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "first_time_purchasers",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "first_time_purchaser_conversion",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "first_time_purchasers_per_new_user",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "avg_user_conversion_rate",
+    "type": "FLOAT",
+    "description": "feature column description"
+  },
+  {
+    "name": "avg_session_conversion_rate",
+    "type": "FLOAT",
+    "description": "feature column description"
+  }
+]

@@ -1,0 +1,4 @@
+# Ignore everything except for Python files and the requirements file.
+*
+!main.py
+!requirements.txt

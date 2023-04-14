@@ -1,0 +1,10 @@
+FROM python:3.7-alpine3.7
+
+# Allow statements and log messages to immediately appear in the Knative logs
+ENV PYTHONUNBUFFERED True
+ENV PIP_DISABLE_PIP_VERSION_CHECK=on
+
+RUN pip3 install --upgrade pip
+RUN pip3 install keyrings.google-artifactregistry-auth
+RUN pip3 install poetry==1.2.2
+RUN poetry config settings.virtualenvs.create false

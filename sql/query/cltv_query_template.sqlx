@@ -1,0 +1,7 @@
+SELECT * EXCEPT(user_pseudo_id, processed_timestamp, user_id),
+ user_pseudo_id AS client_id,
+ EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date
+ FROM {{source_table}}
+ WHERE active_users_past_1_30_day > '0' -- change this to number when the view is fixed
+ ORDER BY prediction DESC
+ LIMIT 1000

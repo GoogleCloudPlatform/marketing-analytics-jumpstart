@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "ma-components"
+version = "0.1"
+description = "contains components used in marketing analytics project. the need is to package the components and containerise so that they can be used from the python function based component"
+authors = ["Christos Aniftos <aniftos@google.com>"]
+readme = "README.md"
+packages = [{include = "ma_components"}]
+
+[tool.poetry.dependencies]
+python = ">=3.7.1,<3.11"
+kfp = {version = "2.0.0-b12", allow-prereleases = true}
+kfp-server-api = "2.0.0.a6"
+toml = "^0.10.2"
+google-cloud-bigquery = "2.30.0"
+google-cloud-aiplatform = "1.22.0"
+google-cloud-pubsub = "2.15.0"
+google-cloud-pipeline-components = "1.0.33"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

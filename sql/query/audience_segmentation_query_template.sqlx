@@ -1,0 +1,9 @@
+SELECT * EXCEPT(user_pseudo_id, processed_timestamp, user_id),
+ user_pseudo_id AS client_id,
+ EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date
+ FROM {{source_table}}
+ WHERE prediction IN (3,4,14)
+ AND geo_region IN ('California', 'New York', 'Washington')
+ AND visits_past_1_7_day = 1
+ ORDER BY average_daily_revenue DESC
+ LIMIT 1000

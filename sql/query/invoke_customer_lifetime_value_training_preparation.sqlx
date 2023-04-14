@@ -1,0 +1,35 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+DECLARE train_start_date DATE DEFAULT NULL;
+DECLARE train_end_date DATE DEFAULT NULL;
+DECLARE train_split_end_number INT64 DEFAULT NULL;
+DECLARE validation_split_end_number INT64 DEFAULT NULL;
+
+DECLARE max_date DATE;
+DECLARE min_date DATE;
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SELECT max_date;
+SELECT min_date;
+
+SET train_start_date = DATE '{{train_start_date}}';
+SET train_end_date = DATE '{{train_end_date}}';
+SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% for training use number 5. If you want 80% use number 7.
+SET validation_split_end_number = {{validation_split_end_number}};
+
+SET train_start_date =  GREATEST(train_start_date, min_date);
+SET train_end_date = LEAST(train_end_date, max_date);
+
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(train_start_date, train_end_date, train_split_end_number, validation_split_end_number);

@@ -1,0 +1,81 @@
+[tool.poetry]
+name = "propensity-modeling"
+version = "0.1.0"
+description = "Purchase Propensity for Marketing Analytics"
+authors = ["Marketing Analytics Solutions Architects <ma-se@google.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+packages = [{include = "python"}]
+
+[tool.poetry.dependencies]
+python = ">=3.7.1,<3.11"
+google-cloud-aiplatform = "1.22.0"
+google-cloud = "^0.34.0"
+jinja2 = ">=3.0.1,<4.0.0"
+pip = "22.3.1"
+invoke = "1.7.3"
+pre-commit = ">=2.14.1,<3.0.0"
+pandas = "1.3.5"
+google-cloud-bigquery = "2.30.0"
+google-cloud-pipeline-components = "1.0.33"
+google-auth = "^2.14.1"
+google-cloud-storage = "^2.6.0"
+kfp = {version = "2.0.0-b12", allow-prereleases = true}
+kfp-server-api = "2.0.0.a6"
+toml = "0.10.2"
+docker = "^6.0.1"
+ma-components = {path = "python/base_component_image/", develop = true}
+google-cloud-pubsub = "2.15.0"
+
+[tool.poetry.group.component_vertex.dependencies]
+google-cloud-aiplatform = "1.22.0"
+toml = "0.10.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = "7.0.0"
+pytest-env = "0.6.2"
+pytest-mock = "3.7.0"
+pytest-variables = {extras = ["yaml"], version = "^2.0.0"}
+coverage = {extras = ["toml"], version = "^6.5.0"}
+pytest-cov = "^4.0.0"
+pytest-xdist = "^3.0.2"
+
+[tool.poetry.group.dev.dependencies]
+pip = "22.3.1"
+invoke = "1.7.3"
+pre-commit = ">=2.14.1,<3.0.0"
+black = "22.10.0"
+flake8 = "5.0.4"
+flake8-annotations = "2.9.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "-vv -s --variables config/dev.yaml" 
+variables = "config/dev.yaml"
+testpaths = ["python/pipelines"]
+markers = [
+    "unit",
+    "inte",
+    "pipeline_run",
+    "feature_eng_pl",
+    "training_pl",
+    "customer_seg_pl",
+    "current",
+    "curl",
+    "schedule"
+]
+log_cli=true
+log_level="INFO"
+
+[tool.coverage.run]
+include = ["*/python/*"]
+omit = ["*/tests/*"]
+parallel = true
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+skip_empty= true

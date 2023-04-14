@@ -1,0 +1,1471 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+components:
+  comp-bq-stored-procedure-exec:
+    executorLabel: exec-bq-stored-procedure-exec
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-10:
+    executorLabel: exec-bq-stored-procedure-exec-10
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-11:
+    executorLabel: exec-bq-stored-procedure-exec-11
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-12:
+    executorLabel: exec-bq-stored-procedure-exec-12
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-13:
+    executorLabel: exec-bq-stored-procedure-exec-13
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-14:
+    executorLabel: exec-bq-stored-procedure-exec-14
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-15:
+    executorLabel: exec-bq-stored-procedure-exec-15
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-16:
+    executorLabel: exec-bq-stored-procedure-exec-16
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-17:
+    executorLabel: exec-bq-stored-procedure-exec-17
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-18:
+    executorLabel: exec-bq-stored-procedure-exec-18
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-2:
+    executorLabel: exec-bq-stored-procedure-exec-2
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-3:
+    executorLabel: exec-bq-stored-procedure-exec-3
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-4:
+    executorLabel: exec-bq-stored-procedure-exec-4
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-5:
+    executorLabel: exec-bq-stored-procedure-exec-5
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-6:
+    executorLabel: exec-bq-stored-procedure-exec-6
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-7:
+    executorLabel: exec-bq-stored-procedure-exec-7
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-8:
+    executorLabel: exec-bq-stored-procedure-exec-8
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+  comp-bq-stored-procedure-exec-9:
+    executorLabel: exec-bq-stored-procedure-exec-9
+    inputDefinitions:
+      parameters:
+        location:
+          parameterType: STRING
+        project:
+          parameterType: STRING
+        query:
+          parameterType: STRING
+        query_parameters:
+          parameterType: LIST
+        timeout:
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+deploymentSpec:
+  executors:
+    exec-bq-stored-procedure-exec:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-10:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-11:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-12:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-13:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-14:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-15:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-16:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-17:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-18:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-2:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-3:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-4:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-5:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-6:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-7:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-8:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+    exec-bq-stored-procedure-exec-9:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - bq_stored_procedure_exec
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet     --no-warn-script-location 'kfp==2.0.0-beta.12'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          python3 -m kfp.components.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef bq_stored_procedure_exec(\n    project: str,\n    location: str,\n\
+          \    query: str,\n    query_parameters: Optional[list],\n    timeout: Optional[float]\
+          \ = None\n) -> None:\n\n    from google.cloud import bigquery\n    import\
+          \ logging\n\n    client = bigquery.Client(\n        project=project,\n \
+          \       # location=location\n    )\n\n    params = []\n\n    for i in query_parameters:\n\
+          \        i['value'] = None if i['value'] == \"None\" else i['value']\n \
+          \       params.append(bigquery.ScalarQueryParameter(i['name'], i['type'],\
+          \ i['value']))\n\n    job_config = bigquery.QueryJobConfig(\n        query_parameters=params\n\
+          \    )\n\n    query_job = client.query(\n        query=query,\n        job_config=job_config)\n\
+          \n    query_job.result(timeout=timeout)\n    # TODO: return created table\n\
+          \n"
+        image: us-central1-docker.pkg.dev/propensity-modelling-368616/pipelines-docker-repo/ma-components:dev
+pipelineInfo:
+  name: feature-creation-pl
+root:
+  dag:
+    tasks:
+      bq-stored-procedure-exec:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_customer_lifetime_value_label
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: customer_lifetime_value_label
+      bq-stored-procedure-exec-10:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-10
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_scoped_segmentation_metrics
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_scoped_segmentation_metrics
+      bq-stored-procedure-exec-11:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-11
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_segmentation_dimensions
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_segmentation_dimensions
+      bq-stored-procedure-exec-12:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-12
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_session_event_aggregated_metrics
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_session_event_aggregated_metrics
+      bq-stored-procedure-exec-13:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-13
+        dependentTasks:
+        - bq-stored-procedure-exec
+        - bq-stored-procedure-exec-10
+        - bq-stored-procedure-exec-11
+        - bq-stored-procedure-exec-12
+        - bq-stored-procedure-exec-2
+        - bq-stored-procedure-exec-3
+        - bq-stored-procedure-exec-4
+        - bq-stored-procedure-exec-5
+        - bq-stored-procedure-exec-6
+        - bq-stored-procedure-exec-7
+        - bq-stored-procedure-exec-8
+        - bq-stored-procedure-exec-9
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_purchase_propensity_training_preparation
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: purchase_propensity_training_preparation
+      bq-stored-procedure-exec-14:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-14
+        dependentTasks:
+        - bq-stored-procedure-exec
+        - bq-stored-procedure-exec-10
+        - bq-stored-procedure-exec-11
+        - bq-stored-procedure-exec-12
+        - bq-stored-procedure-exec-2
+        - bq-stored-procedure-exec-3
+        - bq-stored-procedure-exec-4
+        - bq-stored-procedure-exec-5
+        - bq-stored-procedure-exec-6
+        - bq-stored-procedure-exec-7
+        - bq-stored-procedure-exec-8
+        - bq-stored-procedure-exec-9
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_customer_lifetime_value_training_preparation
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: customer_lifetime_value_training_preparation
+      bq-stored-procedure-exec-15:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-15
+        dependentTasks:
+        - bq-stored-procedure-exec
+        - bq-stored-procedure-exec-10
+        - bq-stored-procedure-exec-11
+        - bq-stored-procedure-exec-12
+        - bq-stored-procedure-exec-2
+        - bq-stored-procedure-exec-3
+        - bq-stored-procedure-exec-4
+        - bq-stored-procedure-exec-5
+        - bq-stored-procedure-exec-6
+        - bq-stored-procedure-exec-7
+        - bq-stored-procedure-exec-8
+        - bq-stored-procedure-exec-9
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_audience_segmentation_training_preparation
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: audience_segmentation_training_preparation
+      bq-stored-procedure-exec-16:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-16
+        dependentTasks:
+        - bq-stored-procedure-exec
+        - bq-stored-procedure-exec-10
+        - bq-stored-procedure-exec-11
+        - bq-stored-procedure-exec-12
+        - bq-stored-procedure-exec-2
+        - bq-stored-procedure-exec-3
+        - bq-stored-procedure-exec-4
+        - bq-stored-procedure-exec-5
+        - bq-stored-procedure-exec-6
+        - bq-stored-procedure-exec-7
+        - bq-stored-procedure-exec-8
+        - bq-stored-procedure-exec-9
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_purchase_propensity_inference_preparation
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: purchase_propensity_inference_preparation
+      bq-stored-procedure-exec-17:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-17
+        dependentTasks:
+        - bq-stored-procedure-exec
+        - bq-stored-procedure-exec-10
+        - bq-stored-procedure-exec-11
+        - bq-stored-procedure-exec-12
+        - bq-stored-procedure-exec-2
+        - bq-stored-procedure-exec-3
+        - bq-stored-procedure-exec-4
+        - bq-stored-procedure-exec-5
+        - bq-stored-procedure-exec-6
+        - bq-stored-procedure-exec-7
+        - bq-stored-procedure-exec-8
+        - bq-stored-procedure-exec-9
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_customer_lifetime_value_inference_preparation
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: customer_lifetime_value_inference_preparation
+      bq-stored-procedure-exec-18:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-18
+        dependentTasks:
+        - bq-stored-procedure-exec
+        - bq-stored-procedure-exec-10
+        - bq-stored-procedure-exec-11
+        - bq-stored-procedure-exec-12
+        - bq-stored-procedure-exec-2
+        - bq-stored-procedure-exec-3
+        - bq-stored-procedure-exec-4
+        - bq-stored-procedure-exec-5
+        - bq-stored-procedure-exec-6
+        - bq-stored-procedure-exec-7
+        - bq-stored-procedure-exec-8
+        - bq-stored-procedure-exec-9
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_audience_segmentation_inference_preparation
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: audience_segmentation_inference_preparation
+      bq-stored-procedure-exec-2:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-2
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_purchase_propensity_label
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: purchase_propensity_label
+      bq-stored-procedure-exec-3:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-3
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_dimensions
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_dimensions
+      bq-stored-procedure-exec-4:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-4
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_lifetime_dimensions
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_lifetime_dimensions
+      bq-stored-procedure-exec-5:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-5
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_lookback_metrics
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_lookback_metrics
+      bq-stored-procedure-exec-6:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-6
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_rolling_window_lifetime_metrics
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_rolling_window_lifetime_metrics
+      bq-stored-procedure-exec-7:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-7
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_rolling_window_metrics
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_rolling_window_metrics
+      bq-stored-procedure-exec-8:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-8
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_scoped_lifetime_metrics
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_scoped_lifetime_metrics
+      bq-stored-procedure-exec-9:
+        cachingOptions:
+          enableCache: false
+        componentRef:
+          name: comp-bq-stored-procedure-exec-9
+        inputs:
+          parameters:
+            location:
+              componentInputParameter: location
+            project:
+              componentInputParameter: project_id
+            query:
+              componentInputParameter: query_user_scoped_metrics
+            query_parameters:
+              componentInputParameter: query_parameters
+            timeout:
+              componentInputParameter: timeout
+        taskInfo:
+          name: user_scoped_metrics
+  inputDefinitions:
+    parameters:
+      location:
+        defaultValue: US
+        parameterType: STRING
+      project_id:
+        defaultValue: propensity-modelling-368616
+        parameterType: STRING
+      query_audience_segmentation_inference_preparation:
+        defaultValue: ' CALL `propensity-modelling-368616.audience_segmentation.invoke_audience_segmentation_inference_preparation`();'
+        parameterType: STRING
+      query_audience_segmentation_training_preparation:
+        defaultValue: ' CALL `propensity-modelling-368616.audience_segmentation.invoke_audience_segmentation_training_preparation`();'
+        parameterType: STRING
+      query_customer_lifetime_value_inference_preparation:
+        defaultValue: ' CALL `propensity-modelling-368616.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation`();'
+        parameterType: STRING
+      query_customer_lifetime_value_label:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET end_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET input_date= (SELECT DATE_SUB(end_date, INTERVAL 180 DAY)); CALL `propensity-modelling-368616.feature_store.customer_lifetime_value_label`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_customer_lifetime_value_training_preparation:
+        defaultValue: ' CALL `propensity-modelling-368616.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation`();'
+        parameterType: STRING
+      query_parameters:
+        defaultValue:
+        - name: input_date
+          type: DATE
+          value: None
+        isOptional: true
+        parameterType: LIST
+      query_purchase_propensity_inference_preparation:
+        defaultValue: ' CALL `propensity-modelling-368616.purchase_propensity.invoke_purchase_propensity_inference_preparation`();'
+        parameterType: STRING
+      query_purchase_propensity_label:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET end_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET input_date= (SELECT DATE_SUB(end_date, INTERVAL 180 DAY)); CALL `propensity-modelling-368616.feature_store.purchase_propensity_label`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_purchase_propensity_training_preparation:
+        defaultValue: ' CALL `propensity-modelling-368616.purchase_propensity.invoke_purchase_propensity_training_preparation`();'
+        parameterType: STRING
+      query_user_dimensions:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY)); CALL `propensity-modelling-368616.feature_store.user_dimensions`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_lifetime_dimensions:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 180 DAY)); CALL `propensity-modelling-368616.feature_store.user_lifetime_dimensions`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_lookback_metrics:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 15 DAY)); CALL `propensity-modelling-368616.feature_store.user_lookback_metrics`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_rolling_window_lifetime_metrics:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 180 DAY)); CALL `propensity-modelling-368616.feature_store.user_rolling_window_lifetime_metrics`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_rolling_window_metrics:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY)); CALL `propensity-modelling-368616.feature_store.user_rolling_window_metrics`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_scoped_lifetime_metrics:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 180 DAY)); CALL `propensity-modelling-368616.feature_store.user_scoped_lifetime_metrics`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_scoped_metrics:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY)); CALL `propensity-modelling-368616.feature_store.user_scoped_metrics`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_scoped_segmentation_metrics:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 15 DAY)); CALL `propensity-modelling-368616.feature_store.user_scoped_segmentation_metrics`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_segmentation_dimensions:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 15 DAY)); CALL `propensity-modelling-368616.feature_store.user_segmentation_dimensions`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      query_user_session_event_aggregated_metrics:
+        defaultValue: ' DECLARE input_date DATE; DECLARE end_date DATE; DECLARE users_added
+          INT64 DEFAULT NULL; SET input_date= IFNULL(@input_date, CURRENT_DATE(''UTC''));
+          SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY)); CALL `propensity-modelling-368616.feature_store.user_session_event_aggregated_metrics`(input_date,
+          end_date, users_added);'
+        parameterType: STRING
+      timeout:
+        defaultValue: 600.0
+        isOptional: true
+        parameterType: NUMBER_DOUBLE
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.0.0-beta.12

@@ -1,0 +1,287 @@
+[
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "feature column description"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE",
+    "description": "feature column description"
+  },
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_1_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_2_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_3_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_4_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_5_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_6_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_7_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_8_14_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "active_users_past_15_30_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_1_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_2_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_3_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_4_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_5_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_6_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_7_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_8_14_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "purchases_past_15_30_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_1_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_2_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_3_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_4_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_5_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_6_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_7_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_8_14_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "visits_past_15_30_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_1_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_2_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_3_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_4_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_5_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_6_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_7_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_8_14_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "view_items_past_15_30_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_1_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_2_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_3_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_4_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_5_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_6_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_7_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_8_14_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "add_to_carts_past_15_30_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_1_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_2_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_3_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_4_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_5_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_6_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_7_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_8_14_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "checkouts_past_15_30_day",
+    "type": "INTEGER",
+    "description": "feature column description"
+  }
+]

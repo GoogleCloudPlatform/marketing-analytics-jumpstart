@@ -1,0 +1,92 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+
+  - id: "Install Dependencies"
+    name: $_PYTHON_VERSION
+    dir: $_SRC_FOLDER
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        poetry config settings.virtualenvs.create false && \
+        poetry install -v --no-interaction --no-ansi --with dev
+
+  - id: "Apply variables to templated stored procedures"
+    name: $_PYTHON_VERSION
+    dir: $_SRC_FOLDER
+    entrypoint: python
+    args: ["-m", "invoke", "apply-env-variables-procedures", "--env-name=dev"]
+
+  - id: "Apply variables to templated datasets"
+    name: $_PYTHON_VERSION
+    dir: $_SRC_FOLDER
+    entrypoint: python
+    args: ["-m", "invoke", "apply-env-variables-datasets", "--env-name=dev"]
+
+  - id: "Lint"
+    name: $_PYTHON_VERSION
+    entrypoint: python
+    args: ["-m", "invoke", "lint"]
+
+  - id: "Run Unit Tests"
+    name: $_PYTHON_VERSION
+    entrypoint: python
+    args: ["-m", "invoke", "test"]
+
+  # Setup resources for system tests
+
+  - id: "Build Container Image"
+    name: "gcr.io/k8s-skaffold/pack"
+    entrypoint: pack
+    args:
+      - build
+      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" # Tag docker image with git commit SHA
+      - "--builder=gcr.io/buildpacks/builder:v1"
+      - "--path=."
+
+  - id: "Push Container Image"
+    name: "gcr.io/cloud-builders/docker:latest"
+    args:
+      - push
+      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
+
+  - id: "Run System Tests"
+    name: "${_PYTHON_VERSION}"
+    entrypoint: /bin/bash
+    args:
+      - "-c"
+      - |
+        export BASE_URL=$(cat _service_url)
+        export ID_TOKEN=$(cat _id_token)
+        python -m invoke system-test
+  # Clean up system test resources
+
+  - id: "Delete image"
+    name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "/bin/bash"
+    args:
+      - "-c"
+      - |
+        gcloud artifact docker images delete $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
+options:
+  dynamic_substitutions: true
+  substitution_option: "ALLOW_LOOSE"
+
+substitutions:
+  _GCR_HOSTNAME: us-central1-docker.pkg.dev
+  _DEPLOY_REGION: us-central1
+  _PYTHON_VERSION: python:3.9-slim'
+  _REPOSITORY: samples
