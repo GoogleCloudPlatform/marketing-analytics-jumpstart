@@ -1,16 +1,18 @@
 # Click-to-deploy Propensity Modeling Solution
 
-This solution consists of an easy, flexible and automated blueprint implementation that enables Marketing Technologist teams to manage and develop consistent predictive use cases to Marketing teams leveraging the best of Google Cloud products and practices.
+This solution consists of an easy, flexible and automated implementation that enables Marketing Technologist teams to manage and develop consistent predictive maketing analytics use cases to Marketing teams leveraging the best of Google Cloud products and practices.
 
 ## Introduction
 
-Marketing Predictive Analytics commonly involves leveraging ML models and building ML pipelines providing audience management platforms with predictive audiences to help the Marketing team to come up with more effective marketing campaigns that drive better performance.
+Marketing Analytics commonly involves leveraging ML models and building ML pipelines providing audience management platforms with predictive conversion events or audiences to help the Marketing team to build audiences and come up with more effective marketing campaigns that drive better performance and ROAS.
 
-It includes the following components: a petabyte-scale feature store, robust ml pipelines (feature engineering, training and inference pipelines), and a activation pipeline that programatically sends predictive conversion events estimates to Google Analytics 4 and Google Ads.
+This solution includes the following components: a petabyte-scale marketing data store (MDS), a reusable feature store, robust and parametrizable ml pipelines (feature engineering, training and inference pipelines), an activation pipeline that programatically sends predictive conversion events estimates to Google Analytics 4 and Google Ads, and a dashboard to monitor campaigns performance.
 
-The pipelines manipulate Google Analytics 4 data. The following Google Cloud Products are used: BigQuery, Vertex AI Pipelines, Vertex AI Tabular Workflows, DataFlow, Cloud Function, Cloud Pub/Sub.
+The MDS build an easy-to-use logical data model using Google Ads and Google Analytics 4 data exports. The feature store and ml pipelines use Google Analytics 4 behavioural data. The following Google Cloud Products are used: BigQuery, DataForm, Vertex AI Pipelines, Vertex AI Tabular Workflows, DataFlow, Cloud Function, Cloud Pub/Sub.
 
 ## Installation Guide
+
+The installation of this solution requires a multi-step process. First, you need to follow the initial environment setup, then you may have specific steps for each component, such as the feature store and ml pipelines. Lastly, the final step involves running terraform.
 
 ### Initial Environment Setup
 
@@ -21,7 +23,7 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
 
     ```bash
     cd "$HOME"
-    git clone https://github.com/chmstimoteo/propensity-modeling.git
+    git clone https://github.com/GoogleCloudPlatform/marketing-analytics-platform.git
     ```
 
 2. Export environment variables and set default project:
@@ -37,14 +39,14 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     * `roles/storage.admin` for creating terraform backend-config storage bucket.
 
     ```bash
-    cd $HOME/propensity-modeling/
+    cd $HOME/marketing-analytics-platform/
     scripts/generate-tf-backend.sh
     ```
 
 4. Create the terraform variable file by making a copy from the template and set the terraform variables.
 
     ```bash
-    cp $HOME/propensity-modeling/terraform/terraform.tfvars.template $HOME/activation-processing-pipeline/terraform/terraform.tfvars
+    cp $HOME/marketing-analytics-platform/terraform/terraform.tfvars.template $HOME/marketing-analytics-platform/terraform/terraform.tfvars
     ```
 
     Edit the `terraform.tfvars` file by setting the following variable values:
@@ -53,56 +55,73 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     * `ga4_measurement_id`, used to call GA4 Measurement Protocol API
     * `ga4_measurement_secret`, used to call GA4 Measurement Protocol API
 
-### feature-store
+### Preparation Step for Feature Store
 
+1. Install developer libraries.
 
+```bash
+pip install poetry
+poetry install -v --no-interaction --no-ansi --with dev
+```
 
-### ml-pipelines
+2. Change the values in the `config/[ENV].yaml` file.
 
+Create or open the environment file, `config/[ENV].yaml` you want to use and change the values under the `bigquery` section.
 
+Before applying the configuration values, the developer could prepare multiple configurations to deploy the Feature Store in a single environment or in multiple environments (dev, uat and prod) in case customer’s policies require. Just yet, the customer is not able to customize the solution and have an automated CI/CD process for promoting changes through those environments.
 
-### activation-pipeline
+3. Apply configuration values from [ENV].yaml on .sqlx files to generate the .sql files to be deployed.
 
-The activation processing pipeline is the component that reads the result data from ML pipelines and use it as activation signals in external platforms.
-Currently activation processing pipeline supports integration with GA4 through the Measurement Protocol API.
+```bash
+poetry run inv apply-env-variables-tables --env-name=[ENV]
+poetry run inv apply-env-variables-queries --env-name=[ENV]
+poetry run inv apply-env-variables-datasets --env-name=[ENV]
+poetry run inv apply-env-variables-procedures --env-name=[ENV] 
+```
 
-#### Prerequisites
-* You har a GA4 account with the [query parameters](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference?client_type=gtag#payload_query_parameters)
-* You have a Google Cloud project with billing enabled.
+Finally, you're ready to deploy the Feature Store using terraform.
 
-#### Specific Component Installation
-1. Run terraform to provision all the resources for the activation processing pipeline.
+### Preparation Step for ml pipelines
 
-    ```bash
-    cd $HOME/propensity-modeling/terraform
-    terraform init
-    terraform apply
-    ```
+1. Change the values in the `config/[ENV].yaml` file.
+
+Create or open the environment file, `config/[ENV].yaml` you want to use and change the values under `cloud_build`, `artifact_registry`, `dataflow` and `vertex_ai` sections.
+
+2. Build the vertex ai pipeline base component image
+
+```bash
+pip install poetry
+poetry install
+cd python && poetry run python -m base_component_image.build-push -c ../config/[ENV].yaml
+```
+
+3. Compile, Upload and schedule the Vertex AI Pipelines
+
+```bash
+poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.feature-creation.execution -o feature_engineering.yaml
+poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
+poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
+poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.clv.training -o clv_training.yaml
+poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
+poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
+poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
+```
+
+### Final Step
+
+Deploy all assets to the Google Cloud project as per the template values and configuration values.
+
+```bash
+terraform init -input=false
+terraform plan -input=false
+terraform apply -auto-approve -input=false
+```
 
 ## Developer Guide
 
-### Enable APIS
+### Complete the installation guide
 
-```bash
-export PROJECT_ID=lifetime-value-361020
-gcloud config set project $PROJECT_ID
-gcloud services enable \
-  cloudbuild.googleapis.com \
-  compute.googleapis.com \
-  cloudresourcemanager.googleapis.com \
-  iam.googleapis.com \
-  container.googleapis.com \
-  cloudapis.googleapis.com \
-  cloudfunctions.googleapis.com \
-  cloudtrace.googleapis.com \
-  containerregistry.googleapis.com \
-  iamcredentials.googleapis.com \
-  monitoring.googleapis.com \
-  logging.googleapis.com \
-  notebooks.googleapis.com \
-  aiplatform.googleapis.com \
-  storage.googleapis.com
-```
+Complete the installation guide in a google cloud project in which you're developer and/or owner owner.
 
 ### Update GCloud and Install Beta
 
@@ -111,96 +130,22 @@ gcloud components update
 gcloud components install beta
 ```
 
-### Environment Configuration
-
-```bash
-terraform init -input=false
-terraform plan -input=false
-terraform apply -auto-approve -input=false
-```
-
-### Create Bucket to store pipeline artifacts
-
-```bash
-REGION=us-central1
-BUCKET_NAME=lifetime-value-assets
-PROJECT_ID=$(gcloud config list --format 'value(core.project)')
-gsutil mb -l $REGION -p $PROJECT_ID gs://$BUCKET_NAME
-```
-
-### Create service account to deploy assets using Cloud Build
-
-```bash
-BUILDER_SERVICE_ACCOUNT_ID=sa-builder
-gcloud iam service-accounts create $BUILDER_SERVICE_ACCOUNT_ID  \
-    --description="$SERVICE_ACCOUNT_ID" \
-    --display-name="$SERVICE_ACCOUNT_ID" \
-    --project=$PROJECT_ID
-```
-
-#### Grant IAM roles for Builder Service Account
-
-```bash
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:${BUILDER_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com" \
-    --role="roles/storage.admin"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:${BUILDER_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com" \
-    --role="roles/logging.logWriter"
-```
-
-### Create service account to Run the SQL code 
-
-```bash
-RUN_SERVICE_ACCOUNT_ID=sa-customer-lifetime-value
-gcloud iam service-accounts create $RUN_SERVICE_ACCOUNT_ID  \
-    --description="$SERVICE_ACCOUNT_ID" \
-    --display-name="$SERVICE_ACCOUNT_ID" \
-    --project=$PROJECT_ID
-```
-
-#### Grant IAM roles for Vertex AI
-
-```bash
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:${RUN_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com" \
-    --role="roles/aiplatform.user"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:${RUN_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com" \
-    --role="roles/aiplatform.serviceAgent"
-```
-
-#### Grant IAM roles for BigQuery
-
-```bash
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:${RUN_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com" \
-    --role="roles/bigquery.dataEditor"
-```
-
-### Grant Control Policy to Read and Write from Cloud Storage Bucket
-
-```bash
-gsutil iam ch \
-serviceAccount:${RUN_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com:legacyBucketWriter \
-gs://$BUCKET_NAME
-
-gsutil iam ch \
-serviceAccount:${RUN_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com:roles/storage.objectCreator \
-gs://$BUCKET_NAME
-
-gsutil iam ch \
-serviceAccount:${RUN_SERVICE_ACCOUNT_ID}@${PROJECT_ID}.iam.gserviceaccount.com:roles/storage.objectViewer \
-gs://$BUCKET_NAME
-```
-
 ### Install packages to define components, run locally and compile pipeline
 
 ```bash
-pip3 install kfp --upgrade # You may need to install kfp
-pip3 install google-cloud-aiplatform[pipelines] google-cloud-bigquery google-cloud-storage --upgrade
-pip3 install google_cloud_pipeline_components --upgrade
-pip3 install pandas db-dtypes matplotlib
+pip install poetry
+poetry install -v --no-interaction --no-ansi --with dev
+```
+
+### Modify the code and configuration as you prefer
+
+Do all the code changes you wish. 
+If you're implementing new use cases, add these resources to the existing terraform module components.
+Otherwise, in case you're implementing a new component, implement your own terraform module for it.
+
+### Environment Re-Deployment
+
+```bash
+terraform plan
+terraform apply
 ```
