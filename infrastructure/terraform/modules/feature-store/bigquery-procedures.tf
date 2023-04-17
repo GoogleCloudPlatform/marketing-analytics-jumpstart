@@ -17,7 +17,7 @@ resource "google_bigquery_routine" "audience_segmentation_inference_preparation"
   routine_id      = "audience_segmentation_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/audience_segmentation_inference_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/audience_segmentation_inference_preparation.sql") : null
   description     = "User-per-day granularity level features. Run this procedure daily."
   arguments {
     name      = "inference_date"
@@ -32,7 +32,7 @@ resource "google_bigquery_routine" "audience_segmentation_training_preparation" 
   routine_id      = "audience_segmentation_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/audience_segmentation_training_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/audience_segmentation_training_preparation.sql") : null
   description     = "User-per-day granularity level features. Run this procedure daily."
   arguments {
     name      = "start_date"
@@ -62,7 +62,7 @@ resource "google_bigquery_routine" "customer_lifetime_value_inference_preparatio
   routine_id      = "customer_lifetime_value_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/customer_lifetime_value_inference_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/customer_lifetime_value_inference_preparation.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "inference_date"
@@ -77,7 +77,7 @@ resource "google_bigquery_routine" "customer_lifetime_value_label" {
   routine_id      = "customer_lifetime_value_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/customer_lifetime_value_label.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/customer_lifetime_value_label.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -101,7 +101,7 @@ resource "google_bigquery_routine" "customer_lifetime_value_training_preparation
   routine_id      = "customer_lifetime_value_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/customer_lifetime_value_training_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/customer_lifetime_value_training_preparation.sql") : null
   description     = "User-per-day granularity level features. Run this procedure daily."
   arguments {
     name      = "start_date"
@@ -131,7 +131,7 @@ resource "google_bigquery_routine" "purchase_propensity_inference_preparation" {
   routine_id      = "purchase_propensity_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/purchase_propensity_inference_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/purchase_propensity_inference_preparation.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "inference_date"
@@ -146,7 +146,7 @@ resource "google_bigquery_routine" "purchase_propensity_label" {
   routine_id      = "purchase_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/purchase_propensity_label.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/purchase_propensity_label.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -171,7 +171,7 @@ resource "google_bigquery_routine" "purchase_propensity_training_preparation" {
   routine_id      = "purchase_propensity_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/purchase_propensity_training_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/purchase_propensity_training_preparation.sql") : null
   description     = "User-per-day granularity level features. Run this procedure daily."
   arguments {
     name      = "start_date"
@@ -201,7 +201,7 @@ resource "google_bigquery_routine" "user_dimensions" {
   routine_id      = "user_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_dimensions.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -226,7 +226,7 @@ resource "google_bigquery_routine" "user_lifetime_dimensions" {
   routine_id      = "user_lifetime_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_lifetime_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_lifetime_dimensions.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -251,7 +251,7 @@ resource "google_bigquery_routine" "user_lookback_metrics" {
   routine_id      = "user_lookback_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_lookback_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_lookback_metrics.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -276,7 +276,7 @@ resource "google_bigquery_routine" "user_rolling_window_lifetime_metrics" {
   routine_id      = "user_rolling_window_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_rolling_window_lifetime_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_rolling_window_lifetime_metrics.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -301,7 +301,7 @@ resource "google_bigquery_routine" "user_rolling_window_metrics" {
   routine_id      = "user_rolling_window_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_rolling_window_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_rolling_window_metrics.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -326,7 +326,7 @@ resource "google_bigquery_routine" "user_scoped_lifetime_metrics" {
   routine_id      = "user_scoped_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_scoped_lifetime_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_scoped_lifetime_metrics.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -351,7 +351,7 @@ resource "google_bigquery_routine" "user_scoped_metrics" {
   routine_id      = "user_scoped_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_scoped_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_scoped_metrics.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -376,7 +376,7 @@ resource "google_bigquery_routine" "user_scoped_segmentation_metrics" {
   routine_id      = "user_scoped_segmentation_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_scoped_segmentation_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_scoped_segmentation_metrics.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -401,7 +401,7 @@ resource "google_bigquery_routine" "user_segmentation_dimensions" {
   routine_id      = "user_segmentation_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_segmentation_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_segmentation_dimensions.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -426,7 +426,7 @@ resource "google_bigquery_routine" "user_session_event_aggregated_metrics" {
   routine_id      = "user_session_event_aggregated_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/procedure/user_session_event_aggregated_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_session_event_aggregated_metrics.sql") : null
   description     = "User granularity level labels. Run this procedure daily"
   arguments {
     name      = "input_date"
@@ -455,7 +455,7 @@ resource "google_bigquery_routine" "invoke_backfill_customer_lifetime_value_labe
   routine_id      = "invoke_backfill_customer_lifetime_value_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_customer_lifetime_value_label.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_customer_lifetime_value_label.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_backfill_purchase_propensity_label" {
@@ -463,7 +463,7 @@ resource "google_bigquery_routine" "invoke_backfill_purchase_propensity_label" {
   routine_id      = "invoke_backfill_purchase_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_purchase_propensity_label.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_purchase_propensity_label.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_dimensions" {
@@ -471,7 +471,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_dimensions" {
   routine_id      = "invoke_backfill_user_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_dimensions.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_lifetime_dimensions" {
@@ -479,7 +479,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_lifetime_dimensions" {
   routine_id      = "invoke_backfill_user_lifetime_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_lifetime_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_lifetime_dimensions.sql") : null
 }
 
 
@@ -488,7 +488,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_lookback_metrics" {
   routine_id      = "invoke_backfill_user_lookback_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_lookback_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_lookback_metrics.sql") : null
 }
 
 
@@ -497,7 +497,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_lifetime
   routine_id      = "invoke_backfill_user_rolling_window_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_rolling_window_lifetime_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_rolling_window_lifetime_metrics.sql") : null
 }
 
 
@@ -506,7 +506,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_metrics"
   routine_id      = "invoke_backfill_user_rolling_window_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_rolling_window_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_rolling_window_metrics.sql") : null
 }
 
 
@@ -515,7 +515,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_scoped_lifetime_metrics
   routine_id      = "invoke_backfill_user_scoped_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_scoped_lifetime_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_scoped_lifetime_metrics.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_scoped_metrics" {
@@ -523,7 +523,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_scoped_metrics" {
   routine_id      = "invoke_backfill_user_scoped_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_scoped_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_scoped_metrics.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_scoped_segmentation_metrics" {
@@ -531,7 +531,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_scoped_segmentation_met
   routine_id      = "invoke_backfill_user_scoped_segmentation_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_scoped_segmentation_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_scoped_segmentation_metrics.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_segmentation_dimensions" {
@@ -539,7 +539,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_segmentation_dimensions
   routine_id      = "invoke_backfill_user_segmentation_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_segmentation_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_segmentation_dimensions.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_session_event_aggregated_metrics" {
@@ -547,7 +547,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_session_event_aggregate
   routine_id      = "invoke_backfill_user_session_event_aggregated_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_backfill_user_session_event_aggregated_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_backfill_user_session_event_aggregated_metrics.sql") : null
 }
 
 /*
@@ -560,7 +560,7 @@ resource "google_bigquery_routine" "invoke_customer_lifetime_value_inference_pre
   routine_id      = "invoke_customer_lifetime_value_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_customer_lifetime_value_inference_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_customer_lifetime_value_inference_preparation.sql") : null
 }
 
 
@@ -569,7 +569,7 @@ resource "google_bigquery_routine" "invoke_purchase_propensity_inference_prepara
   routine_id      = "invoke_purchase_propensity_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_purchase_propensity_inference_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_purchase_propensity_inference_preparation.sql") : null
 }
 
 
@@ -578,7 +578,7 @@ resource "google_bigquery_routine" "invoke_audience_segmentation_inference_prepa
   routine_id      = "invoke_audience_segmentation_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_audience_segmentation_inference_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_audience_segmentation_inference_preparation.sql") : null
 }
 
 
@@ -590,7 +590,7 @@ resource "google_bigquery_routine" "invoke_customer_lifetime_value_training_prep
   routine_id      = "invoke_customer_lifetime_value_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_customer_lifetime_value_training_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_customer_lifetime_value_training_preparation.sql") : null
 }
 
 
@@ -599,7 +599,7 @@ resource "google_bigquery_routine" "invoke_purchase_propensity_training_preparat
   routine_id      = "invoke_purchase_propensity_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_purchase_propensity_training_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_purchase_propensity_training_preparation.sql") : null
 }
 
 
@@ -608,7 +608,7 @@ resource "google_bigquery_routine" "invoke_audience_segmentation_training_prepar
   routine_id      = "invoke_audience_segmentation_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_audience_segmentation_training_preparation.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_audience_segmentation_training_preparation.sql") : null
 }
 
 /*
@@ -620,7 +620,7 @@ resource "google_bigquery_routine" "invoke_customer_lifetime_value_label" {
   routine_id      = "invoke_customer_lifetime_value_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_customer_lifetime_value_label.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_customer_lifetime_value_label.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_purchase_propensity_label" {
@@ -628,7 +628,7 @@ resource "google_bigquery_routine" "invoke_purchase_propensity_label" {
   routine_id      = "invoke_purchase_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_purchase_propensity_label.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_purchase_propensity_label.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_user_dimensions" {
@@ -636,7 +636,7 @@ resource "google_bigquery_routine" "invoke_user_dimensions" {
   routine_id      = "invoke_user_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_dimensions.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_user_lifetime_dimensions" {
@@ -644,7 +644,7 @@ resource "google_bigquery_routine" "invoke_user_lifetime_dimensions" {
   routine_id      = "invoke_user_lifetime_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_lifetime_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_lifetime_dimensions.sql") : null
 }
 
 
@@ -653,7 +653,7 @@ resource "google_bigquery_routine" "invoke_user_lookback_metrics" {
   routine_id      = "invoke_user_lookback_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_lookback_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_lookback_metrics.sql") : null
 }
 
 
@@ -662,7 +662,7 @@ resource "google_bigquery_routine" "invoke_user_rolling_window_lifetime_metrics"
   routine_id      = "invoke_user_rolling_window_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_rolling_window_lifetime_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_rolling_window_lifetime_metrics.sql") : null
 }
 
 
@@ -671,7 +671,7 @@ resource "google_bigquery_routine" "invoke_user_rolling_window_metrics" {
   routine_id      = "invoke_user_rolling_window_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_rolling_window_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_rolling_window_metrics.sql") : null
 }
 
 
@@ -680,7 +680,7 @@ resource "google_bigquery_routine" "invoke_user_scoped_lifetime_metrics" {
   routine_id      = "invoke_user_scoped_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_scoped_lifetime_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_scoped_lifetime_metrics.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_user_scoped_metrics" {
@@ -688,7 +688,7 @@ resource "google_bigquery_routine" "invoke_user_scoped_metrics" {
   routine_id      = "invoke_user_scoped_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_scoped_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_scoped_metrics.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_user_scoped_segmentation_metrics" {
@@ -696,7 +696,7 @@ resource "google_bigquery_routine" "invoke_user_scoped_segmentation_metrics" {
   routine_id      = "invoke_user_scoped_segmentation_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_scoped_segmentation_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_scoped_segmentation_metrics.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_user_segmentation_dimensions" {
@@ -704,7 +704,7 @@ resource "google_bigquery_routine" "invoke_user_segmentation_dimensions" {
   routine_id      = "invoke_user_segmentation_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_segmentation_dimensions.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_segmentation_dimensions.sql") : null
 }
 
 resource "google_bigquery_routine" "invoke_user_session_event_aggregated_metrics" {
@@ -712,5 +712,5 @@ resource "google_bigquery_routine" "invoke_user_session_event_aggregated_metrics
   routine_id      = "invoke_user_session_event_aggregated_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = file("${local.sql_dir}/query/invoke_user_session_event_aggregated_metrics.sql")
+  definition_body = var.enabled ? file("${local.sql_dir}/query/invoke_user_session_event_aggregated_metrics.sql") : null
 }

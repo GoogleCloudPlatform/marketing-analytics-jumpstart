@@ -135,3 +135,25 @@ variable "deploy_pipelines" {
   type        = bool
   default     = false
 }
+
+variable "mds_dataset_prefix" {
+  description = "Marketing data store dataset prefix"
+  type        = string
+  default     = "marketing_ga4_v1"
+}
+
+variable "feature_store_config_env" {
+  description = "determine which config file is used for feature store deployment"
+  type        = string
+  default     = "prod"
+}
+
+variable "pipelines_github_repo" {
+  description = "Cloud Build github repository for pipelines"
+  type        = string
+}
+
+variable "pipelines_github_owner" {
+  description = "Cloud Build github repository owner"
+  type        = string
+}

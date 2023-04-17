@@ -73,6 +73,9 @@ resource "google_artifact_registry_repository" "activation_repository" {
   repository_id = var.artifact_repository_id
   description   = "Pipeline container repository"
   format        = "DOCKER"
+  depends_on = [
+    module.project_services.wait
+  ]
 }
 
 
@@ -280,6 +283,7 @@ resource "google_cloudfunctions_function" "activation_trigger_cf" {
   runtime = "python311"
 
   available_memory_mb   = 256
+  max_instances         = 3
   source_archive_bucket = module.function_bucket.name
   source_archive_object = google_storage_bucket_object.activation_trigger_archive.name
   event_trigger {

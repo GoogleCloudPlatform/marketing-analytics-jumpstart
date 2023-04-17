@@ -16,3 +16,8 @@ variable "config_file_path" {
   type        = string
   description = "feature store config file"
 }
+
+variable "enabled" {
+  type        = bool
+  description = "Toogle all resources in module"
+}

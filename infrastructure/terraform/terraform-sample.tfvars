@@ -19,8 +19,8 @@ source_ga4_export_dataset = "GA4 export dataset name"
 
 data_project_id = "Project id where the MDS datasets will be created"
 
-create_dev_environment     = true
-create_staging_environment = true
+create_dev_environment     = false
+create_staging_environment = false
 create_prod_environment    = true
 
 data_processing_project_id = "Project id where the Dataform will be installed and run"
@@ -38,6 +38,9 @@ activation_project_id  = "Project ID where activation resources are created"
 ga4_measurement_id     = "Measurement ID in GA4"
 ga4_measurement_secret = "Client secret for authenticatin to GA4 API"
 
-deploy_activation    = false
-deploy_feature_store = false
-deploy_pipelines     = false
+pipelines_github_owner = "Cloud Build github owner account for pipelines"
+pipelines_github_repo = "Cloud Build github repository for pipelines"
+
+deploy_activation    = true
+deploy_feature_store = true
+deploy_pipelines     = true
