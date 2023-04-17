@@ -25,7 +25,6 @@ check_exec_dependency "envsubst"
 
 # Check if the necessary variables are set
 check_environment_variable "PROJECT_ID" "the Google Cloud project that Terraform will provision the resources in"
-check_environment_variable "LOCATION" "the Google Cloud region that Terraform will provision the resources in"
 check_environment_variable "GOOGLE_APPLICATION_CREDENTIALS" "the Google Cloud application credentials that Terraform will use"
 
 set_environment_variable_if_not_set "TF_STATE_PROJECT" "${PROJECT_ID}"
