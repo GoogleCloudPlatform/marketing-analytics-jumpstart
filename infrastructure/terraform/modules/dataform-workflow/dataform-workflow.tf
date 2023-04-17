@@ -44,7 +44,7 @@ main:
               env: ${var.environment}
               ga4_export_project: ${var.source_ga4_export_project_id}
               ga4_export_dataset: ${var.source_ga4_export_dataset}
-              ads_export_data: ${local.adsDataVariable}
+              ads_export_data: '${local.adsDataVariable}'
       result: compilationResult
   - createWorkflowInvocation:
       call: http.post
