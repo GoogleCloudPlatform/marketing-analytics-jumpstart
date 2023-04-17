@@ -23,7 +23,7 @@ resource "google_service_account" "service_account" {
 #resource "google_project_iam_binding" "project" {
 resource "google_project_iam_member" "pipelines_sa_roles" {
   project = local.pipeline_vars.project_id
-  member  = "serviceAccount:${local.pipeline_vars.service_account}"
+  member  = "serviceAccount:${google_service_account.service_account.email}"
 
   for_each = toset([
     "roles/iap.tunnelResourceAccessor",
@@ -47,7 +47,7 @@ resource "google_service_account" "dataflow_worker_service_account" {
 }
 resource "google_project_iam_member" "dataflow_worker_sa_roles" {
   project = local.pipeline_vars.project_id
-  member  = "serviceAccount:${local.dataflow_vars.worker_service_account}"
+  member  = "serviceAccount:${google_service_account.dataflow_worker_service_account.email}"
 
   for_each = toset([
     "roles/dataflow.worker",
@@ -60,17 +60,18 @@ resource "google_project_iam_member" "dataflow_worker_sa_roles" {
 
 # Allow pipelines SA service account use dataflow worker SA
 resource "google_service_account_iam_member" "dataflow_sa_iam" {
-  service_account_id = "projects/${local.pipeline_vars.project_id}/serviceAccounts/${local.dataflow_vars.worker_service_account}"
+  service_account_id = "projects/${local.pipeline_vars.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${local.pipeline_vars.service_account}"
+  member             = "serviceAccount:${google_service_account.service_account.email}"
 }
 
 
 resource "google_storage_bucket" "pipelines_bucket" {
-  name          = local.pipeline_vars.bucket_name
-  storage_class = "REGIONAL"
-  location      = local.pipeline_vars.region
-  force_destroy = true
+  name                        = local.pipeline_vars.bucket_name
+  storage_class               = "REGIONAL"
+  location                    = local.pipeline_vars.region
+  uniform_bucket_level_access = true
+  force_destroy               = true
 
 }
 

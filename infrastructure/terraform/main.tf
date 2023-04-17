@@ -17,6 +17,8 @@ provider "google" {
   region  = var.google_default_region
 }
 
+data "google_project" "project" {}
+
 resource "google_storage_bucket" "tf_state_bucket" {
   name                        = "tf-state-bucket-${var.tf_state_project_id}"
   location                    = var.google_default_region
@@ -58,6 +60,31 @@ module "data_store" {
   project_owner_email = var.project_owner_email
 }
 
+resource "local_file" "feature_store_configuration" {
+  filename = "../../config/${var.feature_store_config_env}.yaml"
+  content = templatefile("../../config/${var.feature_store_config_env}.yaml.tftpl", {
+    project_id             = data.google_project.project.project_id
+    project_name           = data.google_project.project.name
+    project_number         = data.google_project.project.number
+    mds_dataset            = "${var.mds_dataset_prefix}_${var.feature_store_config_env}"
+    pipelines_github_owner = var.pipelines_github_owner
+    pipelines_github_repo  = var.pipelines_github_repo
+  })
+}
+
+module "feature_store" {
+  source           = "./modules/feature-store"
+  config_file_path = local_file.feature_store_configuration.filename
+  enabled          = var.deploy_feature_store
+  count            = var.deploy_feature_store ? 1 : 0
+}
+
+module "pipelines" {
+  source           = "./modules/pipelines"
+  config_file_path = local_file.feature_store_configuration.filename
+  count            = var.deploy_pipelines ? 1 : 0
+}
+
 module "activation" {
   source                 = "./modules/activation"
   project_id             = var.activation_project_id
@@ -65,16 +92,4 @@ module "activation" {
   ga4_measurement_id     = var.ga4_measurement_id
   ga4_measurement_secret = var.ga4_measurement_secret
   count                  = var.deploy_activation ? 1 : 0
-}
-
-module "feature_store" {
-  source           = "./modules/feature-store"
-  config_file_path = "../config/dev.yaml"
-  count            = var.deploy_feature_store ? 1 : 0
-}
-
-module "pipelines" {
-  source           = "./modules/pipelines"
-  config_file_path = "../config/dev.yaml"
-  count            = var.deploy_pipelines ? 1 : 0
 }

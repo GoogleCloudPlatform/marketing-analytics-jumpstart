@@ -18,6 +18,6 @@ locals {
   purchase_propensity_project_id     = local.config_vars.bigquery.dataset.purchase_propensity.project_id
   audience_segmentation_project_id   = local.config_vars.bigquery.dataset.audience_segmentation.project_id
   customer_lifetime_value_project_id = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id
-  source_root_dir                            = "../.."
-  sql_dir                                    = "${local.source_root_dir}/sql"
+  source_root_dir                    = "../.."
+  sql_dir                            = "${local.source_root_dir}/sql"
 }
