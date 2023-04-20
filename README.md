@@ -103,10 +103,10 @@ cd python && poetry run python -m base_component_image.build-push -c ../config/[
 poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.feature-creation.execution -o feature_engineering.yaml
 poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
 poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
-poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.clv.training -o clv_training.yaml
-poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
-poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
-poetry run python -m pipelines.compiler -c ../config/dev.yaml -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
+poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.clv.training -o clv_training.yaml
+poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
+poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
+poetry run python -m pipelines.compiler -c ../config/[ENV].yaml -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
 ```
 
 ### Final Step
