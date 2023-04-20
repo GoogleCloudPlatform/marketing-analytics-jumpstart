@@ -1,6 +1,8 @@
-# Click-to-deploy Propensity Modeling Solution
+# Marketing Data Engine
 
-This solution consists of an easy, flexible and automated implementation that enables Marketing Technologist teams to manage and develop consistent predictive maketing analytics use cases to Marketing teams leveraging the best of Google Cloud products and practices.
+Marketing Data Engine consists of an easy, flexible and automated implementation of an end-to-end solution that enables Marketing Technologist teams to store, transform, analyze maketing data, and programatically sends predictive events to Google Analytics 4 to support conversion optimization and remarketing campaigns. 
+
+This solution also demonstrates how to implement three common predictive use cases (purchase propensity, customer lifetime value and audience segmentation) and a dashboard to monitor Campaigns Performance leveraging the best of Google Cloud data and ai products and practices.
 
 ## Introduction
 
@@ -8,7 +10,7 @@ Marketing Analytics commonly involves leveraging ML models and building ML pipel
 
 This solution includes the following components: a petabyte-scale marketing data store (MDS), a reusable feature store, robust and parametrizable ml pipelines (feature engineering, training and inference pipelines), an activation pipeline that programatically sends predictive conversion events estimates to Google Analytics 4 and Google Ads, and a dashboard to monitor campaigns performance.
 
-The MDS build an easy-to-use logical data model using Google Ads and Google Analytics 4 data exports. The feature store and ml pipelines use Google Analytics 4 behavioural data. The following Google Cloud Products are used: BigQuery, DataForm, Vertex AI Pipelines, Vertex AI Tabular Workflows, DataFlow, Cloud Function, Cloud Pub/Sub.
+The MDS builds an easy-to-use logical data model using Google Ads and Google Analytics 4 data exports. The feature store and ml pipelines use Google Analytics 4 behavioural data. The following Google Cloud Products are used: BigQuery, DataForm, Vertex AI Pipelines, Vertex AI Tabular Workflows, DataFlow, Cloud Function, Cloud Pub/Sub.
 
 ## Installation Guide
 
@@ -117,11 +119,26 @@ terraform plan -input=false
 terraform apply -auto-approve -input=false
 ```
 
-## Developer Guide
+## OSS Developer Guide
+
+### Fork this repo.
+
+Follow the typical Github guide on how to [fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+
+**Note**: 
+1. To keep track of the new releases, configure git to [sync your fork with this upstream repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo#configuring-git-to-sync-your-fork-with-the-upstream-repository).
+2. Don't submit a Pull Request to this upstream Github repo if you don't want to expose your environment configuration. You're at your own risk at exposing your company data.
+3. Observe your fork is also public, you cannot make your own fork a private repo.
 
 ### Complete the installation guide
 
-Complete the installation guide in a google cloud project in which you're developer and/or owner owner.
+Complete the installation guide in a Google Cloud project in which you're developer and/or owner.
+
+### Configure Continuous Integration recipes
+
+Connect your Github repository by following this [guide](https://cloud.google.com/build/docs/automating-builds/github/connect-repo-github).
+
+In your Google Cloud project, configure Cloud Build triggers to be executed when you push code into your branch. Update the Clould build recipes in the `cloudbuild` folder and deploy them.
 
 ### Update GCloud and Install Beta
 
@@ -134,18 +151,21 @@ gcloud components install beta
 
 ```bash
 pip install poetry
-poetry install -v --no-interaction --no-ansi --with dev
+poetry install -v --with dev
 ```
 
-### Modify the code and configuration as you prefer
+### Modify the code and configurations as you prefer
 
 Do all the code changes you wish. 
 If you're implementing new use cases, add these resources to the existing terraform module components.
 Otherwise, in case you're implementing a new component, implement your own terraform module for it.
 
-### Environment Re-Deployment
+### Manual Re-Deployment
+
+Change the values in the terraform templates located in the `infrastructure/terraform` folder and deploy the code your google cloud project.
 
 ```bash
+terraform init
 terraform plan
 terraform apply
 ```
