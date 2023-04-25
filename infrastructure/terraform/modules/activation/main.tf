@@ -52,6 +52,7 @@ module "project_services" {
     "pubsub.googleapis.com",
     "cloudfunctions.googleapis.com",
     "cloudbuild.googleapis.com",
+    "dataflow.googleapis.com",
   ]
 }
 
