@@ -21,7 +21,6 @@ locals {
   source_root_dir                    = "../.."
   sql_dir                            = "${local.source_root_dir}/sql"
   builder_repository_id              = "marketing-data-engine-base-repo"
-  pipelines_images_repository_id     = "pipelines-images"
 }
 
 module "project_services" {
@@ -37,6 +36,13 @@ module "project_services" {
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
     "aiplatform.googleapis.com",
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "bigquery.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "storage.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "storage-api.googleapis.com",
   ]
 }
 
@@ -45,17 +51,6 @@ resource "google_artifact_registry_repository" "cloud_builder_repository" {
   location      = var.region
   repository_id = local.builder_repository_id
   description   = "Custom builder images for Marketing Data Engine"
-  format        = "DOCKER"
-  depends_on = [
-    module.project_services.wait
-  ]
-}
-
-resource "google_artifact_registry_repository" "pipelines_images_repository" {
-  project       = local.feature_store_project_id
-  location      = var.region
-  repository_id = local.pipelines_images_repository_id
-  description   = "Container images for Marketing Data Engine pipelines"
   format        = "DOCKER"
   depends_on = [
     module.project_services.wait

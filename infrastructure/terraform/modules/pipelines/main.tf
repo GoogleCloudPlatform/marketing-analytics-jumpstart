@@ -19,3 +19,26 @@ locals {
   pipeline_vars          = local.config_vars.vertex_ai.pipelines
   dataflow_vars          = local.config_vars.dataflow
 }
+
+module "project_services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "14.1.0"
+
+  disable_dependent_services  = true
+  disable_services_on_destroy = false
+
+  project_id = local.pipeline_vars.project_id
+
+  activate_apis = [
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "bigquery.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "storage.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "storage-api.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "aiplatform.googleapis.com",
+    "dataflow.googleapis.com",
+  ]
+}

@@ -27,5 +27,13 @@ module "data-processing-project-services" {
     "monitoring.googleapis.com",
     "workflows.googleapis.com",
     "cloudscheduler.googleapis.com",
+    "bigquery.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "storage.googleapis.com",
+    "bigquerymigration.googleapis.com",
+    "bigquerydatatransfer.googleapis.com",
+    "secretmanager.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "dataform.googleapis.com",
   ]
 }
