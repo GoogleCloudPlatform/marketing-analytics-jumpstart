@@ -20,4 +20,39 @@ locals {
   customer_lifetime_value_project_id = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id
   source_root_dir                    = "../.."
   sql_dir                            = "${local.source_root_dir}/sql"
+  builder_repository_id              = "marketing-data-engine-base-repo"
+}
+
+module "project_services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "14.1.0"
+
+  disable_dependent_services  = true
+  disable_services_on_destroy = false
+
+  project_id = local.feature_store_project_id
+
+  activate_apis = [
+    "artifactregistry.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "aiplatform.googleapis.com",
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "bigquery.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "storage.googleapis.com",
+    "sourcerepo.googleapis.com",
+    "storage-api.googleapis.com",
+  ]
+}
+
+resource "google_artifact_registry_repository" "cloud_builder_repository" {
+  project       = local.feature_store_project_id
+  location      = var.region
+  repository_id = local.builder_repository_id
+  description   = "Custom builder images for Marketing Data Engine"
+  format        = "DOCKER"
+  depends_on = [
+    module.project_services.wait
+  ]
 }
