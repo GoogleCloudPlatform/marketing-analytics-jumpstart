@@ -1,0 +1,179 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+
+  - id: 'Overriding-Backend-Config'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        cd infrastructure/terraform
+        echo "terraform {" > backend_override.tf
+        echo "  backend \"local\" {" >> backend_override.tf
+        echo "    path = \"./.local-state\"" >> backend_override.tf
+        echo "  }" >> backend_override.tf
+        echo "}" >> backend_override.tf
+        cd -
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+  
+  - id: 'Initializing-Terraform'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh 
+    args:
+      - -c
+      - |
+        cp infrastructure/terraform/terraform-sample.tfvars infrastructure/terraform/terraform.tfvars
+        terraform -chdir=infrastructure/terraform init
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+  
+  - id: 'Creating-Config-YAML-file'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh 
+    args:
+      - -c
+      - |
+        terraform -chdir=infrastructure/terraform apply -auto-approve \
+        -target=local_file.feature_store_configuration \
+        -var=tf_state_project_id=${PROJECT_ID} \
+        -var=data_project_id=${PROJECT_ID} \
+        -var=create_dev_environment=false \
+        -var=create_staging_environment=false \
+        -var=create_prod_environment=false \
+        -var=deploy_feature_store=false \
+        -var=deploy_activation=false \
+        -var=deploy_pipelines=false \
+        -var=feature_store_config_env=dev
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+
+
+  # Run unit tests tests and code coverage
+  - id: 'Python-Unit-Tests'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        poetry install
+        poetry run pytest -c pyproject.toml -m "unit"
+    waitFor: ['Creating-Config-YAML-file']
+
+
+  # Run integration tests tests and code coverage
+  #- name: 'python:3.9.2-slim'
+  #  entrypoint: 'bash'
+  #  args:
+  #    - '-c'
+  #    - |
+  #      pip install poetry \
+  #      && poetry install \
+  #      && poetry run pytest -c pyproject.toml -m "inte and not (pipeline_run)"
+  #  id: 'inteTests'
+  #  waitFor: ['buildComponents']
+
+  #  FEATURE ENGINEERING ---------------------------------------------
+  - id: 'Compile-Feature-Engineering-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.feature-creation.execution -o feature_engineering.yaml
+    waitFor: ['Python-Unit-Tests']
+
+  #  PROPENSITY ---------------------------------------------
+  #  PROPENSITY Training ------------------------------------
+  - id: 'Compile-Propensity-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
+    waitFor: ['Python-Unit-Tests']
+
+
+  #  PROPENSITY Prediction -----------------------------------
+  - id: 'Compile-Propensity-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
+    waitFor: ['Python-Unit-Tests']
+
+
+  #  CLV ---------------------------------------------------
+  #     CLV Training ---------------------------------------
+  - id: 'Compile-CLV-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.training -o clv_training.yaml
+    waitFor: ['Python-Unit-Tests']
+
+
+  #     CLV Prediction ---------------------------------------
+  - id: 'Compile-CLV-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
+    waitFor: ['Python-Unit-Tests']
+
+
+  # Audience Segmentation -------------------------------------
+  #     Audience Segmentation Training ------------------------
+  - id: 'Compile-Segmentation-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
+    waitFor: ['Python-Unit-Tests']
+
+
+  #     Audience Segmentation Prediction ----------------------
+  - id: 'Compile-Segmentation-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
+    waitFor: ['Python-Unit-Tests']
+
+
+substitutions:
+  _DEPLOY_ENV: dev
+  _GCR_HOSTNAME: us-central1-docker.pkg.dev
+  _DEPLOY_REGION: us-central1
+  _ARTIFACT_REGISTRY_REPO: marketing-data-engine-base-repo

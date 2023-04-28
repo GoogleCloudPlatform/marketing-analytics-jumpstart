@@ -1,0 +1,313 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+
+  - id: 'Overriding Backend Config'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        cd infrastructure/terraform
+        echo "terraform {" > backend_override.tf
+        echo "  backend \"local\" {" >> backend_override.tf
+        echo "    path = \"./.local-state\"" >> backend_override.tf
+        echo "  }" >> backend_override.tf
+        echo "}" >> backend_override.tf
+        cd -
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+  
+  - id: 'Initializing-Terraform'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh 
+    args:
+      - -c
+      - |
+        cp infrastructure/terraform/terraform-sample.tfvars infrastructure/terraform/terraform.tfvars
+        terraform -chdir=infrastructure/terraform init
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+  
+
+  - id: 'Creating-Config-YAML-file'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh 
+    args:
+      - -c
+      - |
+        terraform -chdir=infrastructure/terraform apply -auto-approve \
+        -target=local_file.feature_store_configuration \
+        -var=tf_state_project_id=${PROJECT_ID} \
+        -var=data_project_id=${PROJECT_ID} \
+        -var=create_dev_environment=false \
+        -var=create_staging_environment=false \
+        -var=create_prod_environment=false \
+        -var=deploy_feature_store=false \
+        -var=deploy_activation=false \
+        -var=deploy_pipelines=false \
+        -var=feature_store_config_env=dev
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+
+
+  #- name: 'python:3.9.2-slim'
+  #  entrypoint: 'bash'
+  #  args:
+  #    - '-c'
+  #    - |
+  #      pip install poetry \
+  #      && poetry install \
+  #      && poetry run kfp component build python/pipelines/components/vertex --build-image --push-image
+  #  id: 'buildComponents'
+
+
+  #  FEATURE ENGINEERING ---------------------------------------------
+  - id: 'Compile-Feature-Engineering-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          poetry install
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.feature-creation.execution -o feature_engineering.yaml
+
+
+  - id: 'Upload-Feature-Engineering-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f feature_engineering.yaml -t $SHORT_SHA -t latest
+    waitFor: ['Compile-Feature-Engineering-Pipeline']
+
+
+  - id: 'Schedule-Feature-Engineering-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.feature-creation.execution 
+    waitFor: ['Upload-Feature-Engineering-Pipeline']
+
+
+  #  PROPENSITY ---------------------------------------------
+  #  PROPENSITY Training ------------------------------------
+  - id: 'Compile-Propensity-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
+
+
+  - id: 'Upload-Propensity-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f propensity_training.yaml -t $SHORT_SHA -t latest
+    waitFor: ['Compile-Propensity-Training-Pipeline']
+    
+
+  - id: 'Schedule-Propensity-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.training  
+    waitFor: ['Upload-Propensity-Training-Pipeline']
+
+
+  #  PROPENSITY Prediction -----------------------------------
+  - id: 'Compile-Propensity-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
+
+  - id: 'Upload-Propensity-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f propensity_prediction.yaml -t $SHORT_SHA -t latest
+    waitFor: ['Compile-Propensity-Prediction-Pipeline']
+    
+
+  - id: 'Schedule-Propensity-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.propensity.prediction  
+    waitFor: ['Upload-Propensity-Prediction-Pipeline']
+
+
+  #  CLV ---------------------------------------------------
+  #     CLV Training ---------------------------------------
+  - id: 'Compile-CLV-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.training -o clv_training.yaml
+
+  - id: 'Upload-CLV-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f clv_training.yaml -t $SHORT_SHA -t latest
+    waitFor: ['Compile-CLV-Training-Pipeline']
+    
+    
+  - id: 'Schedule-CLV-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.training  
+    waitFor: ['Upload-CLV-Training-Pipeline']
+
+
+  #     CLV Prediction ---------------------------------------
+  - id: 'Compile-CLV-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
+  
+
+  - id: 'Upload-CLV-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f clv_prediction.yaml -t $SHORT_SHA -t latest
+    waitFor: ['Compile-CLV-Prediction-Pipeline']
+
+    
+  - id: 'Schedule-CLV-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.clv.prediction  
+    waitFor: ['Upload-CLV-Prediction-Pipeline']
+
+
+  # Audience Segmentation -------------------------------------
+  #     Audience Segmentation Training ------------------------
+  - id: 'Compile-Segmentation-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
+
+
+  - id: 'Upload-Segmentation-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f segmentation_training.yaml -t $SHORT_SHA -t latest
+    waitFor: ['Compile-Segmentation-Training-Pipeline']
+    
+  - id: 'Schedule-Segmentation-Training-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.training  
+    waitFor: ['Upload-Segmentation-Training-Pipeline']
+
+
+  #     Audience Segmentation Prediction ----------------------
+  - id: 'Compile-Segmentation-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.compiler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
+
+
+  - id: 'Upload-Segmentation-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.uploader -c ${_CONFIG_YAML} -f segmentation_prediction.yaml -t $SHORT_SHA -t latest
+    waitFor: ['Compile-Segmentation-Prediction-Pipeline']
+
+    
+  - id: 'Schedule-Segmentation-Prediction-Pipeline'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+    entrypoint: 'bash'
+    args:
+        - '-c'
+        - |
+          cd python
+          poetry run python -m pipelines.scheduler -c ${_CONFIG_YAML} -p vertex_ai.pipelines.segmentation.prediction  
+    waitFor: ['Upload-Segmentation-Prediction-Pipeline']
+
+
+substitutions:
+  _DEPLOY_ENV: dev
+  _GCR_HOSTNAME: us-central1-docker.pkg.dev
+  _DEPLOY_REGION: us-central1
+  _ARTIFACT_REGISTRY_REPO: marketing-data-engine-base-repo

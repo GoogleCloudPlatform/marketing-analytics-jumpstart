@@ -13,74 +13,75 @@
 # limitations under the License.
 
 steps:
+  
+  - id: 'Overriding Backend Config'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        cd infrastructure/terraform
+        echo "terraform {" > backend_override.tf
+        echo "  backend \"local\" {" >> backend_override.tf
+        echo "    path = \"./.local-state\"" >> backend_override.tf
+        echo "  }" >> backend_override.tf
+        echo "}" >> backend_override.tf
+        cd -
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
 
-  - id: "Install Dependencies"
-    name: $_PYTHON_VERSION
-    dir: $_SRC_FOLDER
+  - id: 'Initializing-Terraform'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh 
+    args:
+      - -c
+      - |
+        cp infrastructure/terraform/terraform-sample.tfvars infrastructure/terraform/terraform.tfvars
+        terraform -chdir=infrastructure/terraform init
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+
+  - id: 'Creating-Config-YAML-file'
+    name: 'hashicorp/terraform:1.4.5'
+    entrypoint: sh 
+    args:
+      - -c
+      - |
+        terraform -chdir=infrastructure/terraform apply -auto-approve \
+        -target=local_file.feature_store_configuration \
+        -var=tf_state_project_id=${PROJECT_ID} \
+        -var=data_project_id=${PROJECT_ID} \
+        -var=create_dev_environment=false \
+        -var=create_staging_environment=false \
+        -var=create_prod_environment=false \
+        -var=deploy_feature_store=false \
+        -var=deploy_activation=false \
+        -var=deploy_pipelines=false \
+        -var=feature_store_config_env=dev
+    env:
+      - "TF_VAR_project=${PROJECT_ID}"
+
+  - id: 'Apply-config-to-SQL-templates'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
     entrypoint: /bin/bash
     args:
       - -c
       - |
-        poetry config settings.virtualenvs.create false && \
-        poetry install -v --no-interaction --no-ansi --with dev
-
-  - id: "Apply variables to templated stored procedures"
-    name: $_PYTHON_VERSION
-    dir: $_SRC_FOLDER
-    entrypoint: python
-    args: ["-m", "invoke", "apply-env-variables-procedures", "--env-name=dev"]
-
-  - id: "Apply variables to templated datasets"
-    name: $_PYTHON_VERSION
-    dir: $_SRC_FOLDER
-    entrypoint: python
-    args: ["-m", "invoke", "apply-env-variables-datasets", "--env-name=dev"]
-
-  - id: "Lint"
-    name: $_PYTHON_VERSION
-    entrypoint: python
-    args: ["-m", "invoke", "lint"]
-
-  - id: "Run Unit Tests"
-    name: $_PYTHON_VERSION
-    entrypoint: python
-    args: ["-m", "invoke", "test"]
-
-  # Setup resources for system tests
-
-  - id: "Build Container Image"
-    name: "gcr.io/k8s-skaffold/pack"
-    entrypoint: pack
-    args:
-      - build
-      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" # Tag docker image with git commit SHA
-      - "--builder=gcr.io/buildpacks/builder:v1"
-      - "--path=."
-
-  - id: "Push Container Image"
-    name: "gcr.io/cloud-builders/docker:latest"
-    args:
-      - push
-      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
-
-  - id: "Run System Tests"
-    name: "${_PYTHON_VERSION}"
+        poetry run inv apply-env-variables-tables --env-name=${_DEPLOY_ENV}
+        poetry run inv apply-env-variables-queries --env-name=${_DEPLOY_ENV}
+        poetry run inv apply-env-variables-datasets --env-name=${_DEPLOY_ENV}
+        poetry run inv apply-env-variables-procedures --env-name=${_DEPLOY_ENV} 
+  
+  - id: 'Check-SQL-files'
+    name: '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-zetasql:latest'
     entrypoint: /bin/bash
     args:
-      - "-c"
+      - -c
       - |
-        export BASE_URL=$(cat _service_url)
-        export ID_TOKEN=$(cat _id_token)
-        python -m invoke system-test
-  # Clean up system test resources
+        zetasql-formatter /workspace/sql/table /workspace/sql/query /workspace/sql/procedure /workspace/sql/schema/dataset &>> out.log
+        (($? != 0)) && { printf '%s\n' "There are errors on the exited with non-zero"; cat out.log | grep -i 'ERROR' -B 1 -A 1; exit 0; }
 
-  - id: "Delete image"
-    name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: "/bin/bash"
-    args:
-      - "-c"
-      - |
-        gcloud artifact docker images delete $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
+
 options:
   dynamic_substitutions: true
   substitution_option: "ALLOW_LOOSE"
@@ -88,5 +89,4 @@ options:
 substitutions:
   _GCR_HOSTNAME: us-central1-docker.pkg.dev
   _DEPLOY_REGION: us-central1
-  _PYTHON_VERSION: python:3.9-slim'
-  _REPOSITORY: samples
+  _ARTIFACT_REGISTRY_REPO: marketing-data-engine-base-repo

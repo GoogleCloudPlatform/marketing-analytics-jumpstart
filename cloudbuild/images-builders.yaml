@@ -12,3 +12,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+steps:
+  # Docker Build Builder Image
+  - id: 'Docker-Build-Builder-Image'
+    name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', 
+            '-t', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_BASE_REPO}/ma-builder:latest',
+            '-t', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_BASE_REPO}/ma-builder:$COMMIT_SHA',
+            '-f', './container/Dockerfile.builder', 
+            '.']
+
+  # Docker push Base Image to Google Artifact Registry
+  - id: 'Docker-push-Base–Image-to-GCR'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_BASE_REPO}/ma-builder']
+    waitFor: ['Docker-Build-Builder-Image']
+  
+  # Docker Build ZetaSQL Image
+  - id: 'Docker-Build-ZetaSQL–Image'
+    name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', 
+            '-t', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_BASE_REPO}/ma-zetasql:latest',
+            '-t', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_BASE_REPO}/ma-zetasql:$COMMIT_SHA',  
+            '-f', './container/Dockerfile.zetasql', '.']
+
+  # Docker push ZetaSQL Image to Google Artifact Registry
+  - id: 'Docker-push-ZetaSQL–Image'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_BASE_REPO}/ma-zetasql']
+    waitFor: ['Docker-Build-ZetaSQL–Image']
+
+  # Docker Build Vertex AI Pipeline Base Image
+  - id: 'Docker-Build-Pipeline-Base-Image'
+    name: 'gcr.io/cloud-builders/docker'
+    dir: 'python/base_component_image'
+    args: [ 'build', 
+            '-t', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_PIPELINE_REPO}/ma-components:latest',
+            '-t', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_PIPELINE_REPO}/ma-components:dev',
+            '-t', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_PIPELINE_REPO}/ma-components:$COMMIT_SHA',
+            '-f', '../../container/Dockerfile.base', 
+            '.']
+
+  # Docker push Vertex AI Pipeline Base Image
+  - id: 'Docker-push-Pipeline-Base–Image'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_PIPELINE_REPO}/ma-components']
+    waitFor: ['Docker-Build-Pipeline-Base-Image']
+
+# Store images in Google Artifact Registry 
+images:
+  - '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:latest'
+  - '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-builder:$COMMIT_SHA'
+  - '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-zetasql:latest'
+  - '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/ma-zetasql:$COMMIT_SHA'
+  - '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_PIPELINE_REPO}/ma-components:latest'
+  - '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_PIPELINE_REPO}/ma-components:$COMMIT_SHA'
+  - '${_GCR_HOSTNAME}/${PROJECT_ID}/${_ARTIFACT_REGISTRY_PIPELINE_REPO}/ma-components:dev' 
+
+options:
+  dynamic_substitutions: true
+  substitution_option: "ALLOW_LOOSE"
+
+substitutions:
+  _GCR_HOSTNAME: us-central1-docker.pkg.dev
+  _ARTIFACT_REGISTRY_BASE_REPO: marketing-data-engine-base-repo
+  _ARTIFACT_REGISTRY_PIPELINE_REPO: pipelines-docker-repo
