@@ -85,10 +85,10 @@ resource "null_resource" "generate_sql_queries" {
 
   provisioner "local-exec" {
     command     = <<-EOT
-    poetry run inv apply-env-variables-datasets --env-name=${local.config_file_name}
-    poetry run inv apply-env-variables-tables --env-name=${local.config_file_name}
-    poetry run inv apply-env-variables-queries --env-name=${local.config_file_name}
-    poetry run inv apply-env-variables-procedures --env-name=${local.config_file_name}
+    ${var.poetry_run_alias} inv apply-env-variables-datasets --env-name=${local.config_file_name}
+    ${var.poetry_run_alias} inv apply-env-variables-tables --env-name=${local.config_file_name}
+    ${var.poetry_run_alias} inv apply-env-variables-queries --env-name=${local.config_file_name}
+    ${var.poetry_run_alias} inv apply-env-variables-procedures --env-name=${local.config_file_name}
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -123,6 +123,7 @@ module "feature_store" {
 module "pipelines" {
   source           = "./modules/pipelines"
   config_file_path = local_file.feature_store_configuration.filename
+  poetry_run_alias = var.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
 }
 

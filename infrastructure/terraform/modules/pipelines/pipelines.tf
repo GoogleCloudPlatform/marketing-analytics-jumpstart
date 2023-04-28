@@ -110,3 +110,158 @@ resource "google_cloudbuild_trigger" "cloud-build-trigger" {
     _CONFIG_YAML = var.config_file_path
   }
 }
+
+resource "null_resource" "build_push_pipelines_components_image" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+  }
+
+  provisioner "local-exec" {
+    command     = "${var.poetry_run_alias} python -m base_component_image.build-push -c ${local.config_file_path_relative_python_run_dir}"
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    google_cloudbuild_trigger.cloud-build-trigger
+  ]
+}
+
+resource "null_resource" "compile_feature_engineering_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation.execution -o feature_engineering.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f feature_engineering.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation.execution
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.build_push_pipelines_components_image
+  ]
+}
+
+resource "null_resource" "compile_propensity_trainings_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f propensity_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.training
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.compile_feature_engineering_pipelines
+  ]
+}
+
+resource "null_resource" "compile_propensity_prediction_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f propensity_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.prediction
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.compile_propensity_trainings_pipelines
+  ]
+}
+
+resource "null_resource" "compile_clv_training_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.training -o clv_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f clv_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.training
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.compile_propensity_prediction_pipelines
+  ]
+}
+
+resource "null_resource" "compile_clv_prediction_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f clv_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.prediction
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.compile_clv_training_pipelines
+  ]
+}
+
+resource "null_resource" "compile_segmentation_training_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f segmentation_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.training
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.compile_clv_prediction_pipelines
+  ]
+}
+
+resource "null_resource" "compile_segmentation_prediction_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f segmentation_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.prediction
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.compile_segmentation_training_pipelines
+  ]
+}

@@ -13,11 +13,14 @@
 # limitations under the License.
 
 locals {
-  config_vars            = yamldecode(file(var.config_file_path))
-  cloud_build_vars       = local.config_vars.cloud_build
-  artifact_registry_vars = local.config_vars.artifact_registry
-  pipeline_vars          = local.config_vars.vertex_ai.pipelines
-  dataflow_vars          = local.config_vars.dataflow
+  config_vars                              = yamldecode(file(var.config_file_path))
+  cloud_build_vars                         = local.config_vars.cloud_build
+  artifact_registry_vars                   = local.config_vars.artifact_registry
+  pipeline_vars                            = local.config_vars.vertex_ai.pipelines
+  dataflow_vars                            = local.config_vars.dataflow
+  source_root_dir                          = "../.."
+  config_file_path_relative_python_run_dir = substr(var.config_file_path, 3, length(var.config_file_path))
+  compile_pipelines_tag                    = "v1"
 }
 
 module "project_services" {
