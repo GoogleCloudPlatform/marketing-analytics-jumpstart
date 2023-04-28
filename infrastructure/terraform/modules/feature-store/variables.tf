@@ -21,3 +21,9 @@ variable "enabled" {
   type        = bool
   description = "Toogle all resources in module"
 }
+
+variable "region" {
+  description = "feature store region"
+  type        = string
+  default     = "us-central1"
+}

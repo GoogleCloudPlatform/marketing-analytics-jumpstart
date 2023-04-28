@@ -61,7 +61,7 @@ module "data_store" {
 }
 
 resource "local_file" "feature_store_configuration" {
-  filename = "../../config/${var.feature_store_config_env}.yaml"
+  filename = "../../config/config.yaml"
   content = templatefile("../../config/${var.feature_store_config_env}.yaml.tftpl", {
     project_id             = data.google_project.project.project_id
     project_name           = data.google_project.project.name

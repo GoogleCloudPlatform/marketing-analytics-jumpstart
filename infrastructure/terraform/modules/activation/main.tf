@@ -53,6 +53,12 @@ module "project_services" {
     "cloudfunctions.googleapis.com",
     "cloudbuild.googleapis.com",
     "dataflow.googleapis.com",
+    "bigquery.googleapis.com",
+    "logging.googleapis.com",
+    "aiplatform.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "storage.googleapis.com",
+    "datapipelines.googleapis.com",
   ]
 }
 
