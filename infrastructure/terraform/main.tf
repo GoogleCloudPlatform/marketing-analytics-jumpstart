@@ -63,6 +63,7 @@ module "data_store" {
 locals {
   source_root_dir  = "../.."
   config_file_name = "config"
+  poetry_run_alias = "${var.poetry_cmd} run"
 }
 
 resource "local_file" "feature_store_configuration" {
@@ -77,6 +78,14 @@ resource "local_file" "feature_store_configuration" {
   })
 }
 
+resource "null_resource" "poetry_install" {
+  provisioner "local-exec" {
+    command     = "${var.poetry_cmd} install"
+    working_dir = local.source_root_dir
+  }
+}
+
+
 resource "null_resource" "generate_sql_queries" {
 
   triggers = {
@@ -85,10 +94,10 @@ resource "null_resource" "generate_sql_queries" {
 
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} inv apply-env-variables-datasets --env-name=${local.config_file_name}
-    ${var.poetry_run_alias} inv apply-env-variables-tables --env-name=${local.config_file_name}
-    ${var.poetry_run_alias} inv apply-env-variables-queries --env-name=${local.config_file_name}
-    ${var.poetry_run_alias} inv apply-env-variables-procedures --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-env-variables-datasets --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-env-variables-tables --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-env-variables-queries --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-env-variables-procedures --env-name=${local.config_file_name}
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -105,7 +114,8 @@ resource "null_resource" "generate_sql_queries" {
   }
 
   depends_on = [
-    local_file.feature_store_configuration
+    local_file.feature_store_configuration,
+    null_resource.poetry_install
   ]
 }
 
@@ -123,8 +133,11 @@ module "feature_store" {
 module "pipelines" {
   source           = "./modules/pipelines"
   config_file_path = local_file.feature_store_configuration.filename
-  poetry_run_alias = var.poetry_run_alias
+  poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
+  depends_on = [
+    null_resource.poetry_install
+  ]
 }
 
 module "activation" {

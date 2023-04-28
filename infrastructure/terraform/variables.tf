@@ -158,8 +158,8 @@ variable "pipelines_github_owner" {
   type        = string
 }
 
-variable "poetry_run_alias" {
+variable "poetry_cmd" {
   description = "alias for poetry run command on the current system"
   type        = string
-  default     = "poetry run"
+  default     = "poetry"
 }
