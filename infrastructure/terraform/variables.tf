@@ -157,3 +157,9 @@ variable "pipelines_github_owner" {
   description = "Cloud Build github repository owner"
   type        = string
 }
+
+variable "poetry_cmd" {
+  description = "alias for poetry run command on the current system"
+  type        = string
+  default     = "poetry"
+}

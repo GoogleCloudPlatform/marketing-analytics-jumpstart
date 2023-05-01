@@ -16,3 +16,8 @@ variable "config_file_path" {
   type        = string
   description = "pipelines config file"
 }
+
+variable "poetry_run_alias" {
+  description = "alias for poetry run command on the current system"
+  type        = string
+}
