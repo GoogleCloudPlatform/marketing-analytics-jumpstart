@@ -20,10 +20,55 @@ set -o nounset
 ERR_VARIABLE_NOT_DEFINED=2
 ERR_MISSING_DEPENDENCY=3
 
+CYAN='\033[0;36m'
+BCYAN='\033[1;36m'
+NC='\033[0m' # No Color
+DIVIDER=$(printf %"$(tput cols)"s | tr " " "*")
+DIVIDER+="\n"
+
+get_project_id() {
+    local __resultvar=$1
+    VALUE=$(gcloud config get-value project | xargs)
+    eval $__resultvar="'$VALUE'"
+}
+
+get_project_number() {
+    local __resultvar=$1
+    local PRO=$2
+    VALUE=$(gcloud projects list --filter="project_id=$PRO" --format="value(PROJECT_NUMBER)" | xargs)
+    eval $__resultvar="'$VALUE'"
+}
+
+# DISPLAY HELPERS
+
+section_open() {
+    section_description=$1
+    printf "$DIVIDER"
+    printf "${CYAN}$section_description${NC} \n"
+    printf "$DIVIDER"
+}
+
+section_close() {
+    printf "$DIVIDER"
+    printf "${CYAN}$section_description ${BCYAN}- done${NC}\n"
+    printf "\n\n"
+}
+
 check_exec_dependency() {
   EXECUTABLE_NAME="${1}"
 
   if ! command -v "${EXECUTABLE_NAME}" >/dev/null 2>&1; then
+    echo "[ERROR]: ${EXECUTABLE_NAME} command is not available, but it's needed. Make it available in PATH and try again. Terminating..."
+    exit ${ERR_MISSING_DEPENDENCY}
+  fi
+
+  unset EXECUTABLE_NAME
+}
+
+check_exec_version() {
+  EXECUTABLE_NAME="${1}"
+
+  if ! "${EXECUTABLE_NAME}" --version 2>&1; then
     echo "[ERROR]: ${EXECUTABLE_NAME} command is not available, but it's needed. Make it available in PATH and try again. Terminating..."
     exit ${ERR_MISSING_DEPENDENCY}
   fi

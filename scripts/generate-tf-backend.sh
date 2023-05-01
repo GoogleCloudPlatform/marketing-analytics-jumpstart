@@ -19,38 +19,51 @@ set -o nounset
 
 . scripts/common.sh
 
-# Check if the necessary dependencies are available
-check_exec_dependency "gcloud"
-check_exec_dependency "terraform"
-check_exec_dependency "poetry"
+section_open "Check if the necessary dependencies are available: gcloud, terraform, poetry"
+    check_exec_dependency "gcloud"
+    check_exec_version "gcloud"
+    check_exec_dependency "terraform"
+    check_exec_version "terraform"
+    check_exec_dependency "poetry"
+    check_exec_version "poetry"
+section_close
 
-# Check if the necessary variables are set
-check_environment_variable "PROJECT_ID" "the Google Cloud project that Terraform will provision the resources in"
-check_environment_variable "GOOGLE_APPLICATION_CREDENTIALS" "the Google Cloud application credentials that Terraform will use"
+section_open "Check if the necessary variables are set: PROJECT_ID, GOOGLE_APPLICATION_CREDENTIALS"
+    check_environment_variable "PROJECT_ID" "the Google Cloud project that Terraform will provision the resources in"
+    check_environment_variable "GOOGLE_APPLICATION_CREDENTIALS" "the Google Cloud application credentials that Terraform will use"
+section_close
 
-set_environment_variable_if_not_set "TF_STATE_PROJECT" "${PROJECT_ID}"
+section_open  "Setting the Google Cloud project to TF_STATE_PROJECT"
+    set_environment_variable_if_not_set "TF_STATE_PROJECT" "${PROJECT_ID}"
+    gcloud config set project "${TF_STATE_PROJECT}"
+section_close
 
-echo "Setting the Google Cloud project to ${TF_STATE_PROJECT}"
-gcloud config set project "${TF_STATE_PROJECT}"
+section_open "Creating the service account for Terraform: tf-service-account"
+    TF_SERVICE_ACCOUNT_NAME=tf-service-account
+    if gcloud iam service-accounts describe "${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com >/dev/null 2>&1; then
+        echo "The ${TF_SERVICE_ACCOUNT_NAME} service account already exists."
+    else
+        gcloud iam service-accounts create "${TF_SERVICE_ACCOUNT_NAME}" \
+            --display-name "Terraform admin account"
+    fi
+section_close
 
-echo "Creating the service account for Terraform"
-TF_SERVICE_ACCOUNT_NAME=tf-service-account
-if gcloud iam service-accounts describe "${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com >/dev/null 2>&1; then
-    echo "The ${TF_SERVICE_ACCOUNT_NAME} service account already exists."
-else
-    gcloud iam service-accounts create "${TF_SERVICE_ACCOUNT_NAME}" \
-        --display-name "Terraform admin account"
-fi
+section_open "Granting the service account permission to view the Admin Project"
+    gcloud projects add-iam-policy-binding "${TF_STATE_PROJECT}" \
+        --member serviceAccount:"${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com \
+        --role roles/viewer
+section_close
 
-echo "Granting the service account permission to view the Admin Project"
-gcloud projects add-iam-policy-binding "${TF_STATE_PROJECT}" \
-    --member serviceAccount:"${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com \
-    --role roles/viewer
+section_open "Granting the service account permission to manage Cloud Storage"
+    gcloud projects add-iam-policy-binding "${TF_STATE_PROJECT}" \
+        --member serviceAccount:"${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com \
+        --role roles/storage.admin
+section_close
 
-echo "Granting the service account permission to manage Cloud Storage"
-gcloud projects add-iam-policy-binding "${TF_STATE_PROJECT}" \
-    --member serviceAccount:"${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com \
-    --role roles/storage.admin
+section_open "Enable the Cloud Resource Manager API with"
+    gcloud services enable cloudresourcemanager.googleapis.com
+section_close
 
-echo "Enable the Cloud Resource Manager API with"
-gcloud services enable cloudresourcemanager.googleapis.com
+printf "$DIVIDER"
+printf "You got the end the of your generate-tf-backend with everything working. \n"
+printf "$DIVIDER"
