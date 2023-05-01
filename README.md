@@ -4,6 +4,10 @@ Marketing Data Engine consists of an easy, flexible and automated implementation
 
 This solution also demonstrates how to implement three common predictive use cases (purchase propensity, customer lifetime value and audience segmentation) and a dashboard to monitor Campaigns Performance leveraging the best of Google Cloud data and ai products and practices.
 
+## Disclaimer
+
+This is not an officially supported Google product. This solution is not finalized or validated with multiple customers. Use it at your own risk. Updates and implementation timeline to be informed soon.
+
 ## Introduction
 
 Marketing Analytics commonly involves leveraging ML models and building ML pipelines providing audience management platforms with predictive conversion events or audiences to help the Marketing team to build audiences and come up with more effective marketing campaigns that drive better performance and ROAS.
@@ -169,3 +173,7 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+## Contributing
+
+We welcome all feedback and contributions!  Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how to publish your contributions.
