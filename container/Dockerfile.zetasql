@@ -1,4 +1,36 @@
-FROM wbsouza/zetasql-formatter:latest
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-ENTRYPOINT ["format"]
-CMD ["."]
+###############################################
+# ZetaSQL Image
+###############################################
+
+FROM ubuntu:20.04
+
+# Setup java
+RUN apt-get update && apt-get -qq install -y default-jre default-jdk
+
+# Install prerequisites for bazel
+RUN apt-get update && apt-get -qq install curl tar build-essential wget        \
+    python python3 zip unzip
+
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive"                         \
+    TZ="America/Los_Angeles" apt-get install -y tzdata
+
+RUN wget https://github.com/Matts966/zetasql-formatter/releases/latest/download/zetasql-formatter_linux_x86_64.zip \
+  && unzip zetasql-formatter_linux_x86_64.zip -d /usr/local/bin
+
+WORKDIR /home
+
+ENTRYPOINT [ "zetasql-formatter" ]
