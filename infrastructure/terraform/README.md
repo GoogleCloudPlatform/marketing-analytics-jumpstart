@@ -25,7 +25,7 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
 1. Clone the source code repository:
 
     ```bash
-    REPO="marketing-analytics-platform"
+    REPO="marketing-data-engine"
     cd "$HOME"
     git clone https://github.com/GoogleCloudPlatform/${REPO}.git
     ```
@@ -77,32 +77,11 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     * `pipelines_github_owner`, Cloud Build github owner account for pipelines
     * `pipelines_github_repo`, Cloud Build github repository for pipelines
 
-5. Run terraform to create the configuration yaml file:
+5. Run terraform to deploy resources for **marketing data store**, **feature store**, **pipelines** and **activation application**:
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
-    terraform -chdir="${TERRAFORM_RUN_DIR}" apply \
-    -var=create_prod_environment=false \
-    -var=deploy_feature_store=false \
-    -var=deploy_activation=false \
-    -var=deploy_pipelines=false
-    ```
-
-6. Run `poetry` to generate the sql files by hydrate the sqlx files:
-
-    ```bash
-    POETRY_ENV=prod
-    poetry run inv apply-env-variables-datasets --env-name=${POETRY_ENV}
-    poetry run inv apply-env-variables-tables --env-name=${POETRY_ENV}
-    poetry run inv apply-env-variables-queries --env-name=${POETRY_ENV}
-    poetry run inv apply-env-variables-procedures --env-name=${POETRY_ENV}
-    ```
-
-7. Run terraform to deploy resources for **marketing data store**, **feature store**, **pipelines** and **activation application**:
-
-    ```bash
-    terraform -chdir="${TERRAFORM_RUN_DIR}" apply \
-    -var=feature_store_config_env=${POETRY_ENV}
+    terraform -chdir="${TERRAFORM_RUN_DIR}" apply
     ```
 
 ## Resources created
