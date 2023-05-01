@@ -59,7 +59,7 @@ if __name__ == "__main__":
     repo_params={}
     components_params={}
     with open(args.config, encoding='utf-8') as fh:
-        configs = yaml.full_load(fh)
+        configs = yaml.safe_load(fh)
 
 
     components_params = configs['vertex_ai']['components']

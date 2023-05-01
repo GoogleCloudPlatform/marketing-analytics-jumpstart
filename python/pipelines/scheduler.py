@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     repo_params = {}
     with open(args.config, encoding='utf-8') as fh:
-        params = yaml.full_load(fh)
+        params = yaml.safe_load(fh)
 
     repo_params = params['artifact_registry']['pipelines_repo']
     generic_pipeline_vars = params['vertex_ai']['pipelines']
@@ -72,6 +72,9 @@ if __name__ == "__main__":
 
     if my_pipeline_vars['name'] is None:
         raise Exception("No pipeline display_name provided for deleting schedules.")
+
+    my_pipeline_vars['schedule']['cron'] = my_pipeline_vars['schedule']['cron'].replace("\\","")
+    print(my_pipeline_vars)
 
     template_artifact_uri = f"https://{repo_params['region']}-kfp.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{my_pipeline_vars['name']}/latest"
 
