@@ -60,9 +60,15 @@ module "data_store" {
   project_owner_email = var.project_owner_email
 }
 
+locals {
+  source_root_dir  = "../.."
+  config_file_name = "config"
+  poetry_run_alias = "${var.poetry_cmd} run"
+}
+
 resource "local_file" "feature_store_configuration" {
-  filename = "../../config/config.yaml"
-  content = templatefile("../../config/${var.feature_store_config_env}.yaml.tftpl", {
+  filename = "${local.source_root_dir}/config/${local.config_file_name}.yaml"
+  content = templatefile("${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl", {
     project_id             = data.google_project.project.project_id
     project_name           = data.google_project.project.name
     project_number         = data.google_project.project.number
@@ -72,17 +78,66 @@ resource "local_file" "feature_store_configuration" {
   })
 }
 
+resource "null_resource" "poetry_install" {
+  provisioner "local-exec" {
+    command     = "${var.poetry_cmd} install"
+    working_dir = local.source_root_dir
+  }
+}
+
+
+resource "null_resource" "generate_sql_queries" {
+
+  triggers = {
+    working_dir = local.source_root_dir
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${local.poetry_run_alias} inv apply-env-variables-datasets --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-env-variables-tables --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-env-variables-queries --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-env-variables-procedures --env-name=${local.config_file_name}
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    command     = <<-EOT
+    rm sql/schema/dataset/*.sql
+    rm sql/table/*.sql
+    rm sql/query/*.sql
+    rm sql/procedure/*.sql
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    local_file.feature_store_configuration,
+    null_resource.poetry_install
+  ]
+}
+
 module "feature_store" {
   source           = "./modules/feature-store"
   config_file_path = local_file.feature_store_configuration.filename
   enabled          = var.deploy_feature_store
   count            = var.deploy_feature_store ? 1 : 0
+
+  depends_on = [
+    null_resource.generate_sql_queries
+  ]
 }
 
 module "pipelines" {
   source           = "./modules/pipelines"
   config_file_path = local_file.feature_store_configuration.filename
+  poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
+  depends_on = [
+    null_resource.poetry_install
+  ]
 }
 
 module "activation" {

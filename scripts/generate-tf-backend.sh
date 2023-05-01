@@ -21,7 +21,8 @@ set -o nounset
 
 # Check if the necessary dependencies are available
 check_exec_dependency "gcloud"
-check_exec_dependency "envsubst"
+check_exec_dependency "terraform"
+check_exec_dependency "poetry"
 
 # Check if the necessary variables are set
 check_environment_variable "PROJECT_ID" "the Google Cloud project that Terraform will provision the resources in"

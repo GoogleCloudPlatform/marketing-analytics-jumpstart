@@ -39,7 +39,7 @@ ga4_measurement_id     = "Measurement ID in GA4"
 ga4_measurement_secret = "Client secret for authenticatin to GA4 API"
 
 pipelines_github_owner = "Cloud Build github owner account for pipelines"
-pipelines_github_repo = "Cloud Build github repository for pipelines"
+pipelines_github_repo  = "Cloud Build github repository for pipelines"
 
 deploy_activation    = true
 deploy_feature_store = true
