@@ -50,6 +50,8 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     scripts/generate-tf-backend.sh
     ```
 
+    **Note:** Make sure you provide access to the BigQuery dataset where your GA4 and GAds exported data is located. 
+
 4. Create the terraform variable file by making a copy from the template and set the terraform variables.
 
     ```bash
@@ -107,21 +109,13 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     -var=deploy_pipelines=false
     ```
 
-6. Run `poetry` to generate the sql files by hydrate the sqlx files:
-
-    ```bash
-    POETRY_ENV=prod
-    poetry run inv apply-env-variables-datasets --env-name=${POETRY_ENV}
-    poetry run inv apply-env-variables-tables --env-name=${POETRY_ENV}
-    poetry run inv apply-env-variables-queries --env-name=${POETRY_ENV}
-    poetry run inv apply-env-variables-procedures --env-name=${POETRY_ENV}
-    ```
+    **Note:** Wait for a few minutes meanwhile all the resource are deployed to your Google Cloud project. You should have to wait on Dataform to be configured.
+    If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
 
 7. Run terraform to deploy resources for **marketing data store**, **feature store**, **pipelines** and **activation application**:
 
     ```bash
-    terraform -chdir="${TERRAFORM_RUN_DIR}" apply \
-    -var=feature_store_config_env=${POETRY_ENV}
+    terraform -chdir="${TERRAFORM_RUN_DIR}" apply
     ```
 
 ## Resources created
