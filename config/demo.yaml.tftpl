@@ -79,7 +79,8 @@ vertex_ai:
         experiment_name: "feature-creation-dev"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
+          cron: "TZ=America/New_York 0 1 \\* \\* \\*" # At 01:00 dailly
+          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -221,7 +222,8 @@ vertex_ai:
         experiment_name: "propensity-training-dev"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
+          cron: "TZ=America/New_York 0 2 \\* \\* SAT" # At 02:00 on Saturday
+          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -272,7 +274,8 @@ vertex_ai:
         experiment_name: "propensity-prediction-dev"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
+          cron: "TZ=America/New_York 0 2 \\* \\* \\*" # At 02:00 everyday
+          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -287,6 +290,7 @@ vertex_ai:
           number_of_models_considered: 1
           bigquery_source: "${project_id}.purchase_propensity.v_purchase_propensity_inference_30_15"
           bigquery_destination_prefix: "${project_id}.purchase_propensity.pred_purchase_propensity_inference_30_15"
+          bq_unique_key: "user_pseudo_id"
           machine_type: "n1-standard-4"
           max_replica_count: 10
           batch_size: 64
@@ -306,7 +310,8 @@ vertex_ai:
         experiment_name: "segmentation-training-dev"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
+          cron: "TZ=America/New_York 0 2 \\* \\* SAT" # At 02:00 on Saturday
+          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -323,23 +328,25 @@ vertex_ai:
           km_min_rel_progress: 0.01
           km_warm_start: "FALSE"
           model_dataset_id: "${project_id}.audience_segmentation" # to also include project.dataset
-          model_name_bq_prefix: "audience_segmentation_model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
-          vertex_model_name: "audience_segmentation_model"
-          training_data_bq_table: "${project_id}.audience_segmentation.v_audience_segmentation_training_15"
+          model_name_bq_prefix: "{prefix}audience_segmentation_model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          vertex_model_name: "{prefix}audience_segmentation_model"
+          training_data_bq_table: "${project_id}.audience_segmentation.{prefix}v_audience_segmentation_training_15"
           exclude_features:
           - processed_timestamp
           - data_split
           - feature_date
           - user_pseudo_id
           - user_id
-        pipeline_parameters_substitutions: null
+        pipeline_parameters_substitutions: 
+          prefix: "demo_"
       prediction:
         name: "segmentation-prediction-pl"
         job_id_prefix: "segmentation-prediction-pl-"
         experiment_name: "segmentation-prediction-dev"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
+          cron: "TZ=America/New_York 0 2 \\* \\* \\*" # At 2:00 everyday
+          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -365,7 +372,8 @@ vertex_ai:
         experiment_name: "clv-training-dev"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
+          cron: "TZ=America/New_York 0 4 \\* \\* SAT" # At 04:00 on Saturday
+          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -412,7 +420,8 @@ vertex_ai:
         experiment_name: "clv-prediction-dev"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
+          cron: "TZ=America/New_York 0 2 \\* \\* \\*" # At 02:00 everyday
+          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -427,6 +436,7 @@ vertex_ai:
           number_of_models_considered: 1
           bigquery_source: "${project_id}.customer_lifetime_value.v_customer_lifetime_value_inference_180_30"
           bigquery_destination_prefix: "${project_id}.customer_lifetime_value.pred_customer_lifetime_value_inference_180_30"
+          bq_unique_key: "user_pseudo_id"
           machine_type: "n1-standard-4"
           max_replica_count: 10
           batch_size: 64
@@ -797,12 +807,6 @@ bigquery:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
       stored_procedure: "audience_segmentation_inference_preparation"
-    purchase_propensity_query_template:
-      project_id: "${project_id}"
-    cltv_query_template:
-      project_id: "${project_id}"
-    audience_segmentation_query_template:
-      project_id: "${project_id}"
   procedure:
     audience_segmentation_training_preparation:
       project_id: "${project_id}"
@@ -982,12 +986,12 @@ bigquery:
       model_type: "KMEANS++"
       model_registry: "vertex_ai"
       model_version_alias:
-      - audience_segmentation
+      - customer_ltv
       - experimental
       training_project_id: "${project_id}"
       training_dataset_id: "feature_store"
       training_view: "audience_segmentation_training_dataset_30_15"
 
 terraform:
-  version: 1.3.4
-  url: "https://releases.hashicorp.com/terraform/1.3.4/terraform_1.3.4_darwin_amd64.zip" 
+  version: 1.4.5
+  url: "https://releases.hashicorp.com/terraform/1.4.5/terraform_1.4.5_darwin_amd64.zip" 
