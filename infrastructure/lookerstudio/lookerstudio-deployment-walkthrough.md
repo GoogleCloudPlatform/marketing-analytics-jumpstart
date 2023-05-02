@@ -19,14 +19,6 @@ This step includes the following:
 - Activate the `mde` Python virtual environment
 - Install dependencies
 
-If not already configured, you will need to set your project by executing:
-
-```sh
-gcloud config set project project_id
-```
-
-where project_id is your project_id where your datamart is deployed.
-
 ## Set-up Configuration
 
 The file `config.ini` needs to be updated for the project and datasets where your Marketing Data Engine Dataform is deployed.
