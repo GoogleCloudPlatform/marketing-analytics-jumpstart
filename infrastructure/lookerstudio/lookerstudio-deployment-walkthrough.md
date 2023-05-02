@@ -15,8 +15,8 @@ pip install -r requirements.txt
 ```
 
 This step includes the following:
-- Install Python local env
-- Launch local env
+- Install Python virtual environment named `mde`
+- Activate the `mde` Python virtual environment
 - Install dependencies
 
 ## Set-up Configuration
@@ -71,3 +71,19 @@ A copy of the report named **Marketing Analytics Sample** is now saved to your o
 ## Configure Access
 
 The data sources will default to owner credentials (your own). It is highly recommended that you either configure service account access or set the access to viewer so that each viewer will need viewer access to the product views in the datamart.
+
+## Clean Up
+
+Deactivate the Python virtual environment by running
+
+```sh
+deactivate
+```
+
+You can also remove the virtual environment directory if you choose by running:
+
+```sh
+rm -rf ./mde/
+```
+
+**Note: This will remove the mde directory and any files/directories under the mde directory.**
