@@ -1,21 +1,23 @@
-# Terraform Scripts for Marketing Data Store
+# Terraform Scripts
 
 The Terraform scripts in this folder create the infrastructure to start data ingestion
-into BigQuery
+into BigQuery, create feature store, ML pipelines and Dataflow activation pipeline.
 
-## Pre-requirements
+## Prerequisites
 
-* You have a Google Cloud project with billing enabled.
-* You har a GA4 account with the [query parameters](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference?client_type=gtag#payload_query_parameters)
-* In the Google Cloud Console, on the project selector page, [select or create a Google Cloud project](https://console.cloud.google.com/projectselector2/home/dashboard). You need to be a project owner in order to set up the environment.
+* You have a Google Cloud project with billing enabled. You need to have the Owner role on the project in order for
+the Terraform scripts to run successfully. We recommend creating a designated project for this installation. You can create
+a new project in the Google Cloud Console, on the project selector page, [select or create a Google Cloud project](https://console.cloud.google.com/projectselector2/home/dashboard).
 
+* You have a GA4 account with the [query parameters](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference?client_type=gtag#payload_query_parameters).
 * You have [python poetry](https://python-poetry.org/docs/) installed in your environment.
 
   ```bash
   curl -sSL https://install.python-poetry.org | python3 -
   ```
 
-* Link your github repositry with Google Cloud Source Repository that are used by Cloud Build triggers of the ML processing pipelines.
+* GitHub repo which will contain the Dataform scripts used to create the MDS.
+* Link a GitHub repository with a Google Cloud Source Repository that are used by Cloud Build triggers of the ML processing pipelines.
 
 ## Installation Guide
 
@@ -40,7 +42,8 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     export GOOGLE_APPLICATION_CREDENTIALS="[Credentials file created by the last command]"
     ```
 
-3. Run the following script to create Terraform service account. To run the script you use an account to authenticate against Google Cloud  which have following permissions in your Google Cloud project:
+3. Run the following script to create Terraform service account. To run the script you use an account to authenticate 
+against Google Cloud  which have the following permissions in your Google Cloud project:
     * `roles/iam.serviceAccountCreator` for creating service account used by terraform.
     * `roles/storage.admin` for creating terraform backend-config storage bucket.
 
@@ -52,7 +55,7 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
 
     **Note:** Make sure you provide access to the BigQuery dataset where your GA4 and GAds exported data is located. 
 
-4. Create the terraform variable file by making a copy from the template and set the terraform variables.
+5. Create the Terraform variable file by making a copy from the template and set the Terraform variables.
 
     ```bash
     TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
@@ -88,7 +91,7 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     # MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
     #   Admin > Data Streams > choose your stream > Measurement Protocol > Create
     ga4_measurement_id     = "Measurement ID in GA4"
-    ga4_measurement_secret = "Client secret for authenticatin to GA4 API"
+    ga4_measurement_secret = "Client secret for authentication to GA4 API"
 
     ####################  GITHUB VARIABLES  #################################
     project_owner_email = "Project owner email"
@@ -98,7 +101,7 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     pipelines_github_repo  = "Cloud Build github repository for pipelines"
     ```
 
-5. Run terraform to create the configuration yaml file:
+6. Run Terraform to create resource for **marketing data store** (the Dataform repository and related workflows):
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
@@ -112,7 +115,7 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     **Note:** Wait for a few minutes meanwhile all the resource are deployed to your Google Cloud project. You should have to wait on Dataform to be configured.
     If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
 
-7. Run terraform to deploy resources for **marketing data store**, **feature store**, **pipelines** and **activation application**:
+7. Run terraform to create resources for **feature store**, **pipelines** and **activation application**:
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" apply
@@ -124,5 +127,5 @@ At this time, the Terraform scripts in this folder create:
 
 - Enables the APIs needed
 - IAM bindings needed for the GCP services used
-- Secret in GCP Secret manager for the private Github repo
-- Dataform repository connected to the Github repo
+- Secret in GCP Secret manager for the private GitHub repo
+- Dataform repository connected to the GitHub repo
