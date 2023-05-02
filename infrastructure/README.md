@@ -41,31 +41,36 @@ installation process.
 1. Create a **private** empty repository in your GitHub or GitLab account.
 2. On your computer, check out the blank GitHub or GitLab repository. Instructions below assume that the repository
    will be hosted on GitHub.
-3. Generate GitHub's access token. You will need to use it instead of a Git password when accessing GitHub. For details,
-   see [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
-4. On your computer, in a separate folder check out the GitHub repository which contains the MDS Dataform scripts.
+3. On your computer, in a separate folder check out the GitHub repository which contains the MDS Dataform scripts.
     ```
     git clone https://github.com/googlecloudplatform/marketing-data-engine-dataform.git
     ```
-5. Push the contents of the source repository to your private repo
+4. Push the contents of the source repository to your private repo
     ```
    cd marketing-data-engine-dataform
    git remote add copy https://github.com/<your-account>/<repo>.git
    git branch -M main
    git push -u copy main
     ```
-6. Clean the checkout directory
+5. Clean the checkout directory
    ```shell
    cd ..
    rm -rf marketing-analytics-dataform
    ```
+6. Generate GitHub's access token. You will need to use it instead of a Git password when accessing GitHub. For details,
+   see [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+   .
+   You will need to provide this token to the Terraform scripts using a Terraform variable.
+
 ## Installing the MDS, ML pipelines, the feature Store, and the activation pipeline
+
 These components are installed using Terraform scripts.
 
 Follow instructions in [terraform/README.md](terraform/README.md)
 
 ## Installing Dashboards
-Dashboards are implemented using Looker Studio. 
+
+Dashboards are implemented using Looker Studio.
 
 Follow instructions in [lookerstudio/README.md](lookerstudio/README.md)
 
