@@ -32,10 +32,9 @@ Pub/Sub.
 
 ## Installation Guide
 
-The installation of this solution requires a multi-step process.
+The installation of this solution requires a multistep process.
 
-Please read [Installation Guide](./infrastructure/terraform/README.md) for more information on how to deploy this
-solution.
+Please follow the [Installation Guide](./infrastructure/README.md) to deploy this solution.
 
 ## Contributing
 
