@@ -1,4 +1,4 @@
-# Marketing Data Engine Looker Studio Deployment Walkthrough
+## Marketing Data Engine Looker Studio Deployment Walkthrough
 
 These steps will generate the URL to deploy the Looker Studio Marketing Data Engine dashboard.
 
@@ -6,7 +6,7 @@ These steps will generate the URL to deploy the Looker Studio Marketing Data Eng
 
 The installation script's library requirements are minimal however if you wish, you can configure a virtual environment.
 
-```
+```sh
 cd infrastructure/lookerstudio
 python -m venv mde
 source ./mde/bin/activate
@@ -36,13 +36,13 @@ ads_dataset = marketing_ads_v1_prod
 
 You can use your favorite text editor such as vim, nano or even the built in editor in Cloud Console.
 
-![Editor](images/editor.png)
+![Editor](https://github.com/TXZebra/marketing-data-engine/raw/main/infrastructure/lookerstudio/images/editor.png)
 
 ## Execute the script
 
 You're ready to execute the script simply by running:
 
-```
+```sh
 python lookerstudio_deployment.py
 ```
 
@@ -52,7 +52,7 @@ If there is an error, the script should output the appropriate error to help gui
 
 Clicking on the link will open a new browser tab that executes the copy operation and you will see a screen similar to below. This copy may take a few moments to execute but if it does not, close the tab and try clicking the link again.
 
-![Opening Screen](images/opening.png)
+![Opening Screen](https://github.com/TXZebra/marketing-data-engine/raw/main/infrastructure/lookerstudio/images/opening.png)
 
 Click on **Edit and share** to continue the copy process.
 
@@ -60,11 +60,11 @@ Click on **Edit and share** to continue the copy process.
 
 Review the data source configuration settings and then click on **Acknowledge and Save** to continue.
 
-![Review Access](images/review_access.png)
+![Review Access](https://github.com/TXZebra/marketing-data-engine/raw/main/infrastructure/lookerstudio/images/review_access.png)
 
 Acknowledge the data sources you are adding to the report by clicking on **Add to report**.
 
-![Add to Report](images/add_to_report.png)
+![Add to Report](https://github.com/TXZebra/marketing-data-engine/raw/main/infrastructure/lookerstudio/images/add_to_report.png)
 
 A copy of the report named **Marketing Analytics Sample** is now saved to your own Looker Studio account.
 
