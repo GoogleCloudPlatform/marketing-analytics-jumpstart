@@ -55,9 +55,9 @@ installation process.
 5. Clean the checkout directory
    ```shell
    cd ..
-   rm -rf marketing-analytics-dataform
+   rm -rf marketing-data-engine-dataform
    ```
-6. Generate GitHub's access token. You will need to use it instead of a Git password when accessing GitHub. For details,
+6. Generate a GitHub personal access token (classic). You will need to use it instead of a Git password when accessing GitHub. For details,
    see [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
    .
    You will need to provide this token to the Terraform scripts using a Terraform variable.
