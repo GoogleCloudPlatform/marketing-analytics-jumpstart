@@ -72,5 +72,5 @@ Follow instructions in [terraform/README.md](terraform/README.md)
 
 Dashboards are implemented using Looker Studio.
 
-Follow instructions in [lookerstudio/README.md](lookerstudio/README.md)
+Follow instructions in [../python/lookerstudio/README.md](../python/lookerstudio/README.md)
 
