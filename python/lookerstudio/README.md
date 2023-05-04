@@ -12,21 +12,20 @@ You will need to configure `config.ini` with the BigQuery project and datasets f
 ## Environment Set-Up
 
 1. If you haven't already, clone this repo to your Cloud Shell:
-```bash
-https://github.com/GoogleCloudPlatform/marketing-data-engine.git
-```
+    ```bash
+    https://github.com/GoogleCloudPlatform/marketing-data-engine.git
+    ```
 
 1. Poetry is required for this deployment, if you haven't in a previous step, install it:
-```bash
-curl -sSL https://install.python-poetry.org | python3 -
-```
+    ```bash
+    curl -sSL https://install.python-poetry.org | python3 -
+    ```
 
 1. Navigate to this directory and run Poetry to install requirements in a virtual environment:
-
-```bash
-cd python/lookerstudio
-poetry install
-```
+    ```bash
+    cd python/lookerstudio
+    poetry install
+    ```
 
 This step includes the following:
 - Clone repo (if necessary)
