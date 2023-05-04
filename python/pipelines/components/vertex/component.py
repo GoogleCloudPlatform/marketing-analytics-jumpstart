@@ -20,7 +20,7 @@ from ma_components.vertex import VertexModel
 
 
 pyproject_toml_file_path = os.path.join(os.path.dirname(__file__), '../../../../pyproject.toml')
-config_file_path = os.path.join(os.path.dirname(__file__), '../../../../config/dev.yaml')
+config_file_path = os.path.join(os.path.dirname(__file__), '../../../../config/config.yaml')
 
 packages_to_install = [] 
 if os.path.exists(pyproject_toml_file_path):

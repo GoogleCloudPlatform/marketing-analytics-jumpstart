@@ -18,7 +18,7 @@ import os
 import yaml
 
 config_file_path = os.path.join(os.path.dirname(
-    __file__), '../../../../config/dev.yaml')
+    __file__), '../../../../config/config.yaml')
 
 base_image = None
 if os.path.exists(config_file_path):
