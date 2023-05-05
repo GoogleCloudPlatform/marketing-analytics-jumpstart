@@ -150,7 +150,7 @@ def compile_automl_tabular_pipeline(
         pipeline_parameters: Dict[str, Any] = None,
         pipeline_parameters_substitutions: Optional[Dict[str, Any]] = None,
         exclude_features = List[Any],
-        enable_caching: bool = True) -> tuple[str, Dict[str, Any]]:
+        enable_caching: bool = True) -> tuple:
 
     from google_cloud_pipeline_components.experimental.automl.tabular import utils as automl_tabular_utils
 
@@ -342,6 +342,7 @@ def schedule_pipeline(
     resp = requests.post(url=url, json=body, headers=headers)
     data = resp.json()  # Check the JSON Response Content documentation below
 
+    logging.info(f"scheduled for {pipeline_name} submitted")
     return data
 
 
