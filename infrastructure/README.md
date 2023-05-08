@@ -2,46 +2,56 @@
 
 ## Overview
 
-Marketing Data Engine consists of several components - marketing data store (MDS), feature store, ML pipelines, 
-the activation pipeline and dashboards. This document describes the sequencing of installing these components. 
+Marketing Data Engine consists of several components - marketing data store (MDS), feature store, ML pipelines,
+the activation pipeline and dashboards. This document describes the sequencing of installing these components.
 
 ## Prerequisites
-### Marketing Analytics Data Sources
-* Set up Google Analytics 4 Export to Bigquery - TODO: links
-* Set up Google Ads Export to Bigquery - TODO: links
 
-Make sure the exports use the same BigQuery location, either regional or multi-regional one.
+### Marketing Analytics Data Sources
+
+* Set up Google Analytics 4 Export to Bigquery. Please follow the
+  set-up [documentation](https://support.google.com/analytics/answer/9358801?hl=en). The current version of MDS doesn't
+  use streaming export tables.
+* Set up Google Cloud Data Transfer Service to export Google Ads to Bigquery. Follow
+  these [instructions](https://cloud.google.com/bigquery/docs/google-ads-transfer).
+
+Make sure these exports use the same BigQuery location, either regional or multi-regional one. You can export the data
+into the same project or different projects - the MDS will be able to get the data from multiple projects.
 
 ### Destination Projects
-The Terraform scripts don’t create Google Cloud projects in customer environments, these projects need to be created
-before the scripts can be run. It is possible to install the whole solution in a single project if the projected
-BigQuery data volume is small (megabytes or low digit gigabytes of additional data per day). But for larger customer
-installations and more granular access control multiple projects can be used.
+
+The Terraform scripts which are used to create the infrastructure don’t create Google Cloud projects themselves. These
+projects need to be created before the scripts can be run and their ids will be provided to the script via Terraform
+variables. It is possible to install the whole solution in a single project if the projected BigQuery data volume is
+small (megabytes or low digit gigabytes of additional data per day). For larger installations or when more granular
+access control is desired multiple projects can be used:
 
 * MDS data storage project for all the data curated by the solution.
 * MDS data processing project for hosting the Dataform scripts and running BigQuery curation jobs.
 * ML pipeline features engineering, model training, model inference and activation application.
-* Dashboard query processing project. In case of high volume Dashboard usage this project can enable BigQuery BI Engine to
-accelerate the query originated from the dashboard.
+* Dashboard query processing project. In case of high volume Dashboard usage this project can enable BigQuery BI Engine
+  to
+  accelerate the query originated from the dashboard.
 
-Users or service accounts used to run the Terraform scripts need to have Owner roles on these projects.
-For installing MDS, they should also have the BigQuery Admin role on the source projects in order to grant data read
-access to the service accounts created by the Terraform scripts.
-For installing ML pipelines and the activation application, they should have the BigQuery Data Reader role on the
-datasets, tables and views populated by the MDS.
-For installing the Dashboards, they should have the BigQuery Data Reader role on the datasets, tables and views
-populated by the MDS.
+### Permissions for the Terraform Service Account
 
-## Create Dataform Git Repository
+There is a dedicated service account used to run the Terraform script. That account will need to be granted certain
+permissions in different projects:
 
-MDS uses Dataform as the tool to run the data transformation. Dataform uses a private GitHub or GitLab
-repository to store SQL transformation scripts. Customers will need to create a repository as part of the MDS
-installation process.
+* the Owner role in all projects where the solution is installed. Required to install products related to the solution.
+* the BigQuery Admin role on the datasets containing the GA4 and Ads data exports. Required to grant data read access to
+  the service accounts created by the Terraform scripts.
+
+### Dataform Git Repository
+
+MDS uses [Dataform](https://cloud.google.com/dataform) as the tool to run the data transformation. Dataform uses a
+private GitHub or GitLab repository to store SQL transformation scripts. Customers will need to create a repository and
+copy the SQL scripts from a companion GitHub repo before running the Terraform scripts.
 
 1. Create a **private** empty repository in your GitHub or GitLab account.
 2. On your computer, check out the blank GitHub or GitLab repository. Instructions below assume that the repository
    will be hosted on GitHub.
-3. On your computer, in a separate folder check out the GitHub repository which contains the MDS Dataform scripts.
+3. On your computer or in a Cloud Shell, check out the GitHub repository which contains the MDS Dataform scripts.
     ```
     git clone https://github.com/googlecloudplatform/marketing-data-engine-dataform.git
     ```
@@ -57,20 +67,32 @@ installation process.
    cd ..
    rm -rf marketing-data-engine-dataform
    ```
-6. Generate a GitHub personal access token (classic). You will need to use it instead of a Git password when accessing GitHub. For details,
-   see [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
-   .
-   You will need to provide this token to the Terraform scripts using a Terraform variable.
+6. Generate a GitHub personal access token. It will be used by Dataform to access the repository. For details and
+   additional guidance regarding token type, security and require permissions
+   see [Dataform documentation](https://cloud.google.com/dataform/docs/connect-repository#create-secret). You don't need
+   to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
+   access token to the Terraform scripts using a Terraform variable.
+
+### GitHub repository with a Google Cloud Source Repository that are used by Cloud Build triggers of the ML processing pipelines.
+
+TODO: details
+
+### Install Python Poetry
+
+[Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
+
+```bash
+  curl -sSL https://install.python-poetry.org | python3 -
+```
 
 ## Installing the MDS, ML pipelines, the feature Store, and the activation pipeline
 
-These components are installed using Terraform scripts.
+Once all the prerequisites are met you can install these components using Terraform scripts.
 
 Follow instructions in [terraform/README.md](terraform/README.md)
 
 ## Installing Dashboards
 
-Dashboards are implemented using Looker Studio.
-
-Follow instructions in [../python/lookerstudio/README.md](../python/lookerstudio/README.md)
+Looker Studio Dashboards can be installed by following instructions
+in [../python/lookerstudio/README.md](../python/lookerstudio/README.md)
 
