@@ -12,79 +12,75 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{name}}`(INOUT input_date DATE, INOUT end_date DATE, OUT rows_added INT64)
-OPTIONS (description="User granularity level labels. Run this procedure daily.")
-BEGIN
-  # Run these windows aggregations every day. For each date in training and inference date ranges.
-  -- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
-    SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
-    SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
+# Run these windows aggregations every day. For each date in training and inference date ranges.
+## Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
+SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
-  ## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
-  CREATE TEMP TABLE future_revenue_per_user AS (
-    SELECT DISTINCT
-      user_pseudo_id,
-      MAX(GREATEST(
-        SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
-        MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
-              )) 
-            OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_today,
-      MAX(GREATEST(
-        SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
-        MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
-              )) 
-            OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_30,
-      MAX(GREATEST(
-        SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
-        MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
-              )) 
-            OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_90,
-      MAX(GREATEST(
-        SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
-        MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
-              )) 
-            OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_180
-    FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-    INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-    ON E.device_type_id = D.device_type_id
-    WHERE event_date BETWEEN input_date AND end_date
-    AND E.ga_session_id IS NOT NULL
-    AND ecommerce.transaction_id IS NOT NULL 
-    AND ecommerce.transaction_id <> '(not set)'
-    AND D.device_os IS NOT NULL
-    GROUP BY user_pseudo_id
-  );
+## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
+CREATE TEMP TABLE future_revenue_per_user AS (
+  SELECT DISTINCT
+    user_pseudo_id,
+    MAX(GREATEST(
+      SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
+            )) 
+          OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_today,
+    MAX(GREATEST(
+      SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
+            )) 
+          OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_30,
+    MAX(GREATEST(
+      SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
+            )) 
+          OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_90,
+    MAX(GREATEST(
+      SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
+            )) 
+          OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_180
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON E.device_type_id = D.device_type_id
+  WHERE event_date BETWEEN input_date AND end_date
+  AND E.ga_session_id IS NOT NULL
+  AND ecommerce.transaction_id IS NOT NULL 
+  AND ecommerce.transaction_id <> '(not set)'
+  AND D.device_os IS NOT NULL
+  GROUP BY user_pseudo_id
+);
 
-  -- All users in the platform
-    CREATE TEMP TABLE events_users_days as (
-    SELECT DISTINCT
-    Users.user_pseudo_id
-    FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
-    INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-    ON Users.device_type_id = D.device_type_id
-    WHERE Users.ga_session_id IS NOT NULL
-    AND D.device_os IS NOT NULL
-    AND Users.event_date BETWEEN input_date AND end_date
-    );
+## All users in the platform
+CREATE TEMP TABLE events_users_days as (
+  SELECT DISTINCT
+  Users.user_pseudo_id
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON Users.device_type_id = D.device_type_id
+  WHERE Users.ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+  AND Users.event_date BETWEEN input_date AND end_date
+);
 
-  CREATE TEMP TABLE DataForTargetTable AS
-    SELECT DISTINCT
-      CURRENT_TIMESTAMP() AS processed_timestamp,
-      input_date as feature_date,
-      A.user_pseudo_id,
-      GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_30,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_30_days,
-      GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_90,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_90_days,
-      GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_180,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_180_days,
-      FROM events_users_days AS A
-      INNER JOIN future_revenue_per_user AS B
-      ON A.user_pseudo_id = B.user_pseudo_id;
+CREATE TEMP TABLE DataForTargetTable AS
+  SELECT DISTINCT
+    CURRENT_TIMESTAMP() AS processed_timestamp,
+    input_date as feature_date,
+    A.user_pseudo_id,
+    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_30,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_30_days,
+    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_90,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_90_days,
+    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_180,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_180_days,
+    FROM events_users_days AS A
+    INNER JOIN future_revenue_per_user AS B
+    ON A.user_pseudo_id = B.user_pseudo_id;
 
-      INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-      SELECT DISTINCT * FROM DataForTargetTable;
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+  SELECT DISTINCT * FROM DataForTargetTable;
 
-      SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
+SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 
-      DROP TABLE future_revenue_per_user;
-      DROP TABLE events_users_days;
-      DROP TABLE DataForTargetTable;
-END;
+DROP TABLE future_revenue_per_user;
+DROP TABLE events_users_days;
+DROP TABLE DataForTargetTable;

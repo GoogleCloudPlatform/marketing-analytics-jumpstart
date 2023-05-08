@@ -18,7 +18,7 @@ resource "google_bigquery_routine" "audience_segmentation_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/audience_segmentation_inference_preparation.sql") : null
-  description     = "User-per-day granularity level features. Run this procedure daily."
+  description     = "Procedure that prepares features for Audience Segmentation model inference. User-per-day granularity level features. Run this procedure every time before Audience Segmentation model predict."
   arguments {
     name      = "inference_date"
     mode      = "INOUT"
@@ -33,7 +33,7 @@ resource "google_bigquery_routine" "audience_segmentation_training_preparation" 
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/audience_segmentation_training_preparation.sql") : null
-  description     = "User-per-day granularity level features. Run this procedure daily."
+  description     = "Procedure that prepares features for Audience Segmentation model training. User-per-day granularity level features. Run this procedure every time before Audience Segmentation model train."
   arguments {
     name      = "start_date"
     mode      = "INOUT"
@@ -63,7 +63,7 @@ resource "google_bigquery_routine" "customer_lifetime_value_inference_preparatio
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/customer_lifetime_value_inference_preparation.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "Procedure that prepares features for CLTV model inference. User-per-day granularity level features. Run this procedure every time before running CLTV model predict."
   arguments {
     name      = "inference_date"
     mode      = "INOUT"
@@ -78,7 +78,7 @@ resource "google_bigquery_routine" "customer_lifetime_value_label" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/customer_lifetime_value_label.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level label. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -102,7 +102,7 @@ resource "google_bigquery_routine" "customer_lifetime_value_training_preparation
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/customer_lifetime_value_training_preparation.sql") : null
-  description     = "User-per-day granularity level features. Run this procedure daily."
+  description     = "Procedure that prepares features for CLTV model training. User-per-day granularity level features. Run this procedure every time before CLTV model train."
   arguments {
     name      = "start_date"
     mode      = "INOUT"
@@ -132,7 +132,7 @@ resource "google_bigquery_routine" "purchase_propensity_inference_preparation" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/purchase_propensity_inference_preparation.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "Procedure that prepares features for Purchase Propensity model inference. User-per-day granularity level features. Run this procedure every time before Purchase Propensity model predict."
   arguments {
     name      = "inference_date"
     mode      = "INOUT"
@@ -147,7 +147,7 @@ resource "google_bigquery_routine" "purchase_propensity_label" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/purchase_propensity_label.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level labels. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -172,7 +172,7 @@ resource "google_bigquery_routine" "purchase_propensity_training_preparation" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/purchase_propensity_training_preparation.sql") : null
-  description     = "User-per-day granularity level features. Run this procedure daily."
+  description     = "Procedure that prepares features for Purchase Propensity model training. User-per-day granularity level features. Run this procedure every time before Purchase Propensity model train."
   arguments {
     name      = "start_date"
     mode      = "INOUT"
@@ -202,7 +202,7 @@ resource "google_bigquery_routine" "user_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_dimensions.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level dimensions. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -227,7 +227,7 @@ resource "google_bigquery_routine" "user_lifetime_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_lifetime_dimensions.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level dimensions. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -252,7 +252,7 @@ resource "google_bigquery_routine" "user_lookback_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_lookback_metrics.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level metrics. Run this procedure daily. Metrics calculated using a rolling window operation."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -277,7 +277,7 @@ resource "google_bigquery_routine" "user_rolling_window_lifetime_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_rolling_window_lifetime_metrics.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level metrics. Run this procedure daily. Metrics calculated using a rolling window operation."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -302,7 +302,7 @@ resource "google_bigquery_routine" "user_rolling_window_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_rolling_window_metrics.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level metrics. Run this procedure daily. Metrics calculated using a rolling window operation."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -327,7 +327,7 @@ resource "google_bigquery_routine" "user_scoped_lifetime_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_scoped_lifetime_metrics.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level metrics. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -352,7 +352,7 @@ resource "google_bigquery_routine" "user_scoped_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_scoped_metrics.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level metrics. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -377,7 +377,7 @@ resource "google_bigquery_routine" "user_scoped_segmentation_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_scoped_segmentation_metrics.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level metrics. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -402,7 +402,7 @@ resource "google_bigquery_routine" "user_segmentation_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_segmentation_dimensions.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level dimensions. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"
@@ -427,7 +427,7 @@ resource "google_bigquery_routine" "user_session_event_aggregated_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = var.enabled ? file("${local.sql_dir}/procedure/user_session_event_aggregated_metrics.sql") : null
-  description     = "User granularity level labels. Run this procedure daily"
+  description     = "User-per-day granularity level metrics. Run this procedure daily."
   arguments {
     name      = "input_date"
     mode      = "INOUT"

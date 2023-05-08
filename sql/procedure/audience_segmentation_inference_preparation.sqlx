@@ -1,27 +1,22 @@
--- Copyright 2023 Google LLC
---
--- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
---
---     http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
-
-CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{name}}`
-(
-  INOUT inference_date DATE)
-OPTIONS (description="User-per-day granularity level features. Run this procedure daily.")
-BEGIN
+  -- Copyright 2023 Google LLC
+  --
+  -- Licensed under the Apache License, Version 2.0 (the "License");
+  -- you may not use this file except in compliance with the License.
+  -- You may obtain a copy of the License at
+  --
+  --     http://www.apache.org/licenses/LICENSE-2.0
+  --
+  -- Unless required by applicable law or agreed to in writing, software
+  -- distributed under the License is distributed on an "AS IS" BASIS,
+  -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  -- See the License for the specific language governing permissions and
+  -- limitations under the License.
   -- Setting procedure to lookback from the day before `inference_date`
-  SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
-  CREATE TEMP TABLE inference_preparation as (
-    SELECT
+SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY); 
+
+CREATE TEMP TABLE inference_preparation AS (
+  SELECT
     UD.user_pseudo_id,
     UD.user_id,
     UD.feature_date,
@@ -106,12 +101,9 @@ BEGIN
     UM.feature_date = UD.feature_date
   WHERE
     -- Define the training+validation subset interval
-    UD.feature_date = inference_date
-  );
-
-
-  INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-  (feature_date,
+    UD.feature_date = inference_date );
+INSERT INTO
+  `{{project_id}}.{{dataset}}.{{insert_table}}` (feature_date,
     user_pseudo_id,
     user_id,
     month_of_the_year,
@@ -181,85 +173,85 @@ BEGIN
     first_time_purchaser_conversion,
     first_time_purchasers_per_new_user,
     avg_user_conversion_rate,
-    avg_session_conversion_rate
-    )
-  SELECT DISTINCT
-    feature_date,
-    user_pseudo_id,
-    user_id,
-    month_of_the_year,
-    week_of_the_year,
-    day_of_the_month,
-    day_of_week,
-    hour_of_day,
-    nth_day,
-    nth_hour,
-    nth_week,
-    nth_month,
-    device_category,
-    device_mobile_brand_name,
-    device_mobile_model_name,
-    device_os,
-    device_os_version,
-    device_language,
-    device_web_browser,
-    device_web_browser_version,
-    geo_sub_continent,
-    geo_country,
-    geo_region,
-    geo_city,
-    geo_metro,
-    last_traffic_source_medium,
-    last_traffic_source_name,
-    last_traffic_source_source,
-    first_traffic_source_medium,
-    first_traffic_source_name,
-    first_traffic_source_source,
-    has_signed_in_with_user_id,
-    active_users_past_1_7_day,
-    active_users_past_8_14_day,
-    purchases_past_1_7_day,
-    purchases_past_8_14_day,
-    visits_past_1_7_day,
-    visits_past_8_14_day,
-    view_items_past_1_7_day,
-    view_items_past_8_14_day,
-    add_to_carts_past_1_7_day,
-    add_to_carts_past_8_14_day,
-    checkouts_past_1_7_day,
-    checkouts_past_8_14_day,
-    ltv_revenue_past_1_7_day,
-    ltv_revenue_past_7_15_day,
-    purchasers_users,
-    average_daily_purchasers,
-    active_users,
-    DAU,
-    MAU,
-    WAU,
-    dau_per_mau,
-    dau_per_wau,
-    wau_per_mau,
-    users_engagement_duration_seconds,
-    average_engagement_time,
-    average_engagement_time_per_session,
-    average_sessions_per_user,
-    ARPPU,
-    ARPU,
-    average_daily_revenue,
-    max_daily_revenue,
-    min_daily_revenue,
-    new_users,
-    returning_users,
-    first_time_purchasers,
-    first_time_purchaser_conversion,
-    first_time_purchasers_per_new_user,
-    avg_user_conversion_rate,
-    avg_session_conversion_rate
-    FROM inference_preparation;
+    avg_session_conversion_rate )
+SELECT
+  DISTINCT feature_date,
+  user_pseudo_id,
+  user_id,
+  month_of_the_year,
+  week_of_the_year,
+  day_of_the_month,
+  day_of_week,
+  hour_of_day,
+  nth_day,
+  nth_hour,
+  nth_week,
+  nth_month,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_7_day,
+  active_users_past_8_14_day,
+  purchases_past_1_7_day,
+  purchases_past_8_14_day,
+  visits_past_1_7_day,
+  visits_past_8_14_day,
+  view_items_past_1_7_day,
+  view_items_past_8_14_day,
+  add_to_carts_past_1_7_day,
+  add_to_carts_past_8_14_day,
+  checkouts_past_1_7_day,
+  checkouts_past_8_14_day,
+  ltv_revenue_past_1_7_day,
+  ltv_revenue_past_7_15_day,
+  purchasers_users,
+  average_daily_purchasers,
+  active_users,
+  DAU,
+  MAU,
+  WAU,
+  dau_per_mau,
+  dau_per_wau,
+  wau_per_mau,
+  users_engagement_duration_seconds,
+  average_engagement_time,
+  average_engagement_time_per_session,
+  average_sessions_per_user,
+  ARPPU,
+  ARPU,
+  average_daily_revenue,
+  max_daily_revenue,
+  min_daily_revenue,
+  new_users,
+  returning_users,
+  first_time_purchasers,
+  first_time_purchaser_conversion,
+  first_time_purchasers_per_new_user,
+  avg_user_conversion_rate,
+  avg_session_conversion_rate
+FROM
+  inference_preparation;
 
-
-  CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_inference_15` AS(
-    SELECT 
+CREATE OR REPLACE TABLE
+  `{{project_id}}.{{dataset}}.audience_segmentation_inference_15` AS(
+  SELECT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     feature_date,
     user_pseudo_id,
@@ -332,11 +324,11 @@ BEGIN
     first_time_purchasers_per_new_user,
     avg_user_conversion_rate,
     avg_session_conversion_rate,
-    FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
-  );
+  FROM
+    `{{project_id}}.{{dataset}}.{{insert_table}}` );
 
-  CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_audience_segmentation_inference_15`
-  (processed_timestamp,
+CREATE OR REPLACE VIEW
+  `{{project_id}}.{{dataset}}.v_audience_segmentation_inference_15` (processed_timestamp,
     feature_date,
     user_pseudo_id,
     user_id,
@@ -407,89 +399,85 @@ BEGIN
     first_time_purchaser_conversion,
     first_time_purchasers_per_new_user,
     avg_user_conversion_rate,
-    avg_session_conversion_rate)
-  OPTIONS(
-    expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+    avg_session_conversion_rate) OPTIONS( expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
     friendly_name="v_audience_segmentation_inference_15",
     description="View Audience Segmentation dataset using 15 days back. View expires after 48h and should run daily.",
-    labels=[("org_unit", "development")]
-  ) AS 
-  SELECT DISTINCT
-    processed_timestamp,
-    feature_date,
-    user_pseudo_id,
-    user_id,
-    month_of_the_year,
-    week_of_the_year,
-    day_of_the_month,
-    day_of_week,
-    hour_of_day,
-    nth_day,
-    nth_hour,
-    nth_week,
-    nth_month,
-    device_category,
-    device_mobile_brand_name,
-    device_mobile_model_name,
-    device_os,
-    device_os_version,
-    device_language,
-    device_web_browser,
-    device_web_browser_version,
-    geo_sub_continent,
-    geo_country,
-    geo_region,
-    geo_city,
-    geo_metro,
-    last_traffic_source_medium,
-    last_traffic_source_name,
-    last_traffic_source_source,
-    first_traffic_source_medium,
-    first_traffic_source_name,
-    first_traffic_source_source,
-    has_signed_in_with_user_id,
-    active_users_past_1_7_day,
-    active_users_past_8_14_day,
-    purchases_past_1_7_day,
-    purchases_past_8_14_day,
-    visits_past_1_7_day,
-    visits_past_8_14_day,
-    view_items_past_1_7_day,
-    view_items_past_8_14_day,
-    add_to_carts_past_1_7_day,
-    add_to_carts_past_8_14_day,
-    checkouts_past_1_7_day,
-    checkouts_past_8_14_day,
-    ltv_revenue_past_1_7_day,
-    ltv_revenue_past_7_15_day,
-    purchasers_users,
-    average_daily_purchasers,
-    active_users,
-    DAU,
-    MAU,
-    WAU,
-    dau_per_mau,
-    dau_per_wau,
-    wau_per_mau,
-    users_engagement_duration_seconds,
-    average_engagement_time,
-    average_engagement_time_per_session,
-    average_sessions_per_user,
-    ARPPU,
-    ARPU,
-    average_daily_revenue,
-    max_daily_revenue,
-    min_daily_revenue,
-    new_users,
-    returning_users,
-    first_time_purchasers,
-    first_time_purchaser_conversion,
-    first_time_purchasers_per_new_user,
-    avg_user_conversion_rate,
-    avg_session_conversion_rate,
-    FROM `{{project_id}}.{{dataset}}.audience_segmentation_inference_15`;
+    labels=[("org_unit",
+      "development")] ) AS
+SELECT
+  DISTINCT processed_timestamp,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  month_of_the_year,
+  week_of_the_year,
+  day_of_the_month,
+  day_of_week,
+  hour_of_day,
+  nth_day,
+  nth_hour,
+  nth_week,
+  nth_month,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_7_day,
+  active_users_past_8_14_day,
+  purchases_past_1_7_day,
+  purchases_past_8_14_day,
+  visits_past_1_7_day,
+  visits_past_8_14_day,
+  view_items_past_1_7_day,
+  view_items_past_8_14_day,
+  add_to_carts_past_1_7_day,
+  add_to_carts_past_8_14_day,
+  checkouts_past_1_7_day,
+  checkouts_past_8_14_day,
+  ltv_revenue_past_1_7_day,
+  ltv_revenue_past_7_15_day,
+  purchasers_users,
+  average_daily_purchasers,
+  active_users,
+  DAU,
+  MAU,
+  WAU,
+  dau_per_mau,
+  dau_per_wau,
+  wau_per_mau,
+  users_engagement_duration_seconds,
+  average_engagement_time,
+  average_engagement_time_per_session,
+  average_sessions_per_user,
+  ARPPU,
+  ARPU,
+  average_daily_revenue,
+  max_daily_revenue,
+  min_daily_revenue,
+  new_users,
+  returning_users,
+  first_time_purchasers,
+  first_time_purchaser_conversion,
+  first_time_purchasers_per_new_user,
+  avg_user_conversion_rate,
+  avg_session_conversion_rate,
+FROM
+  `{{project_id}}.{{dataset}}.audience_segmentation_inference_15`;
 
-
-  DROP TABLE inference_preparation;
-
-END;
+DROP TABLE inference_preparation;

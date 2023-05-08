@@ -947,50 +947,6 @@ bigquery:
       insert_table: "audience_segmentation_inference_preparation"
       expiration_duration_hours: 48
       mds_dataset: "${mds_dataset}"
-  models:
-    create_purchase_propensity_bqml:
-      project_id: "${project_id}"
-      dataset: "model"
-      name: "purchase_propensity_model_baseline"
-      description: "BQML"
-      model_type: "LOGISTIC_REG"
-      data_split_column: "validation_row"
-      label_column: "_1_15_day_will_purchase"
-      model_registry: "vertex_ai"
-      model_version_alias:
-      - purchase_propensity
-      - experimental
-      training_project_id: "${project_id}"
-      training_dataset_id: "feature_store"
-      training_view: "purchase_propensity_training_dataset_30_15"
-    create_customer_ltv_bqml:
-      project_id: "${project_id}"
-      dataset: "model"
-      name: "customer_ltv_model_baseline"
-      description: "BQML"
-      model_type: "LINEAR_REG"
-      data_split_column: "validation_row"
-      label_column: "user_ltv_revenue"
-      model_registry: "vertex_ai"
-      model_version_alias:
-      - customer_ltv
-      - experimental
-      training_project_id: "${project_id}"
-      training_dataset_id: "feature_store"
-      training_view: "customer_ltv_training_dataset_30_15"
-    create_audience_segmentation_bqml:
-      project_id: "${project_id}"
-      dataset: "model"
-      name: "audience_segmentation_model_baseline"
-      description: "BQML"
-      model_type: "KMEANS++"
-      model_registry: "vertex_ai"
-      model_version_alias:
-      - customer_ltv
-      - experimental
-      training_project_id: "${project_id}"
-      training_dataset_id: "feature_store"
-      training_view: "audience_segmentation_training_dataset_30_15"
 
 terraform:
   version: 1.4.5
