@@ -92,24 +92,24 @@ resource "google_artifact_registry_repository" "pipelines_docker_repo" {
 }
 
 
-resource "google_cloudbuild_trigger" "cloud-build-trigger" {
-  //Source section
-  location = local.cloud_build_vars.region
-  github {
-    owner = local.cloud_build_vars.github.owner
-    name  = local.cloud_build_vars.github.repo_name
-    //Events section  
-    push {
-      branch = local.cloud_build_vars.github.trigger_branch
-    }
-  }
-  //Configuration section
-  filename = local.cloud_build_vars.build_file
-
-  substitutions = {
-    _CONFIG_YAML = var.config_file_path
-  }
-}
+#resource "google_cloudbuild_trigger" "cloud-build-trigger" {
+#  //Source section
+#  location = local.cloud_build_vars.region
+#  github {
+#    owner = local.cloud_build_vars.github.owner
+#    name  = local.cloud_build_vars.github.repo_name
+#    //Events section  
+#    push {
+#      branch = local.cloud_build_vars.github.trigger_branch
+#    }
+#  }
+#  //Configuration section
+#  filename = local.cloud_build_vars.build_file
+#
+#  substitutions = {
+#    _CONFIG_YAML = var.config_file_path
+#  }
+#}
 
 resource "null_resource" "build_push_pipelines_components_image" {
   triggers = {
@@ -121,9 +121,9 @@ resource "null_resource" "build_push_pipelines_components_image" {
     working_dir = self.triggers.working_dir
   }
 
-  depends_on = [
-    google_cloudbuild_trigger.cloud-build-trigger
-  ]
+#  depends_on = [
+#    google_cloudbuild_trigger.cloud-build-trigger
+#  ]
 }
 
 resource "null_resource" "compile_feature_engineering_pipelines" {
