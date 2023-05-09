@@ -192,20 +192,20 @@ def _determine_local_import_names(start_dir: str) -> List[str]:
     ]
 
 
-@task(pre=[require_venv])
+@task(pre=[setup_poetry_prod])
 def fix(c):  # noqa: ANN001, ANN201
     """Apply linting fixes"""
     c.run("poetry run black *.py **/*.py --force-exclude .venv")
     c.run("poetry run isort --profile google *.py **/*.py")
 
 
-@task(pre=[require_venv_test])
+@task(pre=[setup_poetry_test])
 def test(c):  # noqa: ANN001, ANN201
     """Run unit tests"""
     c.run("poetry run pytest python/")
 
 
-@task(pre=[require_venv_test])
+@task(pre=[setup_poetry_test])
 def system_test(c):  # noqa: ANN001, ANN201
     """Run system tests"""
     c.run("poetry run pytest python/")
