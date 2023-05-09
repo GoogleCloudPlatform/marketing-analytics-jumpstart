@@ -48,6 +48,16 @@ variable "dataform_github_token" {
   type        = string
 }
 
+variable "pipelines_github_repo" {
+  description = "Cloud Build github repository for pipelines"
+  type        = string
+}
+
+variable "pipelines_github_owner" {
+  description = "Cloud Build github repository owner"
+  type        = string
+}
+
 variable "create_dev_environment" {
   description = "Indicates that a development environment needs to be created"
   type        = bool
