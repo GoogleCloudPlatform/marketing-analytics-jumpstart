@@ -14,6 +14,7 @@
 
 locals {
   config_vars                        = yamldecode(file(var.config_file_path))
+  config_bigquery                    = local.config_vars.bigquery
   feature_store_project_id           = local.config_vars.bigquery.dataset.feature_store.project_id
   purchase_propensity_project_id     = local.config_vars.bigquery.dataset.purchase_propensity.project_id
   audience_segmentation_project_id   = local.config_vars.bigquery.dataset.audience_segmentation.project_id

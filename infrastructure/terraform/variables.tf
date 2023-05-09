@@ -33,6 +33,12 @@ variable "google_default_region" {
   type        = string
 }
 
+variable "bigquery_location" {
+  default     = "US"
+  description = "The default Google Cloud region."
+  type        = string
+}
+
 variable "project_owner_email" {
   description = "Email address of the project owner."
   type        = string
@@ -45,6 +51,16 @@ variable "dataform_github_repo" {
 
 variable "dataform_github_token" {
   description = "Github token for Dataform repo."
+  type        = string
+}
+
+variable "pipelines_github_repo" {
+  description = "Cloud Build github repository for pipelines"
+  type        = string
+}
+
+variable "pipelines_github_owner" {
+  description = "Cloud Build github repository owner"
   type        = string
 }
 
@@ -146,16 +162,6 @@ variable "feature_store_config_env" {
   description = "determine which config file is used for feature store deployment"
   type        = string
   default     = "config"
-}
-
-variable "pipelines_github_repo" {
-  description = "Cloud Build github repository for pipelines"
-  type        = string
-}
-
-variable "pipelines_github_owner" {
-  description = "Cloud Build github repository owner"
-  type        = string
 }
 
 variable "poetry_cmd" {

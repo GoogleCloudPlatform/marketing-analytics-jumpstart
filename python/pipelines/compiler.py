@@ -18,7 +18,7 @@ from pipelines.pipeline_ops import compile_pipeline, compile_automl_tabular_pipe
 from argparse import ArgumentParser
 '''
 example:
-python -m pipelines.compiler -c ../config/dev.yaml -p train_pipeline -o my_comp_pl.yaml
+python -m pipelines.compiler -c ../config/conf.yaml -p train_pipeline -o my_comp_pl.yaml
 '''
 
 # config path : pipeline module and function name

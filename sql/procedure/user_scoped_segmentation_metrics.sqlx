@@ -12,145 +12,139 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{name}}`(INOUT input_date DATE, INOUT end_date DATE, OUT rows_added INT64)
-OPTIONS(
-    description="User-per-day granularity level features. Run this procedure daily."
-)
-BEGIN
-  -- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
-    SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
-    SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
+## Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
+SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
-  # Run these once each day.
-  ## Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU
-  CREATE TEMP TABLE engagement as (
-    SELECT 
-     user_pseudo_id,
-    ga_session_id as session_id, 
-    MAX(engagement_time_msec) as engagement_time_msec,
-    IFNULL(SUM(ecommerce.purchase_revenue_in_usd),0.0) as purchase_revenue_in_usd,
-    LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) as has_invalid_transactions,
-    LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) as converted_in_session,
+# Run these once each day.
+## Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU
+CREATE TEMP TABLE engagement as (
+  SELECT 
+    user_pseudo_id,
+  ga_session_id as session_id, 
+  MAX(engagement_time_msec) as engagement_time_msec,
+  IFNULL(SUM(ecommerce.purchase_revenue_in_usd),0.0) as purchase_revenue_in_usd,
+  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) as has_invalid_transactions,
+  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) as converted_in_session,
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+ON E.device_type_id = D.device_type_id
+WHERE E.ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+  AND E.event_date BETWEEN end_date AND input_date
+GROUP BY user_pseudo_id, session_id
+);
+
+CREATE TEMP TABLE revenue as (
+SELECT 
+  SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day 
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+ON E.device_type_id = D.device_type_id 
+WHERE E.ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+  AND event_date BETWEEN end_date AND input_date
+GROUP BY event_date
+);
+
+CREATE TEMP TABLE users as (
+SELECT 
+  COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END) as active_users 
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+ON E.device_type_id = D.device_type_id 
+WHERE D.device_os IS NOT NULL
+  AND event_date BETWEEN end_date AND input_date
+);
+
+CREATE TEMP TABLE first_purchasers as (
+  SELECT COUNT(user_pseudo_id) as first_time_purchasers
+  FROM (
+      SELECT 
+          user_pseudo_id, event_date, RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
+      FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+      INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+      ON E.device_type_id = D.device_type_id
+      WHERE event_name IN ('purchase','in_app_purchase')
+      AND E.ga_session_id IS NOT NULL
+      AND D.device_os IS NOT NULL
+      AND E.event_date BETWEEN end_date AND input_date
+      GROUP BY user_pseudo_id, event_date, event_timestamp)
+  WHERE unique_purchase=1
+  );
+
+CREATE TEMP TABLE new_users_ as (
+  SELECT 
+  COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
   WHERE E.ga_session_id IS NOT NULL
-    AND D.device_os IS NOT NULL
-    AND E.event_date BETWEEN end_date AND input_date
-  GROUP BY user_pseudo_id, session_id
+  AND D.device_os IS NOT NULL
+  AND E.event_date BETWEEN end_date AND input_date
   );
 
-  CREATE TEMP TABLE revenue as (
-  SELECT 
-    SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day 
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-  ON E.device_type_id = D.device_type_id 
-  WHERE E.ga_session_id IS NOT NULL
-    AND D.device_os IS NOT NULL
-    AND event_date BETWEEN end_date AND input_date
-  GROUP BY event_date
-  );
-
-  CREATE TEMP TABLE users as (
-  SELECT 
-    COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END) as active_users 
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-  ON E.device_type_id = D.device_type_id 
-  WHERE D.device_os IS NOT NULL
-    AND event_date BETWEEN end_date AND input_date
-  );
-
-  CREATE TEMP TABLE first_purchasers as (
-    SELECT COUNT(user_pseudo_id) as first_time_purchasers
-    FROM (
-        SELECT 
-            user_pseudo_id, event_date, RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
-        FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-        INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-        ON E.device_type_id = D.device_type_id
-        WHERE event_name IN ('purchase','in_app_purchase')
-        AND E.ga_session_id IS NOT NULL
-        AND D.device_os IS NOT NULL
-        AND E.event_date BETWEEN end_date AND input_date
-        GROUP BY user_pseudo_id, event_date, event_timestamp)
-    WHERE unique_purchase=1
-    );
-
-  CREATE TEMP TABLE new_users_ as (
-    SELECT 
-    COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
+CREATE TEMP TABLE all_user_scoped_metrics as (
+  SELECT
+    user_pseudo_id, 
+    event_date, 
+    event_name,
+    ga_session_id as session_id,
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
     INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
     ON E.device_type_id = D.device_type_id
-    WHERE E.ga_session_id IS NOT NULL
+    WHERE ga_session_id IS NOT NULL
     AND D.device_os IS NOT NULL
-    AND E.event_date BETWEEN end_date AND input_date
-    );
+    AND event_date BETWEEN end_date AND input_date
+    GROUP BY user_pseudo_id, session_id, event_date, event_name
+  );
 
-  CREATE TEMP TABLE all_user_scoped_metrics as (
-    SELECT
-      user_pseudo_id, 
-      event_date, 
-      event_name,
-      ga_session_id as session_id,
-      FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-      INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-      ON E.device_type_id = D.device_type_id
-      WHERE ga_session_id IS NOT NULL
-      AND D.device_os IS NOT NULL
-      AND event_date BETWEEN end_date AND input_date
-      GROUP BY user_pseudo_id, session_id, event_date, event_name
-    );
+CREATE TEMP TABLE DataForTargetTable AS
+  SELECT
+    CURRENT_TIMESTAMP() AS processed_timestamp,
+    input_date AS feature_date,
+    COALESCE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),0) AS purchasers_users,
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),COUNT(DISTINCT event_date)),0.0) AS average_daily_purchasers,
+    COALESCE(MAX(active_users),0) AS active_users,
+    COALESCE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),0.0) AS DAU,
+    COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH)),0.0) AS MAU,
+    COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK)),0.0) AS WAU,
+    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH))),0.0) AS dau_per_mau,
+    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK))),0.0) AS dau_per_wau,
+    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH))),0.0) AS wau_per_mau,
+    COALESCE(ROUND(SUM(engagement_time_msec)/1000),0) AS users_engagement_duration_seconds,
+    COALESCE(SAFE_DIVIDE(ROUND(SUM(engagement_time_msec)/1000),MAX(active_users)),0.0) AS average_engagement_time,
+    COALESCE(SAFE_DIVIDE((ROUND(SUM(engagement_time_msec)/1000)),COUNT(e.session_id)),0.0) AS average_engagement_time_per_session,
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT e.session_id),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS average_sessions_per_user,
+    COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END)),0.0) AS ARPPU,
+    COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),MAX(active_users)),0.0) AS ARPU,
+    COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),COUNT(DISTINCT event_date)),0.0) AS average_daily_revenue,
+    COALESCE(MAX(sum_revenue_per_day),0.0) AS max_daily_revenue,
+    COALESCE(MIN(sum_revenue_per_day),0.0) AS min_daily_revenue,
+    COALESCE(MAX(new_users),0) AS new_users,
+    COALESCE(COUNT(DISTINCT e.user_pseudo_id) - MAX(new_users),0) AS returning_users,
+    COALESCE(MAX(first_time_purchasers),0) AS first_time_purchasers,
+    COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(active_users)),0.0) AS first_time_purchaser_conversion,
+    COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(new_users)),0.0) AS first_time_purchasers_per_new_user,
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.user_pseudo_id END),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS avg_user_conversion_rate,
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.session_id END),COUNT(DISTINCT e.session_id)),0.0) AS avg_session_conversion_rate,
+    FROM all_user_scoped_metrics as usm
+    INNER JOIN engagement as e 
+      ON e.session_id = usm.session_id AND e.user_pseudo_id = usm.user_pseudo_id
+    CROSS JOIN revenue
+    CROSS JOIN users
+    CROSS JOIN first_purchasers
+    CROSS JOIN new_users_;
 
-  CREATE TEMP TABLE DataForTargetTable AS
-    SELECT
-      CURRENT_TIMESTAMP() AS processed_timestamp,
-      input_date AS feature_date,
-      COALESCE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),0) AS purchasers_users,
-      COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),COUNT(DISTINCT event_date)),0.0) AS average_daily_purchasers,
-      COALESCE(MAX(active_users),0) AS active_users,
-      COALESCE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),0.0) AS DAU,
-      COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH)),0.0) AS MAU,
-      COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK)),0.0) AS WAU,
-      COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH))),0.0) AS dau_per_mau,
-      COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK))),0.0) AS dau_per_wau,
-      COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH))),0.0) AS wau_per_mau,
-      COALESCE(ROUND(SUM(engagement_time_msec)/1000),0) AS users_engagement_duration_seconds,
-      COALESCE(SAFE_DIVIDE(ROUND(SUM(engagement_time_msec)/1000),MAX(active_users)),0.0) AS average_engagement_time,
-      COALESCE(SAFE_DIVIDE((ROUND(SUM(engagement_time_msec)/1000)),COUNT(e.session_id)),0.0) AS average_engagement_time_per_session,
-      COALESCE(SAFE_DIVIDE(COUNT(DISTINCT e.session_id),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS average_sessions_per_user,
-      COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END)),0.0) AS ARPPU,
-      COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),MAX(active_users)),0.0) AS ARPU,
-      COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),COUNT(DISTINCT event_date)),0.0) AS average_daily_revenue,
-      COALESCE(MAX(sum_revenue_per_day),0.0) AS max_daily_revenue,
-      COALESCE(MIN(sum_revenue_per_day),0.0) AS min_daily_revenue,
-      COALESCE(MAX(new_users),0) AS new_users,
-      COALESCE(COUNT(DISTINCT e.user_pseudo_id) - MAX(new_users),0) AS returning_users,
-      COALESCE(MAX(first_time_purchasers),0) AS first_time_purchasers,
-      COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(active_users)),0.0) AS first_time_purchaser_conversion,
-      COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(new_users)),0.0) AS first_time_purchasers_per_new_user,
-      COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.user_pseudo_id END),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS avg_user_conversion_rate,
-      COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.session_id END),COUNT(DISTINCT e.session_id)),0.0) AS avg_session_conversion_rate,
-      FROM all_user_scoped_metrics as usm
-      INNER JOIN engagement as e 
-        ON e.session_id = usm.session_id AND e.user_pseudo_id = usm.user_pseudo_id
-      CROSS JOIN revenue
-      CROSS JOIN users
-      CROSS JOIN first_purchasers
-      CROSS JOIN new_users_;
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+SELECT * FROM DataForTargetTable;
 
-  INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-  SELECT * FROM DataForTargetTable;
+SET rows_added = 1;
 
-  SET rows_added = 1;
-
-  DROP TABLE engagement;
-  DROP TABLE revenue;
-  DROP TABLE users;
-  DROP TABLE first_purchasers;
-  DROP TABLE new_users_;
-  DROP TABLE all_user_scoped_metrics;
-  DROP TABLE DataForTargetTable;
-END;
+DROP TABLE engagement;
+DROP TABLE revenue;
+DROP TABLE users;
+DROP TABLE first_purchasers;
+DROP TABLE new_users_;
+DROP TABLE all_user_scoped_metrics;
+DROP TABLE DataForTargetTable;

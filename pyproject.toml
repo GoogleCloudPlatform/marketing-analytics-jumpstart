@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "propensity-modeling"
+name = "marketing-data-engine"
 version = "0.1.0"
-description = "Purchase Propensity for Marketing Analytics"
+description = "Marketing Data Engine"
 authors = ["Marketing Analytics Solutions Architects <ma-se@google.com>"]
 license = "Apache 2.0"
 readme = "README.md"
@@ -20,8 +20,12 @@ google-cloud-bigquery = "2.30.0"
 google-cloud-pipeline-components = "1.0.33"
 google-auth = "^2.14.1"
 google-cloud-storage = "^2.6.0"
+## Fixing this error: https://stackoverflow.com/questions/76175487/sudden-importerror-cannot-import-name-appengine-from-requests-packages-urlli
 kfp = {version = "2.0.0-b12", allow-prereleases = true}
+#kfp = {version = "2.0.0-b16", allow-prereleases = true}
 kfp-server-api = "2.0.0.a6"
+#kfp-server-api = "2.0.0b1"
+urllib3 = "1.26.15"
 toml = "0.10.2"
 docker = "^6.0.1"
 ma-components = {path = "python/base_component_image/", develop = true}
@@ -53,8 +57,8 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "-vv -s --variables config/dev.yaml" 
-variables = "config/dev.yaml"
+addopts = "-vv -s --variables config/config.yaml" 
+variables = "config/config.yaml"
 testpaths = ["python/pipelines"]
 markers = [
     "unit",

@@ -18,7 +18,7 @@
 # https://docs.docker.com/engine/reference/builder/#dockerignore-file
 
 # Exclude locally installed dependencies
-venv/
+.venv/
 
 # Exclude "build-time" ignore files.
 .dockerignore

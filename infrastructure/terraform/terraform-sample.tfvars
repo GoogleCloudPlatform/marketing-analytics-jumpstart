@@ -14,7 +14,7 @@
 
 ####################  INFRA VARIABLES  #################################
 
-tf_state_project_id          = "Project ID where terraform backend configuration is stored"
+tf_state_project_id = "Project ID where terraform backend configuration is stored"
 
 create_dev_environment     = false
 create_staging_environment = false
@@ -26,16 +26,16 @@ deploy_pipelines     = true
 
 ####################  DATA VARIABLES  #################################
 
-data_project_id = "Project id where the MDS datasets will be created"
-data_processing_project_id = "Project id where the Dataform will be installed and run"
+data_project_id              = "Project id where the MDS datasets will be created"
+data_processing_project_id   = "Project id where the Dataform will be installed and run"
 source_ga4_export_project_id = "Project id which contains the GA4 export dataset"
-source_ga4_export_dataset = "GA4 export dataset name"
+source_ga4_export_dataset    = "GA4 export dataset name"
 source_ads_export_data = [{ project = "abc", dataset = "dataset1", table_suffix = "_123456" },
 { project = "xyz", dataset = "dataset2", table_suffix = "_567890" }]
 
 ####################  ACTIVATION VARIABLES  #################################
 
-activation_project_id  = "Project ID where activation resources are created"
+activation_project_id = "Project ID where activation resources are created"
 # Required. A MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
 #   Admin > Data Streams > choose your stream > Measurement Protocol > Create
 ga4_measurement_id     = "Measurement ID in GA4"
@@ -43,8 +43,8 @@ ga4_measurement_secret = "Client secret for authenticatin to GA4 API"
 
 ####################  GITHUB VARIABLES  #################################
 
-project_owner_email = "Project owner email"
-dataform_github_repo = "URL of the GitHub or GitLab repo which contains the Dataform scripts"
+project_owner_email   = "Project owner email"
+dataform_github_repo  = "URL of the GitHub or GitLab repo which contains the Dataform scripts"
 dataform_github_token = "GitHub token generated for that repo"
 
 pipelines_github_owner = "Cloud Build github owner account for pipelines"

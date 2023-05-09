@@ -12,108 +12,104 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{name}}`(INOUT input_date DATE, INOUT end_date DATE, OUT rows_added INT64)
-OPTIONS (description="User granularity level labels. Run this procedure daily.")
-BEGIN
-  # Run these windows aggregations every day. For each date in training and inference date ranges.
-  -- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
-    SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
-    SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
+# Run these windows aggregations every day. For each date in training and inference date ranges.
+## Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
+SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
-  ## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
-  CREATE TEMP TABLE future_purchases_per_user AS (
-    SELECT
-      user_pseudo_id,
-      input_date as event_date,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_0,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_1,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 2 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_2,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 3 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_3,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 4 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_4,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 5 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_5,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 6 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_6,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 7 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_7,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 8 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_8,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 9 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_9,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 10 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_10,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 11 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_11,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 12 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_12,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 13 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_13,
-      MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_14
-    FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-    INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-    ON E.device_type_id = D.device_type_id
-      WHERE event_date BETWEEN input_date AND end_date
-      AND E.event_name='purchase'
-      AND E.ga_session_id IS NOT NULL
-      AND E.ecommerce.transaction_id IS NOT NULL 
-      AND E.ecommerce.transaction_id <> '(not set)'
-      AND D.device_os IS NOT NULL
-      GROUP BY user_pseudo_id
+## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
+CREATE TEMP TABLE future_purchases_per_user AS (
+  SELECT
+    user_pseudo_id,
+    input_date as event_date,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_0,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_1,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 2 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_2,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 3 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_3,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 4 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_4,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 5 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_5,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 6 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_6,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 7 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_7,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 8 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_8,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 9 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_9,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 10 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_10,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 11 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_11,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 12 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_12,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 13 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_13,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_14
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON E.device_type_id = D.device_type_id
+    WHERE event_date BETWEEN input_date AND end_date
+    AND E.event_name='purchase'
+    AND E.ga_session_id IS NOT NULL
+    AND E.ecommerce.transaction_id IS NOT NULL 
+    AND E.ecommerce.transaction_id <> '(not set)'
+    AND D.device_os IS NOT NULL
+    GROUP BY user_pseudo_id
+);
+
+## All users in the platform
+  CREATE TEMP TABLE all_users_possible_purchases as (
+    SELECT DISTINCT
+      Users.user_pseudo_id,
+      Days.event_date as event_date,
+      NULL as purchase_day_0,
+      NULL as purchase_day_1,
+      NULL as purchase_day_2,
+      NULL as purchase_day_3,
+      NULL as purchase_day_4,
+      NULL as purchase_day_5,
+      NULL as purchase_day_6,
+      NULL as purchase_day_7,
+      NULL as purchase_day_8,
+      NULL as purchase_day_9,
+      NULL as purchase_day_10,
+      NULL as purchase_day_11,
+      NULL as purchase_day_12,
+      NULL as purchase_day_13,
+      NULL as purchase_day_14,
+    FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
+    CROSS JOIN 
+    (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
+    WHERE Days.event_date = input_date
+      AND Users.event_name='purchase'
+      AND Users.ga_session_id IS NOT NULL
+      AND Users.ecommerce.transaction_id IS NOT NULL 
+      AND Users.ecommerce.transaction_id <> '(not set)'
   );
 
-  -- All users in the platform
-    CREATE TEMP TABLE all_users_possible_purchases as (
-      SELECT DISTINCT
-        Users.user_pseudo_id,
-        Days.event_date as event_date,
-        NULL as purchase_day_0,
-        NULL as purchase_day_1,
-        NULL as purchase_day_2,
-        NULL as purchase_day_3,
-        NULL as purchase_day_4,
-        NULL as purchase_day_5,
-        NULL as purchase_day_6,
-        NULL as purchase_day_7,
-        NULL as purchase_day_8,
-        NULL as purchase_day_9,
-        NULL as purchase_day_10,
-        NULL as purchase_day_11,
-        NULL as purchase_day_12,
-        NULL as purchase_day_13,
-        NULL as purchase_day_14,
-      FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
-      CROSS JOIN 
-      (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
-      WHERE Days.event_date = input_date
-        AND Users.event_name='purchase'
-        AND Users.ga_session_id IS NOT NULL
-        AND Users.ecommerce.transaction_id IS NOT NULL 
-        AND Users.ecommerce.transaction_id <> '(not set)'
-    );
 
+CREATE TEMP TABLE DataForTargetTable AS
+  SELECT DISTINCT
+    CURRENT_TIMESTAMP() AS processed_timestamp,
+    A.event_date as feature_date,
+    A.user_pseudo_id,
+    LEAST(COALESCE(B.purchase_day_0, 0), 1) AS purchase_day_0,
+    LEAST(COALESCE(B.purchase_day_1, 0), 1) AS purchase_day_1,
+    LEAST(COALESCE(B.purchase_day_2, 0), 1) AS purchase_day_2,
+    LEAST(COALESCE(B.purchase_day_3, 0), 1) AS purchase_day_3,
+    LEAST(COALESCE(B.purchase_day_4, 0), 1) AS purchase_day_4,
+    LEAST(COALESCE(B.purchase_day_5, 0), 1) AS purchase_day_5,
+    LEAST(COALESCE(B.purchase_day_6, 0), 1) AS purchase_day_6,
+    LEAST(COALESCE(B.purchase_day_7, 0), 1) AS purchase_day_7,
+    LEAST(COALESCE(B.purchase_day_8, 0), 1) AS purchase_day_8,
+    LEAST(COALESCE(B.purchase_day_9, 0), 1) AS purchase_day_9,
+    LEAST(COALESCE(B.purchase_day_10, 0), 1) AS purchase_day_10,
+    LEAST(COALESCE(B.purchase_day_11, 0), 1) AS purchase_day_11,
+    LEAST(COALESCE(B.purchase_day_12, 0), 1) AS purchase_day_12,
+    LEAST(COALESCE(B.purchase_day_13, 0), 1) AS purchase_day_13,
+    LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
+  FROM all_users_possible_purchases AS A
+  LEFT JOIN future_purchases_per_user AS B
+  ON B.user_pseudo_id = A.user_pseudo_id
+  ;
 
-  CREATE TEMP TABLE DataForTargetTable AS
-    SELECT DISTINCT
-      CURRENT_TIMESTAMP() AS processed_timestamp,
-      A.event_date as feature_date,
-      A.user_pseudo_id,
-      LEAST(COALESCE(B.purchase_day_0, 0), 1) AS purchase_day_0,
-      LEAST(COALESCE(B.purchase_day_1, 0), 1) AS purchase_day_1,
-      LEAST(COALESCE(B.purchase_day_2, 0), 1) AS purchase_day_2,
-      LEAST(COALESCE(B.purchase_day_3, 0), 1) AS purchase_day_3,
-      LEAST(COALESCE(B.purchase_day_4, 0), 1) AS purchase_day_4,
-      LEAST(COALESCE(B.purchase_day_5, 0), 1) AS purchase_day_5,
-      LEAST(COALESCE(B.purchase_day_6, 0), 1) AS purchase_day_6,
-      LEAST(COALESCE(B.purchase_day_7, 0), 1) AS purchase_day_7,
-      LEAST(COALESCE(B.purchase_day_8, 0), 1) AS purchase_day_8,
-      LEAST(COALESCE(B.purchase_day_9, 0), 1) AS purchase_day_9,
-      LEAST(COALESCE(B.purchase_day_10, 0), 1) AS purchase_day_10,
-      LEAST(COALESCE(B.purchase_day_11, 0), 1) AS purchase_day_11,
-      LEAST(COALESCE(B.purchase_day_12, 0), 1) AS purchase_day_12,
-      LEAST(COALESCE(B.purchase_day_13, 0), 1) AS purchase_day_13,
-      LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
-    FROM all_users_possible_purchases AS A
-    LEFT JOIN future_purchases_per_user AS B
-    ON B.user_pseudo_id = A.user_pseudo_id
-    ;
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+SELECT * FROM DataForTargetTable;
 
-  INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-  SELECT * FROM DataForTargetTable;
+SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 
-  SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
-
-  DROP TABLE future_purchases_per_user;
-  DROP TABLE all_users_possible_purchases;
-  DROP TABLE DataForTargetTable;
-END;
+DROP TABLE future_purchases_per_user;
+DROP TABLE all_users_possible_purchases;
+DROP TABLE DataForTargetTable;
