@@ -30,9 +30,7 @@ feature store and ML pipelines use Google Analytics 4 behavioural data. The foll
 BigQuery, Dataform, Workflows, Vertex AI Pipelines, Vertex AI Tabular Workflows, DataFlow, Cloud Function, Cloud
 Pub/Sub.
 
-## Installation Guide
-
-The installation of this solution requires a multistep process.
+## Installation
 
 Please follow the [Installation Guide](./infrastructure/README.md) to deploy this solution.
 

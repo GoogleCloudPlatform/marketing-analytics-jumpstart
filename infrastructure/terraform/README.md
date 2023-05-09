@@ -5,25 +5,15 @@ into BigQuery, create feature store, ML pipelines and Dataflow activation pipeli
 
 ## Prerequisites
 
-* You have a Google Cloud project with billing enabled. You need to have the Owner role on the project in order for
-the Terraform scripts to run successfully. We recommend creating a designated project for this installation. You can create
-a new project in the Google Cloud Console, on the project selector page, [select or create a Google Cloud project](https://console.cloud.google.com/projectselector2/home/dashboard).
-
-* You have a GA4 account with the [query parameters](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference?client_type=gtag#payload_query_parameters).
-* You have [python poetry](https://python-poetry.org/docs/) installed in your environment.
-
-  ```bash
-  curl -sSL https://install.python-poetry.org | python3 -
-  ```
-
-* GitHub repo which will contain the Dataform scripts used to create the MDS.
-* Link a GitHub repository with a Google Cloud Source Repository that are used by Cloud Build triggers of the ML processing pipelines.
+Make sure the prerequisites listed in the [parent README](../README.md) are met.
 
 ## Installation Guide
 
 ### Initial Environment Setup
 
-From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google.com/shell/docs/using-cloud-shell), run the following commands:
+From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google.com/shell/docs/using-cloud-shell) or a
+Linux machine with `gcloud` command installed, run the following commands:
+
 1. Clone the source code repository:
 
     ```bash
@@ -42,10 +32,10 @@ From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
     export GOOGLE_APPLICATION_CREDENTIALS="[Credentials file created by the last command]"
     ```
 
-3. Run the following script to create Terraform service account. To run the script you use an account to authenticate 
-against Google Cloud  which have the following permissions in your Google Cloud project:
-    * `roles/iam.serviceAccountCreator` for creating service account used by terraform.
-    * `roles/storage.admin` for creating terraform backend-config storage bucket.
+3. Run the following script to create Terraform service account. To run the script you use an account to authenticate
+   against Google Cloud which have the following permissions in your Google Cloud project:
+   * `roles/iam.serviceAccountCreator` for creating service account used by terraform.
+   * `roles/storage.admin` for creating terraform backend-config storage bucket.
 
     ```bash
     SOURCE_ROOT=${HOME}/${REPO}
@@ -53,7 +43,7 @@ against Google Cloud  which have the following permissions in your Google Cloud 
     scripts/generate-tf-backend.sh
     ```
 
-    **Note:** Make sure you provide access to the BigQuery dataset where your GA4 and GAds exported data is located. 
+   **Note:** Make sure you provide access to the BigQuery dataset where your GA4 and GAds exported data is located.
 
 5. Create the Terraform variable file by making a copy from the template and set the Terraform variables.
 
@@ -63,7 +53,9 @@ against Google Cloud  which have the following permissions in your Google Cloud 
     vim ${TERRAFORM_RUN_DIR}/terraform.tfvars
     ```
 
-     Edit the `terraform.tfvars` file by setting the following variable values:
+   Edit the `terraform.tfvars` file by setting the following variable values:
+
+<!--  TODO: We are going to need to keep this list in sync  with the actual file. Perhaps it's not worth doing it. -->
 
     ```bash
     ####################  INFRA VARIABLES  #################################
@@ -112,8 +104,9 @@ against Google Cloud  which have the following permissions in your Google Cloud 
     -var=deploy_pipelines=false
     ```
 
-    **Note:** Wait for a few minutes meanwhile all the resource are deployed to your Google Cloud project. You should have to wait on Dataform to be configured.
-    If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
+   **Note:** Wait for a few minutes meanwhile all the resource are deployed to your Google Cloud project. You should
+   have to wait on Dataform to be configured.
+   If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
 
 7. Run terraform to create resources for **feature store**, **pipelines** and **activation application**:
 
