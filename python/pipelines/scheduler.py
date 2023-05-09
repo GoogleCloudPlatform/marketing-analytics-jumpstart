@@ -18,7 +18,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 
 import yaml
 
-from pipelines.pipeline_ops import pause_schedule, schedule_pipeline
+from pipelines.pipeline_ops import pause_schedule, schedule_pipeline, delete_schedules
 
 
 def check_extention(file_path: str, type: str = '.yaml'):
@@ -32,9 +32,9 @@ def check_extention(file_path: str, type: str = '.yaml'):
 # config path : pipeline module and function name
 pipelines_list = {
     'vertex_ai.pipelines.feature-creation.execution': "pipelines.feature_engineering_pipelines.pipeline",
-    'vertex_ai.pipelines.propensity.training': None,
+    'vertex_ai.pipelines.propensity.training': None,  # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
-    'vertex_ai.pipelines.segmentation.training': "pipelines.segmentation_pipelines.training_pl", # tabular workflows pipelines is precompiled
+    'vertex_ai.pipelines.segmentation.training': "pipelines.segmentation_pipelines.training_pl",
     'vertex_ai.pipelines.segmentation.prediction': "pipelines.segmentation_pipelines.prediction_pl",
     'vertex_ai.pipelines.clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.prediction':  "pipelines.tabular_pipelines.prediction_regression_pl",
@@ -55,6 +55,13 @@ if __name__ == "__main__":
                         required=True,
                         choices=list(pipelines_list.keys()),
                         help='Pipeline key name as it is in dev.yaml and prod.yaml')
+    
+    
+    parser.add_argument("-d", '--delete',
+                        dest="delete",
+                        required=False,
+                        action='store_true',
+                        help='if flag is set- delete scheduled pipeline')
 
     args = parser.parse_args()
 
@@ -75,25 +82,30 @@ if __name__ == "__main__":
 
     template_artifact_uri = f"https://{repo_params['region']}-kfp.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{my_pipeline_vars['name']}/latest"
 
-    schedule = schedule_pipeline(
-        project_id=generic_pipeline_vars['project_id'],
+    if args.delete:
+        delete_schedules(project_id=generic_pipeline_vars['project_id'],
         region=generic_pipeline_vars['region'],
-        pipeline_name=my_pipeline_vars['name'],
-        pipeline_template_uri=template_artifact_uri,
-        pipeline_sa=generic_pipeline_vars['service_account'],
-        pipeline_root=generic_pipeline_vars['root_path'],
-        cron=my_pipeline_vars['schedule']['cron'],
-        max_concurrent_run_count=my_pipeline_vars['schedule']['max_concurrent_run_count'],
-        start_time=my_pipeline_vars['schedule']['start_time'],
-        end_time=my_pipeline_vars['schedule']['end_time']
-    )
-
-    if 'state' not in schedule or schedule['state'] != 'ACTIVE':
-        raise Exception(f"Scheduling pipeline failed {schedule}")
-
-    if my_pipeline_vars['schedule']['state'] == 'PAUSED':
-        logging.info(f"Pausing scheduler for {args.pipeline}")
-        pause_schedule(
+        pipeline_name=my_pipeline_vars['name'])
+    else:
+        schedule = schedule_pipeline(
             project_id=generic_pipeline_vars['project_id'],
             region=generic_pipeline_vars['region'],
-            pipeline_name=my_pipeline_vars['name'])
+            pipeline_name=my_pipeline_vars['name'],
+            pipeline_template_uri=template_artifact_uri,
+            pipeline_sa=generic_pipeline_vars['service_account'],
+            pipeline_root=generic_pipeline_vars['root_path'],
+            cron=my_pipeline_vars['schedule']['cron'],
+            max_concurrent_run_count=my_pipeline_vars['schedule']['max_concurrent_run_count'],
+            start_time=my_pipeline_vars['schedule']['start_time'],
+            end_time=my_pipeline_vars['schedule']['end_time']
+        )
+
+        if 'state' not in schedule or schedule['state'] != 'ACTIVE':
+            raise Exception(f"Scheduling pipeline failed {schedule}")
+
+        if my_pipeline_vars['schedule']['state'] == 'PAUSED':
+            logging.info(f"Pausing scheduler for {args.pipeline}")
+            pause_schedule(
+                project_id=generic_pipeline_vars['project_id'],
+                region=generic_pipeline_vars['region'],
+                pipeline_name=my_pipeline_vars['name'])

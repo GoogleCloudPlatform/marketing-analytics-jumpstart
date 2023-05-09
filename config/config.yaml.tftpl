@@ -24,7 +24,7 @@ cloud_build:
   github:
     owner: "${pipelines_github_owner}"
     repo_name: "${pipelines_github_repo}"
-    trigger_branch: "uat"
+    trigger_branch: "dev"
   build_file: "cloudbuild/pipelines.yaml"
   _REPOSITORY_GCP_PROJECT: "${project_id}"
   _REPOSITORY_NAME: "github_${pipelines_github_owner}_${pipelines_github_repo}"
@@ -62,7 +62,7 @@ dataflow:
 vertex_ai:
   components:
     base_image_name: "ma-components"
-    base_image_tag: "uat"
+    base_image_tag: "dev"
 
   pipelines: 
     project_id: "${project_id}"
@@ -76,7 +76,7 @@ vertex_ai:
       execution:
         name: "feature-creation-pl"
         job_id_prefix: "feature-creation-pl-"
-        experiment_name: "feature-creation-uat"
+        experiment_name: "feature-creation"
         type: "custom"
         schedule:
           cron: "TZ=America/New_York */1 * * * *"
@@ -84,7 +84,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "US"
@@ -219,15 +219,14 @@ vertex_ai:
       training:
         name: "propensity-training-pl"
         job_id_prefix: "propensity-training-pl-"
-        experiment_name: "propensity-training-uat"
+        experiment_name: "propensity-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
-          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
+          cron: "TZ=America/New_York 0 0 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project: "${project_id}"
           location: "us-central1"
@@ -271,15 +270,14 @@ vertex_ai:
       prediction:
         name: "propensity-prediction-pl"
         job_id_prefix: "propensity-prediction-pl-"
-        experiment_name: "propensity-prediction-uat"
+        experiment_name: "propensity-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
-          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
+          cron: "TZ=America/New_York 0 0 * * SUN"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "us-central1"
@@ -307,15 +305,14 @@ vertex_ai:
       training:
         name: "segmentation-training-pl"
         job_id_prefix: "segmentation-training-pl-"
-        experiment_name: "segmentation-training-uat"
+        experiment_name: "segmentation-training"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
-          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
+          cron: "TZ=America/New_York 0 0 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "US"
@@ -328,29 +325,27 @@ vertex_ai:
           km_min_rel_progress: 0.01
           km_warm_start: "FALSE"
           model_dataset_id: "${project_id}.audience_segmentation" # to also include project.dataset
-          model_name_bq_prefix: "{prefix}audience_segmentation_model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
-          vertex_model_name: "{prefix}audience_segmentation_model"
-          training_data_bq_table: "${project_id}.audience_segmentation.{prefix}v_audience_segmentation_training_15"
+          model_name_bq_prefix: "audience_segmentation_model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          vertex_model_name: "audience_segmentation_model"
+          training_data_bq_table: "${project_id}.audience_segmentation.v_audience_segmentation_training_15"
           exclude_features:
           - processed_timestamp
           - data_split
           - feature_date
           - user_pseudo_id
           - user_id
-        pipeline_parameters_substitutions: 
-          prefix: "uat_"
+        pipeline_parameters_substitutions: null
       prediction:
         name: "segmentation-prediction-pl"
         job_id_prefix: "segmentation-prediction-pl-"
-        experiment_name: "segmentation-prediction-uat"
+        experiment_name: "segmentation-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
-          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
+          cron: "TZ=America/New_York 0 0 * * SUN"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "US"
@@ -369,15 +364,14 @@ vertex_ai:
       training:
         name: "clv-training-pl"
         job_id_prefix: "clv-training-pl-"
-        experiment_name: "clv-training-uat"
+        experiment_name: "clv-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
-          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
+          cron: "TZ=America/New_York 0 0 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project: "${project_id}"
           location: "us-central1"
@@ -417,15 +411,14 @@ vertex_ai:
       prediction:
         name: "clv-prediction-pl"
         job_id_prefix: "clv-prediction-pl-"
-        experiment_name: "clv-prediction-uat"
+        experiment_name: "clv-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York */1 * * * *"
-          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
+          cron: "TZ=America/New_York 0 0 * * SUN"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "us-central1"
@@ -950,3 +943,4 @@ bigquery:
 terraform:
   version: 1.4.5
   url: "https://releases.hashicorp.com/terraform/1.4.5/terraform_1.4.5_darwin_amd64.zip" 
+  

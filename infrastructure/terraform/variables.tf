@@ -155,7 +155,7 @@ variable "mds_dataset_prefix" {
 variable "feature_store_config_env" {
   description = "determine which config file is used for feature store deployment"
   type        = string
-  default     = "prod"
+  default     = "config"
 }
 
 variable "poetry_cmd" {
