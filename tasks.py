@@ -30,7 +30,6 @@ from jinja2 import Template
 from jinja2 import FileSystemLoader
 from jinja2 import Environment
 
-venv = "source ./venv/bin/activate"
 
 GOOGLE_CLOUD_PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT")
 REGION = os.environ.get("REGION", "us-central1")
@@ -145,64 +144,36 @@ def apply_env_variables_tables(c, env_name="prod"):
 
 
 @task
-def require_project(c):  # noqa: ANN001, ANN201
-    """(Check) Require GOOGLE_CLOUD_PROJECT be defined"""
-    if GOOGLE_CLOUD_PROJECT is None:
-        print("GOOGLE_CLOUD_PROJECT not defined. Required for task")
-        sys.exit(1)
-
-
-@task
-def require_venv(c, test_requirements=False, quiet=True):  # noqa: ANN001, ANN201
+def require_venv(c, test_requirements=False):  # noqa: ANN001, ANN201
     """(Check) Require that virtualenv is setup, requirements installed"""
-
-    c.run("python3.7 -m venv venv")
-    quiet_param = " -q" if quiet else ""
-
-    with c.prefix(venv):
-        c.run(f"pip install -r requirements.txt {quiet_param}")
-
-        if test_requirements:
-            c.run(f"pip install -r requirements-dev.txt {quiet_param}")
+    c.run("curl -sSL https://install.python-poetry.org | python3 -")
+    c.run(f"poetry install")
+    if test_requirements:
+        c.run(f"poetry install --with test")
 
 
 @task
-def require_venv_test(c):  # noqa: ANN001, ANN201
+def setup_poetry_test(c):  # noqa: ANN001, ANN201
     """(Check) Require that virtualenv is setup, requirements (incl. test) installed"""
     require_venv(c, test_requirements=True)
 
 
 @task
-def setup_virtualenv(c):  # noqa: ANN001, ANN201
+def setup_poetry_prod(c):  # noqa: ANN001, ANN201
     """Create virtualenv, and install requirements, with output"""
-    require_venv(c, test_requirements=True, quiet=False)
-
-
-@task(pre=[require_venv])
-def start(c):  # noqa: ANN001, ANN201
-    """Start the web service"""
-    with c.prefix(venv):
-        c.run("python app.py")
-
-
-@task(pre=[require_venv])
-def dev(c):  # noqa: ANN001, ANN201
-    """Start the web service in a development environment, with fast reload"""
-    with c.prefix(venv):
-        c.run("FLASK_ENV=development python app.py")
+    require_venv(c, test_requirements=False)
 
 
 @task(pre=[require_venv])
 def lint(c):  # noqa: ANN001, ANN201
     """Run linting checks"""
-    with c.prefix(venv):
-        local_names = _determine_local_import_names(".")
-        c.run(
-            "flake8 --exclude venv "
-            "--max-line-length=88 "
-            "--import-order-style=google "
-            f"--application-import-names {','.join(local_names)} "
-            "--ignore=E121,E123,E126,E203,E226,E24,E266,E501,E704,W503,W504,I202"
+    local_names = _determine_local_import_names(".")
+    c.run(
+        "poetry run flake8 --exclude .venv "
+        "--max-line-length=88 "
+        "--import-order-style=google "
+        f"--application-import-names {','.join(local_names)} "
+        "--ignore=E121,E123,E126,E203,E226,E24,E266,E501,E704,W503,W504,I202"
         )
 
 
@@ -224,44 +195,17 @@ def _determine_local_import_names(start_dir: str) -> List[str]:
 @task(pre=[require_venv])
 def fix(c):  # noqa: ANN001, ANN201
     """Apply linting fixes"""
-    with c.prefix(venv):
-        c.run("black *.py **/*.py --force-exclude venv")
-        c.run("isort --profile google *.py **/*.py")
-
-
-@task(pre=[require_project])
-def build(c):  # noqa: ANN001, ANN201
-    """Build the service into a container image"""
-    c.run(
-        f"gcloud builds submit --pack "
-        f"image={REGION}-docker.pkg.dev/{GOOGLE_CLOUD_PROJECT}/samples/microservice-template:manual"
-    )
-
-
-@task(pre=[require_project])
-def deploy(c):  # noqa: ANN001, ANN201
-    """Deploy the container into Cloud Run (fully managed)"""
-    c.run(
-        "gcloud run deploy microservice-template "
-        f"--image {REGION}-docker.pkg.dev/{GOOGLE_CLOUD_PROJECT}/samples/microservice-template:manual "
-        f"--platform managed --region {REGION}"
-    )
+    c.run("poetry run black *.py **/*.py --force-exclude .venv")
+    c.run("poetry run isort --profile google *.py **/*.py")
 
 
 @task(pre=[require_venv_test])
 def test(c):  # noqa: ANN001, ANN201
     """Run unit tests"""
-    with c.prefix(venv):
-        c.run("pytest test/test_app.py")
+    c.run("poetry run pytest python/")
 
 
 @task(pre=[require_venv_test])
 def system_test(c):  # noqa: ANN001, ANN201
     """Run system tests"""
-    with c.prefix(venv):
-        c.run("pytest test/test_system.py")
-
-## commands list:
-# 1. To apply Jinja2 template over the right files.
-# 2. To run unit testing
-# 3. To run static check on SQL code
+    c.run("poetry run pytest python/")

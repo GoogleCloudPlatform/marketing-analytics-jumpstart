@@ -452,9 +452,9 @@ bigquery:
   region: "US"
   dataset:
     feature_store:
-      project_id: "${project_id}" 
+      project_id: "${project_id}"
       name: "feature_store"
-      location: "us"
+      location: "US"
       collation: "und:ci"
       is_case_insensitive: TRUE
       description: "Feature Store dataset for Marketing behavioural modeling"
@@ -464,9 +464,8 @@ bigquery:
       default_table_expiration_days: 365
     purchase_propensity:
       name: "purchase_propensity"
-      region: "US"
-      project_id: "${project_id}" 
-      location: "us"
+      location: "US"
+      project_id: "${project_id}"
       collation: "und:ci"
       is_case_insensitive: TRUE
       description: "Purchase Propensity Use Case dataset for Marketing behavioural modeling"
@@ -475,9 +474,9 @@ bigquery:
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
     customer_lifetime_value:
-      project_id: "${project_id}" 
+      project_id: "${project_id}"
       name: "customer_lifetime_value"
-      location: "us"
+      location: "US"
       collation: "und:ci"
       is_case_insensitive: TRUE
       description: "Customer Lifetime Value Use Case dataset for Marketing behavioural modeling"
@@ -486,9 +485,9 @@ bigquery:
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
     audience_segmentation:
-      project_id: "${project_id}" 
+      project_id: "${project_id}"
       name: "audience_segmentation"
-      location: "us"
+      location: "US"
       collation: "und:ci"
       is_case_insensitive: TRUE
       description: "Audience Segmentation Use Case dataset for Marketing behavioural modeling"
@@ -501,91 +500,91 @@ bigquery:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
       table_name: "audience_segmentation_inference_preparation"
-      region: "US"
+      location: "US"
       table_description: "Audience Segmentation Inference Preparation table to be used for Model Prediction"
     customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
       table_name: "customer_lifetime_value_inference_preparation"
-      region: "US"
+      location: "US"
       table_description: "Customer Lifetime Value Inference Preparation table to be used for Model Prediction"
     customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
       table_name: "customer_lifetime_value_label"
-      region: "US"
+      location: "US"
       table_description: "Customer Lifetime Value Inference Preparation table to be used for Model Prediction"
     purchase_propensity_inference_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
       table_name: "purchase_propensity_inference_preparation"
-      region: "US"
+      location: "US"
       table_description: "Purchase Propensity Inference Preparation table to be used for Model Prediction"
     purchase_propensity_label:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "purchase_propensity_label"
-      region: "US"
+      location: "US"
       table_description: "Purchase Propensity Label table to be used for Model Prediction"
     user_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_dimensions"
-      region: "US"
+      location: "US"
       table_description: "User Dimensions table as part of the Feature Store"
     user_lifetime_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_lifetime_dimensions"
-      region: "US"
+      location: "US"
       table_description: "User Lifetime Dimensions table as part of the Feature Store"
     user_lookback_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_lookback_metrics"
-      region: "US"
+      location: "US"
       table_description: "User Lookback Metrics table as part of the Feature Store"
     user_rolling_window_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_rolling_window_lifetime_metrics"
-      region: "US"
+      location: "US"
       table_description: "User Rolling Window Lifetime Metrics table as part of the Feature Store" 
     user_rolling_window_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_rolling_window_metrics"
-      region: "US"
+      location: "US"
       table_description: "User Rolling Window Metrics table as part of the Feature Store"
     user_scoped_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_scoped_lifetime_metrics"
-      region: "US"
+      location: "US"
       table_description: "User Scoped Lifetime Metrics table as part of the Feature Store"
     user_scoped_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_scoped_metrics"
-      region: "US"
+      location: "US"
       table_description: "User Scoped Metrics table as part of the Feature Store"
     user_scoped_segmentation_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_scoped_segmentation_metrics"
-      region: "US"
+      location: "US"
       table_description: "User Scoped Segmentation Metrics table as part of the Feature Store" 
     user_segmentation_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_segmentation_dimensions"
-      region: "US"
+      location: "US"
       table_description: "User Segmentation Dimensions table as part of the Feature Store"
     user_session_event_aggregated_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_session_event_aggregated_metrics"
-      region: "US"
+      location: "US"
       table_description: "User Session Event Aggregated Metrics table as part of the Feature Store" 
   query:
     audience_segmentation_query_template:
@@ -947,50 +946,6 @@ bigquery:
       insert_table: "audience_segmentation_inference_preparation"
       expiration_duration_hours: 48
       mds_dataset: "${mds_dataset}"
-  models:
-    create_purchase_propensity_bqml:
-      project_id: "${project_id}"
-      dataset: "model"
-      name: "purchase_propensity_model_baseline"
-      description: "BQML"
-      model_type: "LOGISTIC_REG"
-      data_split_column: "validation_row"
-      label_column: "_1_15_day_will_purchase"
-      model_registry: "vertex_ai"
-      model_version_alias:
-      - purchase_propensity
-      - experimental
-      training_project_id: "${project_id}"
-      training_dataset_id: "feature_store"
-      training_view: "purchase_propensity_training_dataset_30_15"
-    create_customer_ltv_bqml:
-      project_id: "${project_id}"
-      dataset: "model"
-      name: "customer_ltv_model_baseline"
-      description: "BQML"
-      model_type: "LINEAR_REG"
-      data_split_column: "validation_row"
-      label_column: "user_ltv_revenue"
-      model_registry: "vertex_ai"
-      model_version_alias:
-      - customer_ltv
-      - experimental
-      training_project_id: "${project_id}"
-      training_dataset_id: "feature_store"
-      training_view: "customer_ltv_training_dataset_30_15"
-    create_audience_segmentation_bqml:
-      project_id: "${project_id}"
-      dataset: "model"
-      name: "audience_segmentation_model_baseline"
-      description: "BQML"
-      model_type: "KMEANS++"
-      model_registry: "vertex_ai"
-      model_version_alias:
-      - customer_ltv
-      - experimental
-      training_project_id: "${project_id}"
-      training_dataset_id: "feature_store"
-      training_view: "audience_segmentation_training_dataset_30_15"
 
 terraform:
   version: 1.4.5
