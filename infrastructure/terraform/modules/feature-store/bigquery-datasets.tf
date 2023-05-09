@@ -18,8 +18,6 @@ resource "google_bigquery_dataset" "feature_store" {
   project       = local.feature_store_project_id
   description   = local.config_bigquery.dataset.feature_store.description
   location      = local.config_bigquery.dataset.feature_store.location
-  default_collation = local.config_bigquery.dataset.feature_store.collation
-  is_case_sensitive = local.config_bigquery.dataset.feature_store.is_case_sensitive
   max_time_travel_hours = local.config_bigquery.dataset.feature_store.max_time_travel_hours
 
   labels = {
@@ -33,8 +31,6 @@ resource "google_bigquery_dataset" "purchase_propensity" {
   project       = local.purchase_propensity_project_id
   description   = local.config_bigquery.dataset.purchase_propensity.description
   location      = local.config_bigquery.dataset.purchase_propensity.location
-  default_collation = local.config_bigquery.dataset.purchase_propensity.collation
-  is_case_sensitive = local.config_bigquery.dataset.purchase_propensity.is_case_sensitive
   max_time_travel_hours = local.config_bigquery.dataset.purchase_propensity.max_time_travel_hours
   
   labels = {
@@ -48,8 +44,6 @@ resource "google_bigquery_dataset" "customer_lifetime_value" {
   project       = local.customer_lifetime_value_project_id
   description   = local.config_bigquery.dataset.customer_lifetime_value.description
   location      = local.config_bigquery.dataset.customer_lifetime_value.location
-  default_collation = local.config_bigquery.dataset.customer_lifetime_value.collation
-  is_case_sensitive = local.config_bigquery.dataset.customer_lifetime_value.is_case_sensitive
   max_time_travel_hours = local.config_bigquery.dataset.customer_lifetime_value.max_time_travel_hours
   
   labels = {
@@ -63,8 +57,6 @@ resource "google_bigquery_dataset" "audience_segmentation" {
   project       = local.audience_segmentation_project_id
   description   = local.config_bigquery.dataset.audience_segmentation.description
   location      = local.config_bigquery.dataset.audience_segmentation.location
-  default_collation = local.config_bigquery.dataset.audience_segmentation.collation
-  is_case_sensitive = local.config_bigquery.dataset.audience_segmentation.is_case_sensitive
   max_time_travel_hours = local.config_bigquery.dataset.audience_segmentation.max_time_travel_hours
   
   labels = {
