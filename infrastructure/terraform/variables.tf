@@ -33,6 +33,12 @@ variable "google_default_region" {
   type        = string
 }
 
+variable "bigquery_location" {
+  default     = "US"
+  description = "The default Google Cloud region."
+  type        = string
+}
+
 variable "project_owner_email" {
   description = "Email address of the project owner."
   type        = string

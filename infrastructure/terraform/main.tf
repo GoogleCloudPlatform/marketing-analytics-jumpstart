@@ -75,6 +75,7 @@ resource "local_file" "feature_store_configuration" {
     mds_dataset            = "${var.mds_dataset_prefix}_${var.feature_store_config_env}"
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
+    location               = var.bigquery_location
   })
 }
 
