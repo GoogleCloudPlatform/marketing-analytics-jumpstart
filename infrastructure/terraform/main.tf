@@ -94,8 +94,6 @@ resource "null_resource" "generate_sql_queries" {
 
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} inv apply-env-variables-datasets --env-name=${local.config_file_name}
-    ${local.poetry_run_alias} inv apply-env-variables-tables --env-name=${local.config_file_name}
     ${local.poetry_run_alias} inv apply-env-variables-queries --env-name=${local.config_file_name}
     ${local.poetry_run_alias} inv apply-env-variables-procedures --env-name=${local.config_file_name}
     EOT
@@ -105,8 +103,6 @@ resource "null_resource" "generate_sql_queries" {
   provisioner "local-exec" {
     when        = destroy
     command     = <<-EOT
-    rm sql/schema/dataset/*.sql
-    rm sql/table/*.sql
     rm sql/query/*.sql
     rm sql/procedure/*.sql
     EOT

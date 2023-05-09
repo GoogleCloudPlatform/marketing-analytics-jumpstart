@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "propensity-modeling"
+name = "marketing-data-engine"
 version = "0.1.0"
-description = "Purchase Propensity for Marketing Analytics"
+description = "Marketing Data Engine"
 authors = ["Marketing Analytics Solutions Architects <ma-se@google.com>"]
 license = "Apache 2.0"
 readme = "README.md"
@@ -53,8 +53,8 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "-vv -s --variables config/dev.yaml" 
-variables = "config/dev.yaml"
+addopts = "-vv -s --variables config/config.yaml" 
+variables = "config/config.yaml"
 testpaths = ["python/pipelines"]
 markers = [
     "unit",

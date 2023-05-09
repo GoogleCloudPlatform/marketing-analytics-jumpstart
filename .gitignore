@@ -117,7 +117,7 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
@@ -180,7 +180,6 @@ env.sh
 .vscode
 
 *.lock
-train_pipeline.yaml
 **/tests/artifacts 
 
 *.code-workspace
@@ -205,3 +204,6 @@ train_pipeline.yaml
 # IntelliJ IDEA files
 *.iml
 .idea
+
+# Kubeflow Pipelines YAML files
+python/*.yaml
