@@ -148,16 +148,6 @@ variable "feature_store_config_env" {
   default     = "prod"
 }
 
-variable "pipelines_github_repo" {
-  description = "Cloud Build github repository for pipelines"
-  type        = string
-}
-
-variable "pipelines_github_owner" {
-  description = "Cloud Build github repository owner"
-  type        = string
-}
-
 variable "poetry_cmd" {
   description = "alias for poetry run command on the current system"
   type        = string
