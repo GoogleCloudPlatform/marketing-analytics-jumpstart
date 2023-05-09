@@ -91,87 +91,87 @@ vertex_ai:
           query_customer_lifetime_value_label: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET end_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET input_date= (SELECT DATE_SUB(end_date, INTERVAL 180 DAY));
-            CALL `{customer_lifetime_value_label_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{customer_lifetime_value_label_procedure_name}`(input_date, end_date, rows_added);"
           query_purchase_propensity_label: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET end_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET input_date= (SELECT DATE_SUB(end_date, INTERVAL 180 DAY));
-            CALL `{purchase_propensity_label_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{purchase_propensity_label_procedure_name}`(input_date, end_date, rows_added);"
           query_user_dimensions: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY));
-            CALL `{user_dimensions_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_dimensions_procedure_name}`(input_date, end_date, rows_added);"
           query_user_lifetime_dimensions: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 180 DAY));
-            CALL `{user_lifetime_dimensions_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_lifetime_dimensions_procedure_name}`(input_date, end_date, rows_added);"
           query_user_lookback_metrics: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 15 DAY));
-            CALL `{user_lookback_metrics_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_lookback_metrics_procedure_name}`(input_date, end_date, rows_added);"
           query_user_rolling_window_lifetime_metrics: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 180 DAY));
-            CALL `{user_rolling_window_lifetime_metrics_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_rolling_window_lifetime_metrics_procedure_name}`(input_date, end_date, rows_added);"
           query_user_rolling_window_metrics: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY));
-            CALL `{user_rolling_window_metrics_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_rolling_window_metrics_procedure_name}`(input_date, end_date, rows_added);"
           query_user_scoped_lifetime_metrics: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 180 DAY));
-            CALL `{user_scoped_lifetime_metrics_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_scoped_lifetime_metrics_procedure_name}`(input_date, end_date, rows_added);"
           query_user_scoped_metrics: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY));
-            CALL `{user_scoped_metrics_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_scoped_metrics_procedure_name}`(input_date, end_date, rows_added);"
           query_user_scoped_segmentation_metrics: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 15 DAY));
-            CALL `{user_scoped_segmentation_metrics_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_scoped_segmentation_metrics_procedure_name}`(input_date, end_date, rows_added);"
           query_user_segmentation_dimensions: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 15 DAY));
-            CALL `{user_segmentation_dimensions_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_segmentation_dimensions_procedure_name}`(input_date, end_date, rows_added);"
           query_user_session_event_aggregated_metrics: "
             DECLARE input_date DATE;
             DECLARE end_date DATE;
-            DECLARE users_added INT64 DEFAULT NULL;
+            DECLARE rows_added INT64 DEFAULT NULL;
             SET input_date= IFNULL(@input_date, CURRENT_DATE('{date_timezone}'));
             SET end_date= (SELECT DATE_SUB(input_date, INTERVAL 30 DAY));
-            CALL `{user_session_event_aggregated_metrics_procedure_name}`(input_date, end_date, users_added);"
+            CALL `{user_session_event_aggregated_metrics_procedure_name}`(input_date, end_date, rows_added);"
           
           query_purchase_propensity_inference_preparation: "
             CALL `{purchase_propensity_inference_preparation_procedure_name}`();"

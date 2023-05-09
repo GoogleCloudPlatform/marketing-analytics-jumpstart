@@ -34,7 +34,8 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     "roles/storage.objectCreator",
     "roles/aiplatform.user",
     "roles/artifactregistry.reader",
-    "roles/pubsub.publisher"
+    "roles/pubsub.publisher",
+    "roles/dataflow.developer"
   ])
   role = each.key
 }
