@@ -171,7 +171,7 @@ CREATE TEMP TABLE DataForTargetTable AS
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   SELECT * FROM DataForTargetTable;
 
-SET users_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
+SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 
 DROP TABLE user_dimensions_event_scoped;
 DROP TABLE user_dimensions_user_scoped;
