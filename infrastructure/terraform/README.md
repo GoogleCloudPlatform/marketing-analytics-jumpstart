@@ -5,14 +5,13 @@ into BigQuery, create feature store, ML pipelines and Dataflow activation pipeli
 
 ## Prerequisites
 
-Make sure the prerequisites listed in the [parent README](../README.md) are met.
+Make sure the prerequisites listed in the [parent README](../README.md) are met. You can run the script
+from [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google.com/shell/docs/using-cloud-shell)
+or a Linux machine or Mac with `gcloud` command installed.
 
 ## Installation Guide
 
 ### Initial Environment Setup
-
-From [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google.com/shell/docs/using-cloud-shell) or a
-Linux machine with `gcloud` command installed, run the following commands:
 
 1. Clone the source code repository:
 
@@ -31,6 +30,28 @@ Linux machine with `gcloud` command installed, run the following commands:
     gcloud auth application-default login
     export GOOGLE_APPLICATION_CREDENTIALS="[Credentials file created by the last command]"
     ```
+
+3. Install Python's Poetry
+
+   [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
+
+   If you are installing on in Cloud Shell use the following commands:
+   ```bash
+     curl -sSL https://install.python-poetry.org | python3 -
+   ```
+   Verify that `poetry` is on your $PATH variable:
+   ```shell
+   poetry --version
+   ```
+   If it fails - add it to your $PATH variable:
+   ```shell
+   export PATH="$HOME/.local/bin:$PATH" 
+   ```
+
+   If you are installing on a Mac:
+   ```shell
+   brew install poetry
+   ```
 
 3. Run the following script to create Terraform service account. To run the script you use an account to authenticate
    against Google Cloud which have the following permissions in your Google Cloud project:

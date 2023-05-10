@@ -73,17 +73,10 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
    access token to the Terraform scripts using a Terraform variable.
 
-### GitHub repository with a Google Cloud Source Repository that are used by Cloud Build triggers of the ML processing pipelines.
+### GA4 Measurement ID and Secrets
 
-TODO: details
-
-### Install Python Poetry
-
-[Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
-
-```bash
-  curl -sSL https://install.python-poetry.org | python3 -
-```
+A MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
+Admin > Data Streams > choose your stream > Measurement Protocol > Create
 
 ## Installing the MDS, ML pipelines, the feature Store, and the activation pipeline
 
