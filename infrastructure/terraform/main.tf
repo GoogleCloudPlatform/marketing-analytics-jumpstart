@@ -19,16 +19,6 @@ provider "google" {
 
 data "google_project" "project" {}
 
-resource "google_storage_bucket" "tf_state_bucket" {
-  name                        = "tf-state-bucket-${var.tf_state_project_id}"
-  location                    = var.google_default_region
-  public_access_prevention    = "enforced"
-  uniform_bucket_level_access = true
-  versioning {
-    enabled = true
-  }
-}
-
 module "data_store" {
   source = "./modules/data-store"
 
@@ -55,6 +45,7 @@ locals {
   source_root_dir  = "../.."
   config_file_name = "config"
   poetry_run_alias = "${var.poetry_cmd} run"
+  mds_dataset_sufix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging"
 }
 
 resource "local_file" "feature_store_configuration" {
@@ -63,7 +54,7 @@ resource "local_file" "feature_store_configuration" {
     project_id             = data.google_project.project.project_id
     project_name           = data.google_project.project.name
     project_number         = data.google_project.project.number
-    mds_dataset            = "${var.mds_dataset_prefix}_${var.feature_store_config_env}"
+    mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_sufix}"
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
     location               = var.bigquery_location
@@ -76,7 +67,6 @@ resource "null_resource" "poetry_install" {
     working_dir = local.source_root_dir
   }
 }
-
 
 resource "null_resource" "generate_sql_queries" {
 

@@ -19,9 +19,11 @@ set -o nounset
 
 . scripts/common.sh
 
-section_open "Check if the necessary dependencies are available: gcloud, terraform, poetry"
+section_open "Check if the necessary dependencies are available: gcloud, gsutil, terraform, poetry"
     check_exec_dependency "gcloud"
     check_exec_version "gcloud"
+    check_exec_dependency "gsutil"
+    check_exec_version "gsutil"
     check_exec_dependency "terraform"
     check_exec_version "terraform"
     check_exec_dependency "poetry"
@@ -38,10 +40,18 @@ section_open  "Setting the Google Cloud project to TF_STATE_PROJECT"
     gcloud config set project "${TF_STATE_PROJECT}"
 section_close
 
+section_open  "Check and set the LOCATION variable"
+    set_environment_variable_if_not_set "LOCATION" "us-central1"
+section_close
+
+section_open  "Check and set the TF_STATE_BUCKET variable"
+    set_environment_variable_if_not_set "TF_STATE_BUCKET" "${TF_STATE_PROJECT}-terraform-state"
+section_close
+
 section_open "Creating the service account for Terraform: tf-service-account"
     TF_SERVICE_ACCOUNT_NAME=tf-service-account
     if gcloud iam service-accounts describe "${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com >/dev/null 2>&1; then
-        echo "The ${TF_SERVICE_ACCOUNT_NAME} service account already exists."
+        printf "The ${TF_SERVICE_ACCOUNT_NAME} service account already exists. \n"
     else
         gcloud iam service-accounts create "${TF_SERVICE_ACCOUNT_NAME}" \
             --display-name "Terraform admin account"

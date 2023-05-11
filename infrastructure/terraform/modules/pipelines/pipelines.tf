@@ -30,11 +30,11 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     "roles/compute.osLogin",
     "roles/bigquery.jobUser",
     "roles/bigquery.dataEditor",
-    "roles/storage.objectViewer",
-    "roles/storage.objectCreator",
+    "roles/storage.admin",
     "roles/aiplatform.user",
     "roles/artifactregistry.reader",
-    "roles/pubsub.publisher"
+    "roles/pubsub.publisher",
+    "roles/dataflow.developer"
   ])
   role = each.key
 }
