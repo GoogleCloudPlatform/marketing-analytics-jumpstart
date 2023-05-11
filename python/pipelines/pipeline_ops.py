@@ -222,7 +222,7 @@ def compile_automl_tabular_pipeline(
         parameter_values,
     ) = automl_tabular_utils.get_automl_tabular_pipeline_and_parameters(**pipeline_parameters)
 
-    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v2.yaml'), 'r') as file:
+    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v3.yaml'), 'r') as file:
         configuration = yaml.safe_load(file)
 
     # can process yaml to change pipeline name
@@ -445,6 +445,8 @@ def run_pipeline(
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
             pipeline_parameters, pipeline_parameters_substitutions)
+    
+    logging.info(f"Pipeline parameters : {pipeline_parameters}")
 
     pl = PipelineJob(
         display_name='na',  # not needed and will be optional in next major release

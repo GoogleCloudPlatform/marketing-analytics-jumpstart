@@ -106,13 +106,13 @@ def bq_clustering_exec(
             i = f'`{i}`'
         exclude_sql = f" EXCEPT ({', '.join(exclude_features)}) "
         
-    query = f"""
-    CREATE OR REPLACE MODEL 
+    query = f"""CREATE OR REPLACE MODEL 
       `{model_dataset_id}.{model_bq_name}` OPTIONS (model_type='KMEANS', 
       NUM_CLUSTERS={km_num_clusters}, 
       MAX_ITERATIONS={km_max_interations}, 
       MIN_REL_PROGRESS={km_min_rel_progress}, 
       KMEANS_INIT_METHOD='{km_init_method}', 
+      --KMEANS_INIT_COL = string_value,
       DISTANCE_TYPE='{km_distance_type}', 
       EARLY_STOP={km_early_stop}, 
       STANDARDIZE_FEATURES={km_standardize_features}, 
@@ -120,8 +120,7 @@ def bq_clustering_exec(
       MODEL_REGISTRY='VERTEX_AI', 
       VERTEX_AI_MODEL_ID='{vertex_model_name}' ) AS (
         SELECT * {exclude_sql} FROM `{training_data_bq_table}`
-      )
-    """
+      )"""
 
 
     client = bigquery.Client(
@@ -137,6 +136,9 @@ def bq_clustering_exec(
     project, dataset  = model_dataset_id.split('.')
     model.metadata = {"projectId": project, "datasetId": dataset,
                       "modelId": model_bq_name, 'vertex_model_name': vertex_model_name}
+    
+    #TODO: Implement TRAINING info summary on the metrics
+    # SELECT * FROM ML.TRAINING_INFO(MODEL `<project-id>.<datasets>.audience_segmentation_model`)
 
 @component(base_image=base_image)
 def bq_evaluate(
@@ -149,9 +151,9 @@ def bq_evaluate(
     from google.cloud import bigquery
     import json, google.auth, logging
 
-    query = f"""
-        SELECT * FROM ML.EVALUATE(MODEL `{model.metadata["projectId"]}.{model.metadata["datasetId"]}.{model.metadata["modelId"]}`)
-    """
+    #TODO: To investigate why EVALUATE doesn't return any result. Find a way to remediate that.
+
+    query = f"""SELECT * FROM ML.EVALUATE(MODEL `{model.metadata["projectId"]}.{model.metadata["datasetId"]}.{model.metadata["modelId"]}`)"""
     
     client = bigquery.Client(
         project=project,
