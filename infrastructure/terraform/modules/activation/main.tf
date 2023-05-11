@@ -74,6 +74,27 @@ module "bigquery" {
   default_table_expiration_ms = 360000000
 }
 
+resource "null_resource" "check_artifactregistry_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    while ! gcloud services list | grep -i "artifactregistry.googleapis.com"
+    do
+      sleep 3
+      printf "."
+    done
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+resource "time_sleep" "wait_for_artifactregistry_api" {
+  depends_on      = [null_resource.check_artifactregistry_api]
+  create_duration = "20s"
+}
+
 resource "google_artifact_registry_repository" "activation_repository" {
   project       = var.project_id
   location      = var.location
@@ -81,7 +102,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
   description   = "Pipeline container repository"
   format        = "DOCKER"
   depends_on = [
-    module.project_services.wait
+    time_sleep.wait_for_artifactregistry_api
   ]
 }
 

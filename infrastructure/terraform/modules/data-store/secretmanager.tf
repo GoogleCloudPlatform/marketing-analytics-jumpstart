@@ -12,6 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+resource "null_resource" "check_secretmanager_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    while ! gcloud services list | grep -i "secretmanager.googleapis.com"
+    do
+      sleep 3
+      printf "."
+    done
+    EOT
+  }
+
+  depends_on = [
+    module.data-processing-project-services
+  ]
+}
+
+resource "time_sleep" "wait_for_secretmanager_api" {
+  depends_on      = [null_resource.check_secretmanager_api]
+  create_duration = "20s"
+}
+
 resource "google_secret_manager_secret" "github-secret" {
   secret_id = "Github_token"
   project   = data.google_project.data_processing.project_id
@@ -19,6 +40,10 @@ resource "google_secret_manager_secret" "github-secret" {
   replication {
     automatic = true
   }
+
+  depends_on = [
+    time_sleep.wait_for_secretmanager_api
+  ]
 }
 
 resource "google_secret_manager_secret_version" "secret-version-github" {
