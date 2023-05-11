@@ -721,34 +721,34 @@ resource "google_bigquery_routine" "invoke_user_session_event_aggregated_metrics
 
 
 resource "google_bigquery_job" "job_invoke_customer_lifetime_value_training_preparation" {
-  job_id     = uuid()
+  job_id = uuid()
   query {
-    query = "CALL `${local.config_bigquery.dataset.customer_lifetime_value.project_id}.${local.config_bigquery.dataset.customer_lifetime_value.name}.invoke_customer_lifetime_value_training_preparation`();"
+    query              = "CALL `${local.config_bigquery.dataset.customer_lifetime_value.project_id}.${local.config_bigquery.dataset.customer_lifetime_value.name}.invoke_customer_lifetime_value_training_preparation`();"
     create_disposition = ""
-    write_disposition = ""
-    }
-  
-  depends_on = [google_bigquery_routine.invoke_customer_lifetime_value_training_preparation]  
+    write_disposition  = ""
+  }
+
+  depends_on = [google_bigquery_routine.invoke_customer_lifetime_value_training_preparation]
 }
 
 resource "google_bigquery_job" "job_invoke_purchase_propensity_training_preparation" {
-  job_id     = uuid()
+  job_id = uuid()
   query {
-    query = "CALL `${local.config_bigquery.dataset.purchase_propensity.project_id}.${local.config_bigquery.dataset.purchase_propensity.name}.invoke_purchase_propensity_training_preparation`();"
+    query              = "CALL `${local.config_bigquery.dataset.purchase_propensity.project_id}.${local.config_bigquery.dataset.purchase_propensity.name}.invoke_purchase_propensity_training_preparation`();"
     create_disposition = ""
-    write_disposition = ""
-    }  
-  
+    write_disposition  = ""
+  }
+
   depends_on = [google_bigquery_routine.invoke_purchase_propensity_training_preparation]
 }
 
 resource "google_bigquery_job" "job_invoke_audience_segmentation_training_preparation" {
-  job_id     = uuid()
+  job_id = uuid()
   query {
-    query = "CALL `${local.config_bigquery.dataset.audience_segmentation.project_id}.${local.config_bigquery.dataset.audience_segmentation.name}.invoke_audience_segmentation_training_preparation`();"
+    query              = "CALL `${local.config_bigquery.dataset.audience_segmentation.project_id}.${local.config_bigquery.dataset.audience_segmentation.name}.invoke_audience_segmentation_training_preparation`();"
     create_disposition = ""
-    write_disposition = ""
-    }
-  
-  depends_on = [google_bigquery_routine.invoke_audience_segmentation_training_preparation]  
+    write_disposition  = ""
+  }
+
+  depends_on = [google_bigquery_routine.invoke_audience_segmentation_training_preparation]
 }

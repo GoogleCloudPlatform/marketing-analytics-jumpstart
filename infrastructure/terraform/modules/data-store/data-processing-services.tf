@@ -27,6 +27,7 @@ module "data-processing-project-services" {
     "monitoring.googleapis.com",
     "bigquery.googleapis.com",
     "dataform.googleapis.com",
-    "secretmanager.googleapis.com"
+    "secretmanager.googleapis.com",
+    "cloudasset.googleapis.com",
   ]
 }

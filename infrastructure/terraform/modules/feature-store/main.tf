@@ -57,7 +57,7 @@ resource "google_artifact_registry_repository" "cloud_builder_repository" {
   description   = "Custom builder images for Marketing Data Engine"
   format        = "DOCKER"
   depends_on = [
-    module.project_services.wait
+    module.project_services
   ]
 }
 
