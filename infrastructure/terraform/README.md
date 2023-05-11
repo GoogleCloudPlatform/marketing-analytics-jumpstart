@@ -7,7 +7,8 @@ into BigQuery, create feature store, ML pipelines and Dataflow activation pipeli
 
 Make sure the prerequisites listed in the [parent README](../README.md) are met. You can run the script
 from [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google.com/shell/docs/using-cloud-shell)
-or a Linux machine or Mac with `gcloud` command installed.
+or a Linux machine or a Mac with `gcloud` command installed. The instructions provided are for the Cloud Shell
+installation.
 
 ## Installation Guide
 
@@ -17,18 +18,18 @@ or a Linux machine or Mac with `gcloud` command installed.
 
     ```bash
     REPO="marketing-data-engine"
-    cd "$HOME"
+    cd $HOME
     git clone https://github.com/GoogleCloudPlatform/${REPO}.git
     ```
 
-2. Export environment variables and set default project:
+2. If you don't use Cloud Shell, export environment variables and set the default project.
+   Typically, there is a single project to install the solution. If you chose to use multiple projects - use the one
+   designated for the data processing.
 
     ```bash
-    gcloud auth login
     export PROJECT_ID="[your Google Cloud project id]"
     gcloud config set project $PROJECT_ID
     gcloud auth application-default login
-    export GOOGLE_APPLICATION_CREDENTIALS="[Credentials file created by the last command]"
     ```
 
 3. Install Python's Poetry
@@ -53,10 +54,7 @@ or a Linux machine or Mac with `gcloud` command installed.
    brew install poetry
    ```
 
-3. Run the following script to create Terraform service account. To run the script you use an account to authenticate
-   against Google Cloud which have the following permissions in your Google Cloud project:
-   * `roles/iam.serviceAccountCreator` for creating service account used by terraform.
-   * `roles/storage.admin` for creating terraform backend-config storage bucket.
+3. Run the following script to create a Terraform backend.
 
     ```bash
     SOURCE_ROOT=${HOME}/${REPO}

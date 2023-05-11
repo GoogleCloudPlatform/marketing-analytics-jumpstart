@@ -33,14 +33,25 @@ access control is desired multiple projects can be used:
   to
   accelerate the query originated from the dashboard.
 
-### Permissions for the Terraform Service Account
+### Permissions to create infrastructure and access source data
 
-There is a dedicated service account used to run the Terraform script. That account will need to be granted certain
-permissions in different projects:
+There are multiple ways to configure Google Cloud authentication for the Terraform installations. Terraform's Google
+Provider [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference)
+lists all possible options on how the authentication can be done. This installation guide assumes that will be using the
+Application Default Credentials. You can change this by, for example, creating a dedicated service account and
+setting `GOOGLE_IMPERSONATE_SERVICE_ACCOUNT` environment variable before you run Terraform scripts. We will refer to the
+identity which is used in the Terraform scripts (your email or the dedicated service account email) the "Terraform
+principal" for brevity.
 
-* the Owner role in all projects where the solution is installed. Required to install products related to the solution.
-* the BigQuery Admin role on the datasets containing the GA4 and Ads data exports. Required to grant data read access to
-  the service accounts created by the Terraform scripts.
+The Terraform principal will need to be granted certain permissions in different projects:
+
+* the Owner role in all projects where the solution is to be installed. Required to install products related to the
+  solution.
+* the BigQuery [Data Owner role](https://cloud.google.com/bigquery/docs/control-access-to-resources-iam#required_roles)
+  on the datasets containing the GA4 and Ads data exports. Required to grant data read access to
+  a service account which w created by the Terraform scripts. Follow the
+  BigQuery [documentation](https://cloud.google.com/bigquery/docs/control-access-to-resources-iam#grant_access_to_a_dataset)
+  on how to grant this permission on a dataset level.
 
 ### Dataform Git Repository
 

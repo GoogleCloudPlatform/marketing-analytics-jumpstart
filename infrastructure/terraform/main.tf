@@ -29,15 +29,6 @@ resource "google_storage_bucket" "tf_state_bucket" {
   }
 }
 
-#resource "local_file" "tf_backend_config" {
-#  file_permission = "0644"
-#  filename        = "backend.tf"
-#  content = templatefile("../templates/backend.tf.tpl", {
-#    bucket = google_storage_bucket.tf_state_bucket.name
-#    prefix = "state"
-#  })
-#}
-
 module "data_store" {
   source = "./modules/data-store"
 

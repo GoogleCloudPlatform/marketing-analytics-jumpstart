@@ -48,22 +48,6 @@ section_open "Creating the service account for Terraform: tf-service-account"
     fi
 section_close
 
-section_open "Granting the service account permission to view the Admin Project"
-    gcloud projects add-iam-policy-binding "${TF_STATE_PROJECT}" \
-        --member serviceAccount:"${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com \
-        --role roles/viewer
-section_close
-
-section_open "Granting the service account permission to manage Cloud Storage"
-    gcloud projects add-iam-policy-binding "${TF_STATE_PROJECT}" \
-        --member serviceAccount:"${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com \
-        --role roles/storage.admin
-section_close
-
-section_open "Enable the Cloud Resource Manager API with"
-    gcloud services enable cloudresourcemanager.googleapis.com
-section_close
-
 printf "$DIVIDER"
 printf "You got the end the of your generate-tf-backend with everything working. \n"
 printf "$DIVIDER"
