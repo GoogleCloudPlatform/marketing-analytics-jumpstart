@@ -304,7 +304,7 @@ ON CP.user_pseudo_id = EPDSS.user_pseudo_id AND CP.event_date = EPDSS.event_date
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 SELECT * FROM DataForTargetTable;
 
-SET users_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
+SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 
 DROP TABLE engagement_per_day_session_scoped;
 DROP TABLE returning_customers;
