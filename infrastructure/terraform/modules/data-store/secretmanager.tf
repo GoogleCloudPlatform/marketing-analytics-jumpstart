@@ -15,22 +15,25 @@
 resource "null_resource" "check_secretmanager_api" {
   provisioner "local-exec" {
     command = <<-EOT
-    while ! gcloud services list | grep -i "secretmanager.googleapis.com"
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list | grep -i "secretmanager.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
+      COUNTER=$((COUNTER + 1))
     done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "secret manager is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
     EOT
   }
 
   depends_on = [
     module.data-processing-project-services
   ]
-}
-
-resource "time_sleep" "wait_for_secretmanager_api" {
-  depends_on      = [null_resource.check_secretmanager_api]
-  create_duration = "20s"
 }
 
 resource "google_secret_manager_secret" "github-secret" {
@@ -42,7 +45,7 @@ resource "google_secret_manager_secret" "github-secret" {
   }
 
   depends_on = [
-    time_sleep.wait_for_secretmanager_api
+    null_resource.check_secretmanager_api
   ]
 }
 

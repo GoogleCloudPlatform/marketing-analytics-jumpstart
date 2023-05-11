@@ -28,20 +28,22 @@ locals {
   dataform_sa = "service-${data.google_project.data_processing.number}@gcp-sa-dataform.iam.gserviceaccount.com"
 }
 
-# When the service account is not created, gcloud returns NOT_FOUND
-# When the service account is created, gcloud returns IAM_PERMISSION_DENIED
-# Because it's error messages we pipe the stderr to stdout
 resource "null_resource" "wait_for_dataform_sa_creation" {
   provisioner "local-exec" {
     command = <<-EOT
-    while true; do
-      output=$(gcloud iam service-accounts describe ${local.dataform_sa} 2>&1)
-      if [[ $output == *IAM_PERMISSION_DENIED* ]]; then
-        break
-      fi
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud asset search-all-iam-policies --scope=projects/marketing-analytics-processing --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.dataform_sa}" && [ $COUNTER -lt $MAX_TRIES ]
+    do
       sleep 3
       printf "."
+      COUNTER=$((COUNTER + 1))
     done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "dataform service account was not created, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
     EOT
   }
 
