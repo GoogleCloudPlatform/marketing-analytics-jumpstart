@@ -89,8 +89,6 @@ installation.
     -var=deploy_pipelines=false
     ```
 
-   **Note:** Wait for a few minutes meanwhile all the resource are deployed to your Google Cloud project. You should
-   have to wait on Dataform to be configured.
    If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
 
 7. Run terraform to create resources for **feature store**, **pipelines** and **activation application**:
