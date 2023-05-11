@@ -30,9 +30,8 @@ section_open "Check if the necessary dependencies are available: gcloud, gsutil,
     check_exec_version "poetry"
 section_close
 
-section_open "Check if the necessary variables are set: PROJECT_ID, GOOGLE_APPLICATION_CREDENTIALS"
+section_open "Check if the necessary variables are set: PROJECT_ID"
     check_environment_variable "PROJECT_ID" "the Google Cloud project that Terraform will provision the resources in"
-    check_environment_variable "GOOGLE_APPLICATION_CREDENTIALS" "the Google Cloud application credentials that Terraform will use"
 section_close
 
 section_open  "Setting the Google Cloud project to TF_STATE_PROJECT"

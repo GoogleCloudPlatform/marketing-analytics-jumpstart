@@ -13,7 +13,6 @@
 # limitations under the License.
 
 provider "google" {
-  project = var.tf_state_project_id
   region  = var.google_default_region
 }
 

@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable "tf_state_project_id" {
-  type        = string
-  description = "Project ID where terraform backend configuration is stored"
-}
-
 variable "data_project_id" {
   description = "Project to contain the MDS BigQuery datasets. "
   type        = string

@@ -14,8 +14,6 @@
 
 ####################  INFRA VARIABLES  #################################
 
-tf_state_project_id = "Project ID where terraform backend configuration is stored"
-
 create_dev_environment     = false
 create_staging_environment = false
 create_prod_environment    = true

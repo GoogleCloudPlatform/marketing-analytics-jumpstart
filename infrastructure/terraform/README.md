@@ -64,52 +64,18 @@ installation.
 
    **Note:** Make sure you provide access to the BigQuery dataset where your GA4 and GAds exported data is located.
 
-5. Create the Terraform variable file by making a copy from the template and set the Terraform variables.
+5. Create the Terraform variables file by making a copy from the template and set the Terraform variables.
+   Most of the parameters are based on the pre-requisites described [here](../README.md).
+   The [sample file](terraform-sample.tfvars) has all the required variables listed.
 
     ```bash
     TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
     cp ${TERRAFORM_RUN_DIR}/terraform-sample.tfvars ${TERRAFORM_RUN_DIR}/terraform.tfvars
+   ```
+
+   Edit the variables file. If using Vim:
+   ```shell
     vim ${TERRAFORM_RUN_DIR}/terraform.tfvars
-    ```
-
-   Edit the `terraform.tfvars` file by setting the following variable values:
-
-<!--  TODO: We are going to need to keep this list in sync  with the actual file. Perhaps it's not worth doing it. -->
-
-    ```bash
-    ####################  INFRA VARIABLES  #################################
-    tf_state_project_id          = "Project ID where terraform backend configuration is stored"
-    # Choose which Dataform environment you are installing now dev/staging/prod
-    create_dev_environment     = false
-    create_staging_environment = false
-    create_prod_environment    = true
-    # If you want full installation, set all these to true
-    deploy_activation    = true
-    deploy_feature_store = true
-    deploy_pipelines     = true
-
-    ####################  DATA VARIABLES  #################################
-    data_project_id = "Project id where the MDS datasets will be created"
-    data_processing_project_id = "Project id where the Dataform will be installed and run"
-    source_ga4_export_project_id = "Project id which contains the GA4 export dataset"
-    source_ga4_export_dataset = "GA4 export dataset name"
-    # Ads data export dataset details, formatted as the following sample array 
-    source_ads_export_data = [{ project = "abc", dataset = "dataset1", table_suffix = "_123456" },
-    { project = "xyz", dataset = "dataset2", table_suffix = "_567890" }]
-    
-    ####################  ACTIVATION VARIABLES  #################################
-    activation_project_id  = "Project ID where activation resources are created"
-    # MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
-    #   Admin > Data Streams > choose your stream > Measurement Protocol > Create
-    ga4_measurement_id     = "Measurement ID in GA4"
-    ga4_measurement_secret = "Client secret for authentication to GA4 API"
-
-    ####################  GITHUB VARIABLES  #################################
-    project_owner_email = "Project owner email"
-    dataform_github_repo = "URL of the GitHub or GitLab repo which contains the Dataform scripts"
-    dataform_github_token = "GitHub token generated for that repo"
-    pipelines_github_owner = "Cloud Build github owner account for pipelines"
-    pipelines_github_repo  = "Cloud Build github repository for pipelines"
     ```
 
 6. Run Terraform to create resource for **marketing data store** (the Dataform repository and related workflows):
@@ -117,7 +83,7 @@ installation.
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
     terraform -chdir="${TERRAFORM_RUN_DIR}" apply \
-    -var=create_prod_environment=false \
+    -var=create_prod_environment=true \
     -var=deploy_feature_store=false \
     -var=deploy_activation=false \
     -var=deploy_pipelines=false
