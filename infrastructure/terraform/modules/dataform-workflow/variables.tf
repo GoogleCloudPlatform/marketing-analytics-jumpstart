@@ -13,11 +13,13 @@
 # limitations under the License.
 
 variable "project_id" {
-  type = string
+  description = "Project ID where the workflow will be created"
+  type        = string
 }
 
 variable "region" {
-  type = string
+  description = "Region where the workflow will be created"
+  type        = string
 }
 
 variable "environment" {
@@ -51,6 +53,10 @@ variable "source_ads_export_data" {
 
 
 variable "destination_bigquery_project_id" {
+  type = string
+}
+
+variable "destination_bigquery_dataset_location" {
   type = string
 }
 

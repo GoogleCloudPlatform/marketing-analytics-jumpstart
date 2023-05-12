@@ -25,6 +25,7 @@ deploy_pipelines     = true
 ####################  DATA VARIABLES  #################################
 
 data_project_id              = "Project id where the MDS datasets will be created"
+destination_data_location    = "BigQuery location (either regional or multi-regional) for the MDS BigQuery datasets."
 data_processing_project_id   = "Project id where the Dataform will be installed and run"
 source_ga4_export_project_id = "Project id which contains the GA4 export dataset"
 source_ga4_export_dataset    = "GA4 export dataset name. Do not include the project id, just the name."

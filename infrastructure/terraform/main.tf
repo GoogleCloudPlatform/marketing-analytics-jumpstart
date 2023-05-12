@@ -13,7 +13,7 @@
 # limitations under the License.
 
 provider "google" {
-  region  = var.google_default_region
+  region = var.google_default_region
 }
 
 data "google_project" "project" {}
@@ -27,6 +27,7 @@ module "data_store" {
 
   data_processing_project_id = var.data_processing_project_id
   data_project_id            = var.data_project_id
+  destination_data_location  = var.destination_data_location
 
   dataform_github_repo  = var.dataform_github_repo
   dataform_github_token = var.dataform_github_token
@@ -35,28 +36,36 @@ module "data_store" {
   create_staging_environment = var.create_staging_environment
   create_prod_environment    = var.create_prod_environment
 
-  staging_data_project_id = var.staging_data_project_id
+  dev_data_project_id           = var.dev_data_project_id
+  dev_destination_data_location = var.dev_destination_data_location
+
+  staging_data_project_id           = var.staging_data_project_id
+  staging_destination_data_location = var.staging_destination_data_location
+
+  prod_data_project_id           = var.prod_data_project_id
+  prod_destination_data_location = var.prod_destination_data_location
 
   project_owner_email = var.project_owner_email
 }
 
 locals {
-  source_root_dir  = "../.."
-  config_file_name = "config"
-  poetry_run_alias = "${var.poetry_cmd} run"
-  mds_dataset_sufix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging"
+  source_root_dir    = "../.."
+  config_file_name   = "config"
+  poetry_run_alias   = "${var.poetry_cmd} run"
+  mds_dataset_suffix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging"
 }
 
 resource "local_file" "feature_store_configuration" {
   filename = "${local.source_root_dir}/config/${local.config_file_name}.yaml"
-  content = templatefile("${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl", {
+  content  = templatefile("${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl", {
     project_id             = data.google_project.project.project_id
     project_name           = data.google_project.project.name
     project_number         = data.google_project.project.number
-    mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_sufix}"
+    mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_suffix}"
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
-    location               = var.bigquery_location
+    #    TODO: this needs to be specific to environment.
+    location               = var.destination_data_location
   })
 }
 
@@ -112,7 +121,7 @@ module "pipelines" {
   config_file_path = local_file.feature_store_configuration.filename
   poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
-  depends_on = [
+  depends_on       = [
     null_resource.poetry_install
   ]
 }
