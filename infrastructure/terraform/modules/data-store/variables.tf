@@ -13,7 +13,12 @@
 # limitations under the License.
 
 variable "data_project_id" {
-  description = "Project to contain the MDS BigQuery datasets. "
+  description = "Default project to contain the MDS BigQuery datasets"
+  type        = string
+}
+
+variable "destination_data_location" {
+  description = "Default location for the MDS BigQuery datasets"
   type        = string
 }
 
@@ -55,6 +60,12 @@ variable "dev_data_project_id" {
   default     = ""
 }
 
+variable "dev_destination_data_location" {
+  description = "Location for the MDS BigQuery dev datasets. If not provided destination_data_location will be used."
+  type        = string
+  default     = ""
+}
+
 variable "create_staging_environment" {
   description = "Indicates that a staging environment needs to be created"
   type        = bool
@@ -63,6 +74,12 @@ variable "create_staging_environment" {
 
 variable "staging_data_project_id" {
   description = "Project ID of where the staging datasets will created. If not provided, data_project_id will be used."
+  type        = string
+  default     = ""
+}
+
+variable "staging_destination_data_location" {
+  description = "Location for the MDS BigQuery dev datasets. If not provided staging_data_location will be used."
   type        = string
   default     = ""
 }
@@ -79,6 +96,12 @@ variable "prod_data_project_id" {
   default     = ""
 }
 
+variable "prod_destination_data_location" {
+  description = "Location for the MDS BigQuery prod datasets. If not provided destination_data_location will be used."
+  type        = string
+  default     = ""
+}
+
 variable "source_ga4_export_project_id" {
   description = "Project containing the GA4 exported data"
   type        = string
@@ -91,7 +114,7 @@ variable "source_ga4_export_dataset" {
 
 variable "source_ads_export_data" {
   description = "List of BigQuery's Ads Data Transfer datasets"
-  type = list(object({
+  type        = list(object({
     project      = string
     dataset      = string
     table_suffix = string
