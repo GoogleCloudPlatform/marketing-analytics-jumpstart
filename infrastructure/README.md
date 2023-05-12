@@ -49,7 +49,7 @@ The Terraform principal will need to be granted certain permissions in different
   solution.
 * the BigQuery [Data Owner role](https://cloud.google.com/bigquery/docs/control-access-to-resources-iam#required_roles)
   on the datasets containing the GA4 and Ads data exports. Required to grant data read access to
-  a service account which w created by the Terraform scripts. Follow the
+  a service account which will be created by the Terraform scripts. Follow the
   BigQuery [documentation](https://cloud.google.com/bigquery/docs/control-access-to-resources-iam#grant_access_to_a_dataset)
   on how to grant this permission on a dataset level.
 

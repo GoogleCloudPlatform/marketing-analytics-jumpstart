@@ -47,14 +47,22 @@ section_open  "Check and set the TF_STATE_BUCKET variable"
     set_environment_variable_if_not_set "TF_STATE_BUCKET" "${TF_STATE_PROJECT}-terraform-state"
 section_close
 
-section_open "Creating the service account for Terraform: tf-service-account"
-    TF_SERVICE_ACCOUNT_NAME=tf-service-account
-    if gcloud iam service-accounts describe "${TF_SERVICE_ACCOUNT_NAME}"@"${TF_STATE_PROJECT}".iam.gserviceaccount.com >/dev/null 2>&1; then
-        printf "The ${TF_SERVICE_ACCOUNT_NAME} service account already exists. \n"
+section_open "Enable the Cloud Resource Manager API with"
+    gcloud services enable cloudresourcemanager.googleapis.com
+section_close
+
+section_open "Creating a new Google Cloud Storage bucket to store the Terraform state in ${TF_STATE_PROJECT} project, bucket: ${TF_STATE_BUCKET}"
+    if gsutil ls -b gs://"${TF_STATE_BUCKET}" >/dev/null 2>&1; then
+        printf "The ${TF_STATE_BUCKET} Google Cloud Storage bucket already exists. \n"
     else
-        gcloud iam service-accounts create "${TF_SERVICE_ACCOUNT_NAME}" \
-            --display-name "Terraform admin account"
+        gsutil mb -p "${TF_STATE_PROJECT}" --pap enforced -l "${LOCATION}" -b on gs://"${TF_STATE_BUCKET}"
+        gsutil versioning set on gs://"${TF_STATE_BUCKET}"
     fi
+section_close
+
+section_open "Creating terraform backend.tf configuration file"
+    TERRAFORM_RUN_DIR="infrastructure/terraform"
+    create_terraform_backend_config_file "${TERRAFORM_RUN_DIR}" "${TF_STATE_BUCKET}"
 section_close
 
 printf "$DIVIDER"
