@@ -230,8 +230,8 @@ vertex_ai:
         pipeline_parameters:
           project: "${project_id}"
           location: "us-central1"
-          root_dir: "gs://${project_id}-pipelines/automl-tabular-training"
-          transformations: "gs://${project_id}-pipelines/automl-tabular-training/transformations_config_{timestamp}.json"
+          root_dir: "gs://${project_id}-pipelines/propensity-training"
+          transformations: "gs://${project_id}-pipelines/propensity-training/transformations_config_{timestamp}.json"
           train_budget_milli_node_hours: 1000 # 1 hour
           run_evaluation: true
           run_distillation: false

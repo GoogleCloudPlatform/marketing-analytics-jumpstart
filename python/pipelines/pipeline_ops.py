@@ -231,7 +231,7 @@ def compile_automl_tabular_pipeline(
     _set_enable_caching_value(pipeline_spec=configuration,
                               enable_caching=enable_caching)
 
-    # TODO: This params should be set in dev.yaml . However if i do so the valiudations in 
+    # TODO: This params should be set in conf.yaml . However if i do so the validations in 
     # .get_automl_tabular_pipeline_and_parameters fail as this values are not
     # accepted in the given package. (I use a custom pipeline yaml instead of the one in 
     # the package and that causes the issue.)
@@ -244,7 +244,7 @@ def compile_automl_tabular_pipeline(
         if k in configuration['root']['inputDefinitions']['parameters']:
             configuration['root']['inputDefinitions']['parameters'][k]['defaultValue'] = v
         else:
-            raise Exception("paramteter not found in pipeline definition: {}".format(k))
+            raise Exception("parameter not found in pipeline definition: {}".format(k))
 
     with open(template_path, 'w') as yaml_file:
         yaml.dump(configuration, yaml_file)

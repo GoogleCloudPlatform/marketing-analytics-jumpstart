@@ -18,6 +18,7 @@ locals {
   artifact_registry_vars                   = local.config_vars.artifact_registry
   pipeline_vars                            = local.config_vars.vertex_ai.pipelines
   dataflow_vars                            = local.config_vars.dataflow
+  config_bigquery                          = local.config_vars.bigquery
   source_root_dir                          = "../.."
   config_file_path_relative_python_run_dir = substr(var.config_file_path, 3, length(var.config_file_path))
   compile_pipelines_tag                    = "v1"
