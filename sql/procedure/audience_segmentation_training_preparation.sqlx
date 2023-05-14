@@ -305,7 +305,7 @@ FROM (
   checkouts_past_1_7_day,
   checkouts_past_8_14_day,
   ltv_revenue_past_1_7_day,
-  ltv_revenue_past_7_15_day
+  ltv_revenue_past_7_15_day,
     ROW_NUMBER() OVER (PARTITION BY data_split ORDER BY RAND()) AS rn
   FROM
     `{{project_id}}.{{dataset}}.audience_segmentation_training_15` )
