@@ -40,6 +40,7 @@ main:
           gitCommitish: ${var.gitCommitish}
           codeCompilationConfig:
             defaultDatabase: ${var.destination_bigquery_project_id}
+            defaultLocation: ${var.destination_bigquery_dataset_location}
             vars:
               env: ${var.environment}
               ga4_export_project: ${var.source_ga4_export_project_id}
