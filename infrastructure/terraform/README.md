@@ -78,7 +78,7 @@ installation.
     vim ${TERRAFORM_RUN_DIR}/terraform.tfvars
     ```
 
-6. Run Terraform to create resources for **marketing data engine**:
+6. Run Terraform to create resources:
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
