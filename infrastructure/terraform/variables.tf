@@ -130,7 +130,7 @@ variable "source_ga4_export_dataset" {
 
 variable "source_ads_export_data" {
   description = "List of BigQuery's Ads Data Transfer datasets"
-  type        = list(object({
+  type = list(object({
     project      = string
     dataset      = string
     table_suffix = string
@@ -186,4 +186,9 @@ variable "poetry_cmd" {
   description = "alias for poetry run command on the current system"
   type        = string
   default     = "poetry"
+}
+
+variable "feature_store_project_id" {
+  type        = string
+  description = "Project ID where feature store resources are created"
 }

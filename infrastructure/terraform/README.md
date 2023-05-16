@@ -78,24 +78,14 @@ installation.
     vim ${TERRAFORM_RUN_DIR}/terraform.tfvars
     ```
 
-6. Run Terraform to create resource for **marketing data store** (the Dataform repository and related workflows):
+6. Run Terraform to create resources:
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
-    terraform -chdir="${TERRAFORM_RUN_DIR}" apply \
-    -var=create_prod_environment=true \
-    -var=deploy_feature_store=false \
-    -var=deploy_activation=false \
-    -var=deploy_pipelines=false
+    terraform -chdir="${TERRAFORM_RUN_DIR}" apply
     ```
 
    If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
-
-7. Run terraform to create resources for **feature store**, **pipelines** and **activation application**:
-
-    ```bash
-    terraform -chdir="${TERRAFORM_RUN_DIR}" apply
-    ```
 
 ## Resources created
 

@@ -16,7 +16,9 @@ provider "google" {
   region = var.google_default_region
 }
 
-data "google_project" "project" {}
+data "google_project" "feature_store_project" {
+  project_id = var.feature_store_project_id
+}
 
 module "data_store" {
   source = "./modules/data-store"
@@ -57,15 +59,15 @@ locals {
 
 resource "local_file" "feature_store_configuration" {
   filename = "${local.source_root_dir}/config/${local.config_file_name}.yaml"
-  content  = templatefile("${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl", {
-    project_id             = data.google_project.project.project_id
-    project_name           = data.google_project.project.name
-    project_number         = data.google_project.project.number
+  content = templatefile("${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl", {
+    project_id             = var.feature_store_project_id
+    project_name           = data.google_project.feature_store_project.name
+    project_number         = data.google_project.feature_store_project.number
     mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_suffix}"
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
     #    TODO: this needs to be specific to environment.
-    location               = var.destination_data_location
+    location = var.destination_data_location
   })
 }
 
@@ -110,6 +112,7 @@ module "feature_store" {
   config_file_path = local_file.feature_store_configuration.filename
   enabled          = var.deploy_feature_store
   count            = var.deploy_feature_store ? 1 : 0
+  project_id       = var.feature_store_project_id
 
   depends_on = [
     null_resource.generate_sql_queries
@@ -121,7 +124,7 @@ module "pipelines" {
   config_file_path = local_file.feature_store_configuration.filename
   poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
-  depends_on       = [
+  depends_on = [
     null_resource.poetry_install
   ]
 }

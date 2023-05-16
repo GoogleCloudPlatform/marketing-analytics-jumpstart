@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+data "local_file" "config_vars" {
+  filename = var.config_file_path
+}
+
 locals {
-  config_vars                              = yamldecode(file(var.config_file_path))
+  config_vars                              = yamldecode(data.local_file.config_vars.content)
   cloud_build_vars                         = local.config_vars.cloud_build
   artifact_registry_vars                   = local.config_vars.artifact_registry
   pipeline_vars                            = local.config_vars.vertex_ai.pipelines

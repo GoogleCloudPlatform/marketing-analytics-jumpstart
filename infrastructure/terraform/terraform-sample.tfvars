@@ -29,14 +29,17 @@ destination_data_location    = "BigQuery location (either regional or multi-regi
 data_processing_project_id   = "Project id where the Dataform will be installed and run"
 source_ga4_export_project_id = "Project id which contains the GA4 export dataset"
 source_ga4_export_dataset    = "GA4 export dataset name. Do not include the project id, just the name."
-source_ads_export_data       = [
+source_ads_export_data = [
   { project = "abc", dataset = "dataset1", table_suffix = "_123456" },
   { project = "xyz", dataset = "dataset2", table_suffix = "_567890" }
 ]
 
+####################  FEATEURE STORE VARIABLES  #################################
+feature_store_project_id = "Project ID where feature store resources will be created"
+
 ####################  ACTIVATION VARIABLES  #################################
 
-activation_project_id  = "Project ID where activation resources will be created"
+activation_project_id = "Project ID where activation resources will be created"
 # Required. A MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
 #   Admin > Data Streams > choose your stream > Measurement Protocol > Create
 ga4_measurement_id     = "Measurement ID in GA4"

@@ -67,6 +67,7 @@ resource "google_service_account_iam_member" "dataflow_sa_iam" {
 
 
 resource "google_storage_bucket" "pipelines_bucket" {
+  project                     = local.pipeline_vars.project_id
   name                        = local.pipeline_vars.bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
@@ -121,9 +122,9 @@ resource "null_resource" "build_push_pipelines_components_image" {
     working_dir = self.triggers.working_dir
   }
 
-#  depends_on = [
-#    google_cloudbuild_trigger.cloud-build-trigger
-#  ]
+  #  depends_on = [
+  #    google_cloudbuild_trigger.cloud-build-trigger
+  #  ]
 }
 
 resource "null_resource" "compile_feature_engineering_pipelines" {

@@ -41,7 +41,7 @@ module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "14.1.0"
 
-  disable_dependent_services  = true
+  disable_dependent_services  = false
   disable_services_on_destroy = false
 
   project_id = var.project_id
