@@ -485,13 +485,13 @@ def run_pipeline(
     logging.info(f"Pipeline parameters : {pipeline_parameters}")
 
     # Create Vertex Dataset
-    vertex_datasets_uri = create_dataset(
-        display_name=pipeline_parameters['vertex_dataset_display_name'],
-        bigquery_source=pipeline_parameters['data_source_bigquery_table_path'],
-        project_id=pipeline_parameters['project'])
-    
-    input_artifacts: Dict[str, str] = {}
-    input_artifacts['vertex_datasets'] = vertex_datasets_uri
+    #vertex_datasets_uri = create_dataset(
+    #    display_name=pipeline_parameters['vertex_dataset_display_name'],
+    #    bigquery_source=pipeline_parameters['data_source_bigquery_table_path'],
+    #    project_id=pipeline_parameters['project'])
+    #
+    #input_artifacts: Dict[str, str] = {}
+    #input_artifacts['vertex_datasets'] = vertex_datasets_uri
 
     pl = PipelineJob(
         display_name='na',  # not needed and will be optional in next major release
@@ -502,7 +502,7 @@ def run_pipeline(
         project=project_id,
         location=location,
         parameter_values=pipeline_parameters,
-        input_artifacts=input_artifacts,
+        #input_artifacts=input_artifacts,
         encryption_spec_key_name=encryption_spec_key_name,
         credentials=credentials,
         failure_policy=failure_policy,

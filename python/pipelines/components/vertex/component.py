@@ -310,8 +310,7 @@ def batch_prediction(
         batch_size = batch_size,
         accelerator_count = accelerator_count,
         accelerator_type = accelerator_type,
-        generate_explanation = generate_explanation
-        
+        generate_explanation = generate_explanation 
     )
 
     batch_prediction_job.wait()
