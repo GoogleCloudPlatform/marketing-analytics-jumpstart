@@ -147,7 +147,7 @@ class TransformToPayload(beam.DoFn):
       client_id=element['client_id'],
       event_timestamp=self.date_to_micro(element["inference_date"]),
       event_name=self.event_name,
-      param_fields=self.generate_param_fields(element),
+      user_properties=self.generate_user_properties(element),
     )
     yield json.loads(payload_str)
 
@@ -160,6 +160,16 @@ class TransformToPayload(beam.DoFn):
     del element_copy['inference_date']
     element_copy = {k: v for k, v in element_copy.items() if v}
     return json.dumps(element_copy, cls=DecimalEncoder)
+
+  def generate_user_properties(self, element):
+    element_copy = element.copy()
+    del element_copy['client_id']
+    del element_copy['inference_date']
+    user_properties_obj =  {}
+    for k, v in element_copy.items():
+      if v:
+        user_properties_obj[k] = {'value': v}
+    return json.dumps(user_properties_obj, cls=DecimalEncoder)
 
 def send_success(element):
   return element[1] == requests.status_codes.codes.NO_CONTENT
