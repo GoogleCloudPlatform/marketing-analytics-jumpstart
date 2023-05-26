@@ -1,9 +1,24 @@
-SELECT * EXCEPT(user_pseudo_id, processed_timestamp, user_id),
- user_pseudo_id AS client_id,
- EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date
+SELECT user_pseudo_id AS client_id,
+ EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
+ prediction,
+ active_users_past_1_7_day,
+ active_users_past_8_14_day,
+ purchases_past_1_7_day,
+ purchases_past_8_14_day,
+ visits_past_1_7_day,
+ visits_past_8_14_day,
+ view_items_past_1_7_day,
+ view_items_past_8_14_day,
+ add_to_carts_past_1_7_day,
+ add_to_carts_past_8_14_day,
+ checkouts_past_1_7_day,
+ checkouts_past_8_14_day,
+ ltv_revenue_past_1_7_day,
+ ltv_revenue_past_7_15_day,
+ geo_region
  FROM {{source_table}}
  WHERE prediction IN (3,4,14)
  AND geo_region IN ('California', 'New York', 'Washington')
  AND visits_past_1_7_day = 1
- ORDER BY average_daily_revenue DESC
+ ORDER BY ltv_revenue_past_7_15_day DESC
  LIMIT 1000
