@@ -516,37 +516,37 @@ def run_pipeline(
     return pl
 
 
-def create_dataset(
-    display_name: str,
-    bigquery_source: str,
-    project_id: str,
-    location: str = "us-central1",
-    credentials: Optional[credentials.Credentials] = None,
-    sync: bool = True,
-    create_request_timeout: Optional[float] = None,
-    ) -> str:
-    
-    #bigquery_source in this format "bq://<project_id>.purchase_propensity.v_purchase_propensity_training_30_15"
-    #dataset = TabularDataset.create(
-    #    display_name=display_name,
-    #    bq_source=[bigquery_source],
-    #    project=project_id,
-    #    location=location,
-    #    credentials=credentials,
-    #    sync=sync,
-    #    create_request_timeout=create_request_timeout)
-    #dataset.wait()
-
-    artifact = Artifact.create(
-        schema_title="system.Dataset",
-        uri=bigquery_source,
-        display_name=display_name,
-        project=project_id,
-        location=location,
-    )
-    artifact.wait()
-
-    # Should be: 7104764862735056896
-    # Cannot use full resource name of format: projects/294348452381/locations/us-central1/datasets/7104764862735056896
-    return artifact.resource_id
+#def create_dataset(
+#    display_name: str,
+#    bigquery_source: str,
+#    project_id: str,
+#    location: str = "us-central1",
+#    credentials: Optional[credentials.Credentials] = None,
+#    sync: bool = True,
+#    create_request_timeout: Optional[float] = None,
+#    ) -> str:
+#    
+#    #bigquery_source in this format "bq://<project_id>.purchase_propensity.v_purchase_propensity_training_30_15"
+#    #dataset = TabularDataset.create(
+#    #    display_name=display_name,
+#    #    bq_source=[bigquery_source],
+#    #    project=project_id,
+#    #    location=location,
+#    #    credentials=credentials,
+#    #    sync=sync,
+#    #    create_request_timeout=create_request_timeout)
+#    #dataset.wait()
+#
+#    artifact = Artifact.create(
+#        schema_title="system.Dataset",
+#        uri=bigquery_source,
+#        display_name=display_name,
+#        project=project_id,
+#        location=location,
+#    )
+#    artifact.wait()
+#
+#    # Should be: 7104764862735056896
+#    # Cannot use full resource name of format: projects/294348452381/locations/us-central1/datasets/7104764862735056896
+#    return artifact.resource_id
     

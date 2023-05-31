@@ -287,7 +287,7 @@ vertex_ai:
           model_metric_threshold: 0.9
           number_of_models_considered: 1
           bigquery_source: "${project_id}.purchase_propensity.v_purchase_propensity_inference_30_15"
-          bigquery_destination_prefix: "${project_id}.purchase_propensity.pred_purchase_propensity_inference_30_15"
+          bigquery_destination_prefix: "${project_id}.purchase_propensity"
           bq_unique_key: "user_pseudo_id"
           machine_type: "n1-standard-4"
           max_replica_count: 10
@@ -428,7 +428,7 @@ vertex_ai:
           model_metric_threshold: 15
           number_of_models_considered: 1
           bigquery_source: "${project_id}.customer_lifetime_value.v_customer_lifetime_value_inference_180_30"
-          bigquery_destination_prefix: "${project_id}.customer_lifetime_value.pred_customer_lifetime_value_inference_180_30"
+          bigquery_destination_prefix: "${project_id}.customer_lifetime_value"
           bq_unique_key: "user_pseudo_id"
           machine_type: "n1-standard-4"
           max_replica_count: 10

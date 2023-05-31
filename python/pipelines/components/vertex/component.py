@@ -295,16 +295,16 @@ def batch_prediction(
 
 
     timestamp = str(int(datetime.now().timestamp()))
-    destination_table.metadata["table_id"] = f"{bigquery_destination_prefix}_{timestamp}"
-    
-    destination_table.metadata["predictions_column_prefix"] = "predicted_"
+    #destination_table.metadata["table_id"] = f"{bigquery_destination_prefix}_{timestamp}"
+    #destination_table.metadata["predictions_column_prefix"] = "predicted_"
 
     batch_prediction_job = model.batch_predict(
         job_display_name = f"{job_name_prefix}-{timestamp}",
         instances_format = "bigquery",
         predictions_format = "bigquery",
         bigquery_source = f"bq://{bigquery_source}",
-        bigquery_destination_prefix = f"bq://{destination_table.metadata['table_id']}",
+        bigquery_destination_prefix= f"bq://{bigquery_destination_prefix}",
+        #bigquery_destination_prefix = f"bq://{destination_table.metadata['table_id']}",
         machine_type = machine_type,
         max_replica_count = max_replica_count,
         batch_size = batch_size,
@@ -314,6 +314,10 @@ def batch_prediction(
     )
 
     batch_prediction_job.wait()
+
+    #Filling the destination_table with the bigquery destination table.
+    destination_table.metadata["table_id"] = batch_prediction_job.to_dict()['outputConfig']['bigqueryDestination']['outputUri']
+    destination_table.metadata["predictions_column_prefix"] = "predicted_"
 
     logging.info(batch_prediction_job.display_name)
     logging.info(batch_prediction_job.resource_name)
