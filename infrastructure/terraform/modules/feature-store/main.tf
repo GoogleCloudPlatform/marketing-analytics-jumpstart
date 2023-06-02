@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+data "local_file" "config_vars" {
+  filename = var.config_file_path
+}
+
 locals {
-  config_vars                        = yamldecode(file(var.config_file_path))
+  config_vars                        = yamldecode(data.local_file.config_vars.content)
   config_bigquery                    = local.config_vars.bigquery
   feature_store_project_id           = local.config_vars.bigquery.dataset.feature_store.project_id
   purchase_propensity_project_id     = local.config_vars.bigquery.dataset.purchase_propensity.project_id
@@ -57,27 +61,27 @@ resource "google_artifact_registry_repository" "cloud_builder_repository" {
   description   = "Custom builder images for Marketing Data Engine"
   format        = "DOCKER"
   depends_on = [
-    module.project_services.wait
+    module.project_services
   ]
 }
 
 module "cloud_build_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
   version    = "~> 3.0"
-  project_id = local.project_id
+  project_id = var.project_id
   prefix     = "mde"
   names      = [local.cloud_build_service_account_name]
   project_roles = [
-    "${local.project_id}=>roles/artifactregistry.writer",
-    "${local.project_id}=>roles/cloudbuild.builds.editor",
-    "${local.project_id}=>roles/iap.tunnelResourceAccessor",
-    "${local.project_id}=>roles/compute.osLogin",
-    "${local.project_id}=>roles/bigquery.jobUser",
-    "${local.project_id}=>roles/bigquery.dataEditor",
-    "${local.project_id}=>roles/storage.objectViewer",
-    "${local.project_id}=>roles/storage.objectCreator",
-    "${local.project_id}=>roles/aiplatform.user",
-    "${local.project_id}=>roles/pubsub.publisher",
+    "${var.project_id}=>roles/artifactregistry.writer",
+    "${var.project_id}=>roles/cloudbuild.builds.editor",
+    "${var.project_id}=>roles/iap.tunnelResourceAccessor",
+    "${var.project_id}=>roles/compute.osLogin",
+    "${var.project_id}=>roles/bigquery.jobUser",
+    "${var.project_id}=>roles/bigquery.dataEditor",
+    "${var.project_id}=>roles/storage.objectViewer",
+    "${var.project_id}=>roles/storage.objectCreator",
+    "${var.project_id}=>roles/aiplatform.user",
+    "${var.project_id}=>roles/pubsub.publisher",
   ]
   display_name = "cloud build runner"
   description  = "Marketing Data Engine Cloud Build Account"

@@ -13,30 +13,12 @@
 # limitations under the License.
 
 provider "google" {
-  project = var.tf_state_project_id
-  region  = var.google_default_region
+  region = var.google_default_region
 }
 
-data "google_project" "project" {}
-
-resource "google_storage_bucket" "tf_state_bucket" {
-  name                        = "tf-state-bucket-${var.tf_state_project_id}"
-  location                    = var.google_default_region
-  public_access_prevention    = "enforced"
-  uniform_bucket_level_access = true
-  versioning {
-    enabled = true
-  }
+data "google_project" "feature_store_project" {
+  project_id = var.feature_store_project_id
 }
-
-#resource "local_file" "tf_backend_config" {
-#  file_permission = "0644"
-#  filename        = "backend.tf"
-#  content = templatefile("../templates/backend.tf.tpl", {
-#    bucket = google_storage_bucket.tf_state_bucket.name
-#    prefix = "state"
-#  })
-#}
 
 module "data_store" {
   source = "./modules/data-store"
@@ -47,6 +29,7 @@ module "data_store" {
 
   data_processing_project_id = var.data_processing_project_id
   data_project_id            = var.data_project_id
+  destination_data_location  = var.destination_data_location
 
   dataform_github_repo  = var.dataform_github_repo
   dataform_github_token = var.dataform_github_token
@@ -55,28 +38,36 @@ module "data_store" {
   create_staging_environment = var.create_staging_environment
   create_prod_environment    = var.create_prod_environment
 
-  staging_data_project_id = var.staging_data_project_id
+  dev_data_project_id           = var.dev_data_project_id
+  dev_destination_data_location = var.dev_destination_data_location
+
+  staging_data_project_id           = var.staging_data_project_id
+  staging_destination_data_location = var.staging_destination_data_location
+
+  prod_data_project_id           = var.prod_data_project_id
+  prod_destination_data_location = var.prod_destination_data_location
 
   project_owner_email = var.project_owner_email
 }
 
 locals {
-  source_root_dir  = "../.."
-  config_file_name = "config"
-  poetry_run_alias = "${var.poetry_cmd} run"
-  mds_dataset_sufix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging" 
+  source_root_dir    = "../.."
+  config_file_name   = "config"
+  poetry_run_alias   = "${var.poetry_cmd} run"
+  mds_dataset_suffix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging"
 }
 
 resource "local_file" "feature_store_configuration" {
   filename = "${local.source_root_dir}/config/${local.config_file_name}.yaml"
   content = templatefile("${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl", {
-    project_id             = data.google_project.project.project_id
-    project_name           = data.google_project.project.name
-    project_number         = data.google_project.project.number
-    mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_sufix}"
+    project_id             = var.feature_store_project_id
+    project_name           = data.google_project.feature_store_project.name
+    project_number         = data.google_project.feature_store_project.number
+    mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_suffix}"
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
-    location               = var.bigquery_location
+    #    TODO: this needs to be specific to environment.
+    location = var.destination_data_location
   })
 }
 
@@ -86,7 +77,6 @@ resource "null_resource" "poetry_install" {
     working_dir = local.source_root_dir
   }
 }
-
 
 resource "null_resource" "generate_sql_queries" {
 
@@ -122,6 +112,7 @@ module "feature_store" {
   config_file_path = local_file.feature_store_configuration.filename
   enabled          = var.deploy_feature_store
   count            = var.deploy_feature_store ? 1 : 0
+  project_id       = var.feature_store_project_id
 
   depends_on = [
     null_resource.generate_sql_queries

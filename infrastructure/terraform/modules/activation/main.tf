@@ -41,7 +41,7 @@ module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "14.1.0"
 
-  disable_dependent_services  = true
+  disable_dependent_services  = false
   disable_services_on_destroy = false
 
   project_id = var.project_id
@@ -74,6 +74,30 @@ module "bigquery" {
   default_table_expiration_ms = 360000000
 }
 
+resource "null_resource" "check_artifactregistry_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "artifict registry is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
 resource "google_artifact_registry_repository" "activation_repository" {
   project       = var.project_id
   location      = var.location
@@ -81,7 +105,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
   description   = "Pipeline container repository"
   format        = "DOCKER"
   depends_on = [
-    module.project_services.wait
+    null_resource.check_artifactregistry_api
   ]
 }
 

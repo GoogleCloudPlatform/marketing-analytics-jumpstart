@@ -12,6 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+resource "null_resource" "check_secretmanager_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list | grep -i "secretmanager.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "secret manager is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.data-processing-project-services
+  ]
+}
+
 resource "google_secret_manager_secret" "github-secret" {
   secret_id = "Github_token"
   project   = data.google_project.data_processing.project_id
@@ -19,6 +43,10 @@ resource "google_secret_manager_secret" "github-secret" {
   replication {
     automatic = true
   }
+
+  depends_on = [
+    null_resource.check_secretmanager_api
+  ]
 }
 
 resource "google_secret_manager_secret_version" "secret-version-github" {

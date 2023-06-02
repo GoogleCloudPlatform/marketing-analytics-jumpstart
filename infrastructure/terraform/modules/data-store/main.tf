@@ -34,10 +34,11 @@ module "dataform-workflow-dev" {
   dataform_repository_id = google_dataform_repository.marketing-analytics.id
   includedTags           = ["ga4"]
 
-  source_ga4_export_project_id    = var.source_ga4_export_project_id
-  source_ga4_export_dataset       = var.source_ga4_export_dataset
-  source_ads_export_data          = var.source_ads_export_data
-  destination_bigquery_project_id = length(var.dev_data_project_id) > 0 ? var.staging_data_project_id : var.data_project_id
+  source_ga4_export_project_id          = var.source_ga4_export_project_id
+  source_ga4_export_dataset             = var.source_ga4_export_dataset
+  source_ads_export_data                = var.source_ads_export_data
+  destination_bigquery_project_id       = length(var.dev_data_project_id) > 0 ? var.staging_data_project_id : var.data_project_id
+  destination_bigquery_dataset_location = length(var.dev_destination_data_location) > 0 ? var.dev_destination_data_location : var.destination_data_location
 
   daily_schedule = "2 5 * * *"
 }
@@ -52,10 +53,11 @@ module "dataform-workflow-staging" {
   dataform_repository_id = google_dataform_repository.marketing-analytics.id
   includedTags           = ["ga4"]
 
-  source_ga4_export_project_id    = var.source_ga4_export_project_id
-  source_ga4_export_dataset       = var.source_ga4_export_dataset
-  source_ads_export_data          = var.source_ads_export_data
-  destination_bigquery_project_id = length(var.staging_data_project_id) > 0 ? var.staging_data_project_id : var.data_project_id
+  source_ga4_export_project_id          = var.source_ga4_export_project_id
+  source_ga4_export_dataset             = var.source_ga4_export_dataset
+  source_ads_export_data                = var.source_ads_export_data
+  destination_bigquery_project_id       = length(var.staging_data_project_id) > 0 ? var.staging_data_project_id : var.data_project_id
+  destination_bigquery_dataset_location = length(var.staging_destination_data_location) > 0 ? var.staging_destination_data_location : var.destination_data_location
 
   daily_schedule = "2 6 * * *"
 }
@@ -69,10 +71,11 @@ module "dataform-workflow-prod" {
   region                 = var.google_default_region
   dataform_repository_id = google_dataform_repository.marketing-analytics.id
 
-  source_ga4_export_project_id    = var.source_ga4_export_project_id
-  source_ga4_export_dataset       = var.source_ga4_export_dataset
-  source_ads_export_data          = var.source_ads_export_data
-  destination_bigquery_project_id = length(var.prod_data_project_id) > 0 ? var.staging_data_project_id : var.data_project_id
+  source_ga4_export_project_id          = var.source_ga4_export_project_id
+  source_ga4_export_dataset             = var.source_ga4_export_dataset
+  source_ads_export_data                = var.source_ads_export_data
+  destination_bigquery_project_id       = length(var.prod_data_project_id) > 0 ? var.staging_data_project_id : var.data_project_id
+  destination_bigquery_dataset_location = length(var.prod_destination_data_location) > 0 ? var.prod_destination_data_location : var.destination_data_location
 
   daily_schedule = "2 7 * * *"
 }

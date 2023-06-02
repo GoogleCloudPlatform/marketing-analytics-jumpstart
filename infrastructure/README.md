@@ -33,14 +33,25 @@ access control is desired multiple projects can be used:
   to
   accelerate the query originated from the dashboard.
 
-### Permissions for the Terraform Service Account
+### Permissions to create infrastructure and access source data
 
-There is a dedicated service account used to run the Terraform script. That account will need to be granted certain
-permissions in different projects:
+There are multiple ways to configure Google Cloud authentication for the Terraform installations. Terraform's Google
+Provider [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference)
+lists all possible options on how the authentication can be done. This installation guide assumes that will be using the
+Application Default Credentials. You can change this by, for example, creating a dedicated service account and
+setting `GOOGLE_IMPERSONATE_SERVICE_ACCOUNT` environment variable before you run Terraform scripts. We will refer to the
+identity which is used in the Terraform scripts (your email or the dedicated service account email) the "Terraform
+principal" for brevity.
 
-* the Owner role in all projects where the solution is installed. Required to install products related to the solution.
-* the BigQuery Admin role on the datasets containing the GA4 and Ads data exports. Required to grant data read access to
-  the service accounts created by the Terraform scripts.
+The Terraform principal will need to be granted certain permissions in different projects:
+
+* the Owner role in all projects where the solution is to be installed. Required to install products related to the
+  solution.
+* the BigQuery [Data Owner role](https://cloud.google.com/bigquery/docs/control-access-to-resources-iam#required_roles)
+  on the datasets containing the GA4 and Ads data exports. Required to grant data read access to
+  a service account which will be created by the Terraform scripts. Follow the
+  BigQuery [documentation](https://cloud.google.com/bigquery/docs/control-access-to-resources-iam#grant_access_to_a_dataset)
+  on how to grant this permission on a dataset level.
 
 ### Dataform Git Repository
 
@@ -73,17 +84,10 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
    access token to the Terraform scripts using a Terraform variable.
 
-### GitHub repository with a Google Cloud Source Repository that are used by Cloud Build triggers of the ML processing pipelines.
+### GA4 Measurement ID and Secrets
 
-TODO: details
-
-### Install Python Poetry
-
-[Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
-
-```bash
-  curl -sSL https://install.python-poetry.org | python3 -
-```
+A MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
+Admin > Data Streams > choose your stream > Measurement Protocol > Create
 
 ## Installing the MDS, ML pipelines, the feature Store, and the activation pipeline
 

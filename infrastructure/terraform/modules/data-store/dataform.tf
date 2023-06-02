@@ -23,4 +23,8 @@ resource "google_dataform_repository" "marketing-analytics" {
     default_branch                      = "main"
     authentication_token_secret_version = google_secret_manager_secret_version.secret-version-github.id
   }
+
+  depends_on = [
+    module.data-processing-project-services
+  ]
 }

@@ -123,3 +123,25 @@ create_terraform_variables_file() {
   unset _TERRAFORM_RUN_DIR
   unset _TERRAFORM_VARIABLE_FILE_PATH
 }
+
+create_terraform_backend_config_file() {
+  _TERRAFORM_RUN_DIR=$1
+  _TF_STATE_BUCKET=$2
+  _TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH="${_TERRAFORM_RUN_DIR}/backend.tf"
+  echo "Generating the Terraform backend configuration file: ${_TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH}"
+  if [ -f "${_TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH}" ]; then
+    echo "The ${_TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH} file already exists."
+  else
+    tee "${_TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH}" <<EOF
+terraform {
+  backend "gcs" {
+    bucket = "${_TF_STATE_BUCKET}"
+    prefix = "state"
+  }
+}
+EOF
+  fi
+  unset _TERRAFORM_RUN_DIR
+  unset _TF_STATE_BUCKET
+  unset _TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH
+}
