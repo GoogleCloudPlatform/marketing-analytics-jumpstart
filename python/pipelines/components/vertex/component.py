@@ -316,10 +316,11 @@ def batch_prediction(
     batch_prediction_job.wait()
 
     #Filling the destination_table with the bigquery destination table.
-    destination_table.metadata["table_id"] = batch_prediction_job.to_dict()['outputConfig']['bigqueryDestination']['outputUri']
+    destination_table.metadata["table_id"] = f"{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputDataset'].replace('bq://','')}.{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputTable']}"
     destination_table.metadata["predictions_column_prefix"] = "predicted_"
 
-    logging.info(batch_prediction_job.display_name)
-    logging.info(batch_prediction_job.resource_name)
-    logging.info(batch_prediction_job.state)
+    logging.info(batch_prediction_job.to_dict())
+    #logging.info(batch_prediction_job.display_name)
+    #logging.info(batch_prediction_job.resource_name)
+    #logging.info(batch_prediction_job.state)
     

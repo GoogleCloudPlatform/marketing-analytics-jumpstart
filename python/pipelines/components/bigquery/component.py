@@ -357,9 +357,12 @@ def bq_flatten_tabular_binary_prediction_table(
         # location=location
     )
 
+    # Inspect the metadata set on destination_table and predictions_table
+    logging.info(destination_table.metadata)
+    logging.info(predictions_table.metadata)
+
     # Make an API request.
     bq_table = client.get_table(predictions_table.metadata['table_id'])
-
     destination_table.metadata["table_id"] = f"{predictions_table.metadata['table_id']}_view"
     destination_table.metadata["predictions_column"] = 'prediction'
 
@@ -410,6 +413,8 @@ def bq_flatten_tabular_binary_prediction_table(
 
     results = query_job.result()
 
+    logging.info(query)
+
     for row in results:
         logging.info("row info: {}".format(row))
 
@@ -435,9 +440,12 @@ def bq_flatten_tabular_regression_table(
         # location=location
     )
 
+    # Inspect the metadata set on destination_table and predictions_table
+    logging.info(destination_table.metadata)
+    logging.info(predictions_table.metadata)
+
     # Make an API request.
     bq_table = client.get_table(predictions_table.metadata['table_id'])
-
     destination_table.metadata["table_id"] = f"{predictions_table.metadata['table_id']}_view"
     destination_table.metadata["predictions_column"] = 'prediction'
 
@@ -477,6 +485,8 @@ def bq_flatten_tabular_regression_table(
     )
 
     results = query_job.result()
+
+    logging.info(query)
 
     for row in results:
         logging.info("row info: {}".format(row))

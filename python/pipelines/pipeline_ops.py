@@ -378,7 +378,7 @@ def schedule_pipeline(
     resp = requests.post(url=url, json=body, headers=headers)
     data = resp.json()  # Check the JSON Response Content documentation below
 
-    logging.info(f"scheduled for {pipeline_name} submitted")
+    logging.info(f"scheduler for {pipeline_name} submitted")
     return data
 
 
