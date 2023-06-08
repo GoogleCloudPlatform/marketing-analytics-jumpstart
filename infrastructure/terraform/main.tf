@@ -133,7 +133,5 @@ module "activation" {
   source                 = "./modules/activation"
   project_id             = var.activation_project_id
   location               = var.google_default_region
-  ga4_measurement_id     = var.ga4_measurement_id
-  ga4_measurement_secret = var.ga4_measurement_secret
   count                  = var.deploy_activation ? 1 : 0
 }
