@@ -75,8 +75,8 @@ def create_custom_events(configuration: map):
   existing_event_names = load_existing_ga4_custom_events(configuration)
   for event_name in event_names:
     if not event_name in existing_event_names:
+      print(f"Create custom event with name: {event_name}")
       create_custom_event(configuration, event_name)
-      print(f"Create customer event with name: {event_name}")
 
 
 def load_custom_dimensions(query_file: str):
@@ -144,8 +144,8 @@ def create_custom_dimensions(configuration: map):
   for field in fields:
     display_name = f'MDE {use_case} {field}'
     if not display_name in existing_dimensions:
+      print(f'Create custom dimension: {display_name}')
       create_custom_dimension(configuration, field, display_name)
-      print(f'need to create custom dimension: {display_name}')
 
 
 def create_custom_dimension(configuration: map, field_name: str, display_name: str):
