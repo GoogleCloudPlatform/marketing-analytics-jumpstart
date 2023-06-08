@@ -73,6 +73,10 @@ section_open "Creating terraform backend.tf configuration file"
     create_terraform_backend_config_file "${TERRAFORM_RUN_DIR}" "${TF_STATE_BUCKET}"
 section_close
 
+section_open "Enable the Google Analytics Admin API with"
+    gcloud services enable analyticsadmin.googleapis.com
+section_close
+
 section_open "Creating Google Analytics resources"
     cd python/ga4_setup
     python3 -m venv venv
