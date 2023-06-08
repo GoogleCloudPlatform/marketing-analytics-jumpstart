@@ -22,7 +22,7 @@ installation.
     git clone https://github.com/GoogleCloudPlatform/${REPO}.git
     ```
 
-2. If you don't use Cloud Shell, export environment variables and set the default project.
+1. If you don't use Cloud Shell, export environment variables and set the default project.
    Typically, there is a single project to install the solution. If you chose to use multiple projects - use the one
    designated for the data processing.
 
@@ -32,7 +32,7 @@ installation.
     gcloud auth application-default login
     ```
 
-3. Install Python's Poetry
+1. Install Python's Poetry
 
    [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
 
@@ -54,7 +54,21 @@ installation.
    brew install poetry
    ```
 
-3. Run the following script to create a Terraform backend.
+1. Google Analytics configurations
+
+   Set environment variables with you Google Analytics account details:
+   Follow this [instruction](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#google_analytics) to determine your Google Analytics 4 property Id, and this [instruction](https://support.google.com/analytics/answer/12332343?hl=en) to determine your Google Analytics 4 data stream Id.
+   ```shell
+   export GA4_PROPERTY_ID="[your Google Analytics property id]"
+   export GA4_STREAM_ID="[your Google Analytics data stream id]"
+   ```
+
+   Authenticate with additional OAuth 2.0 scopes needed to call Google Analytics Admin API:
+   ```shell
+   gcloud auth application-default login --quiet --scopes="https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.manage.users,https://www.googleapis.com/auth/analytics.manage.users.readonly,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/analytics.user.deletion"
+   ```
+
+1. Run the following script to create a Terraform backend.
 
     ```bash
     SOURCE_ROOT=${HOME}/${REPO}
@@ -64,7 +78,7 @@ installation.
 
    **Note:** Make sure you provide access to the BigQuery dataset where your GA4 and GAds exported data is located.
 
-5. Create the Terraform variables file by making a copy from the template and set the Terraform variables.
+1. Create the Terraform variables file by making a copy from the template and set the Terraform variables.
    Most of the parameters are based on the pre-requisites described [here](../README.md).
    The [sample file](terraform-sample.tfvars) has all the required variables listed.
 
@@ -78,7 +92,7 @@ installation.
     vim ${TERRAFORM_RUN_DIR}/terraform.tfvars
     ```
 
-6. Run Terraform to create resources:
+1. Run Terraform to create resources:
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
