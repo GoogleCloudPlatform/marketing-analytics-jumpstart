@@ -84,7 +84,7 @@ Cost Per Conversion Scorecard Metric
   </tr>
   <tr>
     <td><p><strong>Description</strong></p></td> 
-    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA"> cost per conversion</a>for the date range selected in the page filter.</p></td>
+    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA"> cost per conversion</a> for the date range selected in the page filter.</p></td>
   </tr>
 </table>
 
@@ -200,7 +200,7 @@ CTR Scorecard Metric
   </tr>
   <tr>
     <td><p><strong>Description</strong></p></td> 
-    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/2615875?hl=en">Click Through Rate</a> for the date range selected in the page filter.</p></td>
+    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/2615875?hl=en"> Click Through Rate</a> for the date range selected in the page filter.</p></td>
   </tr>
 </table>
 
@@ -225,7 +225,7 @@ Conversions / Cost Per Conversion Combo Chart
   </tr>
   <tr>
     <td><p><strong>Description</strong></p></td> 
-    <td><p>Displays the count of conversions and <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA">cost per conversion</a> overlaid together for the date range selected in the page filter.</p></td>
+    <td><p>Displays the count of conversions and <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA"> cost per conversion</a> overlaid together for the date range selected in the page filter.</p></td>
   </tr>
 </table>
 
