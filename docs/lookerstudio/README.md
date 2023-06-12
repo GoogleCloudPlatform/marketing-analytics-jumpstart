@@ -26,7 +26,7 @@ This is an existing page carried over from the Marketing Analytics demo dashboar
 
 ### Ad Campaign Performance
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Overview - Ad Campaign Performance](images/01.png)
 
 ---
 
@@ -84,7 +84,7 @@ Cost Per Conversion Scorecard Metric
   </tr>
   <tr>
     <td><p><strong>Description</strong></p></td> 
-    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA">cost per conversion</a>{:.external} for the date range selected in the page filter.</p></td>
+    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA"> cost per conversion</a>for the date range selected in the page filter.</p></td>
   </tr>
 </table>
 
@@ -200,7 +200,7 @@ CTR Scorecard Metric
   </tr>
   <tr>
     <td><p><strong>Description</strong></p></td> 
-    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/2615875?hl=en">Click Through Rate</a>{:.external} for the date range selected in the page filter.</p></td>
+    <td><p>Displays the <a href="https://support.google.com/google-ads/answer/2615875?hl=en">Click Through Rate</a> for the date range selected in the page filter.</p></td>
   </tr>
 </table>
 
@@ -225,17 +225,19 @@ Conversions / Cost Per Conversion Combo Chart
   </tr>
   <tr>
     <td><p><strong>Description</strong></p></td> 
-    <td><p>Displays the count of conversions and <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA">cost per conversion</a>{:.external} overlaid together for the date range selected in the page filter.</p></td>
+    <td><p>Displays the count of conversions and <a href="https://support.google.com/google-ads/answer/6396841?hl=en&sjid=10296453092719145927-NA">cost per conversion</a> overlaid together for the date range selected in the page filter.</p></td>
   </tr>
 </table>
 
 ### Web Traffic Scorecards
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Overview - Web Traffic Scorecards](images/02.png)
 
 ---
 
 #### Total Unique Sessions 
+
+![Web Traffic - Total Unique Sessions](images/03.png)
 
 Total Unique Sessions Scorecard Metric
 
@@ -303,7 +305,7 @@ Total Unique Sessions Chart Metric
 
 #### Average Session Engagement Time 
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Web Traffic - Avg Session Engagement](images/04.png)
 
 Average Session Engagement Time Scorecard Metric
 
@@ -371,7 +373,7 @@ Average Session Engagement Time Chart Metric
 
 #### Total Unique Pageviews 
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Web Traffic-  Total Unique Page Views](images/05.png)
 
 Total Unique Pageviews Scorecard Metric
 
@@ -439,7 +441,7 @@ Total Unique Pageviews Chart Metric
 
 #### Avg Time on Page 
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Web Traffic - Avg Time on Page](images/06.png)
 
 Avg Time on Page Scorecard Metric
 
@@ -503,35 +505,35 @@ Avg Time on Page Chart Metric
   </tr>
 </table>
 
-## Ad Campaign Performance {:#ad-campaign}
+## Ad Campaign Performance
 
 A similar view to the ads data in the [Overview Page](#heading=h.mw1c6uotr92) but features some additional charts for Ad Campaign performance analysis.
 
 One key difference is that the area charts have a granular date dimension to allow more detailed analysis for a smaller period of time.
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Ad Campaign Performance](images/07.png)
 
-## Campaign Comparison {:#campaign-comparison}
+## Ad Campaign Comparison
 
 A similar view to the ads data in the [Overview Page](#heading=h.mw1c6uotr92) and [Ad Campaign Performance](#heading=h.8m10frl7kxdu) but is designed to allow comparison across campaigns.
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Ad Campaign Comparison](images/08.png)
 
-## Web Traffic {:#web-traffic}
+## Web Traffic
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Web Traffic](images/09.png)
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
-
----
-
-### Scorecards {:#scorecards}
-
-Same as [Web Traffic Scorecards](#heading=h.pe9cnrg207fs)
+![Web Traffic - Map](images/10.png)
 
 ---
 
-### Charts {:#charts}
+### Scorecards
+
+Same as [Web Traffic Scorecards](#web-traffic-scorecards)
+
+---
+
+### Charts
 
 #### Most Popular Pages Chart 
 
@@ -576,7 +578,7 @@ Avg Time on Page / Sessions
 SUM(total_engagement_time_sec)/SUM(session_count)
 ```
 
-[Bounce Rate](https://support.google.com/analytics/answer/12195621?hl=en){:.external}
+[Bounce Rate](https://support.google.com/analytics/answer/12195621?hl=en)
 
 ```
 SUM(bounced_count)/SUM(session_count)
@@ -693,6 +695,6 @@ SUM(session_count)
 
 ## Dashboard Deployment
 
-The process is orchestrated through the [Looker Studio Linking API](https://developers.google.com/looker-studio/integrate/linking-api){:.external} and is documented in detail within the public repo.
+The process is orchestrated through the [Looker Studio Linking API](https://developers.google.com/looker-studio/integrate/linking-api) and is documented in detail within the public repo.
 
 [https://github.com/GoogleCloudPlatform/marketing-data-engine/tree/main/python/lookerstudio](https://github.com/GoogleCloudPlatform/marketing-data-engine/tree/main/python/lookerstudio)
