@@ -507,7 +507,7 @@ Avg Time on Page Chart Metric
 
 ## Ad Campaign Performance
 
-A similar view to the ads data in the [Overview Page](#heading=h.mw1c6uotr92) but features some additional charts for Ad Campaign performance analysis.
+A similar view to the ads data in the [Overview Page](#overview-page) but features some additional charts for Ad Campaign performance analysis.
 
 One key difference is that the area charts have a granular date dimension to allow more detailed analysis for a smaller period of time.
 
@@ -537,7 +537,7 @@ Same as [Web Traffic Scorecards](#web-traffic-scorecards)
 
 #### Most Popular Pages Chart 
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Charts - Most Popular Pages](images/11.png)
 
 **Properties**
 
@@ -569,7 +569,7 @@ Same as [Web Traffic Scorecards](#web-traffic-scorecards)
 Total Sessions Metric
 
 ```
-
+SUM(total_sessions)
 ```
 
 Avg Time on Page / Sessions
@@ -586,7 +586,7 @@ SUM(bounced_count)/SUM(session_count)
 
 #### Sessions by Devices and Browsers 
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Charts - Sessions by Devices & Browsers](images/12.png)
 
 **Properties**
 
@@ -625,7 +625,7 @@ SUM(session_count)
 
 #### Purchases by Devices and Browsers Chart 
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Charts - Purchases by Devices & Browsers](images/13.png)
 
 **Properties**
 
@@ -666,7 +666,7 @@ SUM(total_purchase_revenue)
 
 ### Map
 
-![INSERT ALT TEXT HERE](INSERT FILE NAME HERE)
+![Sessions by Region](images/10.png)
 
 #### Sessions by Region 
 
