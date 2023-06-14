@@ -16,7 +16,7 @@ SELECT user_pseudo_id AS client_id,
  ltv_revenue_past_1_7_day AS ltv_revenue_past_1_7,
  ltv_revenue_past_7_15_day AS ltv_revenue_past_7_15,
  geo_region
- FROM {{source_table}}
+ FROM `{{source_table}}`
  WHERE prediction IN (3,4,14)
  AND geo_region IN ('California', 'New York', 'Washington')
  AND visits_past_1_7_day = 1
