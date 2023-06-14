@@ -1,7 +1,7 @@
 SELECT * EXCEPT(user_pseudo_id, processed_timestamp, user_id),
  user_pseudo_id AS client_id,
  EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date
- FROM {{source_table}}
+ FROM `{{source_table}}`
  WHERE prediction = 'true'
  AND prediction_prob > 0.5
  ORDER BY prediction_prob DESC
