@@ -158,12 +158,12 @@ module "secret_manager" {
   secrets = [
     {
       name                  = "ga4-measurement-id"
-      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties.result["measurement_id"] : var.ga4_measurement_id
+      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_id"] : var.ga4_measurement_id
       automatic_replication = true
     },
     {
       name                  = "ga4-measurement-secret"
-      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties.result["measurement_secret"] : var.ga4_measurement_secret
+      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
       automatic_replication = true
     },
   ]
