@@ -34,3 +34,13 @@ variable "trigger_function_location" {
   type        = string
   default     = "us-central1"
 }
+
+variable "ga4_measurement_id" {
+  description = "Measurement ID in GA4"
+  type        = string
+}
+
+variable "ga4_measurement_secret" {
+  description = "client secret for authenticatin to GA4 api"
+  type        = string
+}

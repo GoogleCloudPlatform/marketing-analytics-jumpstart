@@ -142,6 +142,16 @@ variable "activation_project_id" {
   description = "Project ID where activation resources are created"
 }
 
+variable "ga4_measurement_id" {
+  description = "Measurement ID in GA4"
+  type        = string
+}
+
+variable "ga4_measurement_secret" {
+  description = "Client secret for authenticatin to GA4 api"
+  type        = string
+}
+
 variable "deploy_activation" {
   description = "Toggler for activation module"
   type        = bool
