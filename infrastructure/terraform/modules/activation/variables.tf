@@ -20,7 +20,6 @@ variable "project_id" {
 variable "location" {
   description = "Pipeline location."
   type        = string
-  default     = "us-central1"
 }
 
 variable "artifact_repository_id" {
@@ -32,5 +31,16 @@ variable "artifact_repository_id" {
 variable "trigger_function_location" {
   description = "Location of the trigger cloud function"
   type        = string
-  default     = "us-central1"
+}
+
+variable "ga4_measurement_id" {
+  description = "Measurement ID in GA4"
+  type        = string
+  sensitive   = true
+}
+
+variable "ga4_measurement_secret" {
+  description = "Client secret for authenticating to GA4 API"
+  type        = string
+  sensitive   = true
 }
