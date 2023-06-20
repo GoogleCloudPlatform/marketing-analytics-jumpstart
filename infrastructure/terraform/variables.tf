@@ -145,13 +145,15 @@ variable "activation_project_id" {
 variable "ga4_measurement_id" {
   description = "Measurement ID in GA4"
   type        = string
-  default = null
+  default     = null
+  sensitive   = true
 }
 
 variable "ga4_measurement_secret" {
-  description = "Client secret for authenticatin to GA4 api"
+  description = "Client secret for authenticating to GA4 API"
   type        = string
-  default = null
+  default     = null
+  sensitive   = true
 }
 
 variable "deploy_activation" {
