@@ -253,6 +253,7 @@ def run_tabular_prediction_pl(generic_pipeline_vars: dict, my_pipeline_vars: dic
 @pytest.mark.inte
 @pytest.mark.prediction_pl
 @pytest.mark.pipeline_run
+@pytest.mark.current
 def test_run_propensity_pred_pl(variables):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']

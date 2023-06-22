@@ -15,6 +15,7 @@
 from datetime import datetime
 from kfp import compiler
 from google.cloud.aiplatform.pipeline_jobs import PipelineJob, _set_enable_caching_value
+from google.cloud.aiplatform import TabularDataset, Artifact
 from typing import Any, Callable, Dict, Mapping, Optional, List
 import logging
 import json
@@ -159,31 +160,66 @@ def compile_automl_tabular_pipeline(
             pipeline_parameters, pipeline_parameters_substitutions)
 
     """
-        PROJECT_ID,
-        REGION,
-        root_dir,
-        target_column,
-        prediction_type,
-        optimization_objective,
-        transform_config_path,
-        train_budget_milli_node_hours,
-        data_source_csv_filenames=data_source_csv_filenames,
-        data_source_bigquery_table_path=data_source_bigquery_table_path,
-        weight_column=weight_column,
-        predefined_split_key=predefined_split_key,
-        timestamp_split_key=timestamp_split_key,
-        stratified_split_key=stratified_split_key,
-        training_fraction=training_fraction,
-        validation_fraction=validation_fraction,
-        test_fraction=test_fraction,
-        study_spec_parameters_override=study_spec_parameters_override,
-        stage_1_tuner_worker_pool_specs_override=worker_pool_specs_override,
-        cv_trainer_worker_pool_specs_override=worker_pool_specs_override,
-        run_evaluation=run_evaluation,
-        run_distillation=run_distillation,
-        dataflow_subnetwork=dataflow_subnetwork,
-        dataflow_use_public_ips=dataflow_use_public_ips,
-        export_additional_model_without_custom_ops=export_additional_model_without_custom_ops
+        additional_experiments: dict
+#    cv_trainer_worker_pool_specs_override: list
+#    data_source_bigquery_table_path: str [Default: '']
+#    data_source_csv_filenames: str [Default: '']
+#    dataflow_service_account: str [Default: '']
+#    dataflow_subnetwork: str [Default: '']
+#    dataflow_use_public_ips: bool [Default: True]
+#    disable_early_stopping: bool [Default: False]
+#    distill_batch_predict_machine_type: str [Default: 'n1-standard-16']
+#    distill_batch_predict_max_replica_count: int [Default: 25.0]
+#    distill_batch_predict_starting_replica_count: int [Default: 25.0]
+#    enable_probabilistic_inference: bool [Default: False]
+#    encryption_spec_key_name: str [Default: '']
+#    evaluation_batch_explain_machine_type: str [Default: 'n1-highmem-8']
+#    evaluation_batch_explain_max_replica_count: int [Default: 10.0]
+#    evaluation_batch_explain_starting_replica_count: int [Default: 10.0]
+#    evaluation_batch_predict_machine_type: str [Default: 'n1-highmem-8']
+#    evaluation_batch_predict_max_replica_count: int [Default: 20.0]
+#    evaluation_batch_predict_starting_replica_count: int [Default: 20.0]
+#    evaluation_dataflow_disk_size_gb: int [Default: 50.0]
+#    evaluation_dataflow_machine_type: str [Default: 'n1-standard-4']
+#    evaluation_dataflow_max_num_workers: int [Default: 100.0]
+#    evaluation_dataflow_starting_num_workers: int [Default: 10.0]
+#    export_additional_model_without_custom_ops: bool [Default: False]
+#    fast_testing: bool [Default: False]
+#    location: str
+#    model_description: str [Default: '']
+#    model_display_name: str [Default: '']
+#    optimization_objective: str
+#    optimization_objective_precision_value: float [Default: -1.0]
+#    optimization_objective_recall_value: float [Default: -1.0]
+#    predefined_split_key: str [Default: '']
+#    prediction_type: str
+#    project: str
+#    quantiles: list
+#    root_dir: str
+#    run_distillation: bool [Default: False]
+#    run_evaluation: bool [Default: False]
+#    stage_1_num_parallel_trials: int [Default: 35.0]
+#    stage_1_tuner_worker_pool_specs_override: list
+#    stage_1_tuning_result_artifact_uri: str [Default: '']
+#    stage_2_num_parallel_trials: int [Default: 35.0]
+#    stage_2_num_selected_trials: int [Default: 5.0]
+#    stats_and_example_gen_dataflow_disk_size_gb: int [Default: 40.0]
+#    stats_and_example_gen_dataflow_machine_type: str [Default: 'n1-standard-16']
+#    stats_and_example_gen_dataflow_max_num_workers: int [Default: 25.0]
+#    stratified_split_key: str [Default: '']
+#    study_spec_parameters_override: list
+#    target_column: str
+#    test_fraction: float [Default: -1.0]
+#    timestamp_split_key: str [Default: '']
+#    train_budget_milli_node_hours: float
+#    training_fraction: float [Default: -1.0]
+#    transform_dataflow_disk_size_gb: int [Default: 40.0]
+#    transform_dataflow_machine_type: str [Default: 'n1-standard-16']
+#    transform_dataflow_max_num_workers: int [Default: 25.0]
+#    transformations: str
+#    validation_fraction: float [Default: -1.0]
+#    vertex_dataset: system.Artifact
+#    weight_column: str [Default: '']
     """
 
     pipeline_parameters['transformations'] = pipeline_parameters['transformations'].format(
@@ -222,7 +258,7 @@ def compile_automl_tabular_pipeline(
         parameter_values,
     ) = automl_tabular_utils.get_automl_tabular_pipeline_and_parameters(**pipeline_parameters)
 
-    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v2.yaml'), 'r') as file:
+    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v3.yaml'), 'r') as file:
         configuration = yaml.safe_load(file)
 
     # can process yaml to change pipeline name
@@ -231,7 +267,7 @@ def compile_automl_tabular_pipeline(
     _set_enable_caching_value(pipeline_spec=configuration,
                               enable_caching=enable_caching)
 
-    # TODO: This params should be set in dev.yaml . However if i do so the valiudations in 
+    # TODO: This params should be set in conf.yaml . However if i do so the validations in 
     # .get_automl_tabular_pipeline_and_parameters fail as this values are not
     # accepted in the given package. (I use a custom pipeline yaml instead of the one in 
     # the package and that causes the issue.)
@@ -244,7 +280,7 @@ def compile_automl_tabular_pipeline(
         if k in configuration['root']['inputDefinitions']['parameters']:
             configuration['root']['inputDefinitions']['parameters'][k]['defaultValue'] = v
         else:
-            raise Exception("paramteter not found in pipeline definition: {}".format(k))
+            raise Exception("parameter not found in pipeline definition: {}".format(k))
 
     with open(template_path, 'w') as yaml_file:
         yaml.dump(configuration, yaml_file)
@@ -342,7 +378,7 @@ def schedule_pipeline(
     resp = requests.post(url=url, json=body, headers=headers)
     data = resp.json()  # Check the JSON Response Content documentation below
 
-    logging.info(f"scheduled for {pipeline_name} submitted")
+    logging.info(f"scheduler for {pipeline_name} submitted")
     return data
 
 
@@ -445,6 +481,17 @@ def run_pipeline(
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
             pipeline_parameters, pipeline_parameters_substitutions)
+    
+    logging.info(f"Pipeline parameters : {pipeline_parameters}")
+
+    # Create Vertex Dataset
+    #vertex_datasets_uri = create_dataset(
+    #    display_name=pipeline_parameters['vertex_dataset_display_name'],
+    #    bigquery_source=pipeline_parameters['data_source_bigquery_table_path'],
+    #    project_id=pipeline_parameters['project'])
+    #
+    #input_artifacts: Dict[str, str] = {}
+    #input_artifacts['vertex_datasets'] = vertex_datasets_uri
 
     pl = PipelineJob(
         display_name='na',  # not needed and will be optional in next major release
@@ -455,6 +502,7 @@ def run_pipeline(
         project=project_id,
         location=location,
         parameter_values=pipeline_parameters,
+        #input_artifacts=input_artifacts,
         encryption_spec_key_name=encryption_spec_key_name,
         credentials=credentials,
         failure_policy=failure_policy,
@@ -466,3 +514,39 @@ def run_pipeline(
         if (pl.has_failed):
             raise RuntimeError("Pipeline execution failed")
     return pl
+
+
+#def create_dataset(
+#    display_name: str,
+#    bigquery_source: str,
+#    project_id: str,
+#    location: str = "us-central1",
+#    credentials: Optional[credentials.Credentials] = None,
+#    sync: bool = True,
+#    create_request_timeout: Optional[float] = None,
+#    ) -> str:
+#    
+#    #bigquery_source in this format "bq://<project_id>.purchase_propensity.v_purchase_propensity_training_30_15"
+#    #dataset = TabularDataset.create(
+#    #    display_name=display_name,
+#    #    bq_source=[bigquery_source],
+#    #    project=project_id,
+#    #    location=location,
+#    #    credentials=credentials,
+#    #    sync=sync,
+#    #    create_request_timeout=create_request_timeout)
+#    #dataset.wait()
+#
+#    artifact = Artifact.create(
+#        schema_title="system.Dataset",
+#        uri=bigquery_source,
+#        display_name=display_name,
+#        project=project_id,
+#        location=location,
+#    )
+#    artifact.wait()
+#
+#    # Should be: 7104764862735056896
+#    # Cannot use full resource name of format: projects/294348452381/locations/us-central1/datasets/7104764862735056896
+#    return artifact.resource_id
+    
