@@ -29,7 +29,6 @@ installation.
     ```bash
     export PROJECT_ID="[your Google Cloud project id]"
     gcloud config set project $PROJECT_ID
-    gcloud auth application-default login
     ```
 
 1. Install Python's Poetry
@@ -101,11 +100,25 @@ installation.
 
    If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
 
+### Post-Installation Instructions
+
+Now that you have deployed all assets successfully for the 1st time in your Google Cloud Project, the data must flow through all components. 
+
+At this point in time, you have two options: a) trigger your Cloud Workflow to execute your Dataform worflow. b) wait until the next day 
+when the Cloud Workflow is going to execute according to your schedule. Next, you gonna need to execute the BigQuery stored procedures 
+having the prefix "invoke_backfill_*".
+
+After you have triggered you Cloud Workflow, you will be able to use your Looker Studio; and after you have executed the BigQuery stored 
+procedures, you must redeploy the ML pipelines using Terraform.
+
 ## Resources created
 
-At this time, the Terraform scripts in this folder create:
+At this time, the Terraform scripts in this folder perform the following tasks:
 
 - Enables the APIs needed
 - IAM bindings needed for the GCP services used
 - Secret in GCP Secret manager for the private GitHub repo
 - Dataform repository connected to the GitHub repo
+- Deploys the data store, feature store, ML pipelines and activation application
+
+It still doesn't deploy the Looker Studio Dashboard.
