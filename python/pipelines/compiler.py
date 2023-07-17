@@ -75,7 +75,7 @@ if __name__ == "__main__":
             pipeline_parameters=pipeline_params['pipeline_parameters'],
             pipeline_parameters_substitutions= pipeline_params['pipeline_parameters_substitutions'],
             exclude_features = pipeline_params['exclude_features'],
-            enable_caching=False
+            enable_caching=False,
             )
     else:    
         module_name = '.'.join(pipelines_list[args.pipeline].split('.')[:-1])
@@ -86,5 +86,6 @@ if __name__ == "__main__":
             pipeline_name = pipeline_params['name'],
             pipeline_parameters = pipeline_params['pipeline_parameters'],
             pipeline_parameters_substitutions = pipeline_params['pipeline_parameters_substitutions'],
-            enable_caching=False
+            enable_caching=False,
+            type_check=False,
         )
