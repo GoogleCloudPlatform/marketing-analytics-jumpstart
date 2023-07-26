@@ -78,7 +78,8 @@ def compile_pipeline(
         pipeline_name: str,
         pipeline_parameters: Optional[Dict[str, Any]] = None,
         pipeline_parameters_substitutions: Optional[Dict[str, Any]] = None,
-        enable_caching: bool = True) -> str:
+        enable_caching: bool = True,
+        type_check: bool = True) -> str:
 
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
@@ -89,6 +90,7 @@ def compile_pipeline(
         package_path=template_path,
         pipeline_name=pipeline_name,
         pipeline_parameters=pipeline_parameters,
+        type_check=type_check,
     )
 
     with open(template_path, 'r') as file:
@@ -226,10 +228,17 @@ def compile_automl_tabular_pipeline(
         timestamp=datetime.now().strftime("%Y%m%d%H%M%S"))
 
     from google.cloud import bigquery
-    client = bigquery.Client()
-    table = client.get_table(
-        pipeline_parameters['data_source_bigquery_table_path'].split('/')[-1])
-    schema = [schema.name for schema in table.schema]
+    from google.api_core import exceptions
+
+    try:
+        client = bigquery.Client()
+        table = client.get_table(
+            pipeline_parameters['data_source_bigquery_table_path'].split('/')[-1])
+        schema = [schema.name for schema in table.schema]
+    except exceptions.NotFound as e:
+        logging.warn(f'Pipeline compiled without columns transformation. \
+            Make sure the `data_source_bigquery_table_path` table or view exists in your config.yaml!')
+        schema = []
 
     for column_to_remove in exclude_features + [
             pipeline_parameters['target_column'],
