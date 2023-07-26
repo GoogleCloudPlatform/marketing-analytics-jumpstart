@@ -102,10 +102,10 @@ installation.
 
 ### Post-Installation Instructions
 
-Now that you have deployed all assets successfully for the 1st time in your Google Cloud Project, the data must flow through all components. 
+Now that you have deployed all assets successfully for the first time in your Google Cloud Project, the data must flow through all components. 
 
 At this point in time, you have two options: a) trigger your Cloud Workflow to execute your Dataform worflow. b) wait until the next day 
-when the Cloud Workflow is going to execute according to your schedule. Next, you gonna need to execute the BigQuery stored procedures 
+when the Cloud Workflow is going to execute according to your schedule. Next, you will need to execute the BigQuery stored procedures 
 having the prefix "invoke_backfill_*".
 
 After you have triggered you Cloud Workflow, you will be able to use your Looker Studio; and after you have executed the BigQuery stored 
@@ -121,4 +121,4 @@ At this time, the Terraform scripts in this folder perform the following tasks:
 - Dataform repository connected to the GitHub repo
 - Deploys the data store, feature store, ML pipelines and activation application
 
-It still doesn't deploy the Looker Studio Dashboard.
+The Looker Studio Dashboard deployment is a separate [step](https://github.com/GoogleCloudPlatform/marketing-data-engine/blob/main/python/lookerstudio/README.md).
