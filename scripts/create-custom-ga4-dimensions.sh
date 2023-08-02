@@ -42,37 +42,25 @@ section_open "Check if the necessary variables are set: GA4_STREAM_ID"
     check_environment_variable "GA4_STREAM_ID" "the Google Analytics data stream id"
 section_close
 
-section_open  "Setting the Google Cloud project to TF_STATE_PROJECT"
-    set_environment_variable_if_not_set "TF_STATE_PROJECT" "${PROJECT_ID}"
-    gcloud config set project "${TF_STATE_PROJECT}"
-section_close
-
-section_open  "Check and set the LOCATION variable"
-    set_environment_variable_if_not_set "LOCATION" "us-central1"
-section_close
-
-section_open  "Check and set the TF_STATE_BUCKET variable"
-    set_environment_variable_if_not_set "TF_STATE_BUCKET" "${TF_STATE_PROJECT}-terraform-state"
-section_close
-
 section_open "Enable the Cloud Resource Manager API with"
     gcloud services enable cloudresourcemanager.googleapis.com
 section_close
 
-section_open "Creating a new Google Cloud Storage bucket to store the Terraform state in ${TF_STATE_PROJECT} project, bucket: ${TF_STATE_BUCKET}"
-    if gsutil ls -b gs://"${TF_STATE_BUCKET}" >/dev/null 2>&1; then
-        printf "The ${TF_STATE_BUCKET} Google Cloud Storage bucket already exists. \n"
-    else
-        gsutil mb -p "${TF_STATE_PROJECT}" --pap enforced -l "${LOCATION}" -b on gs://"${TF_STATE_BUCKET}"
-        gsutil versioning set on gs://"${TF_STATE_BUCKET}"
-    fi
+section_open "Enable the Google Analytics Admin API with"
+    gcloud services enable analyticsadmin.googleapis.com
 section_close
 
-section_open "Creating terraform backend.tf configuration file"
-    TERRAFORM_RUN_DIR="infrastructure/terraform"
-    create_terraform_backend_config_file "${TERRAFORM_RUN_DIR}" "${TF_STATE_BUCKET}"
+section_open "Creating Google Analytics resources"
+    cd python/ga4_setup
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    python setup.py --ga4_resource=custom_events
+    python setup.py --ga4_resource=custom_dimensions
+    deactivate
+    cd ../..
 section_close
 
 printf "$DIVIDER"
-printf "You got the end the of your generate-tf-backend script with everything working. \n"
+printf "You got the end the of your create-custom-ga4-dimensions script with everything working. \n"
 printf "$DIVIDER"
