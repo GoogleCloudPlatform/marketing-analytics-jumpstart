@@ -22,17 +22,16 @@ installation.
     git clone https://github.com/GoogleCloudPlatform/${REPO}.git
     ```
 
-2. If you don't use Cloud Shell, export environment variables and set the default project.
+1. If you don't use Cloud Shell, export environment variables and set the default project.
    Typically, there is a single project to install the solution. If you chose to use multiple projects - use the one
    designated for the data processing.
 
     ```bash
     export PROJECT_ID="[your Google Cloud project id]"
     gcloud config set project $PROJECT_ID
-    gcloud auth application-default login
     ```
 
-3. Install Python's Poetry
+1. Install Python's Poetry
 
    [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
 
@@ -54,7 +53,21 @@ installation.
    brew install poetry
    ```
 
-3. Run the following script to create a Terraform backend.
+1. Google Analytics configurations
+
+   Set environment variables with you Google Analytics account details:
+   Follow this [instruction](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#google_analytics) to determine your Google Analytics 4 property Id, and this [instruction](https://support.google.com/analytics/answer/12332343?hl=en) to determine your Google Analytics 4 data stream Id.
+   ```shell
+   export GA4_PROPERTY_ID="[your Google Analytics property id]"
+   export GA4_STREAM_ID="[your Google Analytics data stream id]"
+   ```
+
+   Authenticate with additional OAuth 2.0 scopes needed to call Google Analytics Admin API:
+   ```shell
+   gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+   ```
+
+1. Run the following script to create a Terraform backend.
 
     ```bash
     SOURCE_ROOT=${HOME}/${REPO}
@@ -64,7 +77,7 @@ installation.
 
    **Note:** Make sure you provide access to the BigQuery dataset where your GA4 and GAds exported data is located.
 
-5. Create the Terraform variables file by making a copy from the template and set the Terraform variables.
+1. Create the Terraform variables file by making a copy from the template and set the Terraform variables.
    Most of the parameters are based on the pre-requisites described [here](../README.md).
    The [sample file](terraform-sample.tfvars) has all the required variables listed.
 
@@ -78,7 +91,7 @@ installation.
     vim ${TERRAFORM_RUN_DIR}/terraform.tfvars
     ```
 
-6. Run Terraform to create resources:
+1. Run Terraform to create resources:
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
@@ -87,11 +100,25 @@ installation.
 
    If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
 
+### Post-Installation Instructions
+
+Now that you have deployed all assets successfully for the first time in your Google Cloud Project, the data must flow through all components. 
+
+At this point in time, you have two options: a) trigger your Cloud Workflow to execute your Dataform worflow. b) wait until the next day 
+when the Cloud Workflow is going to execute according to your schedule. Next, you will need to execute the BigQuery stored procedures 
+having the prefix "invoke_backfill_*".
+
+After you have triggered you Cloud Workflow, you will be able to use your Looker Studio; and after you have executed the BigQuery stored 
+procedures, you must redeploy the ML pipelines using Terraform.
+
 ## Resources created
 
-At this time, the Terraform scripts in this folder create:
+At this time, the Terraform scripts in this folder perform the following tasks:
 
 - Enables the APIs needed
 - IAM bindings needed for the GCP services used
 - Secret in GCP Secret manager for the private GitHub repo
 - Dataform repository connected to the GitHub repo
+- Deploys the data store, feature store, ML pipelines and activation application
+
+The Looker Studio Dashboard deployment is a separate [step](https://github.com/GoogleCloudPlatform/marketing-data-engine/blob/main/python/lookerstudio/README.md).

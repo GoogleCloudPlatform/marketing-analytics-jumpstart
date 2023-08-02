@@ -145,6 +145,12 @@ module "trigger_function_account" {
   description  = "Account used to run the activation trigger function"
 }
 
+data "external" "ga4_measurement_properties" {
+  program     = ["bash", "-c", "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt >&2 && python setup.py --ga4_resource=measurement_properties && deactivate"]
+  working_dir = "../../python/ga4_setup"
+  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? 1 : 0
+}
+
 module "secret_manager" {
   source     = "GoogleCloudPlatform/secret-manager/google"
   version    = "~> 0.1"
@@ -152,12 +158,12 @@ module "secret_manager" {
   secrets = [
     {
       name                  = "ga4-measurement-id"
-      secret_data           = var.ga4_measurement_id
+      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_id"] : var.ga4_measurement_id
       automatic_replication = true
     },
     {
       name                  = "ga4-measurement-secret"
-      secret_data           = var.ga4_measurement_secret
+      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
       automatic_replication = true
     },
   ]

@@ -40,10 +40,6 @@ feature_store_project_id = "Project ID where feature store resources will be cre
 ####################  ACTIVATION VARIABLES  #################################
 
 activation_project_id = "Project ID where activation resources will be created"
-# Required. A MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
-#   Admin > Data Streams > choose your stream > Measurement Protocol > Create
-ga4_measurement_id     = "Measurement ID in GA4"
-ga4_measurement_secret = "Client secret for authentication to GA4 API"
 
 ####################  GITHUB VARIABLES  #################################
 
