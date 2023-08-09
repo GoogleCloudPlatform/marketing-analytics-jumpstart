@@ -82,6 +82,9 @@ resource "google_artifact_registry_repository" "pipelines-repo" {
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
   format        = "KFP"
+  depends_on = [
+    module.project_services.project_id
+  ]
 }
 
 
@@ -90,6 +93,9 @@ resource "google_artifact_registry_repository" "pipelines_docker_repo" {
   repository_id = local.artifact_registry_vars.pipelines_docker_repo.name
   description   = "DOCKER images Repository"
   format        = "DOCKER"
+  depends_on = [
+    module.project_services.project_id
+  ]
 }
 
 
@@ -122,9 +128,9 @@ resource "null_resource" "build_push_pipelines_components_image" {
     working_dir = self.triggers.working_dir
   }
 
-  #  depends_on = [
-  #    google_cloudbuild_trigger.cloud-build-trigger
-  #  ]
+  depends_on = [
+    google_artifact_registry_repository.pipelines_docker_repo
+  ]
 }
 
 resource "null_resource" "compile_feature_engineering_pipelines" {
@@ -143,7 +149,8 @@ resource "null_resource" "compile_feature_engineering_pipelines" {
   }
 
   depends_on = [
-    null_resource.build_push_pipelines_components_image
+    null_resource.build_push_pipelines_components_image,
+    google_artifact_registry_repository.pipelines-repo
   ]
 }
 

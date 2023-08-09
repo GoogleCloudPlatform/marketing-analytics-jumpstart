@@ -54,6 +54,17 @@ module "project_services" {
   ]
 }
 
+resource "null_resource" "check_apis_" {
+  provisioner "local-exec" {
+    command     = "${var.poetry_cmd} install"
+    working_dir = local.source_root_dir
+  }
+  depends_on = [
+    module.project_services.project_id,
+    null_resource.poetry_install
+  ]
+}
+
 resource "google_artifact_registry_repository" "cloud_builder_repository" {
   project       = local.feature_store_project_id
   location      = var.region
@@ -61,7 +72,7 @@ resource "google_artifact_registry_repository" "cloud_builder_repository" {
   description   = "Custom builder images for Marketing Data Engine"
   format        = "DOCKER"
   depends_on = [
-    module.project_services
+    module.project_services.project_id
   ]
 }
 
