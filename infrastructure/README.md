@@ -1,8 +1,8 @@
-# Marketing Data Engine Installation Guide
+# Marketing Analytics Jumpstart Installation Guide
 
 ## Overview
 
-Marketing Data Engine consists of several components - marketing data store (MDS), feature store, ML pipelines,
+Marketing Analytics Jumpstart consists of several components - marketing data store (MDS), feature store, ML pipelines,
 the activation pipeline and dashboards. This document describes the sequencing of installing these components.
 
 ## Prerequisites
@@ -68,7 +68,7 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
     ```
 4. Push the contents of the source repository to your private repo
     ```
-   cd marketing-data-engine-dataform
+   cd marketing-analytics-jumpstart-dataform
    git remote add copy https://github.com/<your-account>/<repo>.git
    git branch -M main
    git push -u copy main
@@ -76,7 +76,7 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
 5. Clean the checkout directory
    ```shell
    cd ..
-   rm -rf marketing-data-engine-dataform
+   rm -rf marketing-analytics-jumpstart-dataform
    ```
 6. Generate a GitHub personal access token. It will be used by Dataform to access the repository. For details and
    additional guidance regarding token type, security and require permissions
