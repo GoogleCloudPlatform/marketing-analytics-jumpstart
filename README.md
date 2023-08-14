@@ -1,6 +1,6 @@
-# Marketing Data Engine
+# Marketing Analytics Jumpstart
 
-Marketing Data Engine consists of an easy, flexible and automated implementation of an end-to-end solution that enables
+Marketing Analytics Jumpstart consists of an easy, flexible and automated implementation of an end-to-end solution that enables
 Marketing Technologist teams to store, transform, analyze marketing data, and programmatically send predictive events to
 Google Analytics 4 to support conversion optimization and remarketing campaigns.
 
