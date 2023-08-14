@@ -64,7 +64,7 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    will be hosted on GitHub.
 3. On your computer or in a Cloud Shell, check out the GitHub repository which contains the MDS Dataform scripts.
     ```
-    git clone https://github.com/googlecloudplatform/marketing-data-engine-dataform.git
+    git clone https://github.com/googlecloudplatform/marketing-analytics-jumpstart-dataform.git
     ```
 4. Push the contents of the source repository to your private repo
     ```
