@@ -1,8 +1,8 @@
-# Marketing Data Engine Looker Studio Dashboard
+# Marketing Analytics Jumpstart Looker Studio Dashboard
 
-This Python script generates a URL to deploy a copy of the Marketing Data Engine dashboard utilizing the [Looker Studio Linking API](https://developers.google.com/looker-studio/integrate/linking-api).
+This Python script generates a URL to deploy a copy of theMarketing Analytics Jumpstart dashboard utilizing the [Looker Studio Linking API](https://developers.google.com/looker-studio/integrate/linking-api).
 
-The dashboard deployment is intended to be completed once the Marketing Data Engine warehouse has been deployed through Dataform.
+The dashboard deployment is intended to be completed once the Marketing Data Store warehouse has been deployed through Dataform.
 
 Program requirements are listed in `pyproject.toml`.
 
@@ -13,7 +13,7 @@ You will need to configure `config.ini` with the BigQuery project and datasets f
 
 1. If you haven't already, clone this repo to your Cloud Shell:
     ```bash
-    https://github.com/GoogleCloudPlatform/marketing-data-engine.git
+    https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git
     ```
 
 1. Poetry is required for this deployment, if you haven't in a previous step, install it:
@@ -34,7 +34,7 @@ This step includes the following:
 
 ## Set-up Configuration
 
-The file `config.ini` needs to be updated for the project and datasets where your Marketing Data Engine Dataform is deployed.
+The file `config.ini` needs to be updated for the project and datasets where your Marketing Analytics Jumpstart is deployed.
 
 Specifically the following properties need to be set under the `[COMMON]` section:
 
@@ -59,7 +59,7 @@ You're ready to execute the script simply by running:
 poetry run python lookerstudio_deployment.py
 ```
 
-If execution is successful, you will see a long https://lookerstudio.google.com URL that creates a copy of the template report with your defined Marketing Data Engine datasets.
+If execution is successful, you will see a long https://lookerstudio.google.com URL that creates a copy of the template report with your defined Marketing Analytics Jumpstart datasets.
 
 If there is an error, the script should output the appropriate error to help guide you in ensuring that you are executing with the right account and have appropriate permissions on the dataset.
 
