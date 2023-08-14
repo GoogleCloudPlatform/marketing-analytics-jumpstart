@@ -17,7 +17,7 @@ installation.
 1. Clone the source code repository:
 
     ```bash
-    REPO="marketing-data-engine"
+    REPO="marketing-analytics-jumpstart"
     cd $HOME
     git clone https://github.com/GoogleCloudPlatform/${REPO}.git
     ```
