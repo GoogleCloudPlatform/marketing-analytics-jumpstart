@@ -84,10 +84,13 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
    access token to the Terraform scripts using a Terraform variable.
 
-### GA4 Measurement ID and Secrets
+### Google Analytics 4 Configurations and Permissions
 
-A MEASUREMENT ID and API SECRET generated in the Google Analytics UI. To create a new secret, navigate to:
-Admin > Data Streams > choose your stream > Measurement Protocol > Create
+The activation application uses sensitive information from the Google Analytics property, such as Measurement ID and API Secret. These information is stored temporarily on environment variables to be exported manually by the user. 
+
+* A [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en) and [API secret](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) collected from the Google Analytics UI. In this [article](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) you will find instructions on how to generate the API secret.
+* Editor or Administrator role to the Google Analytics 4 account or property. In this [article](https://support.google.com/analytics/answer/9305587?hl=en#zippy=%2Cgoogle-analytics) you will find instructions on how to setup.
+
 
 ## Installing the MDS, ML pipelines, the feature Store, and the activation pipeline
 
