@@ -115,7 +115,6 @@ module "feature_store" {
   project_id       = var.feature_store_project_id
 
   depends_on = [
-    local_file.feature_store_configuration,
     null_resource.generate_sql_queries
   ]
 }
@@ -126,7 +125,6 @@ module "pipelines" {
   poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
   depends_on = [
-    local_file.feature_store_configuration,
     null_resource.poetry_install
   ]
 }
@@ -139,8 +137,4 @@ module "activation" {
   ga4_measurement_id        = var.ga4_measurement_id
   ga4_measurement_secret    = var.ga4_measurement_secret
   count                     = var.deploy_activation ? 1 : 0
-  depends_on = [
-    local_file.feature_store_configuration,
-    null_resource.poetry_install
-  ]
 }
