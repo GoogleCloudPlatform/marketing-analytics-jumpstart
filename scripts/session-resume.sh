@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+
+. scripts/common.sh
+
+SOURCE_ROOT=$(pwd)
+export TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
+
+# Get Google Cloud project id
+GCLOUD_PROJECT_ID="$(terraform -chdir="${TERRAFORM_RUN_DIR}" output -raw gcloud_project_id)"
+
+section_open  "Setting the Google Cloud project to TF_STATE_PROJECT"
+    set_environment_variable_if_not_set "TF_STATE_PROJECT" "${GCLOUD_PROJECT_ID}"
+    gcloud config set project "${TF_STATE_PROJECT}"
+section_close
+
+section_open  "Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API"
+    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+section_close
