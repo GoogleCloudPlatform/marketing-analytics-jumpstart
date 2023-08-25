@@ -142,6 +142,16 @@ variable "activation_project_id" {
   description = "Project ID where activation resources are created"
 }
 
+variable "ga4_property_id" {
+  description = "Google Analytics property id"
+  type        = string
+}
+
+variable "ga4_stream_id" {
+  description = "Google Analytics data stream id"
+  type        = string
+}
+
 variable "ga4_measurement_id" {
   description = "Measurement ID in GA4"
   type        = string

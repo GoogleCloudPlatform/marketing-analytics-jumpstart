@@ -42,7 +42,7 @@ def get_measurement_protocol_secret(configuration: map, secret_display_name: str
   if measurement_protocol_secret:
     return measurement_protocol_secret
   else:
-    create_measurement_protocol_secret(configuration, secret_display_name)
+    return create_measurement_protocol_secret(configuration, secret_display_name)
 
 
 def get_measurement_id(configuration: map):
@@ -62,7 +62,7 @@ def create_measurement_protocol_secret(configuration: map, secret_display_name: 
 
 
 def load_event_names():
-  fo = open('../../templates/activation_type_configuration_template.tpl')
+  fo = open('templates/activation_type_configuration_template.tpl')
   activation_types_obj = json.load(fo)
   event_names = []
   for k in activation_types_obj:
@@ -139,7 +139,7 @@ def create_custom_event(configuration: map, event_name: str):
 def create_custom_dimensions(configuration: map):
   existing_dimensions = load_existing_ga4_custom_dimensions(configuration)
   fields = load_custom_dimensions(
-    '../../sql/query/audience_segmentation_query_template.sqlx')
+    'sql/query/audience_segmentation_query_template.sqlx')
   use_case = 'Audience Segmentation'
   for field in fields:
     display_name = f'MDE {use_case} {field}'
@@ -177,7 +177,7 @@ def load_existing_ga4_custom_dimensions(configuration: map):
   return existing_custom_dimensions
 
 
-if __name__ == "__main__":
+def entry():
   '''
   Following Google API scopes are required to call Google Analytics Admin API:
   https://www.googleapis.com/auth/analytics
@@ -189,16 +189,17 @@ if __name__ == "__main__":
   https://www.googleapis.com/auth/analytics.user.deletion
   '''
 
-  import os
   import argparse
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--ga4_resource', type=str, required=True)
+  parser.add_argument('--ga4_property_id', type=str, required=True)
+  parser.add_argument('--ga4_stream_id', type=str, required=True)
   args = parser.parse_args()
 
   configuration = {
-    'property_id': os.getenv('GA4_PROPERTY_ID'),
-    'stream_id': os.getenv('GA4_STREAM_ID')
+    'property_id': args.ga4_property_id,
+    'stream_id': args.ga4_stream_id
   }
 
   # python setup.py --ga4_resource=measurement_properties

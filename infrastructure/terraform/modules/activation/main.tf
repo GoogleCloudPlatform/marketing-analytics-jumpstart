@@ -59,6 +59,7 @@ module "project_services" {
     "bigquerystorage.googleapis.com",
     "storage.googleapis.com",
     "datapipelines.googleapis.com",
+    "analyticsadmin.googleapis.com",
   ]
 }
 
@@ -98,6 +99,32 @@ resource "null_resource" "check_artifactregistry_api" {
   ]
 }
 
+resource "null_resource" "create_custom_events" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    EOT
+    working_dir = local.source_root_dir
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+resource "null_resource" "create_custom_dimensions" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    EOT
+    working_dir = local.source_root_dir
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
 resource "google_artifact_registry_repository" "activation_repository" {
   project       = var.project_id
   location      = var.location
@@ -108,7 +135,6 @@ resource "google_artifact_registry_repository" "activation_repository" {
     null_resource.check_artifactregistry_api
   ]
 }
-
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
@@ -146,8 +172,8 @@ module "trigger_function_account" {
 }
 
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt >&2 && python setup.py --ga4_resource=measurement_properties && deactivate"]
-  working_dir = "../../python/ga4_setup"
+  program     = ["bash", "-c", "${var.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  working_dir = local.source_root_dir
   count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? 1 : 0
 }
 

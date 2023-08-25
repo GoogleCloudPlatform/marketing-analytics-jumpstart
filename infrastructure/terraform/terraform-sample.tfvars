@@ -40,6 +40,8 @@ feature_store_project_id = "Project ID where feature store resources will be cre
 ####################  ACTIVATION VARIABLES  #################################
 
 activation_project_id = "Project ID where activation resources will be created"
+ga4_property_id       = "Google Analytics property id"
+ga4_stream_id         = "Google Analytics data stream id"
 
 ####################  GITHUB VARIABLES  #################################
 
