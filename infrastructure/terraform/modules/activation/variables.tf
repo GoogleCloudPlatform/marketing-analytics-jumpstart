@@ -33,8 +33,8 @@ variable "trigger_function_location" {
   type        = string
 }
 
-variable "poetry_run_alias" {
-  description = "alias for poetry run command on the current system"
+variable "poetry_cmd" {
+  description = "alias for poetry command on the current system"
   type        = string
 }
 

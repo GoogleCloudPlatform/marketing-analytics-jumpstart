@@ -134,13 +134,10 @@ module "activation" {
   project_id                = var.activation_project_id
   location                  = var.google_default_region
   trigger_function_location = var.google_default_region
-  poetry_run_alias          = local.poetry_run_alias
+  poetry_cmd                = var.poetry_cmd
   ga4_measurement_id        = var.ga4_measurement_id
   ga4_measurement_secret    = var.ga4_measurement_secret
   ga4_property_id           = var.ga4_property_id
   ga4_stream_id             = var.ga4_stream_id
   count                     = var.deploy_activation ? 1 : 0
-  depends_on = [
-    null_resource.poetry_install
-  ]
 }

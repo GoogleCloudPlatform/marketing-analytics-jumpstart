@@ -15,6 +15,7 @@
 locals {
   app_prefix                                 = "activation"
   source_root_dir                            = "../.."
+  poetry_run_alias                           = "${var.poetry_cmd} run"
   sql_dir                                    = "${local.source_root_dir}/sql/query"
   template_dir                               = "${local.source_root_dir}/templates"
   pipeline_source_dir                        = "${local.source_root_dir}/python/activation"
@@ -35,6 +36,13 @@ locals {
   trigger_function_account_name  = "trigger-function"
   trigger_function_account_email = "${local.app_prefix}-${local.trigger_function_account_name}@${var.project_id}.iam.gserviceaccount.com"
 
+}
+
+resource "null_resource" "poetry_install" {
+  provisioner "local-exec" {
+    command     = "${var.poetry_cmd} install"
+    working_dir = local.source_root_dir
+  }
 }
 
 module "project_services" {
@@ -61,6 +69,8 @@ module "project_services" {
     "datapipelines.googleapis.com",
     "analyticsadmin.googleapis.com",
   ]
+
+  depends_on = [ null_resource.poetry_install ]
 }
 
 module "bigquery" {
@@ -102,7 +112,7 @@ resource "null_resource" "check_artifactregistry_api" {
 resource "null_resource" "create_custom_events" {
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
@@ -115,7 +125,7 @@ resource "null_resource" "create_custom_events" {
 resource "null_resource" "create_custom_dimensions" {
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
@@ -172,9 +182,13 @@ module "trigger_function_account" {
 }
 
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "${var.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
   working_dir = local.source_root_dir
   count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? 1 : 0
+
+  depends_on = [
+    module.project_services
+  ]
 }
 
 module "secret_manager" {
