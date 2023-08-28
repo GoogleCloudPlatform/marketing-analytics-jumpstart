@@ -14,6 +14,8 @@
 
 ####################  INFRA VARIABLES  #################################
 
+tf_state_project_id = "Google Cloud project where the terraform state file is stored"
+
 create_dev_environment     = false
 create_staging_environment = false
 create_prod_environment    = true

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "gcloud_project_id" {
+output "tf_state_project_id" {
   description = "Google Cloud project id to set on gcloud"
-  value       = var.data_project_id
+  value       = var.tf_state_project_id
 }

@@ -22,14 +22,17 @@ set -o nounset
 SOURCE_ROOT=$(pwd)
 export TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
 
-# Get Google Cloud project id
-GCLOUD_PROJECT_ID="$(terraform -chdir="${TERRAFORM_RUN_DIR}" output -raw gcloud_project_id)"
+# Get terraform state Google Cloud project id
+TF_STATE_PROJECT_ID="$(terraform -chdir="${TERRAFORM_RUN_DIR}" output -raw tf_state_project_id)"
 
-section_open  "Setting the Google Cloud project to TF_STATE_PROJECT"
-    set_environment_variable_if_not_set "TF_STATE_PROJECT" "${GCLOUD_PROJECT_ID}"
-    gcloud config set project "${TF_STATE_PROJECT}"
+section_open  "Setting the gcloud project id"
+    gcloud config set project "${TF_STATE_PROJECT_ID}"
 section_close
 
-section_open  "Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API"
-    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+section_open "Setting Google Application Default Credentials"
+    set_application_default_credentials "${SOURCE_ROOT}"
 section_close
+
+# section_open  "Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API"
+#     gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+# section_close

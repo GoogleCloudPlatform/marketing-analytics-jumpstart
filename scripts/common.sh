@@ -145,3 +145,13 @@ EOF
   unset _TF_STATE_BUCKET
   unset _TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH
 }
+
+set_application_default_credentials() {
+  _SOURCE_ROOT=$1
+  _CREDENTIAL_FILE_PATH="${_SOURCE_ROOT}/.credentials/application_default_credentials.json"
+  if [ -f "${_CREDENTIAL_FILE_PATH}" ]; then
+    export GOOGLE_APPLICATION_CREDENTIALS="${_CREDENTIAL_FILE_PATH}"
+  fi
+  unset _CREDENTIAL_FILE_PATH
+  unset _SOURCE_ROOT
+}

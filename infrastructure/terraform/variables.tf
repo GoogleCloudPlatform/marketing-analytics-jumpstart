@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+variable "tf_state_project_id" {
+  description = "Google Cloud project where the terraform state file is stored"
+  type        = string
+}
+
 variable "data_project_id" {
   description = "Default project to contain the MDS BigQuery datasets"
   type        = string
