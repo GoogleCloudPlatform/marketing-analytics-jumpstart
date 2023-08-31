@@ -138,6 +138,17 @@ To manually start the data flow you must perform the following tasks:
 
     Now, to deploy the ML pipelines component again, revert your changes on the TF variables file `${TERRAFORM_RUN_DIR}/terraform.tfvars` and apply the terraform configuration by running the commad above again.
 
+### Resume terminal session
+Because a Cloud Shell session is ephemeral, your Cloud Shell session could terminate for various reasons. When a terminal session ends all the session variables and user authentication are lost. You can run the `session-resume.sh` script to configure a new terminal session with the necessary environmental variables and authentication credentials to continue with the terraform deployment. The prerequisites for running this script are that you have set all the variable values in the TF variables file `$TERRAFORM_RUN_DIR}/terraform.tfvars` and have applied the terraform configuration once before. To configure a new terminal session run following commands:
+
+    ```bash
+    SOURCE_ROOT="${HOME}/marketing-analytics-jumpstart"
+    cd ${SOURCE_ROOT}
+    . scripts/session-resume.sh
+    ```
+
+    Follow the authentication workflow, if prompted.
+
 ## Resources created
 
 At this time, the Terraform scripts in this folder perform the following tasks:
