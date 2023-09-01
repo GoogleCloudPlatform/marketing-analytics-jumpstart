@@ -16,6 +16,18 @@ provider "google" {
   region = var.google_default_region
 }
 
+provider "google" {
+  project = var.feature_store_project_id
+  region  = var.google_default_region
+  alias   = "feature_store"
+}
+
+provider "google" {
+  project = var.activation_project_id
+  region  = var.google_default_region
+  alias   = "activation"
+}
+
 data "google_project" "feature_store_project" {
   project_id = var.feature_store_project_id
 }
@@ -113,6 +125,9 @@ module "feature_store" {
   enabled          = var.deploy_feature_store
   count            = var.deploy_feature_store ? 1 : 0
   project_id       = var.feature_store_project_id
+  providers = {
+    google = google.feature_store
+  }
 
   depends_on = [
     null_resource.generate_sql_queries
@@ -124,6 +139,9 @@ module "pipelines" {
   config_file_path = local_file.feature_store_configuration.filename
   poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
+  providers = {
+    google = google.feature_store
+  }
   depends_on = [
     null_resource.poetry_install
   ]
@@ -136,5 +154,8 @@ module "activation" {
   trigger_function_location = var.google_default_region
   ga4_measurement_id        = var.ga4_measurement_id
   ga4_measurement_secret    = var.ga4_measurement_secret
-  count                     = var.deploy_activation ? 1 : 0
+  providers = {
+    google = google.activation
+  }
+  count = var.deploy_activation ? 1 : 0
 }
