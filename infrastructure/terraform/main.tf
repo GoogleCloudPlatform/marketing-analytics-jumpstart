@@ -22,12 +22,6 @@ provider "google" {
   alias   = "feature_store"
 }
 
-provider "google" {
-  project = var.activation_project_id
-  region  = var.google_default_region
-  alias   = "activation"
-}
-
 data "google_project" "feature_store_project" {
   project_id = var.feature_store_project_id
 }
@@ -154,8 +148,5 @@ module "activation" {
   trigger_function_location = var.google_default_region
   ga4_measurement_id        = var.ga4_measurement_id
   ga4_measurement_secret    = var.ga4_measurement_secret
-  providers = {
-    google = google.activation
-  }
-  count = var.deploy_activation ? 1 : 0
+  count                     = var.deploy_activation ? 1 : 0
 }
