@@ -16,12 +16,6 @@ provider "google" {
   region = var.google_default_region
 }
 
-provider "google" {
-  project = var.feature_store_project_id
-  region  = var.google_default_region
-  alias   = "feature_store"
-}
-
 data "google_project" "feature_store_project" {
   project_id = var.feature_store_project_id
 }
@@ -119,9 +113,6 @@ module "feature_store" {
   enabled          = var.deploy_feature_store
   count            = var.deploy_feature_store ? 1 : 0
   project_id       = var.feature_store_project_id
-  providers = {
-    google = google.feature_store
-  }
 
   depends_on = [
     null_resource.generate_sql_queries
