@@ -133,9 +133,6 @@ module "pipelines" {
   config_file_path = local_file.feature_store_configuration.filename
   poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
-  providers = {
-    google = google.feature_store
-  }
   depends_on = [
     null_resource.poetry_install
   ]
