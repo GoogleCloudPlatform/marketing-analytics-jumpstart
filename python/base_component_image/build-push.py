@@ -70,6 +70,6 @@ if __name__ == "__main__":
 
     if True:
         import os
-        os.system(f"cd '{args.path}' && gcloud builds submit --region={repo_params['region']} --tag {tag}")
+        os.system(f"cd '{args.path}' && gcloud builds submit --project={repo_params['project_id']} --region={repo_params['region']} --tag {tag}")
     else:
         run(args.path, tag, args.nocache)
