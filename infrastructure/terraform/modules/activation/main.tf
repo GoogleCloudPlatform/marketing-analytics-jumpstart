@@ -15,6 +15,7 @@
 locals {
   app_prefix                                 = "activation"
   source_root_dir                            = "../.."
+  poetry_run_alias                           = "${var.poetry_cmd} run"
   sql_dir                                    = "${local.source_root_dir}/sql/query"
   template_dir                               = "${local.source_root_dir}/templates"
   pipeline_source_dir                        = "${local.source_root_dir}/python/activation"
@@ -35,6 +36,13 @@ locals {
   trigger_function_account_name  = "trigger-function"
   trigger_function_account_email = "${local.app_prefix}-${local.trigger_function_account_name}@${var.project_id}.iam.gserviceaccount.com"
 
+}
+
+resource "null_resource" "poetry_install" {
+  provisioner "local-exec" {
+    command     = "${var.poetry_cmd} install"
+    working_dir = local.source_root_dir
+  }
 }
 
 module "project_services" {
@@ -59,7 +67,10 @@ module "project_services" {
     "bigquerystorage.googleapis.com",
     "storage.googleapis.com",
     "datapipelines.googleapis.com",
+    "analyticsadmin.googleapis.com",
   ]
+
+  depends_on = [ null_resource.poetry_install ]
 }
 
 module "bigquery" {
@@ -98,6 +109,32 @@ resource "null_resource" "check_artifactregistry_api" {
   ]
 }
 
+resource "null_resource" "create_custom_events" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    EOT
+    working_dir = local.source_root_dir
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+resource "null_resource" "create_custom_dimensions" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    EOT
+    working_dir = local.source_root_dir
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
 resource "google_artifact_registry_repository" "activation_repository" {
   project       = var.project_id
   location      = var.location
@@ -108,7 +145,6 @@ resource "google_artifact_registry_repository" "activation_repository" {
     null_resource.check_artifactregistry_api
   ]
 }
-
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
@@ -146,9 +182,13 @@ module "trigger_function_account" {
 }
 
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt >&2 && python setup.py --ga4_resource=measurement_properties && deactivate"]
-  working_dir = "../../python/ga4_setup"
+  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  working_dir = local.source_root_dir
   count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? 1 : 0
+
+  depends_on = [
+    module.project_services
+  ]
 }
 
 module "secret_manager" {
