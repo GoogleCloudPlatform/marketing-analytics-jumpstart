@@ -145,3 +145,20 @@ EOF
   unset _TF_STATE_BUCKET
   unset _TERRAFORM_BACKEND_CONFIGURATION_FILE_PATH
 }
+
+set_application_default_credentials() {
+  _SOURCE_ROOT=$1
+  _CREDENTIAL_FILE_DIR="${_SOURCE_ROOT}/.credentials"
+  _CREDENTIAL_FILE_PATH="${_CREDENTIAL_FILE_DIR}/application_default_credentials.json"
+  if [ ! -f "${_CREDENTIAL_FILE_PATH}" ]; then
+    _AUTH_OUTPUT=$( gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth" 2>&1 | tee /dev/tty )
+    _CRED_PATH=$( echo ${_AUTH_OUTPUT} | cut -d "[" -f2 | cut -d "]" -f1 )
+    mkdir -p "${_CREDENTIAL_FILE_DIR}" && cp "${_CRED_PATH}" "${_CREDENTIAL_FILE_PATH}"
+    unset _CRED_PATH
+    unset _AUTH_OUTPUT
+  fi
+  export GOOGLE_APPLICATION_CREDENTIALS="${_CREDENTIAL_FILE_PATH}"
+  unset _CREDENTIAL_FILE_PATH
+  unset _CREDENTIAL_FILE_DIR
+  unset _SOURCE_ROOT
+}
