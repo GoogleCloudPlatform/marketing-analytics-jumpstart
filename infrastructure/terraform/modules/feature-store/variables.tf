@@ -32,3 +32,8 @@ variable "project_id" {
   type        = string
   description = "Google Cloud Project ID"
 }
+
+variable "sql_queries_generated" {
+  description = "Construct to specify dependency to sql queries being generated"
+  type        = string
+}

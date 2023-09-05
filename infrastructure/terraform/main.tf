@@ -108,15 +108,12 @@ resource "null_resource" "generate_sql_queries" {
 }
 
 module "feature_store" {
-  source           = "./modules/feature-store"
-  config_file_path = local_file.feature_store_configuration.filename
-  enabled          = var.deploy_feature_store
-  count            = var.deploy_feature_store ? 1 : 0
-  project_id       = var.feature_store_project_id
-
-  depends_on = [
-    null_resource.generate_sql_queries
-  ]
+  source                = "./modules/feature-store"
+  config_file_path      = local_file.feature_store_configuration.filename
+  enabled               = var.deploy_feature_store
+  count                 = var.deploy_feature_store ? 1 : 0
+  project_id            = var.feature_store_project_id
+  sql_queries_generated = null_resource.generate_sql_queries.id
 }
 
 module "pipelines" {
@@ -124,9 +121,7 @@ module "pipelines" {
   config_file_path = local_file.feature_store_configuration.filename
   poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
-  depends_on = [
-    null_resource.poetry_install
-  ]
+  poetry_installed = null_resource.poetry_install.id
 }
 
 module "activation" {
@@ -140,4 +135,5 @@ module "activation" {
   ga4_property_id           = var.ga4_property_id
   ga4_stream_id             = var.ga4_stream_id
   count                     = var.deploy_activation ? 1 : 0
+  poetry_installed          = null_resource.poetry_install.id
 }
