@@ -90,7 +90,7 @@ resource "null_resource" "check_artifactregistry_api" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud services list | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud services list --project=${var.project_id} | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -288,8 +288,8 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  create_cmd_body  = "builds submit --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
-  destroy_cmd_body = "artifacts docker images delete ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
+  create_cmd_body  = "builds submit --project=${var.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
+  destroy_cmd_body = "artifacts docker images delete --project=${var.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 }
 
 module "activation_pipeline_template" {
@@ -297,10 +297,9 @@ module "activation_pipeline_template" {
   version               = "3.1.2"
   additional_components = ["gsutil"]
 
-  platform               = "linux"
-  create_cmd_body        = "dataflow flex-template build \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
-  destroy_cmd_entrypoint = "gsutil"
-  destroy_cmd_body       = "rm \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\""
+  platform         = "linux"
+  create_cmd_body  = "dataflow flex-template build --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
+  destroy_cmd_body = "storage rm --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\""
 
   module_depends_on = [
     module.activation_pipeline_container.wait

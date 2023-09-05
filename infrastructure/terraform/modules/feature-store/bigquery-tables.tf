@@ -13,6 +13,7 @@
 # limitati} under the License.
 
 resource "google_bigquery_table" "audience_segmentation_inference_preparation" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.audience_segmentation.dataset_id
   table_id            = local.config_bigquery.table.audience_segmentation_inference_preparation.table_name
   description         = local.config_bigquery.table.audience_segmentation_inference_preparation.table_description
@@ -25,6 +26,7 @@ resource "google_bigquery_table" "audience_segmentation_inference_preparation" {
 
 
 resource "google_bigquery_table" "customer_lifetime_value_inference_preparation" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.customer_lifetime_value.dataset_id
   table_id            = local.config_bigquery.table.customer_lifetime_value_inference_preparation.table_name
   description         = local.config_bigquery.table.customer_lifetime_value_inference_preparation.table_description
@@ -36,6 +38,7 @@ resource "google_bigquery_table" "customer_lifetime_value_inference_preparation"
 }
 
 resource "google_bigquery_table" "customer_lifetime_value_label" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.customer_lifetime_value_label.table_name
   description         = local.config_bigquery.table.customer_lifetime_value_label.table_description
@@ -47,6 +50,7 @@ resource "google_bigquery_table" "customer_lifetime_value_label" {
 }
 
 resource "google_bigquery_table" "purchase_propensity_inference_preparation" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.purchase_propensity.dataset_id
   table_id            = local.config_bigquery.table.purchase_propensity_inference_preparation.table_name
   description         = local.config_bigquery.table.purchase_propensity_inference_preparation.table_description
@@ -58,6 +62,7 @@ resource "google_bigquery_table" "purchase_propensity_inference_preparation" {
 }
 
 resource "google_bigquery_table" "purchase_propensity_label" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.purchase_propensity_label.table_name
   description         = local.config_bigquery.table.purchase_propensity_label.table_description
@@ -69,6 +74,7 @@ resource "google_bigquery_table" "purchase_propensity_label" {
 }
 
 resource "google_bigquery_table" "user_dimensions" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_dimensions.table_name
   description         = local.config_bigquery.table.user_dimensions.table_description
@@ -80,6 +86,7 @@ resource "google_bigquery_table" "user_dimensions" {
 }
 
 resource "google_bigquery_table" "user_lifetime_dimensions" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_lifetime_dimensions.table_name
   description         = local.config_bigquery.table.user_lifetime_dimensions.table_description
@@ -92,6 +99,7 @@ resource "google_bigquery_table" "user_lifetime_dimensions" {
 
 
 resource "google_bigquery_table" "user_lookback_metrics" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_lookback_metrics.table_name
   description         = local.config_bigquery.table.user_lookback_metrics.table_description
@@ -104,6 +112,7 @@ resource "google_bigquery_table" "user_lookback_metrics" {
 
 
 resource "google_bigquery_table" "user_rolling_window_lifetime_metrics" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_rolling_window_lifetime_metrics.table_name
   description         = local.config_bigquery.table.user_rolling_window_lifetime_metrics.table_description
@@ -115,6 +124,7 @@ resource "google_bigquery_table" "user_rolling_window_lifetime_metrics" {
 }
 
 resource "google_bigquery_table" "user_rolling_window_metrics" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_rolling_window_metrics.table_name
   description         = local.config_bigquery.table.user_rolling_window_metrics.table_description
@@ -126,6 +136,7 @@ resource "google_bigquery_table" "user_rolling_window_metrics" {
 }
 
 resource "google_bigquery_table" "user_scoped_lifetime_metrics" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_scoped_lifetime_metrics.table_name
   description         = local.config_bigquery.table.user_scoped_lifetime_metrics.table_description
@@ -137,6 +148,7 @@ resource "google_bigquery_table" "user_scoped_lifetime_metrics" {
 }
 
 resource "google_bigquery_table" "user_scoped_metrics" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_scoped_metrics.table_name
   description         = local.config_bigquery.table.user_scoped_metrics.table_description
@@ -148,6 +160,7 @@ resource "google_bigquery_table" "user_scoped_metrics" {
 }
 
 resource "google_bigquery_table" "user_scoped_segmentation_metrics" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_scoped_segmentation_metrics.table_name
   description         = local.config_bigquery.table.user_scoped_segmentation_metrics.table_description
@@ -159,6 +172,7 @@ resource "google_bigquery_table" "user_scoped_segmentation_metrics" {
 }
 
 resource "google_bigquery_table" "user_segmentation_dimensions" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_segmentation_dimensions.table_name
   description         = local.config_bigquery.table.user_segmentation_dimensions.table_description
@@ -168,7 +182,9 @@ resource "google_bigquery_table" "user_segmentation_dimensions" {
   }
   schema = file("${local.sql_dir}/schema/table/user_segmentation_dimensions.json")
 }
+
 resource "google_bigquery_table" "user_session_event_aggregated_metrics" {
+  project             = var.project_id
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_session_event_aggregated_metrics.table_name
   description         = local.config_bigquery.table.user_session_event_aggregated_metrics.table_description
