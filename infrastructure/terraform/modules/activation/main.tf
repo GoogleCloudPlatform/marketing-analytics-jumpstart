@@ -38,13 +38,6 @@ locals {
 
 }
 
-resource "null_resource" "poetry_install" {
-  provisioner "local-exec" {
-    command     = "${var.poetry_cmd} install"
-    working_dir = local.source_root_dir
-  }
-}
-
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "14.1.0"
@@ -69,8 +62,6 @@ module "project_services" {
     "datapipelines.googleapis.com",
     "analyticsadmin.googleapis.com",
   ]
-
-  depends_on = [ null_resource.poetry_install ]
 }
 
 module "bigquery" {

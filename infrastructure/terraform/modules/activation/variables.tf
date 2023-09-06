@@ -59,3 +59,8 @@ variable "ga4_stream_id" {
   description = "Google Analytics data stream id"
   type        = string
 }
+
+variable "poetry_installed" {
+  description = "Construct to specify dependency to poetry installed"
+  type        = string
+}
