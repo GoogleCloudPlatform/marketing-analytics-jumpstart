@@ -24,8 +24,7 @@ locals {
   audience_segmentation_project_id   = local.config_vars.bigquery.dataset.audience_segmentation.project_id
   customer_lifetime_value_project_id = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id
   project_id                         = local.feature_store_project_id
-  source_root_dir                    = "../.."
-  sql_dir                            = "${local.source_root_dir}/sql"
+  sql_dir                            = var.sql_dir_input
   builder_repository_id              = "marketing-data-engine-base-repo"
   cloud_build_service_account_name   = "cloud-builder-runner"
   cloud_build_service_account_email  = "${local.cloud_build_service_account_name}@${local.project_id}.iam.gserviceaccount.com"

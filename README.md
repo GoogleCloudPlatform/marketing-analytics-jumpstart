@@ -22,7 +22,7 @@ This solution in a work in progress and currently in the preview stage.
 - [ ] [Create GCP project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project) and [Enable Billing](https://cloud.google.com/billing/docs/how-to/modify-project)
 - [ ] Set up [Google Analyics 4 Export](https://support.google.com/analytics/answer/9823238?hl=en#zippy=%2Cin-this-article) and [Google Ads Export](https://cloud.google.com/bigquery/docs/google-ads-transfer) to Bigquery
 - [ ] [Backfill](https://cloud.google.com/bigquery/docs/google-ads-transfer) BigQuery Data Transfer service for Google Ads
-- [ ] Have existing Google Analytics 4 property with [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en) and Secrets [store in Secrets Manager](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets)
+- [ ] Have existing Google Analytics 4 property with [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en)
 
 ## Permissions
 - [ ] Google Analytics Property Editor or Owner
