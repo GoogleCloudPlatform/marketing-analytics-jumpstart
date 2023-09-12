@@ -12,26 +12,116 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-DECLARE input_date DATE;
-DECLARE end_date DATE;
-DECLARE users_added INT64 DEFAULT NULL;
-
 DECLARE max_date DATE;
 DECLARE min_date DATE;
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SELECT max_date;
-SELECT min_date;
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 180 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 180 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
 
-FOR record IN
-  (SELECT DISTINCT 
-      event_date
-   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-   WHERE event_date BETWEEN min_date AND max_date
-      ORDER BY event_date ASC )
-DO
-  SET input_date= (SELECT record.event_date);
-  SET end_date= (SELECT DATE_SUB(record.event_date, INTERVAL {{interval_end_date}} DAY));
-  CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(input_date, end_date, users_added);
-  SELECT users_added;
-END FOR;
+CREATE TEMP TABLE dates_interval as (
+SELECT DISTINCT 
+  event_date as input_date,
+  DATE_ADD(event_date, INTERVAL 30 DAY) as end_date
+FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`
+WHERE event_date BETWEEN min_date AND max_date
+  ORDER BY input_date DESC
+);
+
+CREATE TEMP TABLE user_dimensions_event_session_scoped as (
+SELECT DISTINCT
+event_date as feature_date,
+user_pseudo_id,
+FIRST_VALUE(format_date('%m',event_date)) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS month_of_the_year,
+FIRST_VALUE(format_date('%U',event_date)) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS week_of_the_year,
+FIRST_VALUE(format_date('%d',event_date)) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS day_of_the_month,
+FIRST_VALUE(format_date('%w',event_date)) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS day_of_week,
+FIRST_VALUE(format("%02d",extract(hour from event_timestamp))) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) as hour_of_day,
+FIRST_VALUE(user_ltv_revenue) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS user_ltv_revenue,
+FIRST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_medium,
+FIRST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_name,
+FIRST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_source,
+FIRST_VALUE(CASE WHEN (TIMESTAMP_DIFF(event_timestamp, user_first_touch_timestamp, DAY) < 7) OR (user_first_touch_timestamp IS NULL) THEN 'new' ELSE 'existing' END) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) AS new_or_established_user,
+FIRST_VALUE(L.subcontinent) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) as geo_sub_continent,
+FIRST_VALUE(L.country) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) as geo_country,
+FIRST_VALUE(L.region) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) as geo_region,
+FIRST_VALUE(L.city) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) as geo_city,
+FIRST_VALUE(L.metro) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp DESC) as geo_metro,
+FIRST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_medium,
+FIRST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_name,
+FIRST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_source,
+MAX(CASE WHEN user_id IS NOT NULL THEN TRUE ELSE FALSE END) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id  ORDER BY event_date ASC) AS has_signed_in_with_user_id,
+FIRST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_category,
+FIRST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_mobile_brand_name,
+FIRST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_mobile_model_name,
+FIRST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_os,
+--FIRST_VALUE(device_os_version) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_os_version,
+FIRST_VALUE(SPLIT(device_os_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_os_version,
+FIRST_VALUE(language) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) AS device_language,
+FIRST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_web_browser,
+--FIRST_VALUE(browser_version) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_web_browser_version,
+FIRST_VALUE(SPLIT(device_web_browser_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_web_browser_version,
+FIRST_VALUE(device_advertising_id) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_advertising_id
+FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.traffic_source` as T
+ON E.traffic_source_id = T.traffic_source_id
+INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
+ON E.device_type_id = D.device_type_id
+INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.location` as L
+ON E.location_id = L.location_id
+CROSS JOIN dates_interval as DI
+WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
+AND ga_session_id IS NOT NULL
+AND D.device_os IS NOT NULL
+);
+
+-- All users in the platform
+CREATE TEMP TABLE events_users as (
+SELECT DISTINCT
+Users.user_pseudo_id,
+Users.user_id,
+DI.event_date as feature_date
+FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` Users
+CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
+WHERE ga_session_id IS NOT NULL
+);
+
+
+INSERT INTO `mde-aggregated-vbb.feature_store.user_lifetime_dimensions`
+SELECT DISTINCT
+CURRENT_TIMESTAMP() AS processed_timestamp,
+EU.feature_date,
+EU.user_pseudo_id,
+EU.user_id,
+UDESS.month_of_the_year,
+UDESS.week_of_the_year,
+UDESS.day_of_the_month,
+UDESS.day_of_week,
+UDESS.hour_of_day,
+NULL as nth_day,
+NULL as nth_hour,
+NULL as nth_week,
+NULL as nth_month,
+UDESS.user_ltv_revenue,
+UDESS.device_category,
+UDESS.device_mobile_brand_name,
+UDESS.device_mobile_model_name,
+UDESS.device_os,
+UDESS.device_os_version,
+UDESS.device_language,
+UDESS.device_web_browser,
+UDESS.device_web_browser_version,
+UDESS.geo_sub_continent,
+UDESS.geo_country,
+UDESS.geo_region,
+UDESS.geo_city,
+UDESS.geo_metro,
+UDESS.last_traffic_source_medium,
+UDESS.last_traffic_source_name,
+UDESS.last_traffic_source_source,
+UDESS.first_traffic_source_medium,
+UDESS.first_traffic_source_name,
+UDESS.first_traffic_source_source,
+UDESS.has_signed_in_with_user_id
+FROM events_users EU
+INNER JOIN user_dimensions_event_session_scoped UDESS
+ON EU.user_pseudo_id = UDESS.user_pseudo_id AND EU.feature_date = UDESS.feature_date --AND EU.user_id = UDESS.user_id
+;

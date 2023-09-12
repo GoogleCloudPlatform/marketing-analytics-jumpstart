@@ -12,26 +12,238 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-DECLARE input_date DATE;
-DECLARE end_date DATE;
-DECLARE rows_added INT64 DEFAULT NULL;
-
 DECLARE max_date DATE;
 DECLARE min_date DATE;
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SELECT max_date;
-SELECT min_date;
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 15 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
 
-FOR record IN
-  (SELECT DISTINCT 
-      event_date
-   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-   WHERE event_date BETWEEN min_date AND max_date
-      ORDER BY event_date ASC )
-DO
-  SET input_date= (SELECT record.event_date);
-  SET end_date= (SELECT DATE_SUB(record.event_date, INTERVAL {{interval_end_date}} DAY));
-  CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(input_date, end_date, rows_added);
-  SELECT rows_added;
-END FOR;
+CREATE TEMP TABLE dates_interval as (
+  SELECT DISTINCT 
+    event_date as input_date,
+    DATE_SUB(event_date, INTERVAL 30 DAY) as end_date
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`
+  WHERE event_date BETWEEN min_date AND max_date
+    ORDER BY input_date DESC
+);
+
+# Run these windows aggregations every day. For each date in training and inference date ranges.
+##All users metrics: 7-day active users, 8–30-day active users, 31-90-day active users 
+CREATE TEMP TABLE rolling_active_users AS (
+  SELECT
+    user_pseudo_id,
+    input_date as feature_date,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_1_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_2_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_3_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_4_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_5_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 6 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_6_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 7 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_7_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_8_14_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_15_30_day
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND E.engagement_time_msec > 0
+  GROUP BY user_pseudo_id, feature_date
+);
+
+## Past User metrics: 1-day purchase per user, 2-7-day purchases per user, 8-14-day purchases per user, 15-30-day purchases per user, 31–90-day purchases per user
+CREATE TEMP TABLE rolling_purchases_per_user AS (
+  SELECT
+    user_pseudo_id,
+    input_date as feature_date,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_1_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_2_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_3_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_4_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_5_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 6 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_6_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 7 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_7_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_8_14_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_15_30_day,
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND event_name='purchase'
+  AND ga_session_id IS NOT NULL
+  AND ecommerce.transaction_id IS NOT NULL 
+  AND ecommerce.transaction_id <> '(not set)'
+  GROUP BY user_pseudo_id, feature_date
+);
+
+## Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user
+CREATE TEMP TABLE rolling_visits_per_user AS (
+  SELECT
+    user_pseudo_id,
+    input_date as feature_date,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 1 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_1_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 2 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_2_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 3 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_3_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 4 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_4_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 5 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_5_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 6 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_6_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 7 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_7_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 8 AND 14 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_8_14_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 15 AND 30 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_15_30_day
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND ga_session_id IS NOT NULL
+  GROUP BY user_pseudo_id, feature_date
+);
+
+## Past User metrics: 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user
+CREATE TEMP TABLE rolling_view_item_per_user AS (
+  SELECT
+    user_pseudo_id,
+    input_date as feature_date,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_1_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_2_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_3_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_4_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_5_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 6 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_6_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_7_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_8_14_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_15_30_day
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND event_name='view_item'
+  AND ga_session_id IS NOT NULL
+  GROUP BY user_pseudo_id, feature_date
+);
+
+## Past User metrics: 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
+CREATE TEMP TABLE rolling_add_to_cart_per_user AS (
+  SELECT
+    user_pseudo_id,
+    input_date as feature_date,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_1_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_2_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_3_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_4_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_5_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 6 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_6_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_7_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_8_14_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_15_30_day,
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND event_name='add_to_cart'
+  AND ga_session_id IS NOT NULL
+  GROUP BY user_pseudo_id, feature_date
+);
+
+## Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user, 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user, 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
+CREATE TEMP TABLE rolling_checkout_per_user AS (
+  SELECT
+    user_pseudo_id,
+    input_date as feature_date,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_1_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_2_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_3_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_4_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_5_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 6 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_6_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_7_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_8_14_day,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_15_30_day
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND event_name='begin_checkout'
+  AND ga_session_id IS NOT NULL
+  GROUP BY user_pseudo_id, feature_date
+);
+
+## All users in the platform
+CREATE TEMP TABLE events_users as (
+  SELECT DISTINCT
+    Users.user_pseudo_id,
+    DI.input_date as feature_date
+  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` Users
+  INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
+  ON Users.device_type_id = D.device_type_id 
+  CROSS JOIN dates_interval as DI
+  WHERE Users.ga_session_id IS NOT NULL
+  AND Users.event_date BETWEEN DI.end_date AND DI.input_date
+  AND D.device_os IS NOT NULL
+);
+
+INSERT INTO `mde-aggregated-vbb.feature_store.user_rolling_window_metrics`
+  SELECT DISTINCT
+    CURRENT_TIMESTAMP() AS processed_timestamp,
+    EUD.feature_date,
+    EUD.user_pseudo_id,
+    COALESCE(active_users_past_1_day,0) AS active_users_past_1_day,
+    COALESCE(active_users_past_2_day,0) AS active_users_past_2_day,
+    COALESCE(active_users_past_3_day,0) AS active_users_past_3_day,
+    COALESCE(active_users_past_4_day,0) AS active_users_past_4_day,
+    COALESCE(active_users_past_5_day,0) AS active_users_past_5_day,
+    COALESCE(active_users_past_6_day,0) AS active_users_past_6_day,
+    COALESCE(active_users_past_7_day,0) AS active_users_past_7_day,
+    COALESCE(active_users_past_8_14_day,0) AS active_users_past_8_14_day,
+    COALESCE(active_users_past_15_30_day,0) AS active_users_past_15_30_day,
+    COALESCE(purchases_past_1_day,0) AS purchases_past_1_day,
+    COALESCE(purchases_past_2_day,0) AS purchases_past_2_day,
+    COALESCE(purchases_past_3_day,0) AS purchases_past_3_day,
+    COALESCE(purchases_past_4_day,0) AS purchases_past_4_day,
+    COALESCE(purchases_past_5_day,0) AS purchases_past_5_day,
+    COALESCE(purchases_past_6_day,0) AS purchases_past_6_day,
+    COALESCE(purchases_past_7_day,0) AS purchases_past_7_day,
+    COALESCE(purchases_past_8_14_day,0) AS purchases_past_8_14_day,
+    COALESCE(purchases_past_15_30_day,0) AS purchases_past_15_30_day,
+    COALESCE(visits_past_1_day,0) AS visits_past_1_day,
+    COALESCE(visits_past_2_day,0) AS visits_past_2_day,
+    COALESCE(visits_past_3_day,0) AS visits_past_3_day,
+    COALESCE(visits_past_4_day,0) AS visits_past_4_day,
+    COALESCE(visits_past_5_day,0) AS visits_past_5_day,
+    COALESCE(visits_past_6_day,0) AS visits_past_6_day,
+    COALESCE(visits_past_7_day,0) AS visits_past_7_day,
+    COALESCE(visits_past_8_14_day,0) AS visits_past_8_14_day,
+    COALESCE(visits_past_15_30_day,0) AS visits_past_15_30_day,
+    COALESCE(view_items_past_1_day,0) AS view_items_past_1_day,
+    COALESCE(view_items_past_2_day,0) AS view_items_past_2_day,
+    COALESCE(view_items_past_3_day,0) AS view_items_past_3_day,
+    COALESCE(view_items_past_4_day,0) AS view_items_past_4_day,
+    COALESCE(view_items_past_5_day,0) AS view_items_past_5_day,
+    COALESCE(view_items_past_6_day,0) AS view_items_past_6_day,
+    COALESCE(view_items_past_7_day,0) AS view_items_past_7_day,
+    COALESCE(view_items_past_8_14_day,0) AS view_items_past_8_14_day,
+    COALESCE(view_items_past_15_30_day,0) AS view_items_past_15_30_day,
+    COALESCE(add_to_carts_past_1_day,0) AS add_to_carts_past_1_day,
+    COALESCE(add_to_carts_past_2_day,0) AS add_to_carts_past_2_day,
+    COALESCE(add_to_carts_past_3_day,0) AS add_to_carts_past_3_day,
+    COALESCE(add_to_carts_past_4_day,0) AS add_to_carts_past_4_day,
+    COALESCE(add_to_carts_past_5_day,0) AS add_to_carts_past_5_day,
+    COALESCE(add_to_carts_past_6_day,0) AS add_to_carts_past_6_day,
+    COALESCE(add_to_carts_past_7_day,0) AS add_to_carts_past_7_day,
+    COALESCE(add_to_carts_past_8_14_day,0) AS add_to_carts_past_8_14_day,
+    COALESCE(add_to_carts_past_15_30_day,0) AS add_to_carts_past_15_30_day,
+    COALESCE(checkouts_past_1_day,0) AS checkouts_past_1_day,
+    COALESCE(checkouts_past_2_day,0) AS checkouts_past_2_day,
+    COALESCE(checkouts_past_3_day,0) AS checkouts_past_3_day,
+    COALESCE(checkouts_past_4_day,0) AS checkouts_past_4_day,
+    COALESCE(checkouts_past_5_day,0) AS checkouts_past_5_day,
+    COALESCE(checkouts_past_6_day,0) AS checkouts_past_6_day,
+    COALESCE(checkouts_past_7_day,0) AS checkouts_past_7_day,
+    COALESCE(checkouts_past_8_14_day,0) AS checkouts_past_8_14_day,
+    COALESCE(checkouts_past_15_30_day,0) AS checkouts_past_15_30_day
+    FROM events_users AS EUD
+    FULL OUTER JOIN rolling_active_users AS A
+    ON EUD.user_pseudo_id = A.user_pseudo_id AND EUD.feature_date = A.feature_date
+    FULL OUTER JOIN rolling_purchases_per_user AS B
+    ON EUD.user_pseudo_id = B.user_pseudo_id AND EUD.feature_date = B.feature_date
+    FULL OUTER JOIN rolling_visits_per_user AS C
+    ON EUD.user_pseudo_id = C.user_pseudo_id AND EUD.feature_date = C.feature_date
+    FULL OUTER JOIN rolling_view_item_per_user AS D
+    ON EUD.user_pseudo_id = D.user_pseudo_id AND EUD.feature_date = D.feature_date
+    FULL OUTER JOIN rolling_add_to_cart_per_user AS E
+    ON EUD.user_pseudo_id = E.user_pseudo_id AND EUD.feature_date = E.feature_date
+    FULL OUTER JOIN rolling_checkout_per_user AS F
+    ON EUD.user_pseudo_id = F.user_pseudo_id AND EUD.feature_date = F.feature_date
+    WHERE EUD.user_pseudo_id IS NOT NULL
+    ; 
