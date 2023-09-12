@@ -652,6 +652,7 @@ bigquery:
     invoke_backfill_customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "feature_store"
+      insert_table: "customer_lifetime_value_label"
       stored_procedure: "customer_lifetime_value_label"
       interval_max_date: 180
       interval_min_date: 180
