@@ -765,6 +765,19 @@ resource "google_bigquery_routine" "invoke_audience_segmentation_inference_prepa
   definition_body = data.local_file.invoke_audience_segmentation_inference_preparation_file.content
 }
 
+data "local_file" "invoke_auto_audience_segmentation_inference_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_auto_audience_segmentation_inference_preparation.sql"
+}
+
+resource "google_bigquery_routine" "invoke_auto_audience_segmentation_inference_preparation" {
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  routine_id      = "invoke_auto_audience_segmentation_inference_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_auto_audience_segmentation_inference_preparation_file.content
+}
+
 
 data "local_file" "invoke_customer_lifetime_value_training_preparation_file" {
   filename = "${local.sql_dir}/query/invoke_customer_lifetime_value_training_preparation.sql"
