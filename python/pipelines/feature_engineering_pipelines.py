@@ -46,7 +46,7 @@ def pipeline(
     query_audience_segmentation_training_preparation: str,
 
     query_parameters: Optional[list] = None,
-    timeout: Optional[float] = 600.0
+    timeout: Optional[float] = 1800.0
 ):
 
     phase_1 = list()
