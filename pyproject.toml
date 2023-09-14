@@ -30,7 +30,8 @@ toml = "0.10.2"
 docker = "^6.0.1"
 ma-components = {path = "python/base_component_image/", develop = true}
 google-cloud-pubsub = "2.15.0"
-google-analytics-admin = "0.20.0"
+google-analytics-admin = "0.17.0"
+google-analytics-data = "^0.17.1"
 
 [tool.poetry.group.component_vertex.dependencies]
 google-cloud-aiplatform = "1.22.0"
