@@ -31,6 +31,25 @@ resource "google_bigquery_routine" "audience_segmentation_inference_preparation"
   }
 }
 
+data "local_file" "auto_audience_segmentation_inference_preparation_file" {
+  filename = "${local.sql_dir}/procedure/auto_audience_segmentation_inference_preparation.sql"
+}
+
+resource "google_bigquery_routine" "auto_audience_segmentation_inference_preparation" {
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  routine_id      = "auto_audience_segmentation_inference_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.auto_audience_segmentation_inference_preparation_file.content
+  description     = "Procedure that prepares features for Auto Audience Segmentation model inference. User-per-day granularity level features. Run this procedure every time before Auto Audience Segmentation model predict."
+  arguments {
+    name      = "inference_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+}
+
 
 data "local_file" "audience_segmentation_training_preparation_file" {
   filename = "${local.sql_dir}/procedure/audience_segmentation_training_preparation.sql"

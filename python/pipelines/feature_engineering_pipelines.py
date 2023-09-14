@@ -40,6 +40,7 @@ def pipeline(
     query_purchase_propensity_inference_preparation: str,
     query_customer_lifetime_value_inference_preparation: str,
     query_audience_segmentation_inference_preparation: str,
+    query_auto_audience_segmentation_inference_preparation: str,
 
     query_purchase_propensity_training_preparation: str,
     query_customer_lifetime_value_training_preparation: str,
@@ -171,7 +172,7 @@ def pipeline(
         timeout=timeout).set_display_name('audience_segmentation_training_preparation').after(*phase_1)
   
 
-    # Inference data preparation for 3 use cases
+    # Inference data preparation for 4 use cases
     purchase_propensity_inf_prep = sp(
         project=project_id,
         location=location,
@@ -192,6 +193,13 @@ def pipeline(
         query=query_audience_segmentation_inference_preparation,
         query_parameters=query_parameters,
         timeout=timeout).set_display_name('audience_segmentation_inference_preparation').after(*phase_1)
+
+    auto_audience_segmentation_inf_prep = sp(
+        project=project_id,
+        location=location,
+        query=query_auto_audience_segmentation_inference_preparation,
+        query_parameters=query_parameters,
+        timeout=timeout).set_display_name('auto_audience_segmentation_inference_preparation').after(*phase_1)
   
 
    

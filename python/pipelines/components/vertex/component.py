@@ -39,6 +39,29 @@ if os.path.exists(config_file_path):
     #target_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['image_name']}:{vertex_components_params['tag']}"
     base_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['base_image_name']}:{vertex_components_params['base_image_tag']}"
 
+@component(base_image=base_image)
+def get_latest_model_simple(
+    project: str,
+    location: str,
+    model_name: str,
+    model: Output[VertexModel]
+) -> None:
+
+    import google.cloud.aiplatform as aiplatform
+    aiplatform.init(project=project, location=location)
+
+    models = aiplatform.Model.list(filter=f"display_name={model_name}", order_by=f"create_time desc")
+    if models:
+        m = models[0]
+        model.uri = f"https://{location}-aiplatform.googleapis.com/v1/{m.resource_name}/versions/{m.version_id}"
+        model.metadata = {
+            'resourceName': m.resource_name,
+            'version': m.version_id,
+        }
+        model.schema_title = 'google.VertexModel'
+
+    else:
+        raise Exception(f'Model name [{model_name}] not found!')
 
 @component(
     base_image=base_image,
@@ -273,7 +296,6 @@ def get_latest_model(
     elected_model.schema_title = 'google.VertexModel'
 
 
-
 @component(base_image=base_image)
 def batch_prediction(
     destination_table: Output[Dataset],
@@ -281,46 +303,49 @@ def batch_prediction(
     bigquery_destination_prefix: str,
     job_name_prefix: str,
     model: Input[VertexModel],
-    machine_type: str = "n1-standard-4",
+    machine_type: str = "n1-standard-2",
     max_replica_count: int = 10,
     batch_size: int = 64,
     accelerator_count: int = 0,
     accelerator_type: str = None,
-    generate_explanation: bool =False
-    ):
-    from datetime import datetime
+    generate_explanation: bool = False,
+    dst_table_expiration_hours: int = 0
+):
+    from datetime import datetime, timedelta, timezone
     import logging
+    from google.cloud import bigquery
     from google.cloud.aiplatform import Model
     model = Model(f"{model.metadata['resourceName']}@{model.metadata['version']}")
-
-
     timestamp = str(int(datetime.now().timestamp()))
-    #destination_table.metadata["table_id"] = f"{bigquery_destination_prefix}_{timestamp}"
-    #destination_table.metadata["predictions_column_prefix"] = "predicted_"
 
     batch_prediction_job = model.batch_predict(
-        job_display_name = f"{job_name_prefix}-{timestamp}",
-        instances_format = "bigquery",
-        predictions_format = "bigquery",
-        bigquery_source = f"bq://{bigquery_source}",
-        bigquery_destination_prefix= f"bq://{bigquery_destination_prefix}",
-        #bigquery_destination_prefix = f"bq://{destination_table.metadata['table_id']}",
-        machine_type = machine_type,
-        max_replica_count = max_replica_count,
-        batch_size = batch_size,
-        accelerator_count = accelerator_count,
-        accelerator_type = accelerator_type,
-        generate_explanation = generate_explanation 
+        job_display_name=f"{job_name_prefix}-{timestamp}",
+        instances_format="bigquery",
+        predictions_format="bigquery",
+        bigquery_source=f"bq://{bigquery_source}",
+        bigquery_destination_prefix=f"bq://{bigquery_destination_prefix}_{timestamp}",
+        machine_type=machine_type,
+        max_replica_count=max_replica_count,
+        batch_size=batch_size,
+        accelerator_count=accelerator_count,
+        accelerator_type=accelerator_type,
+        generate_explanation=generate_explanation
     )
 
     batch_prediction_job.wait()
 
-    #Filling the destination_table with the bigquery destination table.
+    # Filling the destination_table with the bigquery destination table.
     destination_table.metadata["table_id"] = f"{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputDataset'].replace('bq://','')}.{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputTable']}"
-    destination_table.metadata["predictions_column_prefix"] = "predicted_"
+    destination_table.metadata["predictions_column"] = "prediction"
+
+    if dst_table_expiration_hours > 0:
+        client = bigquery.Client(project=model.project)
+        table = client.get_table(destination_table.metadata["table_id"])
+        expiration = datetime.now(timezone.utc) + timedelta(
+            hours=dst_table_expiration_hours
+        )
+        table.expires = expiration
+        client.update_table(table, ["expires"])
 
     logging.info(batch_prediction_job.to_dict())
-    #logging.info(batch_prediction_job.display_name)
-    #logging.info(batch_prediction_job.resource_name)
-    #logging.info(batch_prediction_job.state)
     

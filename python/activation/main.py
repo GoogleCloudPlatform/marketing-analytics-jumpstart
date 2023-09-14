@@ -152,7 +152,11 @@ class TransformToPayload(beam.DoFn):
     yield json.loads(payload_str)
 
   def date_to_micro(self, date_str):
-    return int(datetime.datetime.strptime(date_str, self.date_format).timestamp()*1E6)
+    try:  # try if date_str is in ISO timestamp format
+      return int(datetime.datetime.fromisoformat(date_str).timestamp() * 1E6)
+
+    except Exception as e:
+      return int(datetime.datetime.strptime(date_str, self.date_format).timestamp() * 1E6)
 
   def generate_param_fields(self, element):
     element_copy = element.copy()
@@ -229,7 +233,7 @@ def run(argv=None):
         use_json_exports=True,
         use_standard_sql=True)
     | "transform to Measurement Protocol API payload" >> beam.ParDo(TransformToPayload(activation_type_configuration['measurement_protocol_payload_template'], activation_type_configuration['activation_event_name']))
-    | 'POST event to Measurement Protocol API' >>  beam.ParDo(CallMeasurementProtocolAPI(activation_options.ga4_measurement_id, activation_options.ga4_api_secret, debug=activation_options.use_api_validation))
+    | 'POST event to Measurement Protocol API' >> beam.ParDo(CallMeasurementProtocolAPI(activation_options.ga4_measurement_id, activation_options.ga4_api_secret, debug=activation_options.use_api_validation))
     )
 
     success_responses = ( measurement_api_responses
