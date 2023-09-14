@@ -207,3 +207,6 @@ env.sh
 
 # Kubeflow Pipelines YAML files
 python/*.yaml
+
+# Google credential files
+.credentials/

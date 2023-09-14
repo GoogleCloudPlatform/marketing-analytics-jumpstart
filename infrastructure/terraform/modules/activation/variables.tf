@@ -33,6 +33,11 @@ variable "trigger_function_location" {
   type        = string
 }
 
+variable "poetry_cmd" {
+  description = "alias for poetry command on the current system"
+  type        = string
+}
+
 variable "ga4_measurement_id" {
   description = "Measurement ID in GA4"
   type        = string
@@ -43,4 +48,19 @@ variable "ga4_measurement_secret" {
   description = "Client secret for authenticating to GA4 API"
   type        = string
   sensitive   = true
+}
+
+variable "ga4_property_id" {
+  description = "Google Analytics property id"
+  type        = string
+}
+
+variable "ga4_stream_id" {
+  description = "Google Analytics data stream id"
+  type        = string
+}
+
+variable "poetry_installed" {
+  description = "Construct to specify dependency to poetry installed"
+  type        = string
 }

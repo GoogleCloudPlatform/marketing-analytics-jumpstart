@@ -13,6 +13,7 @@
 # limitations under the License.
 
 resource "google_service_account" "service_account" {
+  project      = local.pipeline_vars.project_id
   account_id   = local.pipeline_vars.service_account_id
   display_name = local.pipeline_vars.service_account_id
   description  = "sa to run pipelines"
@@ -41,6 +42,7 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
 
 
 resource "google_service_account" "dataflow_worker_service_account" {
+  project      = local.pipeline_vars.project_id
   account_id   = local.dataflow_vars.worker_service_account_id
   display_name = local.dataflow_vars.worker_service_account_id
   description  = "sa to run dataflow jobs"
@@ -78,6 +80,7 @@ resource "google_storage_bucket" "pipelines_bucket" {
 
 
 resource "google_artifact_registry_repository" "pipelines-repo" {
+  project       = local.pipeline_vars.project_id
   location      = local.artifact_registry_vars.pipelines_repo.region
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
@@ -89,6 +92,7 @@ resource "google_artifact_registry_repository" "pipelines-repo" {
 
 
 resource "google_artifact_registry_repository" "pipelines_docker_repo" {
+  project       = local.pipeline_vars.project_id
   location      = local.artifact_registry_vars.pipelines_docker_repo.region
   repository_id = local.artifact_registry_vars.pipelines_docker_repo.name
   description   = "DOCKER images Repository"

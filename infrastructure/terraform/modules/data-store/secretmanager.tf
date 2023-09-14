@@ -17,7 +17,7 @@ resource "null_resource" "check_secretmanager_api" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud services list | grep -i "secretmanager.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud services list --project=${var.data_processing_project_id} | grep -i "secretmanager.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."

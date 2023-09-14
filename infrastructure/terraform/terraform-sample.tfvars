@@ -14,6 +14,8 @@
 
 ####################  INFRA VARIABLES  #################################
 
+tf_state_project_id = "Google Cloud project where the terraform state file is stored"
+
 create_dev_environment     = false
 create_staging_environment = false
 create_prod_environment    = true
@@ -40,6 +42,8 @@ feature_store_project_id = "Project ID where feature store resources will be cre
 ####################  ACTIVATION VARIABLES  #################################
 
 activation_project_id = "Project ID where activation resources will be created"
+ga4_property_id       = "Google Analytics property id"
+ga4_stream_id         = "Google Analytics data stream id"
 
 ####################  GITHUB VARIABLES  #################################
 
