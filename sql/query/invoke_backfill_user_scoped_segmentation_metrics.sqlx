@@ -13,7 +13,7 @@
 -- limitations under the License.
 
 DECLARE min_date DATE;
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 CREATE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
