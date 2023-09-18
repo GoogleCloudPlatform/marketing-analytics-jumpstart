@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+variable "tf_state_project_id" {
+  description = "Google Cloud project where the terraform state file is stored"
+  type        = string
+}
+
 variable "data_project_id" {
   description = "Default project to contain the MDS BigQuery datasets"
   type        = string
@@ -140,6 +145,16 @@ variable "source_ads_export_data" {
 variable "activation_project_id" {
   type        = string
   description = "Project ID where activation resources are created"
+}
+
+variable "ga4_property_id" {
+  description = "Google Analytics property id"
+  type        = string
+}
+
+variable "ga4_stream_id" {
+  description = "Google Analytics data stream id"
+  type        = string
 }
 
 variable "ga4_measurement_id" {

@@ -21,3 +21,8 @@ variable "poetry_run_alias" {
   description = "alias for poetry run command on the current system"
   type        = string
 }
+
+variable "poetry_installed" {
+  description = "Construct to specify dependency to poetry installed"
+  type        = string
+}

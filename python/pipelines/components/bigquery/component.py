@@ -38,7 +38,7 @@ def bq_stored_procedure_exec(
     location: str,
     query: str,
     query_parameters: Optional[list],
-    timeout: Optional[float] = None
+    timeout: Optional[float] = 1800
 ) -> None:
 
     from google.cloud import bigquery

@@ -15,6 +15,7 @@
 locals {
   app_prefix                                 = "activation"
   source_root_dir                            = "../.."
+  poetry_run_alias                           = "${var.poetry_cmd} run"
   sql_dir                                    = "${local.source_root_dir}/sql/query"
   template_dir                               = "${local.source_root_dir}/templates"
   pipeline_source_dir                        = "${local.source_root_dir}/python/activation"
@@ -59,6 +60,7 @@ module "project_services" {
     "bigquerystorage.googleapis.com",
     "storage.googleapis.com",
     "datapipelines.googleapis.com",
+    "analyticsadmin.googleapis.com",
   ]
 }
 
@@ -79,7 +81,7 @@ resource "null_resource" "check_artifactregistry_api" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud services list | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud services list --project=${var.project_id} | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -98,6 +100,32 @@ resource "null_resource" "check_artifactregistry_api" {
   ]
 }
 
+resource "null_resource" "create_custom_events" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    EOT
+    working_dir = local.source_root_dir
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+resource "null_resource" "create_custom_dimensions" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    EOT
+    working_dir = local.source_root_dir
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
 resource "google_artifact_registry_repository" "activation_repository" {
   project       = var.project_id
   location      = var.location
@@ -108,7 +136,6 @@ resource "google_artifact_registry_repository" "activation_repository" {
     null_resource.check_artifactregistry_api
   ]
 }
-
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
@@ -146,9 +173,13 @@ module "trigger_function_account" {
 }
 
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt >&2 && python setup.py --ga4_resource=measurement_properties && deactivate"]
-  working_dir = "../../python/ga4_setup"
+  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  working_dir = local.source_root_dir
   count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? 1 : 0
+
+  depends_on = [
+    module.project_services
+  ]
 }
 
 module "secret_manager" {
@@ -248,8 +279,8 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  create_cmd_body  = "builds submit --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
-  destroy_cmd_body = "artifacts docker images delete ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
+  create_cmd_body  = "builds submit --project=${var.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
+  destroy_cmd_body = "artifacts docker images delete --project=${var.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 }
 
 module "activation_pipeline_template" {
@@ -257,10 +288,9 @@ module "activation_pipeline_template" {
   version               = "3.1.2"
   additional_components = ["gsutil"]
 
-  platform               = "linux"
-  create_cmd_body        = "dataflow flex-template build \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
-  destroy_cmd_entrypoint = "gsutil"
-  destroy_cmd_body       = "rm \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\""
+  platform         = "linux"
+  create_cmd_body  = "dataflow flex-template build --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
+  destroy_cmd_body = "storage rm --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\""
 
   module_depends_on = [
     module.activation_pipeline_container.wait

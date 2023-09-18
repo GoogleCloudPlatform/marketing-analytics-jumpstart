@@ -34,14 +34,6 @@ section_open "Check if the necessary variables are set: PROJECT_ID"
     check_environment_variable "PROJECT_ID" "the Google Cloud project that Terraform will provision the resources in"
 section_close
 
-section_open "Check if the necessary variables are set: GA4_PROPERTY_ID"
-    check_environment_variable "GA4_PROPERTY_ID" "the Google Analytics property id"
-section_close
-
-section_open "Check if the necessary variables are set: GA4_STREAM_ID"
-    check_environment_variable "GA4_STREAM_ID" "the Google Analytics data stream id"
-section_close
-
 section_open  "Setting the Google Cloud project to TF_STATE_PROJECT"
     set_environment_variable_if_not_set "TF_STATE_PROJECT" "${PROJECT_ID}"
     gcloud config set project "${TF_STATE_PROJECT}"

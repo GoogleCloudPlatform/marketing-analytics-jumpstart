@@ -32,3 +32,8 @@ variable "project_id" {
   type        = string
   description = "Google Cloud Project ID"
 }
+
+variable "sql_dir_input" {
+  type        = string
+  description = "SQL queries directory"
+}

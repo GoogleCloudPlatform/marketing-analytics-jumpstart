@@ -30,10 +30,15 @@ toml = "0.10.2"
 docker = "^6.0.1"
 ma-components = {path = "python/base_component_image/", develop = true}
 google-cloud-pubsub = "2.15.0"
+google-analytics-admin = "0.17.0"
+google-analytics-data = "^0.17.1"
 
 [tool.poetry.group.component_vertex.dependencies]
 google-cloud-aiplatform = "1.22.0"
 toml = "0.10.2"
+
+[tool.poetry.scripts]
+ga4-setup = "python.ga4_setup.setup:entry"
 
 [tool.poetry.group.test.dependencies]
 pytest = "7.0.0"
