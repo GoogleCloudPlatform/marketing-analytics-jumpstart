@@ -14,14 +14,14 @@
 
 DECLARE max_date DATE;
 DECLARE min_date DATE;
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 180 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 180 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 CREATE TEMP TABLE dates_interval as (
 SELECT DISTINCT 
   event_date as input_date,
-  DATE_ADD(event_date, INTERVAL 30 DAY) as end_date
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`
+  DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
+FROM `{{mds_project_id}}.{{mds_dataset}}.event`
 WHERE event_date BETWEEN min_date AND max_date
   ORDER BY input_date DESC
 );
@@ -60,15 +60,15 @@ FIRST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, event_date, DI
 --FIRST_VALUE(browser_version) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_web_browser_version,
 FIRST_VALUE(SPLIT(device_web_browser_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_web_browser_version,
 FIRST_VALUE(device_advertising_id) OVER(PARTITION BY user_pseudo_id, event_date, DI.input_date, ga_session_id ORDER BY event_date DESC) as device_advertising_id
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
-INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.traffic_source` as T
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.traffic_source` as T
 ON E.traffic_source_id = T.traffic_source_id
-INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 ON E.device_type_id = D.device_type_id
-INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.location` as L
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.location` as L
 ON E.location_id = L.location_id
 CROSS JOIN dates_interval as DI
-WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
+WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND ga_session_id IS NOT NULL
 AND D.device_os IS NOT NULL
 );
@@ -79,13 +79,13 @@ SELECT DISTINCT
 Users.user_pseudo_id,
 Users.user_id,
 DI.event_date as feature_date
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` Users
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
 CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
 WHERE ga_session_id IS NOT NULL
 );
 
 
-INSERT INTO `mde-aggregated-vbb.feature_store.user_lifetime_dimensions`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 SELECT DISTINCT
 CURRENT_TIMESTAMP() AS processed_timestamp,
 EU.feature_date,

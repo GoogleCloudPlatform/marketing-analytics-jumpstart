@@ -14,14 +14,14 @@
 
 DECLARE max_date DATE;
 DECLARE min_date DATE;
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 15 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 CREATE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
-    DATE_ADD(event_date, INTERVAL 30 DAY) as end_date
-  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`
+    DATE_ADD(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event`
   WHERE event_date BETWEEN min_date AND max_date
     ORDER BY input_date DESC
   LIMIT 1
@@ -47,7 +47,7 @@ CREATE TEMP TABLE all_users_possible_purchases as (
       NULL as purchase_day_12,
       NULL as purchase_day_13,
       NULL as purchase_day_14,
-    FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` Users
+    FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
     CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
     WHERE Users.event_name='purchase'
       AND Users.ga_session_id IS NOT NULL
@@ -75,8 +75,8 @@ CREATE TEMP TABLE all_users_possible_purchases as (
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 12 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_12,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 13 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_13,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_14
-  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
-  INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
   CROSS JOIN dates_interval as DI
     WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
@@ -88,7 +88,7 @@ CREATE TEMP TABLE all_users_possible_purchases as (
     GROUP BY user_pseudo_id, feature_date
 );
 
-INSERT INTO `mde-aggregated-vbb.feature_store.purchase_propensity_label`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
   A.event_date as feature_date,

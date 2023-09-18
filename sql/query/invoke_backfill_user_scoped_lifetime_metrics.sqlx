@@ -14,14 +14,14 @@
 
 DECLARE max_date DATE;
 DECLARE min_date DATE;
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 180 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 180 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 CREATE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
-    DATE_SUB(event_date, INTERVAL 30 DAY) as end_date
-  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`
+    DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event`
   WHERE event_date BETWEEN min_date AND max_date
     ORDER BY input_date DESC
 );
@@ -29,81 +29,81 @@ CREATE TEMP TABLE dates_interval as (
 # Run these once each day.
 ## Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU 
 CREATE TEMP TABLE engagement as (
-SELECT 
-  user_pseudo_id,
-  input_date as feature_date,
-  ga_session_id as session_id, 
-  MAX(engagement_time_msec) as engagement_time_msec,
-  IFNULL(SUM(ecommerce.purchase_revenue_in_usd),0.0) as purchase_revenue_in_usd,
-  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) as has_invalid_transactions,
-  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) as converted_in_session,
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
-INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
-ON E.device_type_id = D.device_type_id
-CROSS JOIN dates_interval as DI
-WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  AND E.ga_session_id IS NOT NULL
-  AND D.device_os IS NOT NULL
-GROUP BY user_pseudo_id, feature_date, session_id
+  SELECT 
+    user_pseudo_id,
+    input_date as feature_date,
+    ga_session_id as session_id, 
+    MAX(engagement_time_msec) as engagement_time_msec,
+    IFNULL(SUM(ecommerce.purchase_revenue_in_usd),0.0) as purchase_revenue_in_usd,
+    LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) as has_invalid_transactions,
+    LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) as converted_in_session,
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON E.device_type_id = D.device_type_id
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+    AND E.ga_session_id IS NOT NULL
+    AND D.device_os IS NOT NULL
+  GROUP BY user_pseudo_id, feature_date, session_id
 );
 
 CREATE TEMP TABLE revenue_users as (
-SELECT 
-input_date as feature_date,
-SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day,
-COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END) as active_users
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
-INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
-ON E.device_type_id = D.device_type_id 
-CROSS JOIN dates_interval as DI
-WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-AND E.ga_session_id IS NOT NULL
-AND D.device_os IS NOT NULL
-GROUP BY feature_date
+  SELECT 
+  input_date as feature_date,
+  SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day,
+  COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END) as active_users
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON E.device_type_id = D.device_type_id 
+  CROSS JOIN dates_interval as DI
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND E.ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+  GROUP BY feature_date
 );
 
 CREATE TEMP TABLE first_purchasers as (
-SELECT
-input_date as feature_date,
-COUNT(first_time_purchasers) as first_time_purchasers
-FROM(
-  SELECT 
-  event_date,
-  COUNT(user_pseudo_id) as first_time_purchasers
-  FROM (
-      SELECT 
-          user_pseudo_id, 
-          event_date, 
-          RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
-      FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
-      INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
-      ON E.device_type_id = D.device_type_id
-      WHERE event_name IN ('purchase','in_app_purchase')
-      AND E.ga_session_id IS NOT NULL
-      AND D.device_os IS NOT NULL
-      GROUP BY user_pseudo_id, event_date, event_timestamp)
-  WHERE unique_purchase=1
-  GROUP BY event_date)
-CROSS JOIN dates_interval as DI
-WHERE event_date BETWEEN DI.end_date AND DI.input_date
-GROUP BY feature_date
+  SELECT
+  input_date as feature_date,
+  COUNT(first_time_purchasers) as first_time_purchasers
+  FROM(
+    SELECT 
+    event_date,
+    COUNT(user_pseudo_id) as first_time_purchasers
+    FROM (
+        SELECT 
+            user_pseudo_id, 
+            event_date, 
+            RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
+        FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+        INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+        ON E.device_type_id = D.device_type_id
+        WHERE event_name IN ('purchase','in_app_purchase')
+        AND E.ga_session_id IS NOT NULL
+        AND D.device_os IS NOT NULL
+        GROUP BY user_pseudo_id, event_date, event_timestamp)
+    WHERE unique_purchase=1
+    GROUP BY event_date)
+  CROSS JOIN dates_interval as DI
+  WHERE event_date BETWEEN DI.end_date AND DI.input_date
+  GROUP BY feature_date
+  );
+
+  CREATE TEMP TABLE new_users_ as (
+  SELECT
+  input_date as feature_date,
+  COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON E.device_type_id = D.device_type_id
+  CROSS JOIN dates_interval as DI
+  WHERE event_date BETWEEN DI.end_date AND DI.input_date
+  AND E.ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+  GROUP BY feature_date
 );
 
-CREATE TEMP TABLE new_users_ as (
-SELECT
-input_date as feature_date,
-COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
-INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
-ON E.device_type_id = D.device_type_id
-CROSS JOIN dates_interval as DI
-WHERE event_date BETWEEN DI.end_date AND DI.input_date
-AND E.ga_session_id IS NOT NULL
-AND D.device_os IS NOT NULL
-GROUP BY feature_date
-);
-
-INSERT INTO `mde-aggregated-vbb.feature_store.user_scoped_lifetime_metrics`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 SELECT
   CURRENT_TIMESTAMP() AS processed_timestamp,
   DI.input_date AS feature_date,
@@ -132,8 +132,8 @@ SELECT
   COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(new_users)),0.0) AS lifetime_first_time_purchasers_per_new_user,
   COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.user_pseudo_id END),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS lifetime_avg_user_conversion_rate,
   COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.session_id END),COUNT(DISTINCT e.session_id)),0.0) AS lifetime_avg_session_conversion_rate,
-  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as EV
-  INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as EV
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
     ON EV.device_type_id = D.device_type_id
   CROSS JOIN dates_interval as DI
   INNER JOIN engagement as e 
@@ -146,4 +146,4 @@ SELECT
     ON DI.input_date = nu.feature_date
   WHERE EV.event_date BETWEEN DI.end_date AND DI.input_date
   GROUP BY DI.input_date
-  ;
+;

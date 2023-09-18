@@ -13,13 +13,13 @@
 -- limitations under the License.
 
 DECLARE min_date DATE;
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 CREATE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
-    DATE_SUB(event_date, INTERVAL 15 DAY) as end_date
-  FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event`
+    DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event`
   WHERE event_date >= min_date
     ORDER BY input_date DESC
 );
@@ -31,7 +31,7 @@ SELECT
   input_date as feature_date,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_1_7_day,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_8_14_day
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND engagement_time_msec > 0
@@ -45,7 +45,7 @@ SELECT
   input_date as feature_date,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_1_7_day,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_8_14_day
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND event_name='purchase'
@@ -62,7 +62,7 @@ SELECT
   input_date as feature_date,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 1 AND 7 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_1_7_day,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 8 AND 14 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_8_14_day
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND ga_session_id IS NOT NULL
@@ -76,7 +76,7 @@ SELECT
   input_date as feature_date,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_1_7_day,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_8_14_day
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND event_name='view_item'
@@ -91,7 +91,7 @@ SELECT
   input_date as feature_date,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_1_7_day,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_8_14_day
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND event_name='add_to_cart'
@@ -106,7 +106,7 @@ SELECT
   input_date as feature_date,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_1_7_day,
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_8_14_day
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND event_name='begin_checkout'
@@ -134,7 +134,7 @@ SELECT DISTINCT
     MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 15 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
           )) 
         OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_past_1_15_day
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` as E
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND E.ga_session_id IS NOT NULL
@@ -148,8 +148,8 @@ CREATE TEMP TABLE events_users as (
 SELECT DISTINCT
   Users.user_pseudo_id,
   DI.input_date as feature_date
-FROM `mde-aggregated-vbb.marketing_ga4_v1_prod.event` Users
-INNER JOIN `mde-aggregated-vbb.marketing_ga4_v1_prod.device` as D
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 ON Users.device_type_id = D.device_type_id 
 CROSS JOIN dates_interval as DI
 WHERE Users.ga_session_id IS NOT NULL
@@ -157,7 +157,7 @@ AND Users.event_date BETWEEN DI.end_date AND DI.input_date
 AND D.device_os IS NOT NULL
 );
 
-INSERT INTO `mde-aggregated-vbb.feature_store.user_lookback_metrics`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     EUD.feature_date,
