@@ -56,7 +56,7 @@ CREATE TEMP TABLE user_dimensions_event_scoped as (
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.location` as L
   ON E.location_id = L.location_id
   CROSS JOIN dates_interval as DI
-  WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
     AND ga_session_id IS NOT NULL
     AND D.device_os IS NOT NULL
   )
@@ -101,7 +101,7 @@ CREATE TEMP TABLE user_dimensions_session_scoped as (
     AND event_date BETWEEN min_date AND max_date
     GROUP BY user_pseudo_id, event_date, ga_session_id)
   CROSS JOIN dates_interval as DI
-  WHERE event_date BETWEEN DI.input_date AND DI.end_date
+  WHERE event_date BETWEEN DI.end_date AND DI.input_date
   )
 ;
 
