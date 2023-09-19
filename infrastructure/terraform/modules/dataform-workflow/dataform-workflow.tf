@@ -53,6 +53,8 @@ main:
         url: $${"https://dataform.googleapis.com/v1beta1/" + repository + "/workflowInvocations"}
         auth:
           type: OAuth2
+        headers:
+          User-Agent: "cloud-solutions/marketing-analytics-jumpstart-v0"
         body:
           compilationResult: $${compilationResult.body.name}
           invocationConfig:${local.tagSection}
