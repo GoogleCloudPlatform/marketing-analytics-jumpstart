@@ -25,7 +25,6 @@ variable "enabled" {
 variable "region" {
   description = "feature store region"
   type        = string
-  default     = "us-central1"
 }
 
 variable "project_id" {

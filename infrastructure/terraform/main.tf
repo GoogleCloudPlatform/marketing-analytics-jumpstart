@@ -23,6 +23,8 @@ data "google_project" "feature_store_project" {
 module "data_store" {
   source = "./modules/data-store"
 
+  google_default_region = var.google_default_region
+
   source_ga4_export_project_id = var.source_ga4_export_project_id
   source_ga4_export_dataset    = var.source_ga4_export_dataset
   source_ads_export_data       = var.source_ads_export_data
@@ -63,6 +65,7 @@ resource "local_file" "feature_store_configuration" {
     project_id             = var.feature_store_project_id
     project_name           = data.google_project.feature_store_project.name
     project_number         = data.google_project.feature_store_project.number
+    cloud_region           = var.google_default_region
     mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_suffix}"
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
@@ -113,6 +116,7 @@ module "feature_store" {
   enabled          = var.deploy_feature_store
   count            = var.deploy_feature_store ? 1 : 0
   project_id       = var.feature_store_project_id
+  region           = var.google_default_region
   sql_dir_input    = null_resource.generate_sql_queries.id != "" ? "${local.source_root_dir}/sql" : ""
 }
 
