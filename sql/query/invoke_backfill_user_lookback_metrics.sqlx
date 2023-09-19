@@ -15,7 +15,7 @@
 DECLARE min_date DATE;
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
-CREATE TEMP TABLE dates_interval as (
+CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
     DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
@@ -25,7 +25,7 @@ CREATE TEMP TABLE dates_interval as (
 );
 
 ##All users metrics: 7-day active users, 8–14-day active users
-CREATE TEMP TABLE rolling_active_users AS (
+CREATE OR REPLACE TEMP TABLE rolling_active_users AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
@@ -39,7 +39,7 @@ GROUP BY user_pseudo_id, feature_date
 );
 
 ## Past User metrics: 1-day purchase per user, 7-day purchases per user, 8-14-day purchases per user
-CREATE TEMP TABLE rolling_purchases_past_days AS (
+CREATE OR REPLACE TEMP TABLE rolling_purchases_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
@@ -56,7 +56,7 @@ GROUP BY user_pseudo_id, feature_date
 );
 
 ## Past User metrics: 1-day visits per user, 7-day visits per user, 8-14-day visits per user
-CREATE TEMP TABLE rolling_visits_past_days AS (
+CREATE OR REPLACE TEMP TABLE rolling_visits_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
@@ -70,7 +70,7 @@ GROUP BY user_pseudo_id, feature_date
 );
 
 ## Past User metrics: 1-day view_item per user, 7-day view_item per user, 8-14-day view_item per user
-CREATE TEMP TABLE rolling_view_item_past_days AS (
+CREATE OR REPLACE TEMP TABLE rolling_view_item_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
@@ -85,7 +85,7 @@ GROUP BY user_pseudo_id, feature_date
 );
 
 ## Past User metrics: 1-day add_to_cart per user, 7-day add_to_cart per user, 8-14-day add_to_cart per user
-CREATE TEMP TABLE rolling_add_to_cart_past_days AS (
+CREATE OR REPLACE TEMP TABLE rolling_add_to_cart_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
@@ -100,7 +100,7 @@ GROUP BY user_pseudo_id, feature_date
 );
 
 ## Past User metrics: 1-day checkout per user, 7-day checkout per user, 8-14-day checkout per user
-CREATE TEMP TABLE rolling_checkout_past_days AS (
+CREATE OR REPLACE TEMP TABLE rolling_checkout_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
@@ -115,7 +115,7 @@ GROUP BY user_pseudo_id, feature_date
 );
 
 ## Past revenue metrics
-CREATE TEMP TABLE rolling_revenue_per_user AS (
+CREATE OR REPLACE TEMP TABLE rolling_revenue_per_user AS (
 SELECT DISTINCT
   user_pseudo_id,
   input_date as feature_date,
@@ -144,7 +144,7 @@ GROUP BY user_pseudo_id, feature_date
 );
 
 -- All users in the platform
-CREATE TEMP TABLE events_users as (
+CREATE OR REPLACE TEMP TABLE events_users as (
 SELECT DISTINCT
   Users.user_pseudo_id,
   DI.input_date as feature_date

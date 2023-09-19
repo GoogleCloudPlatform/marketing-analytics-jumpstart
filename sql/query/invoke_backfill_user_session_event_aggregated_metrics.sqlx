@@ -17,7 +17,7 @@ DECLARE min_date DATE;
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
-CREATE TEMP TABLE dates_interval as (
+CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
     DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
@@ -27,7 +27,7 @@ CREATE TEMP TABLE dates_interval as (
 );
 
 -- What is the user-per-day session-scoped engagement?
-CREATE TEMP TABLE engagement_per_day_session_scoped as (
+CREATE OR REPLACE TEMP TABLE engagement_per_day_session_scoped as (
   SELECT
     user_pseudo_id,
     feature_date,
@@ -79,7 +79,7 @@ CREATE TEMP TABLE engagement_per_day_session_scoped as (
 );
 
 -- Has the user purchased before, another day?
-CREATE TEMP TABLE returning_customers as (
+CREATE OR REPLACE TEMP TABLE returning_customers as (
   SELECT 
     user_pseudo_id, 
     feature_date, 
@@ -98,7 +98,7 @@ CREATE TEMP TABLE returning_customers as (
   WHERE unique_purchase >= 2
   GROUP BY user_pseudo_id, feature_date
 );
-CREATE TEMP TABLE non_returning_customers as ( 
+CREATE OR REPLACE TEMP TABLE non_returning_customers as ( 
   SELECT
         GA.user_pseudo_id,
         input_date as feature_date
@@ -108,7 +108,7 @@ CREATE TEMP TABLE non_returning_customers as (
   GROUP BY user_pseudo_id, feature_date
   EXCEPT DISTINCT SELECT user_pseudo_id, feature_date FROM returning_customers as RC
 );
-CREATE TEMP TABLE combined as (
+CREATE OR REPLACE TEMP TABLE combined as (
   SELECT 
     user_pseudo_id, 
     feature_date, 
@@ -122,7 +122,7 @@ CREATE TEMP TABLE combined as (
     FROM non_returning_customers 
   GROUP BY user_pseudo_id, feature_date
 );
-CREATE TEMP TABLE repeated_purchase as (
+CREATE OR REPLACE TEMP TABLE repeated_purchase as (
   SELECT
     user_pseudo_id,
     feature_date, 
@@ -132,7 +132,7 @@ CREATE TEMP TABLE repeated_purchase as (
 );
 
 -- Has the user abandoned any cart by day?
-CREATE TEMP TABLE returned_cart_to_purchase as (
+CREATE OR REPLACE TEMP TABLE returned_cart_to_purchase as (
   SELECT 
   user_pseudo_id, 
   feature_date,
@@ -161,7 +161,7 @@ CREATE TEMP TABLE returned_cart_to_purchase as (
   GROUP BY user_pseudo_id, feature_date
 );
 
-CREATE TEMP TABLE cart_to_purchase AS (
+CREATE OR REPLACE TEMP TABLE cart_to_purchase AS (
   SELECT
     GA.user_pseudo_id, 
     input_date as feature_date,
@@ -179,7 +179,7 @@ CREATE TEMP TABLE cart_to_purchase AS (
 );
 
 -- What is the user-events-per-day event-scoped metrics performance?
-CREATE TEMP TABLE user_events_per_day_event_scoped as (
+CREATE OR REPLACE TEMP TABLE user_events_per_day_event_scoped as (
   SELECT
     user_pseudo_id,
     feature_date,
@@ -263,7 +263,7 @@ CREATE TEMP TABLE user_events_per_day_event_scoped as (
 );
 
 -- All users in the platform
-CREATE TEMP TABLE events_users_days as (
+CREATE OR REPLACE TEMP TABLE events_users_days as (
   SELECT DISTINCT
     Users.user_pseudo_id,
     DI.input_date as feature_date

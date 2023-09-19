@@ -17,7 +17,7 @@ DECLARE min_date DATE;
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
-CREATE TEMP TABLE dates_interval as (
+CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
     DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
@@ -28,7 +28,7 @@ CREATE TEMP TABLE dates_interval as (
 
 # Run these once each day.
 ## Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU 
-CREATE TEMP TABLE engagement as (
+CREATE OR REPLACE TEMP TABLE engagement as (
   SELECT 
     user_pseudo_id,
     input_date as feature_date,
@@ -47,7 +47,7 @@ CREATE TEMP TABLE engagement as (
   GROUP BY user_pseudo_id, feature_date, session_id
 );
 
-CREATE TEMP TABLE revenue_users as (
+CREATE OR REPLACE TEMP TABLE revenue_users as (
   SELECT 
     input_date as feature_date,
     SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day,
@@ -62,7 +62,7 @@ CREATE TEMP TABLE revenue_users as (
   GROUP BY feature_date
 );
 
-CREATE TEMP TABLE first_purchasers as (
+CREATE OR REPLACE TEMP TABLE first_purchasers as (
   SELECT
   input_date as feature_date,
   COUNT(first_time_purchasers) as first_time_purchasers
@@ -89,7 +89,7 @@ CREATE TEMP TABLE first_purchasers as (
   GROUP BY feature_date
 );
 
-CREATE TEMP TABLE new_users_ as (
+CREATE OR REPLACE TEMP TABLE new_users_ as (
   SELECT
   input_date as feature_date,
   COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 

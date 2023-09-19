@@ -17,7 +17,7 @@ DECLARE min_date DATE;
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
-CREATE TEMP TABLE dates_interval as (
+CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
     DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
@@ -26,7 +26,7 @@ CREATE TEMP TABLE dates_interval as (
     ORDER BY input_date DESC)
 ;
 
-CREATE TEMP TABLE user_dimensions_event_scoped as (
+CREATE OR REPLACE TEMP TABLE user_dimensions_event_scoped as (
   SELECT DISTINCT
   event_date as feature_date,
   user_pseudo_id,
@@ -62,7 +62,7 @@ CREATE TEMP TABLE user_dimensions_event_scoped as (
   )
 ;
 
-CREATE TEMP TABLE user_dimensions_session_scoped as (
+CREATE OR REPLACE TEMP TABLE user_dimensions_session_scoped as (
   SELECT DISTINCT
   event_date as feature_date,
   user_pseudo_id,
@@ -106,7 +106,7 @@ CREATE TEMP TABLE user_dimensions_session_scoped as (
 ;
 
 -- All users in the platform
-CREATE TEMP TABLE events_users as (
+CREATE OR REPLACE TEMP TABLE events_users as (
   SELECT DISTINCT
   Users.user_pseudo_id,
   Users.user_id,

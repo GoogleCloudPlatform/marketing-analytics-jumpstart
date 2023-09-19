@@ -17,7 +17,7 @@ DECLARE min_date DATE;
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
-CREATE TEMP TABLE dates_interval as (
+CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
     DATE_ADD(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
@@ -28,7 +28,7 @@ CREATE TEMP TABLE dates_interval as (
 );
 
 ## All users in the platform
-CREATE TEMP TABLE all_users_possible_purchases as (
+CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
     SELECT DISTINCT
       Users.user_pseudo_id,
       DI.event_date as event_date,
@@ -56,7 +56,7 @@ CREATE TEMP TABLE all_users_possible_purchases as (
   );
 
   ## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
-  CREATE TEMP TABLE future_purchases_per_user AS (
+  CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
   SELECT
     user_pseudo_id,
     input_date as feature_date,
