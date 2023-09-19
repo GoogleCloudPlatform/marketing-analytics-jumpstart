@@ -72,7 +72,7 @@ module "bigquery" {
   dataset_name                = local.app_prefix
   description                 = "activation appliction logs"
   project_id                  = var.project_id
-  location                    = "US"
+  location                    = var.data_location
   default_table_expiration_ms = 360000000
 }
 

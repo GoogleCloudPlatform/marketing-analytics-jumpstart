@@ -22,6 +22,11 @@ variable "location" {
   type        = string
 }
 
+variable "data_location" {
+  description = "Data storage region for activation data"
+  type        = string
+}
+
 variable "artifact_repository_id" {
   description = "Container repository id"
   type        = string

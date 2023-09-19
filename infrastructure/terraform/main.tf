@@ -132,6 +132,7 @@ module "activation" {
   source                    = "./modules/activation"
   project_id                = var.activation_project_id
   location                  = var.google_default_region
+  data_location             = var.destination_data_location
   trigger_function_location = var.google_default_region
   poetry_cmd                = var.poetry_cmd
   ga4_measurement_id        = var.ga4_measurement_id
