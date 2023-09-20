@@ -18,7 +18,7 @@ SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} 
 CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
-    DATE_ADD(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
+    DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
   WHERE event_date >= min_date
     ORDER BY input_date DESC
@@ -66,7 +66,7 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.location` as L
   ON E.location_id = L.location_id
   CROSS JOIN dates_interval as DI
-  WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
+  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
   AND ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
 );
@@ -79,7 +79,7 @@ CREATE OR REPLACE TEMP TABLE events_users as (
   DI.input_date as feature_date
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
   CROSS JOIN dates_interval as DI
-  WHERE event_date BETWEEN DI.input_date AND DI.end_date
+  WHERE event_date BETWEEN DI.end_date AND DI.input_date
   AND ga_session_id IS NOT NULL
 );
 
