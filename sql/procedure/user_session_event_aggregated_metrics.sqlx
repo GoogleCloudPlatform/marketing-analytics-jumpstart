@@ -290,7 +290,7 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
         AND D.device_os IS NOT NULL
     );
 
-    INSERT INTO {{project_id}}.{{dataset}}.{{insert_table}}`
+    INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
     SELECT
         CURRENT_TIMESTAMP() AS processed_timestamp,
         EUD.feature_date,
