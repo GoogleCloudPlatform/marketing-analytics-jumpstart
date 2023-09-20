@@ -73,7 +73,6 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
   AND ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
-  GROUP BY user_pseudo_id, feature_date
 );
 
 -- All users in the platform
