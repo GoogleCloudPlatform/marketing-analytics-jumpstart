@@ -24,7 +24,6 @@ CREATE OR REPLACE TEMP TABLE dates_interval as (
   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
   WHERE event_date BETWEEN min_date AND max_date
     ORDER BY input_date DESC
-  LIMIT 1
 );
 
 ## All users in the platform

@@ -85,6 +85,6 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
     GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_90,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_90_days,
     GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_180,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_180_days,
   FROM events_users_days AS A
-  INNER JOIN future_revenue_per_user AS B
+  LEFT JOIN future_revenue_per_user AS B
   ON A.user_pseudo_id = B.user_pseudo_id
 ;
