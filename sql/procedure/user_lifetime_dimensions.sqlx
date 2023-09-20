@@ -48,9 +48,9 @@ CREATE TEMP TABLE user_dimensions_user_scoped as (
     LAST_VALUE(L.region) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_region,
     LAST_VALUE(L.city) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_city,
     LAST_VALUE(L.metro) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_metro,
-    LAST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_medium,
-    LAST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_name,
-    LAST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_source
+    FIRST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_medium,
+    FIRST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_name,
+    FIRST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_source
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.location` as L
   ON E.location_id = L.location_id
