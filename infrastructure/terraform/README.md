@@ -116,18 +116,24 @@ To manually start the data flow you must perform the following tasks:
     CALL `feature_store.invoke_backfill_user_lifetime_dimensions`();
     CALL `feature_store.invoke_backfill_user_rolling_window_lifetime_metrics`();
     CALL `feature_store.invoke_backfill_user_scoped_lifetime_metrics`();
+    CALL `customer_lifetime_value.invoke_customer_lifetime_value_training_preparation`();
+    CALL `customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation`();
 
     ## Backfill purchase propensity tables
-    CALL `feature_store.invoke_backfill_purchase_propensity_label`();
     CALL `feature_store.invoke_backfill_user_dimensions`();
     CALL `feature_store.invoke_backfill_user_rolling_window_metrics`();
     CALL `feature_store.invoke_backfill_user_scoped_metrics`();
     CALL `feature_store.invoke_backfill_user_session_event_aggregated_metrics`();
+    CALL `feature_store.invoke_backfill_purchase_propensity_label`();
+    CALL `purchase_propensity.invoke_purchase_propensity_training_preparation`();
+    CALL `purchase_propensity.invoke_purchase_propensity_inference_preparation`();
 
     ## Backfill audience segmentation tables
     CALL `feature_store.invoke_backfill_user_segmentation_dimensions`();
     CALL `feature_store.invoke_backfill_user_lookback_metrics`();
     CALL `feature_store.invoke_backfill_user_scoped_segmentation_metrics`();
+    CALL `audience_segmentation.invoke_audience_segmentation_training_preparation`();
+    CALL `audience_segmentation.invoke_audience_segmentation_inference_preparation`();
     ```
 
     **Note:** If you have a considerable amount of data (>XXX GBs of data) in your exported GA4 BigQuery datasets over the last six months, it can take several hours to backfill the feature data so that you can train your ML model. Make sure that the backfill procedures starts without errors before you continue to the next step.
