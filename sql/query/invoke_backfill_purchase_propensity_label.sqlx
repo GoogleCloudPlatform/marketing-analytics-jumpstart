@@ -30,8 +30,8 @@ CREATE OR REPLACE TEMP TABLE dates_interval as (
 CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
     SELECT DISTINCT
       Users.user_pseudo_id,
-      DI.event_date as event_date,
-      NULL as purchase_day_0,
+      DI.event_date as feature_date,
+      --NULL as purchase_day_0,
       NULL as purchase_day_1,
       NULL as purchase_day_2,
       NULL as purchase_day_3,
@@ -59,7 +59,7 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
   SELECT
     user_pseudo_id,
     input_date as feature_date,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_0,
+    --MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_0,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_1,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 2 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_2,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 3 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_3,
@@ -90,9 +90,9 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
-  A.event_date as feature_date,
+  A.feature_date,
   A.user_pseudo_id,
-  LEAST(COALESCE(B.purchase_day_0, 0), 1) AS purchase_day_0,
+  0 AS purchase_day_0,
   LEAST(COALESCE(B.purchase_day_1, 0), 1) AS purchase_day_1,
   LEAST(COALESCE(B.purchase_day_2, 0), 1) AS purchase_day_2,
   LEAST(COALESCE(B.purchase_day_3, 0), 1) AS purchase_day_3,

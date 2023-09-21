@@ -165,7 +165,7 @@ BEGIN
     first_time_purchasers_per_new_user,
     avg_user_conversion_rate,
     avg_session_conversion_rate,
-    purchase_day_0,
+    --purchase_day_0,
     purchase_day_1,
     purchase_day_2,
     purchase_day_3,
@@ -357,7 +357,7 @@ BEGIN
     first_time_purchasers_per_new_user,
     avg_user_conversion_rate,
     avg_session_conversion_rate,
-    purchase_day_0,
+    --purchase_day_0,
     purchase_day_1,
     purchase_day_2,
     purchase_day_3,
@@ -526,7 +526,8 @@ BEGIN
     first_time_purchasers_per_new_user,
     avg_user_conversion_rate,
     avg_session_conversion_rate,
-    MAX(CASE WHEN (purchase_day_0+
+    MAX(CASE WHEN (
+    --purchase_day_0+
     purchase_day_1+
     purchase_day_2+
     purchase_day_3+
