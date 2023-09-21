@@ -40,31 +40,6 @@
     "description": "feature column description"
   },
   {
-    "name": "hour_of_day",
-    "type": "STRING",
-    "description": "feature column description"
-  },
-  {
-    "name": "nth_day",
-    "type": "INTEGER",
-    "description": "feature column description"
-  },
-  {
-    "name": "nth_hour",
-    "type": "INTEGER",
-    "description": "feature column description"
-  },
-  {
-    "name": "nth_week",
-    "type": "INTEGER",
-    "description": "feature column description"
-  },
-  {
-    "name": "nth_month",
-    "type": "INTEGER",
-    "description": "feature column description"
-  },
-  {
     "name": "user_ltv_revenue",
     "type": "FLOAT",
     "description": "feature column description"
