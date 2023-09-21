@@ -16,91 +16,53 @@
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
--- What is the user-per-day dimensions?
-CREATE TEMP TABLE user_dimensions_event_scoped as (
+CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   SELECT DISTINCT
-    user_pseudo_id,
-    LAST_VALUE(format_date('%m',event_date)) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS month_of_the_year,
-    LAST_VALUE(format_date('%U',event_date)) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS week_of_the_year,
-    LAST_VALUE(format_date('%d',event_date)) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS day_of_the_month,
-    LAST_VALUE(format_date('%w',event_date)) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS day_of_week,
-    LAST_VALUE(format("%02d",extract(hour from event_timestamp))) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as hour_of_day,
-    LAST_VALUE(user_ltv_revenue) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS user_ltv_revenue,
-    LAST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS last_traffic_source_medium,
-    LAST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS last_traffic_source_name,
-    LAST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS last_traffic_source_source,
-    LAST_VALUE(CASE WHEN (TIMESTAMP_DIFF(event_timestamp, user_first_touch_timestamp, DAY) < 7) OR (user_first_touch_timestamp IS NULL) THEN 'new' ELSE 'existing' END) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) AS new_or_established_user
+  user_pseudo_id,
+  LAST_VALUE(format_date('%m',event_date)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS month_of_the_year,
+  LAST_VALUE(format_date('%U',event_date)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS week_of_the_year,
+  LAST_VALUE(format_date('%d',event_date)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS day_of_the_month,
+  LAST_VALUE(format_date('%w',event_date)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS day_of_week,
+  --LAST_VALUE(format("%02d",extract(hour from event_timestamp))) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as hour_of_day,
+  --LAST_VALUE(DATE_DIFF(event_date, DI.input_date, DAY)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS nth_day,	
+  --LAST_VALUE(TIMESTAMP_DIFF(event_timestamp, TIMESTAMP(DI.input_date), HOUR)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS nth_hour,	
+  --LAST_VALUE(DATE_DIFF(event_date, DI.input_date, WEEK)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS nth_week,	
+  --LAST_VALUE(DATE_DIFF(event_date, DI.input_date, MONTH)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS nth_month,
+  LAG(LAST_VALUE(user_ltv_revenue)) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS user_ltv_revenue,
+  LAST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_medium,
+  LAST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_name,
+  LAST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_source,
+  LAST_VALUE(CASE WHEN (TIMESTAMP_DIFF(event_timestamp, user_first_touch_timestamp, DAY) < 7) OR (user_first_touch_timestamp IS NULL) THEN 'new' ELSE 'existing' END) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS new_or_established_user,
+  LAST_VALUE(L.subcontinent) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_sub_continent,
+  LAST_VALUE(L.country) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_country,
+  LAST_VALUE(L.region) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_region,
+  LAST_VALUE(L.city) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_city,
+  LAST_VALUE(L.metro) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_metro,
+  FIRST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_medium,
+  FIRST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_name,
+  FIRST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_source,
+  MAX(CASE WHEN user_id IS NOT NULL THEN TRUE ELSE FALSE END) OVER(PARTITION BY user_pseudo_id, DI.input_date  ORDER BY event_timestamp ASC) AS has_signed_in_with_user_id,
+  LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_category,
+  LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_mobile_brand_name,
+  LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_mobile_model_name,
+  LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_os,
+  --LAST_VALUE(device_os_version) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_os_version,
+  LAST_VALUE(SPLIT(device_os_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_os_version,
+  LAST_VALUE(language) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS device_language,
+  LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_web_browser,
+  --LAST_VALUE(browser_version) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_web_browser_version,
+  LAST_VALUE(SPLIT(device_web_browser_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_web_browser_version,
+  LAST_VALUE(device_advertising_id) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_advertising_id
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.traffic_source` as T
   ON E.traffic_source_id = T.traffic_source_id
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
-  WHERE ga_session_id IS NOT NULL
-      AND D.device_os IS NOT NULL
-      AND event_date BETWEEN end_date AND input_date
-);
-
-CREATE TEMP TABLE user_dimensions_user_scoped as (
-  SELECT DISTINCT
-    user_pseudo_id,
-    LAST_VALUE(L.subcontinent) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_sub_continent,
-    LAST_VALUE(L.country) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_country,
-    LAST_VALUE(L.region) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_region,
-    LAST_VALUE(L.city) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_city,
-    LAST_VALUE(L.metro) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC) as geo_metro,
-    FIRST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_medium,
-    FIRST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_name,
-    FIRST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS first_traffic_source_source
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.location` as L
   ON E.location_id = L.location_id
-  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.traffic_source` as T
-  ON E.traffic_source_id = T.traffic_source_id
-  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-  ON E.device_type_id = D.device_type_id
-  WHERE ga_session_id IS NOT NULL
-      AND D.device_os IS NOT NULL
-      AND event_date BETWEEN end_date AND input_date
-);
-
-CREATE TEMP TABLE user_dimensions_session_scoped as (
-  SELECT DISTINCT
-    user_pseudo_id,
-    MAX(CASE WHEN user_id IS NOT NULL THEN TRUE ELSE FALSE END) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date ASC) AS has_signed_in_with_user_id,
-    LAST_VALUE(category) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_category,
-    LAST_VALUE(mobile_brand_name) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_mobile_brand_name,
-    LAST_VALUE(mobile_model_name) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_mobile_model_name,
-    LAST_VALUE(operating_system) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_os,
-    --LAST_VALUE(operating_system_version) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_os_version,
-    LAST_VALUE(SPLIT(operating_system_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_os_version,
-    LAST_VALUE(language) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) AS device_language,
-    LAST_VALUE(browser) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_web_browser,
-    --LAST_VALUE(browser_version) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_web_browser_version,
-    LAST_VALUE(SPLIT(browser_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_web_browser_version,
-    LAST_VALUE(advertising_id) OVER(PARTITION BY user_pseudo_id, session_id ORDER BY event_date DESC) as device_advertising_id
-  FROM 
-      (SELECT
-      user_pseudo_id,
-      user_id,
-      event_date,
-      MAX(device_advertising_id) AS advertising_id,
-      MAX(device_category) AS category,
-      MAX(device_mobile_brand_name) AS mobile_brand_name,
-      MAX(device_mobile_model_name) AS mobile_model_name,
-      MAX(device_os) AS operating_system,
-      MAX(device_os_version) AS operating_system_version,
-      MAX(language) AS language,
-      MAX(device_web_browser) AS browser,
-      MAX(device_web_browser_version) AS browser_version,
-      ga_session_id as session_id,
-      FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-      INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-      ON E.device_type_id = D.device_type_id
-      WHERE ga_session_id IS NOT NULL
-      AND D.device_os IS NOT NULL
-      AND event_date BETWEEN end_date AND input_date
-      GROUP BY user_pseudo_id, user_id, ga_session_id, event_date)
-  GROUP BY user_pseudo_id
+  WHERE event_date BETWEEN end_date AND input_date
+  AND ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
 );
 
 -- All users in the platform
@@ -119,56 +81,46 @@ CREATE TEMP TABLE events_users as (
 
 CREATE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
-  CURRENT_TIMESTAMP() AS processed_timestamp,
-  input_date as feature_date,
-  EU.user_pseudo_id,
-  EU.user_id,
-  UDES.month_of_the_year,
-  UDES.week_of_the_year,
-  UDES.day_of_the_month,
-  UDES.day_of_week,
-  UDES.hour_of_day,
-  NULL as nth_day,
-  NULL as nth_hour,
-  NULL as nth_week,
-  NULL as nth_month,
-  UDES.user_ltv_revenue,
-  UDSS.device_category,
-  UDSS.device_mobile_brand_name,
-  UDSS.device_mobile_model_name,
-  UDSS.device_os,
-  UDSS.device_os_version,
-  UDSS.device_language,
-  UDSS.device_web_browser,
-  UDSS.device_web_browser_version,
-  UDUS.geo_sub_continent,
-  UDUS.geo_country,
-  UDUS.geo_region,
-  UDUS.geo_city,
-  UDUS.geo_metro,
-  UDES.last_traffic_source_medium,
-  UDES.last_traffic_source_name,
-  UDES.last_traffic_source_source,
-  UDUS.first_traffic_source_medium,
-  UDUS.first_traffic_source_name,
-  UDUS.first_traffic_source_source,
-  UDSS.has_signed_in_with_user_id
+    CURRENT_TIMESTAMP() AS processed_timestamp,
+    input_date as feature_date,
+    EU.user_pseudo_id,
+    EU.user_id,
+    UDESS.month_of_the_year,
+    UDESS.week_of_the_year,
+    UDESS.day_of_the_month,
+    UDESS.day_of_week,
+    NULL as hour_of_day,
+    NULL as nth_day,
+    NULL as nth_hour,
+    NULL as nth_week,
+    NULL as nth_month,
+    UDESS.user_ltv_revenue,
+    UDESS.device_category,
+    UDESS.device_mobile_brand_name,
+    UDESS.device_mobile_model_name,
+    UDESS.device_os,
+    UDESS.device_os_version,
+    UDESS.device_language,
+    UDESS.device_web_browser,
+    UDESS.device_web_browser_version,
+    UDESS.geo_sub_continent,
+    UDESS.geo_country,
+    UDESS.geo_region,
+    UDESS.geo_city,
+    UDESS.geo_metro,
+    UDESS.last_traffic_source_medium,
+    UDESS.last_traffic_source_name,
+    UDESS.last_traffic_source_source,
+    UDESS.first_traffic_source_medium,
+    UDESS.first_traffic_source_name,
+    UDESS.first_traffic_source_source,
+    UDESS.has_signed_in_with_user_id
   FROM events_users EU
-  INNER JOIN user_dimensions_event_scoped UDES
-  ON EU.user_pseudo_id = UDES.user_pseudo_id --AND EU.user_id = UDES.user_id
-  INNER JOIN user_dimensions_user_scoped UDUS
-  ON EU.user_pseudo_id = UDUS.user_pseudo_id --AND EU.user_id = UDUS.user_id
-  INNER JOIN user_dimensions_session_scoped UDSS
-  ON EU.user_pseudo_id = UDSS.user_pseudo_id --AND EU.user_id = UDSS.user_id
+  INNER JOIN user_dimensions_event_session_scoped UDESS
+  ON EU.user_pseudo_id = UDESS.user_pseudo_id --AND EU.user_id = UDESS.user_id
 ;
 
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   SELECT * FROM DataForTargetTable;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
-
-DROP TABLE user_dimensions_event_scoped;
-DROP TABLE user_dimensions_user_scoped;
-DROP TABLE user_dimensions_session_scoped;
-DROP TABLE events_users;
-DROP TABLE DataForTargetTable;
