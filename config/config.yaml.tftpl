@@ -563,80 +563,80 @@ bigquery:
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_lifetime_dimensions:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      stored_procedure: "user_lifetime_dimensions"
-      interval_max_date: 180
-      interval_min_date: 180
-      interval_end_date: 180
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
-    invoke_backfill_user_scoped_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_scoped_lifetime_metrics"
+      insert_table: "user_lifetime_dimensions"
       interval_max_date: 180
       interval_min_date: 180
       interval_end_date: 180
+    invoke_backfill_user_scoped_lifetime_metrics:
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}" 
-    invoke_backfill_user_session_event_aggregated_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_session_event_aggregated_metrics"
+      insert_table: "user_scoped_lifetime_metrics"
+      interval_max_date: 180
+      interval_min_date: 180
+      interval_end_date: 180
+    invoke_backfill_user_session_event_aggregated_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}" 
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_session_event_aggregated_metrics"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_customer_lifetime_value_label:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "customer_lifetime_value_label"
+      insert_table: "customer_lifetime_value_label"
       interval_max_date: 180
       interval_min_date: 180
       interval_end_date: 180
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}"
     invoke_backfill_user_lookback_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_lookback_metrics"
+      insert_table: "user_lookback_metrics"
       interval_min_date: 15
       interval_end_date: 15
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_rolling_window_lifetime_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_rolling_window_lifetime_metrics"
+      insert_table: "user_rolling_window_lifetime_metrics"
       interval_max_date: 180
       interval_min_date: 180
       interval_end_date: 180
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_scoped_segmentation_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      stored_procedure: "user_scoped_segmentation_metrics"
-      interval_min_date: 15
-      interval_end_date: 15
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
-    invoke_backfill_user_segmentation_dimensions:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      stored_procedure: "user_segmentation_dimensions"
-      interval_min_date: 15
-      interval_end_date: 15
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_scoped_segmentation_metrics"
+      interval_min_date: 15
+      interval_end_date: 15 
+    invoke_backfill_user_segmentation_dimensions:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_segmentation_dimensions"
+      interval_min_date: 15
+      interval_end_date: 15
     invoke_backfill_purchase_propensity_label:
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "purchase_propensity_label"
+      insert_table: "purchase_propensity_label"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
@@ -645,28 +645,28 @@ bigquery:
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_dimensions"
+      insert_table: "user_dimensions"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
     invoke_backfill_user_rolling_window_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}" 
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_rolling_window_metrics"
+      insert_table: "user_rolling_window_metrics"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_scoped_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_scoped_metrics"
+      insert_table: "user_scoped_metrics"
       interval_max_date: 15
       interval_min_date: 30
-      interval_end_date: 30
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
+      interval_end_date: 30 
     invoke_customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "feature_store"

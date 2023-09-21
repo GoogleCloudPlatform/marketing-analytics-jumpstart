@@ -35,31 +35,6 @@
       "description": "user_pseudo_id"
     },
     {
-      "name": "hour_of_day",
-      "type": "STRING",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "nth_day",
-      "type": "INTEGER",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "nth_hour",
-      "type": "INTEGER",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "nth_week",
-      "type": "INTEGER",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "nth_month",
-      "type": "INTEGER",
-      "description": "user_pseudo_id"
-    },
-    {
       "name": "user_ltv_revenue",
       "type": "FLOAT",
       "description": "user_pseudo_id"

@@ -35,31 +35,6 @@
       "description": "feature description"
     },
     {
-      "name": "hour_of_day",
-      "type": "STRING",
-      "description": "feature description"
-    },
-    {
-      "name": "nth_day",
-      "type": "INTEGER",
-      "description": "feature description"
-    },
-    {
-      "name": "nth_hour",
-      "type": "INTEGER",
-      "description": "feature description"
-    },
-    {
-      "name": "nth_week",
-      "type": "INTEGER",
-      "description": "feature description"
-    },
-    {
-      "name": "nth_month",
-      "type": "INTEGER",
-      "description": "feature description"
-    },
-    {
       "name": "device_category",
       "type": "STRING",
       "description": "feature description"
