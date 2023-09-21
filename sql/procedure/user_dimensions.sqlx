@@ -83,6 +83,7 @@ CREATE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     input_date as feature_date,
+    EU.user_pseudo_id,
     MAX(EU.user_id) as user_id,
     MAX(UDESS.month_of_the_year) as month_of_the_year,
     MAX(UDESS.week_of_the_year) as week_of_the_year,
