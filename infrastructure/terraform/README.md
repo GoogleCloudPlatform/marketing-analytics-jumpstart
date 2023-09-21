@@ -84,6 +84,16 @@ installation.
     vim ${TERRAFORM_RUN_DIR}/terraform.tfvars
     ```
 
+    **Note:** The variable `google_default_region` determines the region where the resources are hosted. The variable default value is `us-central1`, based on your data residency requirements you should change the variable value by add the following in your `terraform.tfvars` file:
+    ```
+    google_default_region = "[specific Google Cloud region of choice]"
+    ```
+    **Note:** The variable `destination_data_location` determines the location for the data store in BigQuery. You have the choice to either store the data in single region by assigning value such as
+    * `us-central1`, `europe-west1`, `asia-east1` etc
+
+    or in multi-regions by assigning value such as
+    * `US` or `EU`
+
 1. Run Terraform to create resources:
 
     ```bash
