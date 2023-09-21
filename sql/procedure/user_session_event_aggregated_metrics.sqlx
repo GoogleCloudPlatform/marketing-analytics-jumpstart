@@ -76,10 +76,10 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
             MAX(S.returning_visitor) as returning_visitor,
             MAX(CASE WHEN E.event_name='purchase' AND E.ecommerce.transaction_id IS NOT NULL THEN true ELSE false END) as session_conversion,
             COUNTIF(E.event_name='page_view') as page_views_per_session
-        FROM `{mds_project_id}}.{{mds_dataset}}.event` as E
-        INNER JOIN `{mds_project_id}}.{{mds_dataset}}.session` as S
+        FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+        INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.session` as S
         ON E.ga_session_id = S.ga_session_id
-        INNER JOIN `{mds_project_id}}.{{mds_dataset}}.device` as D
+        INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
         ON E.device_type_id = D.device_type_id
         CROSS JOIN dates_interval as DI
         WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
@@ -103,7 +103,7 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
             user_pseudo_id, 
             input_date as feature_date, 
             RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
-        FROM `{mds_project_id}}.{{mds_dataset}}.event` AS GA
+        FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
         CROSS JOIN dates_interval as DI
         WHERE event_date BETWEEN DI.end_date AND DI.input_date
         AND event_name = 'purchase'
@@ -116,7 +116,7 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
     SELECT
             GA.user_pseudo_id,
             input_date as feature_date
-    FROM `{mds_project_id}}.{{mds_dataset}}.event` AS GA
+    FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
     CROSS JOIN dates_interval as DI
     WHERE event_date BETWEEN DI.end_date AND DI.input_date
     GROUP BY user_pseudo_id, feature_date
@@ -160,10 +160,10 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
             MAX(S.session_number) as session_order,
             CASE WHEN MAX(event_name) = 'begin_checkout' THEN 1 ELSE 0 END as begun_checkout,
             RANK() OVER (PARTITION BY GA.user_pseudo_id ORDER BY event_timestamp ASC ) AS event_order
-        FROM `{mds_project_id}}.{{mds_dataset}}.event` AS GA
-        INNER JOIN `{mds_project_id}}.{{mds_dataset}}.session` as S
+        FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
+        INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.session` as S
         ON GA.ga_session_id = S.ga_session_id
-        INNER JOIN `{mds_project_id}}.{{mds_dataset}}.device` as D
+        INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
         ON GA.device_type_id = D.device_type_id
         CROSS JOIN dates_interval as DI
         WHERE event_date BETWEEN DI.end_date AND DI.input_date
@@ -180,8 +180,8 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
         GA.user_pseudo_id, 
         input_date as feature_date,
         CASE WHEN (MAX(r.begun_checkout) AND NOT MAX(r.has_purchased)) THEN True ELSE False END as has_abandoned_cart,
-    FROM `{mds_project_id}}.{{mds_dataset}}.event` AS GA
-    INNER JOIN `{mds_project_id}}.{{mds_dataset}}.device` as D
+    FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
+    INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
         ON GA.device_type_id = D.device_type_id
     CROSS JOIN dates_interval as DI
     LEFT JOIN returned_cart_to_purchase AS r
@@ -261,8 +261,8 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
             COUNT(DISTINCT CASE WHEN ecommerce.transaction_id IS NOT NULL THEN ecommerce.transaction_id END) as transactions_per_session,
             COUNT(DISTINCT CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN user_pseudo_id END) as purchasers_per_session,
         FROM
-            `{mds_project_id}}.{{mds_dataset}}.event` as E
-        INNER JOIN `{mds_project_id}}.{{mds_dataset}}.device` as D
+            `{{mds_project_id}}.{{mds_dataset}}.event` as E
+        INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
             ON E.device_type_id = D.device_type_id
         CROSS JOIN dates_interval as DI
         WHERE event_date BETWEEN DI.end_date AND DI.input_date
@@ -281,8 +281,8 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
     SELECT DISTINCT
         Users.user_pseudo_id,
         DI.input_date as feature_date
-    FROM `{mds_project_id}}.{{mds_dataset}}.event` Users 
-    INNER JOIN `{mds_project_id}}.{{mds_dataset}}.device` as D
+    FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
+    INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
         ON Users.device_type_id = D.device_type_id
     CROSS JOIN dates_interval as DI
     WHERE event_date BETWEEN DI.end_date AND DI.input_date
