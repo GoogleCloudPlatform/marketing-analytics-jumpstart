@@ -36,6 +36,10 @@ resource "google_bigquery_dataset" "purchase_propensity" {
   labels = {
     version = "pilot"
   }
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "google_bigquery_dataset" "customer_lifetime_value" {
@@ -49,6 +53,10 @@ resource "google_bigquery_dataset" "customer_lifetime_value" {
   labels = {
     version = "pilot"
   }
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "google_bigquery_dataset" "audience_segmentation" {
@@ -61,5 +69,9 @@ resource "google_bigquery_dataset" "audience_segmentation" {
 
   labels = {
     version = "pilot"
+  }
+
+  lifecycle {
+    ignore_changes = all
   }
 }

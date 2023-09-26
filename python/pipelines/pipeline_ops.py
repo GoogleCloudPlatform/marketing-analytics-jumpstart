@@ -146,6 +146,27 @@ def run_pipeline_from_func(
     return pl
 
 
+def _extract_schema_from_bigquery(
+        table_name: str,
+        table_schema: str,
+        ) -> list:
+    from google.cloud import bigquery
+    from google.api_core import exceptions
+    try:
+        client = bigquery.Client()
+        table = client.get_table(table_name)
+        schema = [schema.name for schema in table.schema]
+    except exceptions.NotFound as e:
+        logging.warn(f'Pipeline compiled without columns transformation. \
+            Make sure the `data_source_bigquery_table_path` table or view exists! \
+            Loading default values from schema file {schema_name}.')
+        import json
+        with open(schema_name) as f:
+            d = json.load(f)
+        schema = [feature['name'] for feature in d]
+    return schema
+
+
 def compile_automl_tabular_pipeline(
         template_path: str,
         parameters_path: str,
@@ -227,18 +248,10 @@ def compile_automl_tabular_pipeline(
     pipeline_parameters['transformations'] = pipeline_parameters['transformations'].format(
         timestamp=datetime.now().strftime("%Y%m%d%H%M%S"))
 
-    from google.cloud import bigquery
-    from google.api_core import exceptions
-
-    try:
-        client = bigquery.Client()
-        table = client.get_table(
-            pipeline_parameters['data_source_bigquery_table_path'].split('/')[-1])
-        schema = [schema.name for schema in table.schema]
-    except exceptions.NotFound as e:
-        logging.warn(f'Pipeline compiled without columns transformation. \
-            Make sure the `data_source_bigquery_table_path` table or view exists in your config.yaml!')
-        schema = []
+    schema = _extract_schema_from_bigquery(
+        table_name=pipeline_parameters['data_source_bigquery_table_path'].split('/')[-1],
+        table_schema=pipeline_parameters['data_source_bigquery_table_schema']
+        )
 
     for column_to_remove in exclude_features + [
             pipeline_parameters['target_column'],
@@ -249,10 +262,7 @@ def compile_automl_tabular_pipeline(
         if column_to_remove in schema:
             schema.remove(column_to_remove)
 
-    logging.info(f'features:{schema}'  )
-    # need to remove later
-    # if "default" in schema:
-    #        schema.remove("default")
+    logging.info(f'features:{schema}')
 
     write_auto_transformations(pipeline_parameters['transformations'], schema)
     if pipeline_parameters['predefined_split_key']:
@@ -262,6 +272,7 @@ def compile_automl_tabular_pipeline(
 
     # write_to_gcs(pipeline_parameters['transform_config_path'], json.dumps(transformations))
 
+    pipeline_parameters.pop('data_source_bigquery_table_schema', None)
     (
         tp,
         parameter_values,

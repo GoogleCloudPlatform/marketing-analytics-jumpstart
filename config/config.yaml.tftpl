@@ -130,7 +130,7 @@ vertex_ai:
           query_parameters:
             - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           #INT64
-          timeout: 1800.0
+          timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           customer_lifetime_value_label_procedure_name: "${project_id}.feature_store.invoke_customer_lifetime_value_label"
           purchase_propensity_label_procedure_name: "${project_id}.feature_store.invoke_purchase_propensity_label"
@@ -186,6 +186,7 @@ vertex_ai:
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_7"
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_15"
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15"
+          data_source_bigquery_table_schema: "sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
           stratified_split_key: null
@@ -329,6 +330,7 @@ vertex_ai:
           data_source_csv_filenames: null
           optimization_objective: minimize-mae # minimize-mae | minimize-rmse | minimize-rmsle
           data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30"
+          data_source_bigquery_table_schema: "sql/schema/table/customer_lifetime_value_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
           stratified_split_key: null
