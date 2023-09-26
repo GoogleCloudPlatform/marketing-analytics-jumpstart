@@ -98,8 +98,8 @@ resource "null_resource" "generate_sql_queries" {
     EOT
 
     destroy_command = <<-EOT
-    rm sql/query/*.sql
-    rm sql/procedure/*.sql
+    rm -f sql/query/*.sql
+    rm -f sql/procedure/*.sql
     EOT
 
     working_dir = local.source_root_dir
