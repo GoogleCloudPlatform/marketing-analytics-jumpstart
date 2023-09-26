@@ -28,7 +28,6 @@ variable "data_processing_project_id" {
 }
 
 variable "google_default_region" {
-  default     = "us-central1"
   description = "The default Google Cloud region."
   type        = string
 }
@@ -114,7 +113,7 @@ variable "source_ga4_export_dataset" {
 
 variable "source_ads_export_data" {
   description = "List of BigQuery's Ads Data Transfer datasets"
-  type        = list(object({
+  type = list(object({
     project      = string
     dataset      = string
     table_suffix = string

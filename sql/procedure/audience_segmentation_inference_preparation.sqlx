@@ -16,7 +16,7 @@
 SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY); 
 
 CREATE TEMP TABLE inference_preparation AS (
-  SELECT
+  SELECT DISTINCT
     UD.user_pseudo_id,
     UD.user_id,
     UD.feature_date,
@@ -24,11 +24,6 @@ CREATE TEMP TABLE inference_preparation AS (
     UD.week_of_the_year,
     UD.day_of_the_month,
     UD.day_of_week,
-    UD.hour_of_day,
-    UD.nth_day,
-    UD.nth_hour,
-    UD.nth_week,
-    UD.nth_month,
     UD.device_category,
     UD.device_mobile_brand_name,
     UD.device_mobile_model_name,
@@ -102,6 +97,8 @@ CREATE TEMP TABLE inference_preparation AS (
   WHERE
     -- Define the training+validation subset interval
     UD.feature_date = inference_date );
+
+
 INSERT INTO
   `{{project_id}}.{{dataset}}.{{insert_table}}` (feature_date,
     user_pseudo_id,
@@ -110,11 +107,6 @@ INSERT INTO
     week_of_the_year,
     day_of_the_month,
     day_of_week,
-    hour_of_day,
-    nth_day,
-    nth_hour,
-    nth_week,
-    nth_month,
     device_category,
     device_mobile_brand_name,
     device_mobile_model_name,
@@ -182,11 +174,11 @@ SELECT
   week_of_the_year,
   day_of_the_month,
   day_of_week,
-  hour_of_day,
-  nth_day,
-  nth_hour,
-  nth_week,
-  nth_month,
+  NULL as hour_of_day,
+  NULL as nth_day,
+  NULL as nth_hour,
+  NULL as nth_week,
+  NULL as nth_month,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -251,7 +243,7 @@ FROM
 
 CREATE OR REPLACE TABLE
   `{{project_id}}.{{dataset}}.audience_segmentation_inference_15` AS(
-  SELECT
+  SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     feature_date,
     user_pseudo_id,
@@ -260,11 +252,6 @@ CREATE OR REPLACE TABLE
     week_of_the_year,
     day_of_the_month,
     day_of_week,
-    hour_of_day,
-    nth_day,
-    nth_hour,
-    nth_week,
-    nth_month,
     device_category,
     device_mobile_brand_name,
     device_mobile_model_name,
@@ -334,7 +321,6 @@ CREATE OR REPLACE VIEW
   user_id,
   day_of_the_month,
   day_of_week,
-  hour_of_day,
   device_category,
   device_mobile_model_name,
   device_os_version,
@@ -372,7 +358,6 @@ SELECT
   user_id,
   day_of_the_month,
   day_of_week,
-  hour_of_day,
   device_category,
   device_mobile_model_name,
   device_os_version,
