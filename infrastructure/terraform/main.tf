@@ -57,6 +57,14 @@ locals {
   config_file_name   = "config"
   poetry_run_alias   = "${var.poetry_cmd} run"
   mds_dataset_suffix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging"
+
+  generated_sql_queries_directory_path = "${local.source_root_dir}/sql/query"
+  generated_sql_queries_fileset        = [for f in fileset(local.generated_sql_queries_directory_path, "*.sql") : "${local.generated_sql_queries_directory_path}/${f}"]
+  generated_sql_queries_content_hash   = sha512(join("", [for f in local.generated_sql_queries_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+
+  generated_sql_procedures_directory_path = "${local.source_root_dir}/sql/procedure"
+  generated_sql_procedures_fileset        = [for f in fileset(local.generated_sql_procedures_directory_path, "*.sql") : "${local.generated_sql_procedures_directory_path}/${f}"]
+  generated_sql_procedures_content_hash   = sha512(join("", [for f in local.generated_sql_procedures_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
 }
 
 resource "local_file" "feature_store_configuration" {
@@ -84,28 +92,36 @@ resource "null_resource" "poetry_install" {
 resource "null_resource" "generate_sql_queries" {
 
   triggers = {
-    working_dir = local.source_root_dir
-  }
-
-  provisioner "local-exec" {
-    command     = <<-EOT
+    create_command = <<-EOT
     ${local.poetry_run_alias} inv apply-env-variables-queries --env-name=${local.config_file_name}
     ${local.poetry_run_alias} inv apply-env-variables-procedures --env-name=${local.config_file_name}
     EOT
+
+    destroy_command = <<-EOT
+    rm sql/query/*.sql
+    rm sql/procedure/*.sql
+    EOT
+
+    working_dir = local.source_root_dir
+
+    source_contents_hash        = local_file.feature_store_configuration.content_sha512
+    destination_queries_hash    = local.generated_sql_queries_content_hash
+    destination_procedures_hash = local.generated_sql_procedures_content_hash
+  }
+
+  provisioner "local-exec" {
+    when        = create
+    command     = self.triggers.create_command
     working_dir = self.triggers.working_dir
   }
 
   provisioner "local-exec" {
     when        = destroy
-    command     = <<-EOT
-    rm sql/query/*.sql
-    rm sql/procedure/*.sql
-    EOT
+    command     = self.triggers.destroy_command
     working_dir = self.triggers.working_dir
   }
 
   depends_on = [
-    local_file.feature_store_configuration,
     null_resource.poetry_install
   ]
 }
