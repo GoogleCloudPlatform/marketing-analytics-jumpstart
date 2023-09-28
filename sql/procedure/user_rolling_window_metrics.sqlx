@@ -237,7 +237,7 @@ ON I.feature_date = T.feature_date
 WHEN MATCHED THEN
   UPDATE SET 
     I.processed_timestamp = T.processed_timestamp,
-    I.active_users_past_1_day,
+    I.active_users_past_1_day = T.active_users_past_1_day,
     I.active_users_past_2_day = T.active_users_past_2_day,
     I.active_users_past_3_day = T.active_users_past_3_day,
     I.active_users_past_4_day = T.active_users_past_4_day,

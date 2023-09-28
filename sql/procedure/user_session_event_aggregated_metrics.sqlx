@@ -364,7 +364,7 @@ WHEN MATCHED THEN
     I.transactions_per_purchaser = T.transactions_per_purchaser,
     I.user_conversion_rate = T.user_conversion_rate,
     I.how_many_purchased_before = T.how_many_purchased_before,
-    I.has_abandoned_cart = T.has_abandoned_cart,
+    I.has_abandoned_cart = T.has_abandoned_cart
 WHEN NOT MATCHED THEN
   INSERT 
     (processed_timestamp,

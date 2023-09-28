@@ -107,7 +107,7 @@ CREATE TEMP TABLE DataForTargetTable AS
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
-ON I.feature_date = T.feature_date
+ON I.feature_date = T.feature_date 
   AND I.user_pseudo_id = T.user_pseudo_id
 WHEN MATCHED THEN
   UPDATE SET 
@@ -125,7 +125,7 @@ WHEN MATCHED THEN
     I.purchase_day_11 = T.purchase_day_11,
     I.purchase_day_12 = T.purchase_day_12,
     I.purchase_day_13 = T.purchase_day_13,
-    I.purchase_day_14 = T.purchase_day_14,
+    I.purchase_day_14 = T.purchase_day_14
 WHEN NOT MATCHED THEN
   INSERT 
     (processed_timestamp,
