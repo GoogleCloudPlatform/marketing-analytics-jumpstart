@@ -224,7 +224,7 @@ SELECT DISTINCT
   ON EUD.user_pseudo_id = E.user_pseudo_id
   FULL OUTER JOIN rolling_checkout_past_1_day AS F
   ON EUD.user_pseudo_id = F.user_pseudo_id
-  WHERE user_pseudo_id IS NOT NULL
+  WHERE EUD.user_pseudo_id IS NOT NULL
   ;
 
 --INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
