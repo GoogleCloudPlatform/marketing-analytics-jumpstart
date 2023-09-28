@@ -132,10 +132,6 @@ ON
 WHERE
   -- Define the training+validation subset interval
   UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
-  AND UD.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` LIMIT 1)
-  AND UWM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` LIMIT 1)
-  AND UM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` LIMIT 1)
-  AND LABEL.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.customer_lifetime_value_label` LIMIT 1)
 WINDOW 
   user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
   user_session_event_aggregated_metrics_window AS (PARTITION BY USEAM.user_pseudo_id, USEAM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
@@ -646,7 +642,7 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_tra
   lifetime_avg_session_conversion_rate,
   pltv_revenue_30_days)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_training_180_30",
   description="View Purchase Propensity Training dataset using 15 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
@@ -847,7 +843,7 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_tra
   lifetime_avg_session_conversion_rate,
   pltv_revenue_90_days)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_training_180_90",
   description="View Purchase Propensity Training dataset using 15 days back to predict 7 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
@@ -1046,7 +1042,7 @@ SELECT DISTINCT
   lifetime_avg_session_conversion_rate,
   pltv_revenue_180_days)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_training_180_180",
   description="View Purchase Propensity Training dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]

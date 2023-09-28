@@ -195,11 +195,6 @@ ON
 WHERE
   -- Define the training subset interval
   UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
-  AND UD.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` LIMIT 1)
-  AND USEAM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` LIMIT 1)
-  AND UWM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` LIMIT 1)
-  AND UM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` LIMIT 1)
-  AND LABEL.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.purchase_propensity_label` LIMIT 1)
 WINDOW 
   user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
   user_session_event_aggregated_metrics_window AS (PARTITION BY USEAM.user_pseudo_id, USEAM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
@@ -991,7 +986,7 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_trainin
   avg_session_conversion_rate,
   will_purchase)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
   friendly_name="v_purchase_propensity_training_15_15",
   description="View Purchase Propensity Training dataset using 15 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
@@ -1287,7 +1282,7 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_trainin
   will_purchase
   )
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
   friendly_name="v_purchase_propensity_training_15_7",
   description="View Purchase Propensity Training dataset using 15 days back to predict 7 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
@@ -1580,7 +1575,7 @@ SELECT DISTINCT
   avg_session_conversion_rate,
   will_purchase)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
   friendly_name="v_purchase_propensity_training_30_15",
   description="View Purchase Propensity Training dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]

@@ -122,15 +122,16 @@ CREATE TEMP TABLE inference_preparation as (
   WHERE
     -- Define the training+validation subset interval
     UD.feature_date = inference_date
-    AND UD.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` LIMIT 1)
-    AND UWM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` LIMIT 1)
-    AND UM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` LIMIT 1)
+    AND UD.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` WHERE feature_date = inference_date LIMIT 1)
+    AND UWM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1)
+    AND UM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1)
   WINDOW 
     user_lifetime_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
     user_lifetime_rolling_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
     user_scoped_lifetime_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
+DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
 
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 (
@@ -707,7 +708,7 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_inf
   lifetime_avg_user_conversion_rate,
   lifetime_avg_session_conversion_rate)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_inference_180_30",
   description="View Purchase Propensity Inference dataset using 15 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
@@ -904,7 +905,7 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_inf
   lifetime_avg_user_conversion_rate,
   lifetime_avg_session_conversion_rate)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_inference_180_90",
   description="View Purchase Propensity Inference dataset using 15 days back to predict 7 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
@@ -1099,7 +1100,7 @@ SELECT DISTINCT
   lifetime_avg_user_conversion_rate,
   lifetime_avg_session_conversion_rate)
 OPTIONS(
-  expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_inference_180_180",
   description="View Purchase Propensity Inference dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
