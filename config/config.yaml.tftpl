@@ -317,7 +317,7 @@ vertex_ai:
           state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
-          location: "us-central1"
+          location: "${cloud_region}"
           model_name: "interest-cluster-model"
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.p_auto_audience_segmentation_inference_15"
