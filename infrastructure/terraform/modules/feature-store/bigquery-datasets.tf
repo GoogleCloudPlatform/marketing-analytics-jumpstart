@@ -19,9 +19,14 @@ resource "google_bigquery_dataset" "feature_store" {
   description           = local.config_bigquery.dataset.feature_store.description
   location              = local.config_bigquery.dataset.feature_store.location
   max_time_travel_hours = local.config_bigquery.dataset.feature_store.max_time_travel_hours
+  delete_contents_on_destroy = false
 
   labels = {
     version = "pilot"
+  }
+
+  lifecycle {
+    ignore_changes = all
   }
 }
 
@@ -32,6 +37,7 @@ resource "google_bigquery_dataset" "purchase_propensity" {
   description           = local.config_bigquery.dataset.purchase_propensity.description
   location              = local.config_bigquery.dataset.purchase_propensity.location
   max_time_travel_hours = local.config_bigquery.dataset.purchase_propensity.max_time_travel_hours
+  delete_contents_on_destroy = false
 
   labels = {
     version = "pilot"
@@ -49,6 +55,7 @@ resource "google_bigquery_dataset" "customer_lifetime_value" {
   description           = local.config_bigquery.dataset.customer_lifetime_value.description
   location              = local.config_bigquery.dataset.customer_lifetime_value.location
   max_time_travel_hours = local.config_bigquery.dataset.customer_lifetime_value.max_time_travel_hours
+  delete_contents_on_destroy = false
 
   labels = {
     version = "pilot"
@@ -66,6 +73,7 @@ resource "google_bigquery_dataset" "audience_segmentation" {
   description           = local.config_bigquery.dataset.audience_segmentation.description
   location              = local.config_bigquery.dataset.audience_segmentation.location
   max_time_travel_hours = local.config_bigquery.dataset.audience_segmentation.max_time_travel_hours
+  delete_contents_on_destroy = false
 
   labels = {
     version = "pilot"

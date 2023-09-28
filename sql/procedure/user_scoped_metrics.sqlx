@@ -137,8 +137,98 @@ CREATE TEMP TABLE DataForTargetTable AS
     CROSS JOIN first_purchasers
     CROSS JOIN new_users_;
 
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-SELECT * FROM DataForTargetTable;
+--INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+--  SELECT * FROM DataForTargetTable;
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.processed_timestamp = T.processed_timestamp,
+    I.purchasers_users = T.purchasers_users,
+    I.average_daily_purchasers = T.average_daily_purchasers,
+    I.active_users = T.active_users,
+    I.DAU = T.DAU,
+    I.MAU = T.MAU,
+    I.WAU = T.WAU,
+    I.dau_per_mau = T.dau_per_mau,
+    I.dau_per_wau = T.dau_per_wau,
+    I.wau_per_mau = T.wau_per_mau,
+    I.users_engagement_duration_seconds = T.users_engagement_duration_seconds,
+    I.average_engagement_time = T.average_engagement_time,
+    I.average_engagement_time_per_session = T.average_engagement_time_per_session,
+    I.average_sessions_per_user = T.average_sessions_per_user,
+    I.ARPPU = T.ARPPU,
+    I.ARPU = T.ARPU,
+    I.average_daily_revenue = T.average_daily_revenue,
+    I.max_daily_revenue = T.max_daily_revenue,
+    I.min_daily_revenue = T.min_daily_revenue,
+    I.new_users = T.new_users,
+    I.returning_users = T.returning_users,
+    I.first_time_purchasers = T.first_time_purchasers,
+    I.first_time_purchaser_conversion = T.first_time_purchaser_conversion,
+    I.first_time_purchasers_per_new_user = T.first_time_purchasers_per_new_user,
+    I.avg_user_conversion_rate = T.avg_user_conversion_rate,
+    I.avg_session_conversion_rate = T.avg_session_conversion_rate
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     purchasers_users,
+     average_daily_purchasers,
+     active_users,
+     DAU,
+     MAU,
+     WAU,
+     dau_per_mau,
+     dau_per_wau,
+     wau_per_mau,
+     users_engagement_duration_seconds,
+     average_engagement_time,
+     average_engagement_time_per_session,
+     average_sessions_per_user,
+     ARPPU,
+     ARPU,
+     average_daily_revenue,
+     max_daily_revenue,
+     min_daily_revenue,
+     new_users,
+     returning_users,
+     first_time_purchasers,
+     first_time_purchaser_conversion,
+     first_time_purchasers_per_new_user,
+     avg_user_conversion_rate,
+     avg_session_conversion_rate)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.purchasers_users,
+     T.average_daily_purchasers,
+     T.active_users,
+     T.DAU,
+     T.MAU,
+     T.WAU,
+     T.dau_per_mau,
+     T.dau_per_wau,
+     T.wau_per_mau,
+     T.users_engagement_duration_seconds,
+     T.average_engagement_time,
+     T.average_engagement_time_per_session,
+     T.average_sessions_per_user,
+     T.ARPPU,
+     T.ARPU,
+     T.average_daily_revenue,
+     T.max_daily_revenue,
+     T.min_daily_revenue,
+     T.new_users,
+     T.returning_users,
+     T.first_time_purchasers,
+     T.first_time_purchaser_conversion,
+     T.first_time_purchasers_per_new_user,
+     T.avg_user_conversion_rate,
+     T.avg_session_conversion_rate)
+;
 
 SET rows_added = 1;
 

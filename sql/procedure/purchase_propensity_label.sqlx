@@ -99,11 +99,71 @@ CREATE TEMP TABLE DataForTargetTable AS
     LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
   FROM all_users_possible_purchases AS A
   LEFT JOIN future_purchases_per_user AS B
-  ON B.user_pseudo_id = A.user_pseudo_id
+  ON B.user_pseudo_id = A.user_pseudo_id AND B.feature_date = A.feature_date
   ;
 
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-SELECT * FROM DataForTargetTable;
+-- INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+--   SELECT * FROM DataForTargetTable;
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+  AND I.user_pseudo_id = T.user_pseudo_id
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.processed_timestamp = T.processed_timestamp,
+    I.purchase_day_1 = T.purchase_day_1,
+    I.purchase_day_2 = T.purchase_day_2,
+    I.purchase_day_3 = T.purchase_day_3,
+    I.purchase_day_4 = T.purchase_day_4,
+    I.purchase_day_5 = T.purchase_day_5,
+    I.purchase_day_6 = T.purchase_day_6,
+    I.purchase_day_7 = T.purchase_day_7,
+    I.purchase_day_8 = T.purchase_day_8,
+    I.purchase_day_9 = T.purchase_day_9,
+    I.purchase_day_10 = T.purchase_day_10,
+    I.purchase_day_11 = T.purchase_day_11,
+    I.purchase_day_12 = T.purchase_day_12,
+    I.purchase_day_13 = T.purchase_day_13,
+    I.purchase_day_14 = T.purchase_day_14,
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     user_pseudo_id,
+     purchase_day_1,
+     purchase_day_2,
+     purchase_day_3,
+     purchase_day_4,
+     purchase_day_5,
+     purchase_day_6,
+     purchase_day_7,
+     purchase_day_8,
+     purchase_day_9,
+     purchase_day_10,
+     purchase_day_11,
+     purchase_day_12,
+     purchase_day_13,
+     purchase_day_14)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.user_pseudo_id,
+     T.purchase_day_1,
+     T.purchase_day_2,
+     T.purchase_day_3,
+     T.purchase_day_4,
+     T.purchase_day_5,
+     T.purchase_day_6,
+     T.purchase_day_7,
+     T.purchase_day_8,
+     T.purchase_day_9,
+     T.purchase_day_10,
+     T.purchase_day_11,
+     T.purchase_day_12,
+     T.purchase_day_13,
+     T.purchase_day_14)
+;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 

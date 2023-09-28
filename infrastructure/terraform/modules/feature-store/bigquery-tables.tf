@@ -17,7 +17,7 @@ resource "google_bigquery_table" "audience_segmentation_inference_preparation" {
   dataset_id          = google_bigquery_dataset.audience_segmentation.dataset_id
   table_id            = local.config_bigquery.table.audience_segmentation_inference_preparation.table_name
   description         = local.config_bigquery.table.audience_segmentation_inference_preparation.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -30,7 +30,7 @@ resource "google_bigquery_table" "customer_lifetime_value_inference_preparation"
   dataset_id          = google_bigquery_dataset.customer_lifetime_value.dataset_id
   table_id            = local.config_bigquery.table.customer_lifetime_value_inference_preparation.table_name
   description         = local.config_bigquery.table.customer_lifetime_value_inference_preparation.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -42,7 +42,7 @@ resource "google_bigquery_table" "customer_lifetime_value_label" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.customer_lifetime_value_label.table_name
   description         = local.config_bigquery.table.customer_lifetime_value_label.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -54,7 +54,7 @@ resource "google_bigquery_table" "purchase_propensity_inference_preparation" {
   dataset_id          = google_bigquery_dataset.purchase_propensity.dataset_id
   table_id            = local.config_bigquery.table.purchase_propensity_inference_preparation.table_name
   description         = local.config_bigquery.table.purchase_propensity_inference_preparation.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -66,7 +66,7 @@ resource "google_bigquery_table" "purchase_propensity_label" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.purchase_propensity_label.table_name
   description         = local.config_bigquery.table.purchase_propensity_label.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -78,7 +78,7 @@ resource "google_bigquery_table" "user_dimensions" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_dimensions.table_name
   description         = local.config_bigquery.table.user_dimensions.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -90,7 +90,7 @@ resource "google_bigquery_table" "user_lifetime_dimensions" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_lifetime_dimensions.table_name
   description         = local.config_bigquery.table.user_lifetime_dimensions.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -103,7 +103,7 @@ resource "google_bigquery_table" "user_lookback_metrics" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_lookback_metrics.table_name
   description         = local.config_bigquery.table.user_lookback_metrics.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -116,7 +116,7 @@ resource "google_bigquery_table" "user_rolling_window_lifetime_metrics" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_rolling_window_lifetime_metrics.table_name
   description         = local.config_bigquery.table.user_rolling_window_lifetime_metrics.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -128,7 +128,7 @@ resource "google_bigquery_table" "user_rolling_window_metrics" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_rolling_window_metrics.table_name
   description         = local.config_bigquery.table.user_rolling_window_metrics.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -140,7 +140,7 @@ resource "google_bigquery_table" "user_scoped_lifetime_metrics" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_scoped_lifetime_metrics.table_name
   description         = local.config_bigquery.table.user_scoped_lifetime_metrics.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -152,7 +152,7 @@ resource "google_bigquery_table" "user_scoped_metrics" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_scoped_metrics.table_name
   description         = local.config_bigquery.table.user_scoped_metrics.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -164,7 +164,7 @@ resource "google_bigquery_table" "user_scoped_segmentation_metrics" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_scoped_segmentation_metrics.table_name
   description         = local.config_bigquery.table.user_scoped_segmentation_metrics.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -176,7 +176,7 @@ resource "google_bigquery_table" "user_segmentation_dimensions" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_segmentation_dimensions.table_name
   description         = local.config_bigquery.table.user_segmentation_dimensions.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
@@ -188,7 +188,7 @@ resource "google_bigquery_table" "user_session_event_aggregated_metrics" {
   dataset_id          = google_bigquery_dataset.feature_store.dataset_id
   table_id            = local.config_bigquery.table.user_session_event_aggregated_metrics.table_name
   description         = local.config_bigquery.table.user_session_event_aggregated_metrics.table_description
-  deletion_protection = false
+  deletion_protection = true
   labels = {
     version = "pilot"
   }
