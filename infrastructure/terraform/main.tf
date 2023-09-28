@@ -58,6 +58,9 @@ locals {
   poetry_run_alias   = "${var.poetry_cmd} run"
   mds_dataset_suffix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging"
 
+  project_toml_file_path    = "${local.source_root_dir}/pyproject.toml"
+  project_toml_content_hash = filesha512(local.project_toml_file_path)
+
   generated_sql_queries_directory_path = "${local.source_root_dir}/sql/query"
   generated_sql_queries_fileset        = [for f in fileset(local.generated_sql_queries_directory_path, "*.sql") : "${local.generated_sql_queries_directory_path}/${f}"]
   generated_sql_queries_content_hash   = sha512(join("", [for f in local.generated_sql_queries_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
@@ -83,8 +86,14 @@ resource "local_file" "feature_store_configuration" {
 }
 
 resource "null_resource" "poetry_install" {
+  triggers = {
+    create_command       = "${var.poetry_cmd} install"
+    source_contents_hash = local.project_toml_content_hash
+  }
+
   provisioner "local-exec" {
-    command     = "${var.poetry_cmd} install"
+    when        = create
+    command     = self.triggers.create_command
     working_dir = local.source_root_dir
   }
 }
@@ -104,6 +113,8 @@ resource "null_resource" "generate_sql_queries" {
 
     working_dir = local.source_root_dir
 
+    poetry_installed = null_resource.poetry_install.id
+
     source_contents_hash        = local_file.feature_store_configuration.content_sha512
     destination_queries_hash    = local.generated_sql_queries_content_hash
     destination_procedures_hash = local.generated_sql_procedures_content_hash
@@ -120,10 +131,6 @@ resource "null_resource" "generate_sql_queries" {
     command     = self.triggers.destroy_command
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.poetry_install
-  ]
 }
 
 module "feature_store" {
