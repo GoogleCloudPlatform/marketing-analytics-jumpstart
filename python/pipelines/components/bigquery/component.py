@@ -46,7 +46,7 @@ def bq_stored_procedure_exec(
 
     client = bigquery.Client(
         project=project,
-        # location=location
+        location=location
     )
 
     params = []
@@ -95,7 +95,7 @@ def bq_clustering_exec(
 
     client = bigquery.Client(
         project=project_id,
-        # location=location
+        location=location
     )
 
     model_bq_name = f"{model_name_bq_prefix}_{str(int(datetime.now().timestamp()))}"
@@ -125,7 +125,7 @@ def bq_clustering_exec(
 
     client = bigquery.Client(
         project=project_id,
-        # location=location
+        location=location
     )
     
     query_job = client.query(
@@ -157,7 +157,7 @@ def bq_evaluate(
     
     client = bigquery.Client(
         project=project,
-        # location=location
+        location=location
     )
     
     query_job = client.query(
@@ -222,7 +222,7 @@ def bq_select_best_kmeans_model(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        # location=location
+        location=location
     )
 
     # TODO(developer): Set dataset_id to the ID of the dataset that contains
@@ -354,7 +354,7 @@ def bq_flatten_tabular_binary_prediction_table(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        # location=location
+        location=location
     )
 
     # Inspect the metadata set on destination_table and predictions_table
@@ -437,7 +437,7 @@ def bq_flatten_tabular_regression_table(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        # location=location
+        location=location
     )
 
     # Inspect the metadata set on destination_table and predictions_table
@@ -508,7 +508,7 @@ def bq_flatten_kmeans_prediction_table(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        # location=location
+        location=location
     )
 
     # Make an API request.

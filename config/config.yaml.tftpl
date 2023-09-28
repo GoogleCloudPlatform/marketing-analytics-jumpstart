@@ -16,11 +16,11 @@ google_cloud_project:
   project_id: "${project_id}"
   project_name: "${project_name}"
   project_number: "${project_number}"
-  region: "us-central1"
+  region: "${cloud_region}"
 
 cloud_build:
   project_id: "${project_id}"
-  region: "us-central1"
+  region: "${cloud_region}"
   github:
     owner: "${pipelines_github_owner}"
     repo_name: "${pipelines_github_repo}"
@@ -29,8 +29,8 @@ cloud_build:
   _REPOSITORY_GCP_PROJECT: "${project_id}"
   _REPOSITORY_NAME: "github_${pipelines_github_owner}_${pipelines_github_repo}"
   _REPOSITORY_BRANCH: "main"
-  _GCR_HOSTNAME: "us-central1-docker.pkg.dev"
-  _BUILD_REGION: "us-central1"
+  _GCR_HOSTNAME: "${cloud_region}-docker.pkg.dev"
+  _BUILD_REGION: "${cloud_region}"
 
 container:
   builder:
@@ -42,17 +42,17 @@ container:
       from_image: "wbsouza/zetasql-formatter:latest"
       base_image_name: "zetasql-formatter"
       base_image_prefix: "propensity-modeling"
-  container_registry_hostname: "us-central1-docker.pkg.dev" 
-  container_registry_region: "us-central1"
+  container_registry_hostname: "${cloud_region}-docker.pkg.dev"
+  container_registry_region: "${cloud_region}"
 
 artifact_registry:
   pipelines_repo:
     name: "pipelines-repo"
-    region: "us-central1"
+    region: "${cloud_region}"
     project_id: "${project_id}"
   pipelines_docker_repo:
     name: "pipelines-docker-repo"
-    region: "us-central1"
+    region: "${cloud_region}"
     project_id: "${project_id}"
 
 dataflow:
@@ -68,7 +68,7 @@ vertex_ai:
     project_id: "${project_id}"
     service_account_id: "vertex-pipelines-sa"
     service_account: "vertex-pipelines-sa@${project_id}.iam.gserviceaccount.com"
-    region: "us-central1"
+    region: "${cloud_region}"
     bucket_name: "${project_id}-pipelines"
     root_path: "gs://${project_id}-pipelines/pipelines/"
 
@@ -172,7 +172,7 @@ vertex_ai:
           state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project: "${project_id}"
-          location: "us-central1"
+          location: "${cloud_region}"
           root_dir: "gs://${project_id}-pipelines/propensity-training"
           transformations: "gs://${project_id}-pipelines/propensity-training/transformations_config_{timestamp}.json"
           train_budget_milli_node_hours: 1000 # 1 hour
@@ -223,7 +223,7 @@ vertex_ai:
           state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
-          location: "us-central1"
+          location: "${cloud_region}"
           job_name_prefix: "propensity-prediction-pl-"
           model_display_name: "propensity-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "logLoss"
@@ -339,7 +339,7 @@ vertex_ai:
           state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project: "${project_id}"
-          location: "us-central1"
+          location: "${cloud_region}"
           root_dir: "gs://${project_id}-pipelines/clv-training"
           transformations: "gs://${project_id}-pipelines/clv-training/transformations_config_{timestamp}.json"
           train_budget_milli_node_hours: 1000 # 1 hour
@@ -386,7 +386,7 @@ vertex_ai:
           state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
-          location: "us-central1"
+          location: "${cloud_region}"
           job_name_prefix: "clv-prediction-pl-"
           model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
@@ -601,80 +601,80 @@ bigquery:
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_lifetime_dimensions:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      stored_procedure: "user_lifetime_dimensions"
-      interval_max_date: 180
-      interval_min_date: 180
-      interval_end_date: 180
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
-    invoke_backfill_user_scoped_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_scoped_lifetime_metrics"
+      insert_table: "user_lifetime_dimensions"
       interval_max_date: 180
       interval_min_date: 180
       interval_end_date: 180
+    invoke_backfill_user_scoped_lifetime_metrics:
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}" 
-    invoke_backfill_user_session_event_aggregated_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_session_event_aggregated_metrics"
+      insert_table: "user_scoped_lifetime_metrics"
+      interval_max_date: 180
+      interval_min_date: 180
+      interval_end_date: 180
+    invoke_backfill_user_session_event_aggregated_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}" 
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_session_event_aggregated_metrics"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_customer_lifetime_value_label:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "customer_lifetime_value_label"
+      insert_table: "customer_lifetime_value_label"
       interval_max_date: 180
       interval_min_date: 180
       interval_end_date: 180
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}"
     invoke_backfill_user_lookback_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_lookback_metrics"
+      insert_table: "user_lookback_metrics"
       interval_min_date: 15
       interval_end_date: 15
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_rolling_window_lifetime_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_rolling_window_lifetime_metrics"
+      insert_table: "user_rolling_window_lifetime_metrics"
       interval_max_date: 180
       interval_min_date: 180
       interval_end_date: 180
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_scoped_segmentation_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      stored_procedure: "user_scoped_segmentation_metrics"
-      interval_min_date: 15
-      interval_end_date: 15
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
-    invoke_backfill_user_segmentation_dimensions:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      stored_procedure: "user_segmentation_dimensions"
-      interval_min_date: 15
-      interval_end_date: 15
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_scoped_segmentation_metrics"
+      interval_min_date: 15
+      interval_end_date: 15 
+    invoke_backfill_user_segmentation_dimensions:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_segmentation_dimensions"
+      interval_min_date: 15
+      interval_end_date: 15
     invoke_backfill_purchase_propensity_label:
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "purchase_propensity_label"
+      insert_table: "purchase_propensity_label"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
@@ -683,28 +683,28 @@ bigquery:
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_dimensions"
+      insert_table: "user_dimensions"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
     invoke_backfill_user_rolling_window_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}" 
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_rolling_window_metrics"
+      insert_table: "user_rolling_window_metrics"
       interval_max_date: 15
       interval_min_date: 30
       interval_end_date: 30
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
     invoke_backfill_user_scoped_metrics:
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
-      stored_procedure: "user_scoped_metrics"
+      insert_table: "user_scoped_metrics"
       interval_max_date: 15
       interval_min_date: 30
-      interval_end_date: 30
-      mds_project_id: "${project_id}"
-      mds_dataset: "${mds_dataset}" 
+      interval_end_date: 30 
     invoke_customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "feature_store"
