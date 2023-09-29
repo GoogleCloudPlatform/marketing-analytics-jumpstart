@@ -223,11 +223,146 @@ CREATE TEMP TABLE DataForTargetTable AS
     FULL OUTER JOIN rolling_checkout_per_user AS F
     ON EUD.user_pseudo_id = F.user_pseudo_id
     FULL OUTER JOIN rolling_revenue_per_user AS G
-    ON EUD.user_pseudo_id = G.user_pseudo_id;
+    ON EUD.user_pseudo_id = G.user_pseudo_id
+    WHERE EUD.user_pseudo_id IS NOT NULL;
 
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-  SELECT * FROM DataForTargetTable
-  WHERE user_pseudo_id IS NOT NULL;
+--INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+--  SELECT * FROM DataForTargetTable
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+  AND I.user_pseudo_id = T.user_pseudo_id
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.processed_timestamp = T.processed_timestamp,
+    I.active_users_past_1_30_day = T.active_users_past_1_30_day,
+    I.active_users_past_30_60_day = T.active_users_past_30_60_day,
+    I.active_users_past_60_90_day = T.active_users_past_60_90_day,
+    I.active_users_past_90_120_day = T.active_users_past_90_120_day,
+    I.active_users_past_120_150_day = T.active_users_past_120_150_day,
+    I.active_users_past_150_180_day = T.active_users_past_150_180_day,
+    I.purchases_past_1_30_day = T.purchases_past_1_30_day,
+    I.purchases_past_30_60_day = T.purchases_past_30_60_day,
+    I.purchases_past_60_90_day = T.purchases_past_60_90_day,
+    I.purchases_past_90_120_day = T.purchases_past_90_120_day,
+    I.purchases_past_120_150_day = T.purchases_past_120_150_day,
+    I.purchases_past_150_180_day = T.purchases_past_150_180_day,
+    I.visits_past_1_30_day = T.visits_past_1_30_day,
+    I.visits_past_30_60_day = T.visits_past_30_60_day,
+    I.visits_past_60_90_day = T.visits_past_60_90_day,
+    I.visits_past_90_120_day = T.visits_past_90_120_day,
+    I.visits_past_120_150_day = T.visits_past_120_150_day,
+    I.visits_past_150_180_day = T.visits_past_150_180_day,
+    I.view_items_past_1_30_day = T.view_items_past_1_30_day,
+    I.view_items_past_30_60_day = T.view_items_past_30_60_day,
+    I.view_items_past_60_90_day = T.view_items_past_60_90_day,
+    I.view_items_past_90_120_day = T.view_items_past_90_120_day,
+    I.view_items_past_120_150_day = T.view_items_past_120_150_day,
+    I.view_items_past_150_180_day = T.view_items_past_150_180_day,
+    I.add_to_carts_past_1_30_day = T.add_to_carts_past_1_30_day,
+    I.add_to_carts_past_30_60_day = T.add_to_carts_past_30_60_day,
+    I.add_to_carts_past_60_90_day = T.add_to_carts_past_60_90_day,
+    I.add_to_carts_past_90_120_day = T.add_to_carts_past_90_120_day,
+    I.add_to_carts_past_120_150_day = T.add_to_carts_past_120_150_day,
+    I.add_to_carts_past_150_180_day = T.add_to_carts_past_150_180_day,
+    I.checkouts_past_1_30_day = T.checkouts_past_1_30_day,
+    I.checkouts_past_30_60_day = T.checkouts_past_30_60_day,
+    I.checkouts_past_60_90_day = T.checkouts_past_60_90_day,
+    I.checkouts_past_90_120_day = T.checkouts_past_90_120_day,
+    I.checkouts_past_120_150_day = T.checkouts_past_120_150_day,
+    I.checkouts_past_150_180_day = T.checkouts_past_150_180_day,
+    I.ltv_revenue_past_1_30_day = T.ltv_revenue_past_1_30_day,
+    I.ltv_revenue_past_30_90_day = T.ltv_revenue_past_30_90_day,
+    I.ltv_revenue_past_90_180_day = T.ltv_revenue_past_90_180_day
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     user_pseudo_id,
+     active_users_past_1_30_day,
+     active_users_past_30_60_day,
+     active_users_past_60_90_day,
+     active_users_past_90_120_day,
+     active_users_past_120_150_day,
+     active_users_past_150_180_day,
+     purchases_past_1_30_day,
+     purchases_past_30_60_day,
+     purchases_past_60_90_day,
+     purchases_past_90_120_day,
+     purchases_past_120_150_day,
+     purchases_past_150_180_day,
+     visits_past_1_30_day,
+     visits_past_30_60_day,
+     visits_past_60_90_day,
+     visits_past_90_120_day,
+     visits_past_120_150_day,
+     visits_past_150_180_day,
+     view_items_past_1_30_day,
+     view_items_past_30_60_day,
+     view_items_past_60_90_day,
+     view_items_past_90_120_day,
+     view_items_past_120_150_day,
+     view_items_past_150_180_day,
+     add_to_carts_past_1_30_day,
+     add_to_carts_past_30_60_day,
+     add_to_carts_past_60_90_day,
+     add_to_carts_past_90_120_day,
+     add_to_carts_past_120_150_day,
+     add_to_carts_past_150_180_day,
+     checkouts_past_1_30_day,
+     checkouts_past_30_60_day,
+     checkouts_past_60_90_day,
+     checkouts_past_90_120_day,
+     checkouts_past_120_150_day,
+     checkouts_past_150_180_day,
+     ltv_revenue_past_1_30_day,
+     ltv_revenue_past_30_90_day,
+     ltv_revenue_past_90_180_day)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.user_pseudo_id,
+     T.active_users_past_1_30_day,
+     T.active_users_past_30_60_day,
+     T.active_users_past_60_90_day,
+     T.active_users_past_90_120_day,
+     T.active_users_past_120_150_day,
+     T.active_users_past_150_180_day,
+     T.purchases_past_1_30_day,
+     T.purchases_past_30_60_day,
+     T.purchases_past_60_90_day,
+     T.purchases_past_90_120_day,
+     T.purchases_past_120_150_day,
+     T.purchases_past_150_180_day,
+     T.visits_past_1_30_day,
+     T.visits_past_30_60_day,
+     T.visits_past_60_90_day,
+     T.visits_past_90_120_day,
+     T.visits_past_120_150_day,
+     T.visits_past_150_180_day,
+     T.view_items_past_1_30_day,
+     T.view_items_past_30_60_day,
+     T.view_items_past_60_90_day,
+     T.view_items_past_90_120_day,
+     T.view_items_past_120_150_day,
+     T.view_items_past_150_180_day,
+     T.add_to_carts_past_1_30_day,
+     T.add_to_carts_past_30_60_day,
+     T.add_to_carts_past_60_90_day,
+     T.add_to_carts_past_90_120_day,
+     T.add_to_carts_past_120_150_day,
+     T.add_to_carts_past_150_180_day,
+     T.checkouts_past_1_30_day,
+     T.checkouts_past_30_60_day,
+     T.checkouts_past_60_90_day,
+     T.checkouts_past_90_120_day,
+     T.checkouts_past_120_150_day,
+     T.checkouts_past_150_180_day,
+     T.ltv_revenue_past_1_30_day,
+     T.ltv_revenue_past_30_90_day,
+     T.ltv_revenue_past_90_180_day)
+;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 
