@@ -171,11 +171,72 @@ CREATE TEMP TABLE DataForTargetTable AS
     ON EUD.user_pseudo_id = F.user_pseudo_id
     FULL OUTER JOIN rolling_revenue_per_user AS G
     ON EUD.user_pseudo_id = G.user_pseudo_id
+    WHERE EUD.user_pseudo_id IS NOT NULL
     ;
 
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-  SELECT * FROM DataForTargetTable
-  WHERE user_pseudo_id IS NOT NULL;
+--INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+--  SELECT * FROM DataForTargetTable
+--  WHERE user_pseudo_id IS NOT NULL;
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+  AND I.user_pseudo_id = T.user_pseudo_id
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.processed_timestamp = T.processed_timestamp,
+    I.active_users_past_1_7_day = T.active_users_past_1_7_day,
+    I.active_users_past_8_14_day = T.active_users_past_8_14_day,
+    I.purchases_past_1_7_day = T.purchases_past_1_7_day,
+    I.purchases_past_8_14_day = T.purchases_past_8_14_day,
+    I.visits_past_1_7_day = T.visits_past_1_7_day,
+    I.visits_past_8_14_day = T.visits_past_8_14_day,
+    I.view_items_past_1_7_day = T.view_items_past_1_7_day,
+    I.view_items_past_8_14_day = T.view_items_past_8_14_day,
+    I.add_to_carts_past_1_7_day = T.add_to_carts_past_1_7_day,
+    I.add_to_carts_past_8_14_day = T.add_to_carts_past_8_14_day,
+    I.checkouts_past_1_7_day = T.checkouts_past_1_7_day,
+    I.checkouts_past_8_14_day = T.checkouts_past_8_14_day,
+    I.ltv_revenue_past_1_7_day = T.ltv_revenue_past_1_7_day,
+    I.ltv_revenue_past_7_15_day = T.ltv_revenue_past_7_15_day
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     user_pseudo_id,
+     active_users_past_1_7_day,
+     active_users_past_8_14_day,
+     purchases_past_1_7_day,
+     purchases_past_8_14_day,
+     visits_past_1_7_day,
+     visits_past_8_14_day,
+     view_items_past_1_7_day,
+     view_items_past_8_14_day,
+     add_to_carts_past_1_7_day,
+     add_to_carts_past_8_14_day,
+     checkouts_past_1_7_day,
+     checkouts_past_8_14_day,
+     ltv_revenue_past_1_7_day,
+     ltv_revenue_past_7_15_day)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.user_pseudo_id,
+     T.active_users_past_1_7_day,
+     T.active_users_past_8_14_day,
+     T.purchases_past_1_7_day,
+     T.purchases_past_8_14_day,
+     T.visits_past_1_7_day,
+     T.visits_past_8_14_day,
+     T.view_items_past_1_7_day,
+     T.view_items_past_8_14_day,
+     T.add_to_carts_past_1_7_day,
+     T.add_to_carts_past_8_14_day,
+     T.checkouts_past_1_7_day,
+     T.checkouts_past_8_14_day,
+     T.ltv_revenue_past_1_7_day,
+     T.ltv_revenue_past_7_15_day)
+;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 
