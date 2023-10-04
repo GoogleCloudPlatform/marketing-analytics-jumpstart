@@ -132,7 +132,7 @@ vertex_ai:
           query_parameters:
             - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           #INT64
-          timeout: 1800.0
+          timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           customer_lifetime_value_label_procedure_name: "${project_id}.feature_store.invoke_customer_lifetime_value_label"
           purchase_propensity_label_procedure_name: "${project_id}.feature_store.invoke_purchase_propensity_label"
@@ -189,6 +189,7 @@ vertex_ai:
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_7"
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_15"
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15"
+          data_source_bigquery_table_schema: "sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
           stratified_split_key: null
@@ -354,6 +355,7 @@ vertex_ai:
           data_source_csv_filenames: null
           optimization_objective: minimize-mae # minimize-mae | minimize-rmse | minimize-rmsle
           data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30"
+          data_source_bigquery_table_schema: "sql/schema/table/customer_lifetime_value_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
           stratified_split_key: null
@@ -417,7 +419,7 @@ bigquery:
       is_case_insensitive: TRUE
       description: "Feature Store dataset for Marketing behavioural modeling"
       friendly_name: "Feature Store"
-      max_time_travel_hours: 48
+      max_time_travel_hours: 168 
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
     purchase_propensity:
@@ -428,7 +430,7 @@ bigquery:
       is_case_insensitive: TRUE
       description: "Purchase Propensity Use Case dataset for Marketing behavioural modeling"
       friendly_name: "Purchase Propensity Dataset"
-      max_time_travel_hours: 48
+      max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
     customer_lifetime_value:
@@ -439,7 +441,7 @@ bigquery:
       is_case_insensitive: TRUE
       description: "Customer Lifetime Value Use Case dataset for Marketing behavioural modeling"
       friendly_name: "Customer Lifetime Value Dataset"
-      max_time_travel_hours: 48
+      max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
     audience_segmentation:
@@ -450,7 +452,7 @@ bigquery:
       is_case_insensitive: TRUE
       description: "Audience Segmentation Use Case dataset for Marketing behavioural modeling"
       friendly_name: "Audience Segmentation Dataset"
-      max_time_travel_hours: 48
+      max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
     auto_audience_segmentation:
@@ -791,7 +793,7 @@ bigquery:
       feature_store_dataset: "feature_store"
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
-      expiration_duration_hours: 48
+      expiration_duration_hours: 168
       samples_per_split: 100000
     customer_lifetime_value_label:
       project_id: "${project_id}"
@@ -809,7 +811,7 @@ bigquery:
       feature_store_dataset: "feature_store"
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
-      expiration_duration_hours: 48
+      expiration_duration_hours: 168
     purchase_propensity_label:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -826,7 +828,7 @@ bigquery:
       feature_store_dataset: "feature_store"
       mds_project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
-      expiration_duration_hours: 48
+      expiration_duration_hours: 168
     user_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -904,7 +906,7 @@ bigquery:
       feature_store_project_id: "${project_id}" 
       feature_store_dataset: "feature_store"
       insert_table: "purchase_propensity_inference_preparation"
-      expiration_duration_hours: 48
+      expiration_duration_hours: 168
     customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
@@ -912,7 +914,7 @@ bigquery:
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
       insert_table: "customer_lifetime_value_inference_preparation"
-      expiration_duration_hours: 48
+      expiration_duration_hours: 168
     audience_segmentation_inference_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
@@ -920,7 +922,7 @@ bigquery:
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
       insert_table: "audience_segmentation_inference_preparation"
-      expiration_duration_hours: 48
+      expiration_duration_hours: 168
       mds_dataset: "${mds_dataset}"
     auto_audience_segmentation_inference_preparation:
       project_id: "${project_id}"

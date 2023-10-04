@@ -76,8 +76,35 @@ CREATE TEMP TABLE DataForTargetTable AS
     LEFT JOIN future_revenue_per_user AS B
     ON A.user_pseudo_id = B.user_pseudo_id;
 
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-  SELECT DISTINCT * FROM DataForTargetTable;
+--INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+--  SELECT DISTINCT * FROM DataForTargetTable;
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+  AND I.user_pseudo_id = T.user_pseudo_id
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.processed_timestamp = T.processed_timestamp,
+    I.pltv_revenue_30_days = T.pltv_revenue_30_days,
+    I.pltv_revenue_90_days = T.pltv_revenue_90_days,
+    I.pltv_revenue_180_days = T.pltv_revenue_180_days
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     user_pseudo_id,
+     pltv_revenue_30_days,
+     pltv_revenue_90_days,
+     pltv_revenue_180_days)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.user_pseudo_id,
+     T.pltv_revenue_30_days,
+     T.pltv_revenue_90_days,
+     T.pltv_revenue_180_days)
+;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
 
