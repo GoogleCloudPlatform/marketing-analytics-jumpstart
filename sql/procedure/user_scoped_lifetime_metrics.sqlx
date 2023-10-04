@@ -136,8 +136,98 @@ CREATE TEMP TABLE DataForTargetTable AS
     CROSS JOIN first_purchasers
     CROSS JOIN new_users_;
 
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-SELECT * FROM DataForTargetTable;
+--INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+--  SELECT * FROM DataForTargetTable;
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.processed_timestamp = T.processed_timestamp,
+    I.lifetime_purchasers_users = T.lifetime_purchasers_users,
+    I.lifetime_average_daily_purchasers = T.lifetime_average_daily_purchasers,
+    I.lifetime_active_users = T.lifetime_active_users,
+    I.lifetime_DAU = T.lifetime_DAU,
+    I.lifetime_MAU = T.lifetime_MAU,
+    I.lifetime_WAU = T.lifetime_WAU,
+    I.lifetime_dau_per_mau = T.lifetime_dau_per_mau,
+    I.lifetime_dau_per_wau = T.lifetime_dau_per_wau,
+    I.lifetime_wau_per_mau = T.lifetime_wau_per_mau,
+    I.lifetime_users_engagement_duration_seconds = T.lifetime_users_engagement_duration_seconds,
+    I.lifetime_average_engagement_time = T.lifetime_average_engagement_time,
+    I.lifetime_average_engagement_time_per_session = T.lifetime_average_engagement_time_per_session,
+    I.lifetime_average_sessions_per_user = T.lifetime_average_sessions_per_user,
+    I.lifetime_ARPPU = T.lifetime_ARPPU,
+    I.lifetime_ARPU = T.lifetime_ARPU,
+    I.lifetime_average_daily_revenue = T.lifetime_average_daily_revenue,
+    I.lifetime_max_daily_revenue = T.lifetime_max_daily_revenue,
+    I.lifetime_min_daily_revenue = T.lifetime_min_daily_revenue,
+    I.lifetime_new_users = T.lifetime_new_users,
+    I.lifetime_returning_users = T.lifetime_returning_users,
+    I.lifetime_first_time_purchasers = T.lifetime_first_time_purchasers,
+    I.lifetime_first_time_purchaser_conversion = T.lifetime_first_time_purchaser_conversion,
+    I.lifetime_first_time_purchasers_per_new_user = T.lifetime_first_time_purchasers_per_new_user,
+    I.lifetime_avg_user_conversion_rate = T.lifetime_avg_user_conversion_rate,
+    I.lifetime_avg_session_conversion_rate = T.lifetime_avg_session_conversion_rate
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     lifetime_purchasers_users,
+     lifetime_average_daily_purchasers,
+     lifetime_active_users,
+     lifetime_DAU,
+     lifetime_MAU,
+     lifetime_WAU,
+     lifetime_dau_per_mau,
+     lifetime_dau_per_wau,
+     lifetime_wau_per_mau,
+     lifetime_users_engagement_duration_seconds,
+     lifetime_average_engagement_time,
+     lifetime_average_engagement_time_per_session,
+     lifetime_average_sessions_per_user,
+     lifetime_ARPPU,
+     lifetime_ARPU,
+     lifetime_average_daily_revenue,
+     lifetime_max_daily_revenue,
+     lifetime_min_daily_revenue,
+     lifetime_new_users,
+     lifetime_returning_users,
+     lifetime_first_time_purchasers,
+     lifetime_first_time_purchaser_conversion,
+     lifetime_first_time_purchasers_per_new_user,
+     lifetime_avg_user_conversion_rate,
+     lifetime_avg_session_conversion_rate)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.lifetime_purchasers_users,
+     T.lifetime_average_daily_purchasers,
+     T.lifetime_active_users,
+     T.lifetime_DAU,
+     T.lifetime_MAU,
+     T.lifetime_WAU,
+     T.lifetime_dau_per_mau,
+     T.lifetime_dau_per_wau,
+     T.lifetime_wau_per_mau,
+     T.lifetime_users_engagement_duration_seconds,
+     T.lifetime_average_engagement_time,
+     T.lifetime_average_engagement_time_per_session,
+     T.lifetime_average_sessions_per_user,
+     T.lifetime_ARPPU,
+     T.lifetime_ARPU,
+     T.lifetime_average_daily_revenue,
+     T.lifetime_max_daily_revenue,
+     T.lifetime_min_daily_revenue,
+     T.lifetime_new_users,
+     T.lifetime_returning_users,
+     T.lifetime_first_time_purchasers,
+     T.lifetime_first_time_purchaser_conversion,
+     T.lifetime_first_time_purchasers_per_new_user,
+     T.lifetime_avg_user_conversion_rate,
+     T.lifetime_avg_session_conversion_rate)
+;
 
 SET rows_added = 1;
 

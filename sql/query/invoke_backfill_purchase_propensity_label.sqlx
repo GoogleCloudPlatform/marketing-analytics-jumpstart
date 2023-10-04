@@ -106,5 +106,5 @@ SELECT DISTINCT
   LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
 FROM all_users_possible_purchases AS A
 LEFT JOIN future_purchases_per_user AS B
-ON B.user_pseudo_id = A.user_pseudo_id
+ON B.user_pseudo_id = A.user_pseudo_id AND B.feature_date = A.feature_date
 ;
