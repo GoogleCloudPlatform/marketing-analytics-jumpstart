@@ -186,7 +186,7 @@ vertex_ai:
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_7"
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_15"
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15"
-          data_source_bigquery_table_schema: "sql/schema/table/purchase_propensity_training_preparation.json"
+          data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
           stratified_split_key: null
@@ -330,7 +330,7 @@ vertex_ai:
           data_source_csv_filenames: null
           optimization_objective: minimize-mae # minimize-mae | minimize-rmse | minimize-rmsle
           data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30"
-          data_source_bigquery_table_schema: "sql/schema/table/customer_lifetime_value_training_preparation.json"
+          data_source_bigquery_table_schema: "../sql/schema/table/customer_lifetime_value_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
           stratified_split_key: null

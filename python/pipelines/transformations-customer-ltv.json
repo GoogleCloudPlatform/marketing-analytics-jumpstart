@@ -1,0 +1,504 @@
+[
+  {
+    "categorical": {
+      "columnName": "month_of_the_year"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "week_of_the_year"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "day_of_the_month"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "day_of_week"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_category"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_mobile_brand_name"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_mobile_model_name"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_os"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_os_version"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_language"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_web_browser"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "device_web_browser_version"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "geo_sub_continent"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "geo_country"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "geo_region"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "geo_city"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "geo_metro"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "last_traffic_source_medium"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "last_traffic_source_name"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "last_traffic_source_source"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "first_traffic_source_medium"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "first_traffic_source_name"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "first_traffic_source_source"
+    }
+  },
+  {
+    "categorical": {
+      "columnName": "has_signed_in_with_user_id"
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "active_users_past_1_30_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "active_users_past_30_60_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "active_users_past_60_90_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "active_users_past_90_120_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "active_users_past_120_150_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "active_users_past_150_180_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "purchases_past_1_30_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "purchases_past_30_60_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "purchases_past_60_90_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "purchases_past_90_120_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "purchases_past_120_150_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "purchases_past_150_180_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "visits_past_1_30_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "visits_past_30_60_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "visits_past_60_90_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "visits_past_90_120_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "auto": {
+      "columnName": "visits_past_120_150_day"
+    }
+  },
+  {
+    "auto": {
+      "columnName": "visits_past_150_180_day"
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "view_items_past_1_30_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "view_items_past_30_60_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "view_items_past_60_90_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "view_items_past_90_120_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "view_items_past_120_150_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "view_items_past_150_180_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "add_to_carts_past_1_30_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "add_to_carts_past_30_60_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "add_to_carts_past_60_90_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "add_to_carts_past_90_120_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "add_to_carts_past_120_150_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "add_to_carts_past_150_180_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "checkouts_past_1_30_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "checkouts_past_30_60_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "checkouts_past_60_90_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "checkouts_past_90_120_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "checkouts_past_120_150_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "checkouts_past_150_180_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "ltv_revenue_past_1_30_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "ltv_revenue_past_30_90_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "ltv_revenue_past_90_180_day",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_purchasers_users",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_average_daily_purchasers",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_active_users",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_DAU",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_MAU",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_WAU",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_dau_per_mau",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_dau_per_wau",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_wau_per_mau",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_users_engagement_duration_seconds",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_average_engagement_time",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_average_engagement_time_per_session",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_average_sessions_per_user",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_ARPPU",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_ARPU",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_average_daily_revenue",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_max_daily_revenue",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_min_daily_revenue",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_new_users",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_returning_users",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_first_time_purchasers",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_first_time_purchaser_conversion",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_first_time_purchasers_per_new_user",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_avg_user_conversion_rate",
+      "invalidValuesAllowed": false
+    }
+  },
+  {
+    "numeric": {
+      "columnName": "lifetime_avg_session_conversion_rate",
+      "invalidValuesAllowed": false
+    }
+  }
+]
