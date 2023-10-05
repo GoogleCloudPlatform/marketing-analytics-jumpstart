@@ -74,8 +74,11 @@ resource "google_storage_bucket" "pipelines_bucket" {
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
   uniform_bucket_level_access = true
-  force_destroy               = true
-
+  force_destroy               = false
+  lifecycle {
+    ignore_changes = all
+    prevent_destroy = false ##true
+  }
 }
 
 

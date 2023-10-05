@@ -159,9 +159,9 @@ def _extract_schema_from_bigquery(
     except exceptions.NotFound as e:
         logging.warn(f'Pipeline compiled without columns transformation. \
             Make sure the `data_source_bigquery_table_path` table or view exists! \
-            Loading default values from schema file {schema_name}.')
+            Loading default values from schema file {table_schema}.')
         import json
-        with open(schema_name) as f:
+        with open(table_schema) as f:
             d = json.load(f)
         schema = [feature['name'] for feature in d]
     return schema
