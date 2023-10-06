@@ -38,6 +38,10 @@ locals {
 
 }
 
+data "google_project" "activation_project" {
+  project_id = var.project_id
+}
+
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "14.1.0"
@@ -61,6 +65,8 @@ module "project_services" {
     "storage.googleapis.com",
     "datapipelines.googleapis.com",
     "analyticsadmin.googleapis.com",
+    "eventarc.googleapis.com",
+    "run.googleapis.com",
   ]
 }
 
@@ -343,46 +349,67 @@ resource "google_storage_bucket_object" "activation_trigger_archive" {
   bucket = module.function_bucket.name
 }
 
-resource "google_cloudfunctions_function" "activation_trigger_cf" {
-  name    = "activation-trigger"
-  project = var.project_id
-  region  = var.trigger_function_location
-  runtime = "python311"
+resource "google_cloudfunctions2_function" "activation_trigger_cf" {
+  name     = "activation-trigger"
+  project  = var.project_id
+  location = var.trigger_function_location
 
-  available_memory_mb   = 256
-  max_instances         = 3
-  source_archive_bucket = module.function_bucket.name
-  source_archive_object = google_storage_bucket_object.activation_trigger_archive.name
+  build_config {
+    runtime = "python311"
+    source {
+      storage_source {
+        bucket = module.function_bucket.name
+        object = google_storage_bucket_object.activation_trigger_archive.name
+      }
+    }
+    entry_point = "subscribe"
+  }
+
   event_trigger {
-    event_type = "google.pubsub.topic.publish"
-    resource   = google_pubsub_topic.activation_trigger.name
-  }
-  timeout               = 60
-  entry_point           = "subscribe"
-  service_account_email = module.trigger_function_account.email
-
-  environment_variables = {
-    ACTIVATION_PROJECT            = var.project_id
-    ACTIVATION_REGION             = var.location
-    ACTIVATION_TYPE_CONFIGURATION = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.activation_type_configuration_file.output_name}"
-    TEMPLATE_FILE_GCS_LOCATION    = "gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json"
-    PIPELINE_TEMP_LOCATION        = "gs://${module.pipeline_bucket.name}/tmp/"
-    LOG_DATA_SET                  = module.bigquery.bigquery_dataset.dataset_id
-    PIPELINE_WORKER_EMAIL         = module.pipeline_service_account.email
-  }
-  secret_environment_variables {
-    key     = "GA4_MEASUREMENT_ID"
-    secret  = split("/", module.secret_manager.secret_names[0])[3]
-    version = split("/", module.secret_manager.secret_versions[0])[5]
+    event_type   = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic = google_pubsub_topic.activation_trigger.id
   }
 
-  secret_environment_variables {
-    key     = "GA4_MEASUREMENT_SECRET"
-    secret  = split("/", module.secret_manager.secret_names[1])[3]
-    version = split("/", module.secret_manager.secret_versions[1])[5]
+  service_config {
+    available_memory      = "256M"
+    max_instance_count    = 3
+    timeout_seconds       = 60
+    ingress_settings      = "ALLOW_INTERNAL_ONLY"
+    service_account_email = module.trigger_function_account.email
+    environment_variables = {
+      ACTIVATION_PROJECT            = var.project_id
+      ACTIVATION_REGION             = var.location
+      ACTIVATION_TYPE_CONFIGURATION = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.activation_type_configuration_file.output_name}"
+      TEMPLATE_FILE_GCS_LOCATION    = "gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json"
+      PIPELINE_TEMP_LOCATION        = "gs://${module.pipeline_bucket.name}/tmp/"
+      LOG_DATA_SET                  = module.bigquery.bigquery_dataset.dataset_id
+      PIPELINE_WORKER_EMAIL         = module.pipeline_service_account.email
+    }
+    secret_environment_variables {
+      project_id = var.project_id
+      key        = "GA4_MEASUREMENT_ID"
+      secret     = split("/", module.secret_manager.secret_names[0])[3]
+      version    = split("/", module.secret_manager.secret_versions[0])[5]
+    }
+    secret_environment_variables {
+      project_id = var.project_id
+      key        = "GA4_MEASUREMENT_SECRET"
+      secret     = split("/", module.secret_manager.secret_names[1])[3]
+      version    = split("/", module.secret_manager.secret_versions[1])[5]
+    }
   }
 
   depends_on = [
     module.project_services
   ]
+}
+
+module "add_invoker_binding" {
+  source  = "terraform-google-modules/gcloud/google"
+  version = "3.1.2"
+
+  platform = "linux"
+
+  create_cmd_body  = "functions add-invoker-policy-binding ${google_cloudfunctions2_function.activation_trigger_cf.name} --project=${google_cloudfunctions2_function.activation_trigger_cf.project} --region=${google_cloudfunctions2_function.activation_trigger_cf.location}  --member=\"serviceAccount:${data.google_project.activation_project.number}-compute@developer.gserviceaccount.com\""
+  destroy_cmd_body = "functions remove-invoker-policy-binding ${google_cloudfunctions2_function.activation_trigger_cf.name} --project=${google_cloudfunctions2_function.activation_trigger_cf.project} --region=${google_cloudfunctions2_function.activation_trigger_cf.location}  --member=\"serviceAccount:${data.google_project.activation_project.number}-compute@developer.gserviceaccount.com\""
 }
