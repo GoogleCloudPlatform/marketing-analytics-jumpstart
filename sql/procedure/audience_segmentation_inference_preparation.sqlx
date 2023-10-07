@@ -13,7 +13,61 @@
   -- limitations under the License.
   -- Setting procedure to lookback from the day before `inference_date`
 
+DECLARE lastest_processed_time_ud TIMESTAMP;
+DECLARE lastest_processed_time_uwm TIMESTAMP;
+DECLARE lastest_processed_time_um TIMESTAMP;
+
+SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` WHERE feature_date = inference_date LIMIT 1);
+
 SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY); 
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
+  SELECT DISTINCT
+    UD.user_pseudo_id,
+    MAX(UD.user_id) OVER(user_segmentation_dimensions_window) AS user_id,
+    UD.feature_date,
+    MAX(UD.month_of_the_year) OVER(user_segmentation_dimensions_window) AS month_of_the_year,
+    MAX(UD.week_of_the_year) OVER(user_segmentation_dimensions_window) AS week_of_the_year,
+    MAX(UD.day_of_the_month) OVER(user_segmentation_dimensions_window) AS day_of_the_month,
+    MAX(UD.day_of_week) OVER(user_segmentation_dimensions_window) AS day_of_week,
+    MAX(UD.device_category) OVER(user_segmentation_dimensions_window) AS device_category,
+    MAX(UD.device_mobile_brand_name) OVER(user_segmentation_dimensions_window) AS device_mobile_brand_name,
+    MAX(UD.device_mobile_model_name) OVER(user_segmentation_dimensions_window) AS device_mobile_model_name,
+    MAX(UD.device_os) OVER(user_segmentation_dimensions_window) AS device_os,
+    MAX(UD.device_os_version) OVER(user_segmentation_dimensions_window) AS device_os_version,
+    MAX(UD.device_language) OVER(user_segmentation_dimensions_window) AS device_language,
+    MAX(UD.device_web_browser) OVER(user_segmentation_dimensions_window) AS device_web_browser,
+    MAX(UD.device_web_browser_version) OVER(user_segmentation_dimensions_window) AS device_web_browser_version,
+    MAX(UD.geo_sub_continent) OVER(user_segmentation_dimensions_window) AS geo_sub_continent,
+    MAX(UD.geo_country) OVER(user_segmentation_dimensions_window) AS geo_country,
+    MAX(UD.geo_region) OVER(user_segmentation_dimensions_window) AS geo_region,
+    MAX(UD.geo_city) OVER(user_segmentation_dimensions_window) AS geo_city,
+    MAX(UD.geo_metro) OVER(user_segmentation_dimensions_window) AS geo_metro,
+    MAX(UD.last_traffic_source_medium) OVER(user_segmentation_dimensions_window) AS last_traffic_source_medium,
+    MAX(UD.last_traffic_source_name) OVER(user_segmentation_dimensions_window) AS last_traffic_source_name,
+    MAX(UD.last_traffic_source_source) OVER(user_segmentation_dimensions_window) AS last_traffic_source_source,
+    MAX(UD.first_traffic_source_medium) OVER(user_segmentation_dimensions_window) AS first_traffic_source_medium,
+    MAX(UD.first_traffic_source_name) OVER(user_segmentation_dimensions_window) AS first_traffic_source_name,
+    MAX(UD.first_traffic_source_source) OVER(user_segmentation_dimensions_window) AS first_traffic_source_source,
+    MAX(UD.has_signed_in_with_user_id) OVER(user_segmentation_dimensions_window) AS has_signed_in_with_user_id
+  FROM
+    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` UD
+  WHERE
+    -- Define the training+validation subset interval
+    UD.feature_date = inference_date
+    AND UD.processed_timestamp = lastest_processed_time_ud
+  WINDOW 
+    user_segmentation_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+
+
+
+
+
 
 CREATE TEMP TABLE inference_preparation AS (
   SELECT DISTINCT

@@ -61,6 +61,7 @@ def bq_stored_procedure_exec(
 
     query_job = client.query(
         query=query,
+        location=location,
         job_config=job_config)
 
     query_job.result(timeout=timeout)
@@ -129,7 +130,9 @@ def bq_clustering_exec(
     )
     
     query_job = client.query(
-        query=query)
+        query=query,
+        location=location
+    )
 
     r = query_job.result()
 
@@ -161,7 +164,9 @@ def bq_evaluate(
     )
     
     query_job = client.query(
-        query=query)
+        query=query,
+        location=location
+    )
 
     r = query_job.result()
     r = list(r)
@@ -262,7 +267,10 @@ def bq_select_best_kmeans_model(
         query = f"""
             SELECT * FROM ML.EVALUATE(MODEL `{model_bq_name}`)
         """
-        query_job = client.query(query=query)
+        query_job = client.query(
+            query=query,
+            location=location
+        )
 
         r = list(query_job.result())[0]
 
@@ -316,7 +324,10 @@ def bq_clustering_predictions(
     destination_table.metadata["table_id"] = f"{bigquery_destination_prefix}_{timestamp}"
     model_uri = f"{model.metadata['projectId']}.{model.metadata['datasetId']}.{model.metadata['modelId']}"
 
-    client = bigquery.Client(project=project_id, location=location)
+    client = bigquery.Client(
+        project=project_id, 
+        location=location
+    )
 
     query = f"""
             SELECT * FROM ML.PREDICT(MODEL `{model_uri}`, 
@@ -324,7 +335,8 @@ def bq_clustering_predictions(
         """
 
     query_job = client.query(
-        query,
+        query=query,
+        location=location,
         job_config=bigquery.QueryJobConfig(
             destination=destination_table.metadata["table_id"])
     )
@@ -368,8 +380,8 @@ def bq_flatten_tabular_binary_prediction_table(
 
     # View table properties
     logging.info(
-        "Got table '{}.{}.{}'.".format(
-            bq_table.project, bq_table.dataset_id, bq_table.table_id)
+        "Got table '{}.{}.{} located at {}'.".format(
+            bq_table.project, bq_table.dataset_id, bq_table.table_id, bq_table.location)
     )
 
     predictions_column = None
@@ -400,15 +412,15 @@ def bq_flatten_tabular_binary_prediction_table(
   
     job_config = bigquery.QueryJobConfig()
     job_config.write_disposition = 'WRITE_TRUNCATE'
-    """
-    # Make an API request to create the view.
-    view = bigquery.Table(f"{table.metadata['table_id']}_view")
-    view.view_query = query
-    view = client.create_table(table = view)
-    logging.info(f"Created {view.table_type}: {str(view.reference)}")
-    """
+    
+    # Reconstruct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=bq_table.location
+    )
     query_job = client.query(
-        query
+        query=query,
+        location=bq_table.location
     )
 
     results = query_job.result()
@@ -451,8 +463,8 @@ def bq_flatten_tabular_regression_table(
 
     # View table properties
     logging.info(
-        "Got table '{}.{}.{}'.".format(
-            bq_table.project, bq_table.dataset_id, bq_table.table_id)
+        "Got table '{}.{}.{} located at {}'.".format(
+            bq_table.project, bq_table.dataset_id, bq_table.table_id, bq_table.location)
     )
 
     predictions_column = None
@@ -473,15 +485,15 @@ def bq_flatten_tabular_regression_table(
     """
     job_config = bigquery.QueryJobConfig()
     job_config.write_disposition = 'WRITE_TRUNCATE'
-    """
-    # Make an API request to create the view.
-    view = bigquery.Table(f"{table.metadata['table_id']}_view")
-    view.view_query = query
-    view = client.create_table(table = view)
-    logging.info(f"Created {view.table_type}: {str(view.reference)}")
-    """
+    
+    # Reconstruct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=bq_table.location
+    )
     query_job = client.query(
-        query
+        query=query,
+        location=bq_table.location,
     )
 
     results = query_job.result()
@@ -548,7 +560,8 @@ def bq_flatten_kmeans_prediction_table(
     logging.info(f"Created {view.table_type}: {str(view.reference)}")
     """
     query_job = client.query(
-        query
+        query=query,
+        location=location
     )
 
     results = query_job.result()

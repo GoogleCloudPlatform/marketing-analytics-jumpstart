@@ -12,10 +12,20 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+DECLARE lastest_processed_time_ud TIMESTAMP;
+DECLARE lastest_processed_time_useam TIMESTAMP;
+DECLARE lastest_processed_time_uwm TIMESTAMP;
+DECLARE lastest_processed_time_um TIMESTAMP;
+
+SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_useam = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date = inference_date LIMIT 1);
+
 -- Setting procedure to lookback from the day before `inference_date`
 SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
-CREATE TEMP TABLE inference_preparation as (
+CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
     MAX(UD.user_id) OVER(user_dimensions_window) AS user_id,
@@ -45,6 +55,20 @@ CREATE TEMP TABLE inference_preparation as (
     MAX(UD.first_traffic_source_name) OVER(user_dimensions_window) AS first_traffic_source_name,
     MAX(UD.first_traffic_source_source) OVER(user_dimensions_window) AS first_traffic_source_source,
     MAX(UD.has_signed_in_with_user_id) OVER(user_dimensions_window) AS has_signed_in_with_user_id,
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` UD
+WHERE
+  -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
+  UD.feature_date = inference_date 
+  AND UD.processed_timestamp = lastest_processed_time_ud
+WINDOW 
+  user_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_useam as (
+  SELECT DISTINCT
+    USEAM.user_pseudo_id,
+    USEAM.feature_date,
     MAX(USEAM.engagement_rate) OVER(user_session_event_aggregated_metrics_window) AS engagement_rate,
     MAX(USEAM.engaged_sessions_per_user) OVER(user_session_event_aggregated_metrics_window) AS engaged_sessions_per_user,
     MAX(USEAM.session_conversion_rate) OVER(user_session_event_aggregated_metrics_window) AS session_conversion_rate,
@@ -75,7 +99,22 @@ CREATE TEMP TABLE inference_preparation as (
     MAX(USEAM.transactions_per_purchaser) OVER(user_session_event_aggregated_metrics_window) AS transactions_per_purchaser,
     MAX(USEAM.user_conversion_rate) OVER(user_session_event_aggregated_metrics_window) AS user_conversion_rate,
     MAX(USEAM.how_many_purchased_before) OVER(user_session_event_aggregated_metrics_window) AS how_many_purchased_before,
-    MAX(USEAM.has_abandoned_cart) OVER(user_session_event_aggregated_metrics_window) AS has_abandoned_cart,
+    MAX(USEAM.has_abandoned_cart) OVER(user_session_event_aggregated_metrics_window) AS has_abandoned_cart
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` USEAM
+WHERE
+  -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
+  USEAM.feature_date = inference_date
+  AND USEAM.processed_timestamp = lastest_processed_time_useam
+WINDOW 
+  user_session_event_aggregated_metrics_window AS (PARTITION BY USEAM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_uwm as (
+  SELECT DISTINCT
+    UWM.user_pseudo_id,
+    UWM.feature_date,
     MAX(UWM.active_users_past_1_day) OVER(user_rolling_window) AS active_users_past_1_day,
     MAX(UWM.active_users_past_2_day) OVER(user_rolling_window) AS active_users_past_2_day,
     MAX(UWM.active_users_past_3_day) OVER(user_rolling_window) AS active_users_past_3_day,
@@ -130,6 +169,21 @@ CREATE TEMP TABLE inference_preparation as (
     MAX(UWM.checkouts_past_7_day) OVER(user_rolling_window) AS checkouts_past_7_day,
     MAX(UWM.checkouts_past_8_14_day) OVER(user_rolling_window) AS checkouts_past_8_14_day,
     MAX(UWM.checkouts_past_15_30_day) OVER(user_rolling_window) AS checkouts_past_15_30_day,
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` UWM
+WHERE
+  -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
+  UWM.feature_date = inference_date
+  AND UWM.processed_timestamp = lastest_processed_time_uwm
+WINDOW 
+  user_rolling_window AS (PARTITION BY UWM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_um as (
+  SELECT DISTINCT
+    UM.feature_date,
     MAX(UM.purchasers_users) OVER(user_scoped_metrics_window) AS purchasers_users,
     MAX(UM.average_daily_purchasers) OVER(user_scoped_metrics_window) AS average_daily_purchasers,
     MAX(UM.active_users) OVER(user_scoped_metrics_window) AS active_users,
@@ -156,34 +210,174 @@ CREATE TEMP TABLE inference_preparation as (
     MAX(UM.avg_user_conversion_rate) OVER(user_scoped_metrics_window) AS avg_user_conversion_rate,
     MAX(UM.avg_session_conversion_rate) OVER(user_scoped_metrics_window) AS avg_session_conversion_rate
 FROM
-  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` UD
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` UM
+WHERE
+  -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days.
+  UM.feature_date = inference_date
+  AND UM.processed_timestamp = lastest_processed_time_um
+WINDOW 
+  user_scoped_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+CREATE OR REPLACE TEMP TABLE inference_preparation as (
+  SELECT DISTINCT
+    UD.user_pseudo_id,
+    UD.user_id,
+    UD.feature_date,
+    UD.month_of_the_year,
+    UD.week_of_the_year,
+    UD.day_of_the_month,
+    UD.day_of_week,
+    UD.user_ltv_revenue,
+    UD.device_category,
+    UD.device_mobile_brand_name,
+    UD.device_mobile_model_name,
+    UD.device_os,
+    UD.device_os_version,
+    UD.device_language,
+    UD.device_web_browser,
+    UD.device_web_browser_version,
+    UD.geo_sub_continent,
+    UD.geo_country,
+    UD.geo_region,
+    UD.geo_city,
+    UD.geo_metro,
+    UD.last_traffic_source_medium,
+    UD.last_traffic_source_name,
+    UD.last_traffic_source_source,
+    UD.first_traffic_source_medium,
+    UD.first_traffic_source_name,
+    UD.first_traffic_source_source,
+    UD.has_signed_in_with_user_id,
+    USEAM.engagement_rate,
+    USEAM.engaged_sessions_per_user,
+    USEAM.session_conversion_rate,
+    USEAM.bounces,
+    USEAM.bounce_rate_per_user,
+    USEAM.sessions_per_user,
+    USEAM.avg_views_per_session,
+    USEAM.sum_engagement_time_seconds,
+    USEAM.avg_engagement_time_seconds,
+    USEAM.new_visits,
+    USEAM.returning_visits,
+    USEAM.add_to_carts,
+    USEAM.cart_to_view_rate,
+    USEAM.checkouts,
+    USEAM.ecommerce_purchases,
+    USEAM.ecommerce_quantity,
+    USEAM.ecommerce_revenue,
+    USEAM.item_revenue,
+    USEAM.item_quantity,
+    USEAM.item_view_events,
+    USEAM.items_clicked_in_promotion,
+    USEAM.items_clicked_in_list,
+    USEAM.items_checked_out,
+    USEAM.items_added_to_cart,
+    USEAM.item_list_view_events,
+    USEAM.purchase_revenue,
+    USEAM.purchase_to_view_rate,
+    USEAM.transactions_per_purchaser,
+    USEAM.user_conversion_rate,
+    USEAM.how_many_purchased_before,
+    USEAM.has_abandoned_cart,
+    UWM.active_users_past_1_day,
+    UWM.active_users_past_2_day,
+    UWM.active_users_past_3_day,
+    UWM.active_users_past_4_day,
+    UWM.active_users_past_5_day,
+    UWM.active_users_past_6_day,
+    UWM.active_users_past_7_day,
+    UWM.active_users_past_8_14_day,
+    UWM.active_users_past_15_30_day,
+    UWM.purchases_past_1_day,
+    UWM.purchases_past_2_day,
+    UWM.purchases_past_3_day,
+    UWM.purchases_past_4_day,
+    UWM.purchases_past_5_day,
+    UWM.purchases_past_6_day,
+    UWM.purchases_past_7_day,
+    UWM.purchases_past_8_14_day,
+    UWM.purchases_past_15_30_day,
+    UWM.visits_past_1_day,
+    UWM.visits_past_2_day,
+    UWM.visits_past_3_day,
+    UWM.visits_past_4_day,
+    UWM.visits_past_5_day,
+    UWM.visits_past_6_day,
+    UWM.visits_past_7_day,
+    UWM.visits_past_8_14_day,
+    UWM.visits_past_15_30_day,
+    UWM.view_items_past_1_day,
+    UWM.view_items_past_2_day,
+    UWM.view_items_past_3_day,
+    UWM.view_items_past_4_day,
+    UWM.view_items_past_5_day,
+    UWM.view_items_past_6_day,
+    UWM.view_items_past_7_day,
+    UWM.view_items_past_8_14_day,
+    UWM.view_items_past_15_30_day,
+    UWM.add_to_carts_past_1_day,
+    UWM.add_to_carts_past_2_day,
+    UWM.add_to_carts_past_3_day,
+    UWM.add_to_carts_past_4_day,
+    UWM.add_to_carts_past_5_day,
+    UWM.add_to_carts_past_6_day,
+    UWM.add_to_carts_past_7_day,
+    UWM.add_to_carts_past_8_14_day,
+    UWM.add_to_carts_past_15_30_day,
+    UWM.checkouts_past_1_day,
+    UWM.checkouts_past_2_day,
+    UWM.checkouts_past_3_day,
+    UWM.checkouts_past_4_day,
+    UWM.checkouts_past_5_day,
+    UWM.checkouts_past_6_day,
+    UWM.checkouts_past_7_day,
+    UWM.checkouts_past_8_14_day,
+    UWM.checkouts_past_15_30_day,
+    UM.purchasers_users,
+    UM.average_daily_purchasers,
+    UM.active_users,
+    UM.DAU,
+    UM.MAU,
+    UM.WAU,
+    UM.dau_per_mau,
+    UM.dau_per_wau,
+    UM.wau_per_mau,
+    UM.users_engagement_duration_seconds,
+    UM.average_engagement_time,
+    UM.average_engagement_time_per_session,
+    UM.average_sessions_per_user,
+    UM.ARPPU,
+    UM.ARPU,
+    UM.average_daily_revenue,
+    UM.max_daily_revenue,
+    UM.min_daily_revenue,
+    UM.new_users,
+    UM.returning_users,
+    UM.first_time_purchasers,
+    UM.first_time_purchaser_conversion,
+    UM.first_time_purchasers_per_new_user,
+    UM.avg_user_conversion_rate,
+    UM.avg_session_conversion_rate
+FROM
+  inference_preparation_ud UD
 INNER JOIN
-  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` USEAM
+  inference_preparation_useam USEAM
 ON
   USEAM.user_pseudo_id = UD.user_pseudo_id
   AND USEAM.feature_date = UD.feature_date
 INNER JOIN
-  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` UWM
+  inference_preparation_uwm UWM
 ON
   UWM.user_pseudo_id = UD.user_pseudo_id
   AND UWM.feature_date = UD.feature_date
 INNER JOIN
-  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` UM
+  inference_preparation_um UM
 ON
   UM.feature_date = UD.feature_date
-WHERE
-  -- Define the training subset interval
-  UD.feature_date = inference_date
-  AND UD.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` WHERE feature_date = inference_date LIMIT 1)
-  AND USEAM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` WHERE feature_date = inference_date LIMIT 1)
-  AND UWM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` WHERE feature_date = inference_date LIMIT 1)
-  AND UM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date = inference_date LIMIT 1)
-WINDOW 
-  user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
-  user_session_event_aggregated_metrics_window AS (PARTITION BY USEAM.user_pseudo_id, USEAM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
-  user_rolling_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
-  user_scoped_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
+
 
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
 
@@ -1770,6 +1964,4 @@ SELECT DISTINCT
   avg_user_conversion_rate,
   avg_session_conversion_rate
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_inference_30_15`;
-
-
-DROP TABLE inference_preparation;
+  
