@@ -366,8 +366,10 @@ resource "google_cloudfunctions2_function" "activation_trigger_cf" {
   }
 
   event_trigger {
-    event_type   = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic = google_pubsub_topic.activation_trigger.id
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = google_pubsub_topic.activation_trigger.id
+    retry_policy   = "RETRY_POLICY_DO_NOT_RETRY"
+    trigger_region = var.trigger_function_location
   }
 
   service_config {
@@ -397,6 +399,10 @@ resource "google_cloudfunctions2_function" "activation_trigger_cf" {
       secret     = split("/", module.secret_manager.secret_names[1])[3]
       version    = split("/", module.secret_manager.secret_versions[1])[5]
     }
+  }
+
+  lifecycle {
+    ignore_changes = [build_config[0].source[0].storage_source[0].generation]
   }
 
   depends_on = [
