@@ -37,7 +37,7 @@ from pipelines.components.bigquery.component import (
     bq_evaluation_table)
 
 from pipelines.components.vertex.component import (
-    get_latest_model_simple,
+    get_latest_model,
     batch_prediction
 )
 
@@ -52,18 +52,19 @@ def prediction_pl(
     pubsub_activation_topic: str,
     pubsub_activation_type: str
 ):
-    model_op = get_latest_model_simple(
+    model_op = get_latest_model(
         project=project_id,
         location=location,
-        model_name=model_name)
+        display_name=model_name
+    )
 
     prediction_op = batch_prediction(
         job_name_prefix='vaip-batch',
         bigquery_source=f"{bigquery_source}",
         bigquery_destination_prefix=bigquery_destination_prefix,
-        model=model_op.outputs["model"],
+        model=model_op.outputs["elected_model"],
         max_replica_count=1,
-        dst_table_expiration_hours=24*7
+        # dst_table_expiration_hours=24*7
     ).after(model_op)
 
     send_pubsub_activation_msg(

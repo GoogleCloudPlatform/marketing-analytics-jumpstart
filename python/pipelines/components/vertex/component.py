@@ -39,30 +39,6 @@ if os.path.exists(config_file_path):
     #target_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['image_name']}:{vertex_components_params['tag']}"
     base_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['base_image_name']}:{vertex_components_params['base_image_tag']}"
 
-@component(base_image=base_image)
-def get_latest_model_simple(
-    project: str,
-    location: str,
-    model_name: str,
-    model: Output[VertexModel]
-) -> None:
-
-    import google.cloud.aiplatform as aiplatform
-    aiplatform.init(project=project, location=location)
-
-    models = aiplatform.Model.list(filter=f"display_name={model_name}", order_by=f"create_time desc")
-    if models:
-        m = models[0]
-        model.uri = f"https://{location}-aiplatform.googleapis.com/v1/{m.resource_name}/versions/{m.version_id}"
-        model.metadata = {
-            'resourceName': m.resource_name,
-            'version': m.version_id,
-        }
-        model.schema_title = 'google.VertexModel'
-
-    else:
-        raise Exception(f'Model name [{model_name}] not found!')
-
 @component(
     base_image=base_image,
     #target_image=target_image,
@@ -253,11 +229,11 @@ def get_latest_model(
         def list(cls):
             return list(map(lambda c: c.value, cls))
 
-    number_of_models_considered: int= 1
+    number_of_models_considered: int = 1
 
     logging.info(display_name)
     aip.init(project=project, location=location)  
-    models = aip.Model.list(filter=f'display_name="{display_name}"')
+    models = aip.Model.list(filter=f'display_name="{display_name}"', order_by=f"create_time desc")
     
     models_versions_to_compare = []
 
@@ -266,9 +242,9 @@ def get_latest_model(
     for model in models:
         model_registry = aip.ModelRegistry(model=model.name)
         for v in model_registry.list_versions():
-            if(counter<number_of_models_considered):
+            if counter < number_of_models_considered:
                 models_versions_to_compare.append(v)
-                counter+=1
+                counter += 1
             else:
                 canditate_v = v
                 for idx, mv in enumerate(models_versions_to_compare):
@@ -277,10 +253,10 @@ def get_latest_model(
                         models_versions_to_compare[idx] = canditate_v
                         canditate_v = tmp
  
-    if len(models_versions_to_compare)==0:
+    if len(models_versions_to_compare) == 0:
         raise Exception(f"No models in vertex model registry match '{display_name}'")
 
-    model= models_versions_to_compare[0]
+    model = models_versions_to_compare[0]
 
     logging.info(f"Selected model : {model}")
 
@@ -323,7 +299,7 @@ def batch_prediction(
         instances_format="bigquery",
         predictions_format="bigquery",
         bigquery_source=f"bq://{bigquery_source}",
-        bigquery_destination_prefix=f"bq://{bigquery_destination_prefix}_{timestamp}",
+        bigquery_destination_prefix=f"bq://{bigquery_destination_prefix}",
         machine_type=machine_type,
         max_replica_count=max_replica_count,
         batch_size=batch_size,

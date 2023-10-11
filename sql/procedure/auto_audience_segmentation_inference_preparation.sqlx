@@ -16,19 +16,22 @@
 DECLARE lookback_days INT64 DEFAULT 15;
 SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
-CALL `{{project_id}}.{{dataset}}.create_dataset`(inference_date, inference_date, lookback_days);
+CALL `{{project_id}}.{{dataset}}.create_auto_audience_segmentation_dataset`(inference_date, inference_date, lookback_days);
 
-CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
-  OPTIONS(
-    expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
-    friendly_name="v_auto_audience_segmentation_inference_15",
-    description="View Auto Audience Segmentation dataset using 15 days back. View expires after {{expiration_duration_hours}}h and should run daily.",
-    labels=[("org_unit", "development")]
-  )
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`
 AS
 SELECT
   *
 FROM
-  `{{project_id}}.{{dataset}}.dataset`;
+  `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`;
 
-DROP TABLE `{{project_id}}.{{dataset}}.dataset`;
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
+  OPTIONS(
+    friendly_name="v_auto_audience_segmentation_inference_15",
+    description="View Auto Audience Segmentation dataset using 15 days lookback.",
+    labels=[("org_unit", "development")]
+  )
+AS
+SELECT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`;
+
+DROP TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`;
