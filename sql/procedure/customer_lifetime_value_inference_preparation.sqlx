@@ -12,10 +12,18 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+DECLARE lastest_processed_time_ud TIMESTAMP;
+DECLARE lastest_processed_time_uwm TIMESTAMP;
+DECLARE lastest_processed_time_um TIMESTAMP;
+
 -- Setting procedure to lookback from the day before `inference_date`
 SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
-CREATE TEMP TABLE inference_preparation as (
+SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1);
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
     MAX(UD.user_id) OVER(user_lifetime_dimensions_window) AS user_id,
@@ -43,7 +51,21 @@ CREATE TEMP TABLE inference_preparation as (
     MAX(UD.first_traffic_source_medium) OVER(user_lifetime_dimensions_window) AS first_traffic_source_medium,
     MAX(UD.first_traffic_source_name) OVER(user_lifetime_dimensions_window) AS first_traffic_source_name,
     MAX(UD.first_traffic_source_source) OVER(user_lifetime_dimensions_window) AS first_traffic_source_source,
-    MAX(UD.has_signed_in_with_user_id) OVER(user_lifetime_dimensions_window) AS has_signed_in_with_user_id,
+    MAX(UD.has_signed_in_with_user_id) OVER(user_lifetime_dimensions_window) AS has_signed_in_with_user_id
+  FROM
+    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` UD
+  WHERE
+    -- Define the training+validation subset interval
+    UD.feature_date = inference_date
+    AND UD.processed_timestamp = lastest_processed_time_ud
+  WINDOW 
+    user_lifetime_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_uwm as (
+  SELECT DISTINCT
+    UWM.user_pseudo_id,
+    UWM.feature_date,
     MAX(UWM.active_users_past_1_30_day) OVER(user_lifetime_rolling_window) AS active_users_past_1_30_day,
     MAX(UWM.active_users_past_30_60_day) OVER(user_lifetime_rolling_window) AS active_users_past_30_60_day,
     MAX(UWM.active_users_past_60_90_day) OVER(user_lifetime_rolling_window) AS active_users_past_60_90_day,
@@ -82,7 +104,20 @@ CREATE TEMP TABLE inference_preparation as (
     MAX(UWM.checkouts_past_150_180_day) OVER(user_lifetime_rolling_window) AS checkouts_past_150_180_day,
     MAX(UWM.ltv_revenue_past_1_30_day) OVER(user_lifetime_rolling_window) AS ltv_revenue_past_1_30_day,
     MAX(UWM.ltv_revenue_past_30_90_day) OVER(user_lifetime_rolling_window) AS ltv_revenue_past_30_90_day,
-    MAX(UWM.ltv_revenue_past_90_180_day) OVER(user_lifetime_rolling_window) AS ltv_revenue_past_90_180_day,
+    MAX(UWM.ltv_revenue_past_90_180_day) OVER(user_lifetime_rolling_window) AS ltv_revenue_past_90_180_day
+  FROM
+    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` UWM
+  WHERE
+    -- Define the training+validation subset interval
+    UWM.feature_date = inference_date    
+    AND UWM.processed_timestamp = lastest_processed_time_uwm
+  WINDOW 
+    user_lifetime_rolling_window AS (PARTITION BY UWM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_um as (
+  SELECT DISTINCT
+    UM.feature_date,
     MAX(UM.lifetime_purchasers_users) OVER(user_scoped_lifetime_metrics_window) AS lifetime_purchasers_users,
     MAX(UM.lifetime_average_daily_purchasers) OVER(user_scoped_lifetime_metrics_window) AS lifetime_average_daily_purchasers,
     MAX(UM.lifetime_active_users) OVER(user_scoped_lifetime_metrics_window) AS lifetime_active_users,
@@ -109,26 +144,120 @@ CREATE TEMP TABLE inference_preparation as (
     MAX(UM.lifetime_avg_user_conversion_rate) OVER(user_scoped_lifetime_metrics_window) AS lifetime_avg_user_conversion_rate,
     MAX(UM.lifetime_avg_session_conversion_rate) OVER(user_scoped_lifetime_metrics_window) AS lifetime_avg_session_conversion_rate
   FROM
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` UD
+    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` UM
+  WHERE
+    -- Define the training+validation subset interval
+    UM.feature_date = inference_date
+    AND UM.processed_timestamp = lastest_processed_time_um
+  WINDOW 
+    user_scoped_lifetime_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+CREATE OR REPLACE TEMP TABLE inference_preparation as (
+  SELECT DISTINCT
+    UD.user_pseudo_id,
+    UD.user_id,
+    UD.feature_date,
+    UD.month_of_the_year,
+    UD.week_of_the_year,
+    UD.day_of_the_month,
+    UD.day_of_week,
+    UD.device_category,
+    UD.device_mobile_brand_name,
+    UD.device_mobile_model_name,
+    UD.device_os,
+    UD.device_os_version,
+    UD.device_language,
+    UD.device_web_browser,
+    UD.device_web_browser_version,
+    UD.geo_sub_continent,
+    UD.geo_country,
+    UD.geo_region,
+    UD.geo_city,
+    UD.geo_metro,
+    UD.last_traffic_source_medium,
+    UD.last_traffic_source_name,
+    UD.last_traffic_source_source,
+    UD.first_traffic_source_medium,
+    UD.first_traffic_source_name,
+    UD.first_traffic_source_source,
+    UD.has_signed_in_with_user_id,
+    UWM.active_users_past_1_30_day,
+    UWM.active_users_past_30_60_day,
+    UWM.active_users_past_60_90_day,
+    UWM.active_users_past_90_120_day,
+    UWM.active_users_past_120_150_day,
+    UWM.active_users_past_150_180_day,
+    UWM.purchases_past_1_30_day,
+    UWM.purchases_past_30_60_day,
+    UWM.purchases_past_60_90_day,
+    UWM.purchases_past_90_120_day,
+    UWM.purchases_past_120_150_day,
+    UWM.purchases_past_150_180_day,
+    UWM.visits_past_1_30_day,
+    UWM.visits_past_30_60_day,
+    UWM.visits_past_60_90_day,
+    UWM.visits_past_90_120_day,
+    UWM.visits_past_120_150_day,
+    UWM.visits_past_150_180_day,
+    UWM.view_items_past_1_30_day,
+    UWM.view_items_past_30_60_day,
+    UWM.view_items_past_60_90_day,
+    UWM.view_items_past_90_120_day,
+    UWM.view_items_past_120_150_day,
+    UWM.view_items_past_150_180_day,
+    UWM.add_to_carts_past_1_30_day,
+    UWM.add_to_carts_past_30_60_day,
+    UWM.add_to_carts_past_60_90_day,
+    UWM.add_to_carts_past_90_120_day,
+    UWM.add_to_carts_past_120_150_day,
+    UWM.add_to_carts_past_150_180_day,
+    UWM.checkouts_past_1_30_day,
+    UWM.checkouts_past_30_60_day,
+    UWM.checkouts_past_60_90_day,
+    UWM.checkouts_past_90_120_day,
+    UWM.checkouts_past_120_150_day,
+    UWM.checkouts_past_150_180_day,
+    UWM.ltv_revenue_past_1_30_day,
+    UWM.ltv_revenue_past_30_90_day,
+    UWM.ltv_revenue_past_90_180_day,
+    UM.lifetime_purchasers_users,
+    UM.lifetime_average_daily_purchasers,
+    UM.lifetime_active_users,
+    UM.lifetime_DAU,
+    UM.lifetime_MAU,
+    UM.lifetime_WAU,
+    UM.lifetime_dau_per_mau,
+    UM.lifetime_dau_per_wau,
+    UM.lifetime_wau_per_mau,
+    UM.lifetime_users_engagement_duration_seconds,
+    UM.lifetime_average_engagement_time,
+    UM.lifetime_average_engagement_time_per_session,
+    UM.lifetime_average_sessions_per_user,
+    UM.lifetime_ARPPU,
+    UM.lifetime_ARPU,
+    UM.lifetime_average_daily_revenue,
+    UM.lifetime_max_daily_revenue,
+    UM.lifetime_min_daily_revenue,
+    UM.lifetime_new_users,
+    UM.lifetime_returning_users,
+    UM.lifetime_first_time_purchasers,
+    UM.lifetime_first_time_purchaser_conversion,
+    UM.lifetime_first_time_purchasers_per_new_user,
+    UM.lifetime_avg_user_conversion_rate,
+    UM.lifetime_avg_session_conversion_rate
+  FROM
+    inference_preparation_ud UD
   INNER JOIN
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` UWM
+    inference_preparation_uwm UWM
   ON
     UWM.user_pseudo_id = UD.user_pseudo_id
     AND UWM.feature_date = UD.feature_date
   INNER JOIN
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` UM
+    inference_preparation_um UM
   ON
     UM.feature_date = UD.feature_date
-  WHERE
-    -- Define the training+validation subset interval
-    UD.feature_date = inference_date
-    AND UD.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` WHERE feature_date = inference_date LIMIT 1)
-    AND UWM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1)
-    AND UM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1)
-  WINDOW 
-    user_lifetime_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
-    user_lifetime_rolling_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
-    user_scoped_lifetime_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;

@@ -13,9 +13,18 @@
   -- limitations under the License.
   -- Setting procedure to lookback from the day before `inference_date`
 
-SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY); 
+DECLARE lastest_processed_time_ud TIMESTAMP;
+DECLARE lastest_processed_time_uwm TIMESTAMP;
+DECLARE lastest_processed_time_um TIMESTAMP;
 
-CREATE TEMP TABLE inference_preparation AS (
+-- Setting procedure to lookback from the day before `inference_date`
+SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
+
+SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` WHERE feature_date = inference_date LIMIT 1);
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
     MAX(UD.user_id) OVER(user_segmentation_dimensions_window) AS user_id,
@@ -43,7 +52,21 @@ CREATE TEMP TABLE inference_preparation AS (
     MAX(UD.first_traffic_source_medium) OVER(user_segmentation_dimensions_window) AS first_traffic_source_medium,
     MAX(UD.first_traffic_source_name) OVER(user_segmentation_dimensions_window) AS first_traffic_source_name,
     MAX(UD.first_traffic_source_source) OVER(user_segmentation_dimensions_window) AS first_traffic_source_source,
-    MAX(UD.has_signed_in_with_user_id) OVER(user_segmentation_dimensions_window) AS has_signed_in_with_user_id,
+    MAX(UD.has_signed_in_with_user_id) OVER(user_segmentation_dimensions_window) AS has_signed_in_with_user_id
+  FROM
+    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` UD
+  WHERE
+    -- Define the training+validation subset interval
+    UD.feature_date = inference_date
+    AND UD.processed_timestamp = lastest_processed_time_ud
+  WINDOW 
+    user_segmentation_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+CREATE TEMP TABLE inference_preparation_uwm AS (
+  SELECT DISTINCT
+    UWM.user_pseudo_id,
+    UWM.feature_date,
     MAX(UWM.active_users_past_1_7_day) OVER(user_lookback_metrics_window) AS active_users_past_1_7_day,
     MAX(UWM.active_users_past_8_14_day) OVER(user_lookback_metrics_window) AS active_users_past_8_14_day,
     MAX(UWM.purchases_past_1_7_day) OVER(user_lookback_metrics_window) AS purchases_past_1_7_day,
@@ -57,7 +80,22 @@ CREATE TEMP TABLE inference_preparation AS (
     MAX(UWM.checkouts_past_1_7_day) OVER(user_lookback_metrics_window) AS checkouts_past_1_7_day,
     MAX(UWM.checkouts_past_8_14_day) OVER(user_lookback_metrics_window) AS checkouts_past_8_14_day,
     MAX(UWM.ltv_revenue_past_1_7_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_1_7_day,
-    MAX(UWM.ltv_revenue_past_7_15_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_7_15_day,
+    MAX(UWM.ltv_revenue_past_7_15_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_7_15_day
+  FROM
+    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` UWM
+  WHERE
+    -- Define the training+validation subset interval
+    UWM.feature_date = inference_date
+    AND UWM.processed_timestamp = lastest_processed_time_uwm
+  WINDOW
+    user_lookback_metrics_window AS (PARTITION BY UWM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+
+CREATE TEMP TABLE inference_preparation_um AS (
+  SELECT DISTINCT
+    UM.feature_date,
     MAX(UM.purchasers_users) OVER(user_scoped_segmentation_metrics_window) AS purchasers_users,
     MAX(UM.average_daily_purchasers) OVER(user_scoped_segmentation_metrics_window) AS average_daily_purchasers,
     MAX(UM.active_users) OVER(user_scoped_segmentation_metrics_window) AS active_users,
@@ -84,26 +122,95 @@ CREATE TEMP TABLE inference_preparation AS (
     MAX(UM.avg_user_conversion_rate) OVER(user_scoped_segmentation_metrics_window) AS avg_user_conversion_rate,
     MAX(UM.avg_session_conversion_rate) OVER(user_scoped_segmentation_metrics_window) AS avg_session_conversion_rate
   FROM
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` UD
+    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` UM
+  WHERE
+    -- Define the training+validation subset interval
+    UM.feature_date = inference_date 
+    AND UM.processed_timestamp = lastest_processed_time_um
+  WINDOW 
+    user_scoped_segmentation_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+CREATE TEMP TABLE inference_preparation AS (
+  SELECT DISTINCT
+    UD.user_pseudo_id,
+    UD.user_id,
+    UD.feature_date,
+    UD.month_of_the_year,
+    UD.week_of_the_year,
+    UD.day_of_the_month,
+    UD.day_of_week,
+    UD.device_category,
+    UD.device_mobile_brand_name,
+    UD.device_mobile_model_name,
+    UD.device_os,
+    UD.device_os_version,
+    UD.device_language,
+    UD.device_web_browser,
+    UD.device_web_browser_version,
+    UD.geo_sub_continent,
+    UD.geo_country,
+    UD.geo_region,
+    UD.geo_city,
+    UD.geo_metro,
+    UD.last_traffic_source_medium,
+    UD.last_traffic_source_name,
+    UD.last_traffic_source_source,
+    UD.first_traffic_source_medium,
+    UD.first_traffic_source_name,
+    UD.first_traffic_source_source,
+    UD.has_signed_in_with_user_id,
+    UWM.active_users_past_1_7_day,
+    UWM.active_users_past_8_14_day,
+    UWM.purchases_past_1_7_day,
+    UWM.purchases_past_8_14_day,
+    UWM.visits_past_1_7_day,
+    UWM.visits_past_8_14_day,
+    UWM.view_items_past_1_7_day,
+    UWM.view_items_past_8_14_day,
+    UWM.add_to_carts_past_1_7_day,
+    UWM.add_to_carts_past_8_14_day,
+    UWM.checkouts_past_1_7_day,
+    UWM.checkouts_past_8_14_day,
+    UWM.ltv_revenue_past_1_7_day,
+    UWM.ltv_revenue_past_7_15_day,
+    UM.purchasers_users,
+    UM.average_daily_purchasers,
+    UM.active_users,
+    UM.DAU,
+    UM.MAU,
+    UM.WAU,
+    UM.dau_per_mau,
+    UM.dau_per_wau,
+    UM.wau_per_mau,
+    UM.users_engagement_duration_seconds,
+    UM.average_engagement_time,
+    UM.average_engagement_time_per_session,
+    UM.average_sessions_per_user,
+    UM.ARPPU,
+    UM.ARPU,
+    UM.average_daily_revenue,
+    UM.max_daily_revenue,
+    UM.min_daily_revenue,
+    UM.new_users,
+    UM.returning_users,
+    UM.first_time_purchasers,
+    UM.first_time_purchaser_conversion,
+    UM.first_time_purchasers_per_new_user,
+    UM.avg_user_conversion_rate,
+    UM.avg_session_conversion_rate
+  FROM
+    inference_preparation_ud UD
   INNER JOIN
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` UWM
+    inference_preparation_uwm UWM
   ON
     UWM.user_pseudo_id = UD.user_pseudo_id
     AND UWM.feature_date = UD.feature_date
   INNER JOIN
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` UM
+    inference_preparation_um UM
   ON
     UM.feature_date = UD.feature_date
-  WHERE
-    -- Define the training+validation subset interval
-    UD.feature_date = inference_date 
-    AND UD.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` WHERE feature_date = inference_date LIMIT 1)
-    AND UWM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` WHERE feature_date = inference_date LIMIT 1)
-    AND UM.processed_timestamp = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` WHERE feature_date = inference_date LIMIT 1)
-  WINDOW 
-    user_segmentation_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
-    user_lookback_metrics_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING),
-    user_scoped_segmentation_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
