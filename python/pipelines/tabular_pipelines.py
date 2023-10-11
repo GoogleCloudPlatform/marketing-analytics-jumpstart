@@ -83,7 +83,7 @@ def prediction_binary_classification_pl(
         location=location,
         source_table=bigquery_source,
         predictions_table=predictions.outputs['destination_table'],
-        bq_unique_key = bq_unique_key,
+        bq_unique_key=bq_unique_key,
         threashold=threashold,
         positive_label=positive_label
     )
@@ -94,8 +94,6 @@ def prediction_binary_classification_pl(
         activation_type=pubsub_activation_type,
         predictions_table=flatten_predictions.outputs['destination_table'],
     )
-
-
 
 
 @dsl.pipeline()
@@ -114,7 +112,7 @@ def prediction_regression_pl(
     bigquery_source: str,
     bigquery_destination_prefix: str,
     bq_unique_key: str,
-    
+
     job_name_prefix: str,
     machine_type: str = "n1-standard-4",
     max_replica_count: int = 10,
@@ -151,7 +149,7 @@ def prediction_regression_pl(
         location=location,
         source_table=bigquery_source,
         predictions_table=predictions.outputs['destination_table'],
-        bq_unique_key = bq_unique_key
+        bq_unique_key=bq_unique_key
     )
 
     send_pubsub_activation_msg(
