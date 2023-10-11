@@ -17,13 +17,13 @@ DECLARE lastest_processed_time_useam TIMESTAMP;
 DECLARE lastest_processed_time_uwm TIMESTAMP;
 DECLARE lastest_processed_time_um TIMESTAMP;
 
+-- Setting procedure to lookback from the day before `inference_date`
+SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
+
 SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_useam = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date = inference_date LIMIT 1);
-
--- Setting procedure to lookback from the day before `inference_date`
-SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
 CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
@@ -377,7 +377,6 @@ INNER JOIN
 ON
   UM.feature_date = UD.feature_date
 );
-
 
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
 

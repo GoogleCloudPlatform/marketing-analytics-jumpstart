@@ -227,7 +227,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.purchase_propensity_label` LABEL
 WHERE
   -- Define the training subset interval
-  UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  LABEL.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
 WINDOW 
   purchase_propensity_label_window AS (PARTITION BY LABEL.user_pseudo_id, LABEL.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
@@ -408,7 +408,6 @@ ON
   LABEL.user_pseudo_id = UD.user_pseudo_id
   AND LABEL.feature_date = UD.feature_date
 );
-
 
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   SELECT DISTINCT

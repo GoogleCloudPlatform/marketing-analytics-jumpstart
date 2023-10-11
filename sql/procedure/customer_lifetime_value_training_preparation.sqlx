@@ -157,7 +157,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.customer_lifetime_value_label` LABEL
 WHERE
   -- Define the training subset interval
-  UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  LABEL.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
 WINDOW 
   customer_lifetime_value_window AS (PARTITION BY LABEL.user_pseudo_id, LABEL.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );

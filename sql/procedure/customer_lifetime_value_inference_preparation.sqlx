@@ -16,12 +16,12 @@ DECLARE lastest_processed_time_ud TIMESTAMP;
 DECLARE lastest_processed_time_uwm TIMESTAMP;
 DECLARE lastest_processed_time_um TIMESTAMP;
 
+-- Setting procedure to lookback from the day before `inference_date`
+SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
+
 SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1);
-
--- Setting procedure to lookback from the day before `inference_date`
-SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
 CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
@@ -248,14 +248,14 @@ CREATE OR REPLACE TEMP TABLE inference_preparation as (
     UM.lifetime_avg_user_conversion_rate,
     UM.lifetime_avg_session_conversion_rate
   FROM
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` UD
+    inference_preparation_ud UD
   INNER JOIN
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` UWM
+    inference_preparation_uwm UWM
   ON
     UWM.user_pseudo_id = UD.user_pseudo_id
     AND UWM.feature_date = UD.feature_date
   INNER JOIN
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` UM
+    inference_preparation_um UM
   ON
     UM.feature_date = UD.feature_date
 );
