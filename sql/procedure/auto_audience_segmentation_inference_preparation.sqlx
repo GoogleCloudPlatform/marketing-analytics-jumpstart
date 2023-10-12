@@ -25,7 +25,8 @@ SELECT
 FROM
   `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`;
 
-CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
+-- CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
   OPTIONS(
     friendly_name="v_auto_audience_segmentation_inference_15",
     description="View Auto Audience Segmentation dataset using 15 days lookback.",
