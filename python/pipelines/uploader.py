@@ -19,7 +19,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 def check_extention(file_path: str, type: str = '.yaml'):
     if os.path.exists(file_path):
         if not file_path.lower().endswith(type):
-            raise ArgumentTypeError(f"File provited must be {type}: {file_path}")
+            raise ArgumentTypeError(f"File provided must be {type}: {file_path}")
     else:
         raise FileNotFoundError(f"{file_path} does not exist")
     return file_path

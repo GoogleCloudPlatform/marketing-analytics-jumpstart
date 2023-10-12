@@ -83,3 +83,21 @@ resource "google_bigquery_dataset" "audience_segmentation" {
     ignore_changes = all
   }
 }
+
+resource "google_bigquery_dataset" "auto_audience_segmentation" {
+  dataset_id            = local.config_bigquery.dataset.auto_audience_segmentation.name
+  friendly_name         = local.config_bigquery.dataset.auto_audience_segmentation.friendly_name
+  project               = local.auto_audience_segmentation_project_id
+  description           = local.config_bigquery.dataset.auto_audience_segmentation.description
+  location              = local.config_bigquery.dataset.auto_audience_segmentation.location
+  max_time_travel_hours = local.config_bigquery.dataset.auto_audience_segmentation.max_time_travel_hours
+  delete_contents_on_destroy = false
+
+  labels = {
+    version = "pilot"
+  }
+
+  lifecycle {
+    ignore_changes = all
+  }
+}

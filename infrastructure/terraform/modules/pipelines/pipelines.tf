@@ -280,3 +280,23 @@ resource "null_resource" "compile_segmentation_prediction_pipelines" {
     null_resource.compile_segmentation_training_pipelines
   ]
 }
+
+resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
+  triggers = {
+    working_dir = "${local.source_root_dir}/python"
+    tag         = local.compile_pipelines_tag
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.prediction -o auto_segmentation_prediction.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f auto_segmentation_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.prediction
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+
+  depends_on = [
+    null_resource.compile_feature_engineering_pipelines
+  ]
+}

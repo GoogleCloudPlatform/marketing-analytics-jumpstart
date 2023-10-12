@@ -39,7 +39,6 @@ if os.path.exists(config_file_path):
     #target_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['image_name']}:{vertex_components_params['tag']}"
     base_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['base_image_name']}:{vertex_components_params['base_image_tag']}"
 
-
 @component(
     base_image=base_image,
     #target_image=target_image,
@@ -230,11 +229,11 @@ def get_latest_model(
         def list(cls):
             return list(map(lambda c: c.value, cls))
 
-    number_of_models_considered: int= 1
+    number_of_models_considered: int = 1
 
     logging.info(display_name)
     aip.init(project=project, location=location)  
-    models = aip.Model.list(filter=f'display_name="{display_name}"')
+    models = aip.Model.list(filter=f'display_name="{display_name}"', order_by=f"create_time desc")
     
     models_versions_to_compare = []
 
@@ -243,9 +242,9 @@ def get_latest_model(
     for model in models:
         model_registry = aip.ModelRegistry(model=model.name)
         for v in model_registry.list_versions():
-            if(counter<number_of_models_considered):
+            if counter < number_of_models_considered:
                 models_versions_to_compare.append(v)
-                counter+=1
+                counter += 1
             else:
                 canditate_v = v
                 for idx, mv in enumerate(models_versions_to_compare):
@@ -254,10 +253,10 @@ def get_latest_model(
                         models_versions_to_compare[idx] = canditate_v
                         canditate_v = tmp
  
-    if len(models_versions_to_compare)==0:
+    if len(models_versions_to_compare) == 0:
         raise Exception(f"No models in vertex model registry match '{display_name}'")
 
-    model= models_versions_to_compare[0]
+    model = models_versions_to_compare[0]
 
     logging.info(f"Selected model : {model}")
 
@@ -273,7 +272,6 @@ def get_latest_model(
     elected_model.schema_title = 'google.VertexModel'
 
 
-
 @component(base_image=base_image)
 def batch_prediction(
     destination_table: Output[Dataset],
@@ -281,46 +279,49 @@ def batch_prediction(
     bigquery_destination_prefix: str,
     job_name_prefix: str,
     model: Input[VertexModel],
-    machine_type: str = "n1-standard-4",
+    machine_type: str = "n1-standard-2",
     max_replica_count: int = 10,
     batch_size: int = 64,
     accelerator_count: int = 0,
     accelerator_type: str = None,
-    generate_explanation: bool =False
-    ):
-    from datetime import datetime
+    generate_explanation: bool = False,
+    dst_table_expiration_hours: int = 0
+):
+    from datetime import datetime, timedelta, timezone
     import logging
+    from google.cloud import bigquery
     from google.cloud.aiplatform import Model
     model = Model(f"{model.metadata['resourceName']}@{model.metadata['version']}")
-
-
     timestamp = str(int(datetime.now().timestamp()))
-    #destination_table.metadata["table_id"] = f"{bigquery_destination_prefix}_{timestamp}"
-    #destination_table.metadata["predictions_column_prefix"] = "predicted_"
 
     batch_prediction_job = model.batch_predict(
-        job_display_name = f"{job_name_prefix}-{timestamp}",
-        instances_format = "bigquery",
-        predictions_format = "bigquery",
-        bigquery_source = f"bq://{bigquery_source}",
-        bigquery_destination_prefix= f"bq://{bigquery_destination_prefix}",
-        #bigquery_destination_prefix = f"bq://{destination_table.metadata['table_id']}",
-        machine_type = machine_type,
-        max_replica_count = max_replica_count,
-        batch_size = batch_size,
-        accelerator_count = accelerator_count,
-        accelerator_type = accelerator_type,
-        generate_explanation = generate_explanation 
+        job_display_name=f"{job_name_prefix}-{timestamp}",
+        instances_format="bigquery",
+        predictions_format="bigquery",
+        bigquery_source=f"bq://{bigquery_source}",
+        bigquery_destination_prefix=f"bq://{bigquery_destination_prefix}",
+        machine_type=machine_type,
+        max_replica_count=max_replica_count,
+        batch_size=batch_size,
+        accelerator_count=accelerator_count,
+        accelerator_type=accelerator_type,
+        generate_explanation=generate_explanation
     )
 
     batch_prediction_job.wait()
 
-    #Filling the destination_table with the bigquery destination table.
+    # Filling the destination_table with the bigquery destination table.
     destination_table.metadata["table_id"] = f"{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputDataset'].replace('bq://','')}.{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputTable']}"
-    destination_table.metadata["predictions_column_prefix"] = "predicted_"
+    destination_table.metadata["predictions_column"] = "prediction"
+
+    if dst_table_expiration_hours > 0:
+        client = bigquery.Client(project=model.project)
+        table = client.get_table(destination_table.metadata["table_id"])
+        expiration = datetime.now(timezone.utc) + timedelta(
+            hours=dst_table_expiration_hours
+        )
+        table.expires = expiration
+        client.update_table(table, ["expires"])
 
     logging.info(batch_prediction_job.to_dict())
-    #logging.info(batch_prediction_job.display_name)
-    #logging.info(batch_prediction_job.resource_name)
-    #logging.info(batch_prediction_job.state)
     

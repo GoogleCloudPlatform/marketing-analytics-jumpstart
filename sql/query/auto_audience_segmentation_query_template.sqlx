@@ -1,0 +1,6 @@
+SELECT
+    user_id AS client_id,
+    FORMAT_TIMESTAMP("%Y-%m-%dT%X%Ez", feature_timestamp) AS inference_date,
+    prediction as interest_segment,
+
+FROM `{{source_table}}`
