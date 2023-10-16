@@ -312,6 +312,7 @@ def batch_prediction(
 
     # Filling the destination_table with the bigquery destination table.
     destination_table.metadata["table_id"] = f"{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputDataset'].replace('bq://','')}.{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputTable']}"
+    destination_table.metadata["predictions_column_prefix"] = "predicted_"
     destination_table.metadata["predictions_column"] = "prediction"
 
     if dst_table_expiration_hours > 0:
