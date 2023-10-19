@@ -4,6 +4,11 @@
         "source_query_template": "${audience_segmentation_query_template_gcs_path}",
         "measurement_protocol_payload_template": "${measurement_protocol_payload_template_gcs_path}"
     },
+    "auto-audience-segmentation-15": {
+        "activation_event_name": "mas_auto_audience_segmentation_15",
+        "source_query_template": "${auto_audience_segmentation_query_template_gcs_path}",
+        "measurement_protocol_payload_template": "${measurement_protocol_payload_template_gcs_path}"
+    },
     "cltv-180-180": {
         "activation_event_name": "mas_cltv_180_180",
         "source_query_template": "${cltv_query_template_gcs_path}",

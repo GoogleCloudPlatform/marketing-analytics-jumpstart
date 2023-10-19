@@ -119,6 +119,8 @@ vertex_ai:
             CALL `{customer_lifetime_value_inference_preparation_procedure_name}`();"
           query_audience_segmentation_inference_preparation: "
             CALL `{audience_segmentation_inference_preparation_procedure_name}`();"
+          query_auto_audience_segmentation_inference_preparation: "
+            CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
 
           query_purchase_propensity_training_preparation: "
             CALL `{purchase_propensity_training_preparation_procedure_name}`();"
@@ -149,6 +151,7 @@ vertex_ai:
           purchase_propensity_inference_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_inference_preparation"
           customer_lifetime_value_inference_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation"
           audience_segmentation_inference_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_inference_preparation"
+          auto_audience_segmentation_inference_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_inference_preparation"
           
           purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
@@ -301,6 +304,28 @@ vertex_ai:
           pubsub_activation_type: "audience-segmentation-15" # audience-segmentation-15
         pipeline_parameters_substitutions: null
 
+    auto_segmentation:
+      prediction:
+        name: "auto-segmentation-prediction-pl"
+        job_id_prefix: "auto-segmentation-prediction-pl-"
+        experiment_name: "auto-segmentation-prediction"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 12 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${cloud_region}"
+          model_name: "interest-cluster-model"
+          bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
+          bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.p_auto_audience_segmentation_inference_15"
+          pubsub_activation_topic: "activation-trigger"
+          pubsub_activation_type: "auto-audience-segmentation-15"
+        pipeline_parameters_substitutions: null
+
     clv:
       training:
         name: "clv-training-pl"
@@ -430,6 +455,17 @@ bigquery:
       max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    auto_audience_segmentation:
+      project_id: "${project_id}"
+      name: "auto_audience_segmentation"
+      location: "${location}"
+      collation: "und:ci"
+      is_case_insensitive: TRUE
+      description: "Auto Audience Segmentation Use Case dataset for Marketing behavioural modeling"
+      friendly_name: "Auto Audience Segmentation Dataset"
+      max_time_travel_hours: 48
+      default_partition_expiration_days: 365
+      default_table_expiration_days: 365
   table:
     audience_segmentation_inference_preparation:
       project_id: "${project_id}"
@@ -523,6 +559,8 @@ bigquery:
       table_description: "User Session Event Aggregated Metrics table as part of the Feature Store" 
   query:
     audience_segmentation_query_template:
+      none: none
+    auto_audience_segmentation_query_template:
       none: none
     purchase_propensity_query_template:
       none: none
@@ -741,6 +779,10 @@ bigquery:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
       stored_procedure: "audience_segmentation_inference_preparation"
+    invoke_auto_audience_segmentation_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "auto_audience_segmentation"
+      stored_procedure: "auto_audience_segmentation_inference_preparation"
   procedure:
     audience_segmentation_training_preparation:
       project_id: "${project_id}"
@@ -881,6 +923,15 @@ bigquery:
       feature_store_dataset: "feature_store"
       insert_table: "audience_segmentation_inference_preparation"
       expiration_duration_hours: 168
+      mds_dataset: "${mds_dataset}"
+    auto_audience_segmentation_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "auto_audience_segmentation"
+      name: "auto_audience_segmentation_inference_preparation"
+      feature_store_project_id: "${project_id}"
+      feature_store_dataset: "feature_store"
+      insert_table: "auto_audience_segmentation_inference_preparation"
+      expiration_duration_hours: 12
       mds_dataset: "${mds_dataset}"
 
   
