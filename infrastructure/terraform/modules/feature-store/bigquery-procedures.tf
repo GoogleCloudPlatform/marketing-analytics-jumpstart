@@ -997,6 +997,7 @@ resource "google_bigquery_job" "job_invoke_customer_lifetime_value_training_prep
     create_disposition = ""
     write_disposition  = ""
   }
+  location = local.config_bigquery.dataset.customer_lifetime_value.location
 
   depends_on = [google_bigquery_routine.invoke_customer_lifetime_value_training_preparation]
 }
@@ -1009,6 +1010,7 @@ resource "google_bigquery_job" "job_invoke_purchase_propensity_training_preparat
     create_disposition = ""
     write_disposition  = ""
   }
+  location = local.config_bigquery.dataset.purchase_propensity.location
 
   depends_on = [google_bigquery_routine.invoke_purchase_propensity_training_preparation]
 }
@@ -1021,6 +1023,7 @@ resource "google_bigquery_job" "job_invoke_audience_segmentation_training_prepar
     create_disposition = ""
     write_disposition  = ""
   }
+  location = local.config_bigquery.dataset.audience_segmentation.location
 
   depends_on = [google_bigquery_routine.invoke_audience_segmentation_training_preparation]
 }

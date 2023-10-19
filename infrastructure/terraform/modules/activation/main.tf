@@ -37,6 +37,11 @@ locals {
   trigger_function_account_name  = "trigger-function"
   trigger_function_account_email = "${local.app_prefix}-${local.trigger_function_account_name}@${var.project_id}.iam.gserviceaccount.com"
 
+  activation_type_configuration_file              = "${local.source_root_dir}/templates/activation_type_configuration_template.tpl"
+  activation_type_configuration_file_content_hash = filesha512(local.activation_type_configuration_file)
+
+  audience_segmentation_activation_query_file              = "${local.source_root_dir}/sql/query/audience_segmentation_query_template.sqlx"
+  audience_segmentation_activation_query_file_content_hash = filesha512(local.audience_segmentation_activation_query_file)
 }
 
 data "google_project" "activation_project" {
@@ -88,7 +93,7 @@ resource "null_resource" "check_artifactregistry_api" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud services list --project=${var.project_id} | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -101,47 +106,40 @@ resource "null_resource" "check_artifactregistry_api" {
     sleep 20
     EOT
   }
-
-  depends_on = [
-    module.project_services
-  ]
 }
 
 resource "null_resource" "create_custom_events" {
+  triggers = {
+    services_enabled_project = module.project_services.project_id
+    source_contents_hash = local.activation_type_configuration_file_content_hash
+  }
   provisioner "local-exec" {
     command     = <<-EOT
     ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
-
-  depends_on = [
-    module.project_services
-  ]
 }
 
 resource "null_resource" "create_custom_dimensions" {
+  triggers = {
+    services_enabled_project = module.project_services.project_id
+    source_contents_hash = local.audience_segmentation_activation_query_file_content_hash
+  }
   provisioner "local-exec" {
     command     = <<-EOT
     ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
-
-  depends_on = [
-    module.project_services
-  ]
 }
 
 resource "google_artifact_registry_repository" "activation_repository" {
-  project       = var.project_id
+  project       = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : ""
   location      = var.location
   repository_id = var.artifact_repository_id
   description   = "Pipeline container repository"
   format        = "DOCKER"
-  depends_on = [
-    null_resource.check_artifactregistry_api
-  ]
 }
 
 module "pipeline_service_account" {
@@ -192,7 +190,7 @@ data "external" "ga4_measurement_properties" {
 module "secret_manager" {
   source     = "GoogleCloudPlatform/secret-manager/google"
   version    = "~> 0.1"
-  project_id = var.project_id
+  project_id = module.project_services.project_id
   secrets = [
     {
       name                  = "ga4-measurement-id"
@@ -204,10 +202,6 @@ module "secret_manager" {
       secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
       automatic_replication = true
     },
-  ]
-
-  depends_on = [
-    module.project_services
   ]
 }
 
@@ -359,7 +353,7 @@ resource "google_storage_bucket_object" "activation_trigger_archive" {
 
 resource "google_cloudfunctions2_function" "activation_trigger_cf" {
   name     = "activation-trigger"
-  project  = var.project_id
+  project  = module.project_services.project_id
   location = var.trigger_function_location
 
   build_config {
@@ -412,10 +406,6 @@ resource "google_cloudfunctions2_function" "activation_trigger_cf" {
   lifecycle {
     ignore_changes = [build_config[0].source[0].storage_source[0].generation]
   }
-
-  depends_on = [
-    module.project_services
-  ]
 }
 
 module "add_invoker_binding" {
