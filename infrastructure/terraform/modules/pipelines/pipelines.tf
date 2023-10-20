@@ -83,26 +83,20 @@ resource "google_storage_bucket" "pipelines_bucket" {
 
 
 resource "google_artifact_registry_repository" "pipelines-repo" {
-  project       = local.pipeline_vars.project_id
+  project       = module.project_services.project_id
   location      = local.artifact_registry_vars.pipelines_repo.region
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
   format        = "KFP"
-  depends_on = [
-    module.project_services.project_id
-  ]
 }
 
 
 resource "google_artifact_registry_repository" "pipelines_docker_repo" {
-  project       = local.pipeline_vars.project_id
+  project       = module.project_services.project_id
   location      = local.artifact_registry_vars.pipelines_docker_repo.region
   repository_id = local.artifact_registry_vars.pipelines_docker_repo.name
   description   = "DOCKER images Repository"
   format        = "DOCKER"
-  depends_on = [
-    module.project_services.project_id
-  ]
 }
 
 
@@ -125,25 +119,54 @@ resource "google_artifact_registry_repository" "pipelines_docker_repo" {
 #  }
 #}
 
+locals {
+  base_component_image_dir = "${local.source_root_dir}/python/base_component_image"
+  component_image_fileset = [
+    "${local.base_component_image_dir}/build-push.py",
+    "${local.base_component_image_dir}/Dockerfile",
+    "${local.base_component_image_dir}/pyproject.toml",
+    "${local.base_component_image_dir}/ma_components/vertex.py",
+  ]
+  component_image_content_hash = sha512(join("", [for f in local.component_image_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+
+  pipelines_dir = "${local.source_root_dir}/python/pipelines"
+  pipelines_fileset = [
+    "${local.pipelines_dir}/components/bigquery/component.py",
+    "${local.pipelines_dir}/components/pubsub/component.py",
+    "${local.pipelines_dir}/components/vertex/component.py",
+    "${local.pipelines_dir}/compiler.py",
+    "${local.pipelines_dir}/feature_engineering_pipelines.py",
+    "${local.pipelines_dir}/pipeline_ops.py",
+    "${local.pipelines_dir}/scheduler.py",
+    "${local.pipelines_dir}/segmentation_pipelines.py",
+    "${local.pipelines_dir}/tabular_pipelines.py",
+    "${local.pipelines_dir}/uploader.py",
+  ]
+  pipelines_content_hash = sha512(join("", [for f in local.pipelines_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+}
+
 resource "null_resource" "build_push_pipelines_components_image" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
+    working_dir             = "${local.source_root_dir}/python"
+    docker_repo_id          = google_artifact_registry_repository.pipelines_docker_repo.id
+    docker_repo_create_time = google_artifact_registry_repository.pipelines_docker_repo.create_time
+    source_content_hash     = local.component_image_content_hash
   }
 
   provisioner "local-exec" {
     command     = "${var.poetry_run_alias} python -m base_component_image.build-push -c ${local.config_file_path_relative_python_run_dir}"
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    google_artifact_registry_repository.pipelines_docker_repo
-  ]
 }
 
 resource "null_resource" "compile_feature_engineering_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    pipelines_repo_id            = google_artifact_registry_repository.pipelines-repo.id
+    pipelines_repo_create_time   = google_artifact_registry_repository.pipelines-repo.create_time
+    source_content_hash          = local.pipelines_content_hash
+    upstream_resource_dependency = null_resource.build_push_pipelines_components_image.id
   }
 
   provisioner "local-exec" {
@@ -154,17 +177,13 @@ resource "null_resource" "compile_feature_engineering_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.build_push_pipelines_components_image,
-    google_artifact_registry_repository.pipelines-repo
-  ]
 }
 
 resource "null_resource" "compile_propensity_trainings_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_feature_engineering_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -175,16 +194,13 @@ resource "null_resource" "compile_propensity_trainings_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.compile_feature_engineering_pipelines
-  ]
 }
 
 resource "null_resource" "compile_propensity_prediction_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_propensity_trainings_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -195,16 +211,13 @@ resource "null_resource" "compile_propensity_prediction_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.compile_propensity_trainings_pipelines
-  ]
 }
 
 resource "null_resource" "compile_clv_training_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_propensity_prediction_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -215,16 +228,13 @@ resource "null_resource" "compile_clv_training_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.compile_propensity_prediction_pipelines
-  ]
 }
 
 resource "null_resource" "compile_clv_prediction_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_clv_training_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -235,16 +245,13 @@ resource "null_resource" "compile_clv_prediction_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.compile_clv_training_pipelines
-  ]
 }
 
 resource "null_resource" "compile_segmentation_training_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_clv_prediction_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -255,16 +262,13 @@ resource "null_resource" "compile_segmentation_training_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.compile_clv_prediction_pipelines
-  ]
 }
 
 resource "null_resource" "compile_segmentation_prediction_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_segmentation_training_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -275,16 +279,13 @@ resource "null_resource" "compile_segmentation_prediction_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.compile_segmentation_training_pipelines
-  ]
 }
 
 resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
   triggers = {
-    working_dir = "${local.source_root_dir}/python"
-    tag         = local.compile_pipelines_tag
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_feature_engineering_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -295,8 +296,4 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
     EOT
     working_dir = self.triggers.working_dir
   }
-
-  depends_on = [
-    null_resource.compile_feature_engineering_pipelines
-  ]
 }
