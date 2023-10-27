@@ -76,11 +76,41 @@ resource "google_storage_bucket" "pipelines_bucket" {
   uniform_bucket_level_access = true
   force_destroy               = false
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = false ##true
   }
 }
 
+locals {
+  vertex_pipelines_available_locations = [
+    "asia-east1",
+    "asia-east2",
+    "asia-northeast1",
+    "asia-northeast3",
+    "asia-south1",
+    "asia-southeast1",
+    "asia-southeast2",
+    "europe-central2",
+    "europe-west1",
+    "europe-west2",
+    "europe-west3",
+    "europe-west4",
+    "europe-west6",
+    "europe-west9",
+    "me-west1",
+    "northamerica-northeast1",
+    "northamerica-northeast2",
+    "southamerica-east1",
+    "us-central1",
+    "us-east1",
+    "us-east4",
+    "us-south1",
+    "us-west1",
+    "us-west2",
+    "us-west3",
+    "us-west4",
+  ]
+}
 
 resource "google_artifact_registry_repository" "pipelines-repo" {
   project       = module.project_services.project_id
@@ -88,6 +118,12 @@ resource "google_artifact_registry_repository" "pipelines-repo" {
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
   format        = "KFP"
+  lifecycle {
+    precondition {
+      condition     = contains(local.vertex_pipelines_available_locations, local.artifact_registry_vars.pipelines_repo.region)
+      error_message = "Vertex AI Pipelines is not available in your default region: ${local.artifact_registry_vars.pipelines_repo.region}.\nSet 'google_default_region' variable to a valid Vertex AI Pipelines location, see https://cloud.google.com/vertex-ai/docs/general/locations."
+    }
+  }
 }
 
 

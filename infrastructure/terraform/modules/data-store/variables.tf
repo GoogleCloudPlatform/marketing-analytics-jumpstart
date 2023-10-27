@@ -119,3 +119,8 @@ variable "source_ads_export_data" {
     table_suffix = string
   }))
 }
+
+variable "dataform_region" {
+  description = "Specify dataform region when dataform is not available in the default cloud region of choice"
+  type        = string
+}
