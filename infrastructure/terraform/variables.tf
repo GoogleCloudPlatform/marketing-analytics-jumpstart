@@ -38,6 +38,12 @@ variable "google_default_region" {
   type        = string
 }
 
+variable "dataform_region" {
+  description = "Specify dataform region when dataform is not available in the default cloud region of choice"
+  type        = string
+  default     = ""
+}
+
 variable "project_owner_email" {
   description = "Email address of the project owner."
   type        = string

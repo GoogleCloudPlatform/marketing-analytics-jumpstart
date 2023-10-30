@@ -24,6 +24,7 @@ module "data_store" {
   source = "./modules/data-store"
 
   google_default_region = var.google_default_region
+  dataform_region       = var.dataform_region
 
   source_ga4_export_project_id = var.source_ga4_export_project_id
   source_ga4_export_dataset    = var.source_ga4_export_dataset

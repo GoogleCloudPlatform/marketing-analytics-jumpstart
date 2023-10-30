@@ -12,11 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+locals {
+  dataform_available_locations = [
+    "asia-east1",
+    "asia-northeast1",
+    "asia-south1",
+    "asia-southeast1",
+    "australia-southeast1",
+    "europe-west1",
+    "europe-west2",
+    "europe-west3",
+    "europe-west4",
+    "europe-west6",
+    "southamerica-east1",
+    "us-east1",
+    "us-central1",
+    "us-west1",
+  ]
+  dataform_derived_region = var.dataform_region != "" ? var.dataform_region : var.google_default_region
+}
 resource "google_dataform_repository" "marketing-analytics" {
   provider = google-beta
   name     = "marketing-analytics"
   project  = data.google_project.data_processing.project_id
-  region   = var.google_default_region
+  region   = local.dataform_derived_region
+
+  lifecycle {
+    precondition {
+      condition     = contains(local.dataform_available_locations, local.dataform_derived_region)
+      error_message = "Dataform is not available in your default region: ${var.google_default_region}.\nSet 'dataform_region' variable to a valid Dataform location, see https://cloud.google.com/dataform/docs/locations."
+    }
+  }
 
   git_remote_settings {
     url                                 = var.dataform_github_repo
