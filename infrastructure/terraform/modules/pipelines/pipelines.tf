@@ -40,6 +40,16 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
   role = each.key
 }
 
+resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
+  project = var.mds_project_id
+  member  = "serviceAccount:${google_service_account.service_account.email}"
+
+  for_each = toset([
+    "roles/bigquery.dataViewer"
+  ])
+  role = each.key
+}
+
 
 resource "google_service_account" "dataflow_worker_service_account" {
   project      = local.pipeline_vars.project_id

@@ -26,3 +26,8 @@ variable "poetry_installed" {
   description = "Construct to specify dependency to poetry installed"
   type        = string
 }
+
+variable "mds_project_id" {
+  description = "Google Cloud Project ID for MDS"
+  type        = string
+}
