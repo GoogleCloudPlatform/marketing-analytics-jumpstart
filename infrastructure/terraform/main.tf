@@ -57,7 +57,7 @@ locals {
   source_root_dir    = "../.."
   config_file_name   = "config"
   poetry_run_alias   = "${var.poetry_cmd} run"
-  mds_dataset_suffix = var.create_prod_environment ? "prod" : var.create_dev_environment ? "dev" : "staging"
+  mds_dataset_suffix = var.create_staging_environment ? "staging" : var.create_dev_environment ? "dev" : "prod"
 
   project_toml_file_path    = "${local.source_root_dir}/pyproject.toml"
   project_toml_content_hash = filesha512(local.project_toml_file_path)
@@ -78,6 +78,7 @@ resource "local_file" "feature_store_configuration" {
     project_name           = data.google_project.feature_store_project.name
     project_number         = data.google_project.feature_store_project.number
     cloud_region           = var.google_default_region
+    mds_project_id         = var.data_project_id
     mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_suffix}"
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
@@ -150,6 +151,7 @@ module "pipelines" {
   poetry_run_alias = local.poetry_run_alias
   count            = var.deploy_pipelines ? 1 : 0
   poetry_installed = null_resource.poetry_install.id
+  mds_project_id   = var.data_project_id
 }
 
 module "activation" {
