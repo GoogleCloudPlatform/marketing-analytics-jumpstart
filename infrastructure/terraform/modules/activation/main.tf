@@ -85,7 +85,7 @@ module "bigquery" {
   description                 = "activation appliction logs"
   project_id                  = var.project_id
   location                    = var.data_location
-  default_table_expiration_ms = 360000000
+  delete_contents_on_destroy  = false
 }
 
 resource "null_resource" "check_artifactregistry_api" {
