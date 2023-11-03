@@ -1458,8 +1458,15 @@ FROM (
     *,
     CASE
       WHEN pltv_revenue_30_days < 50 THEN "bucket1"
-      WHEN pltv_revenue_30_days BETWEEN 50 AND 350 THEN "bucket2" 
-      WHEN pltv_revenue_30_days > 350 THEN "bucket3" END as bucket
+      WHEN pltv_revenue_30_days BETWEEN 50 AND 100 THEN "bucket2"
+      WHEN pltv_revenue_30_days BETWEEN 100 AND 200 THEN "bucket3"
+      WHEN pltv_revenue_30_days BETWEEN 200 AND 300 THEN "bucket4"
+      WHEN pltv_revenue_30_days BETWEEN 300 AND 400 THEN "bucket5"
+      WHEN pltv_revenue_30_days BETWEEN 400 AND 500 THEN "bucket6" 
+      WHEN pltv_revenue_30_days BETWEEN 500 AND 750 THEN "bucket7" 
+      WHEN pltv_revenue_30_days BETWEEN 750 AND 1000 THEN "bucket8" 
+      WHEN pltv_revenue_30_days BETWEEN 1000 AND 2000 THEN "bucket9" 
+      WHEN pltv_revenue_30_days > 2000 THEN "bucket10" END as bucket
   FROM
     `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30`)
 )
