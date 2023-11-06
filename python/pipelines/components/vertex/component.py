@@ -163,7 +163,18 @@ def elect_best_tabular_model(
     #th_arr = []
     for k,v in best_eval_metrics.items():
         if k in MetricsEnum.list():
+            logging.info(f"Metrics Logger: Model Evaluation Metric name {k} and value {v}")
+            def _isnan(value):
+                try:
+                    import math
+                    return math.isnan(float(value))
+                except:
+                    return False
+            
+            if _isnan(v):
+                v = "0"
             metrics_logger.log_metric(k, v)
+
         
         elif k == 'confidenceMetrics':
             for confidence_metrics in v:
