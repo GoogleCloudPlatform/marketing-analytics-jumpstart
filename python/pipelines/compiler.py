@@ -23,15 +23,18 @@ python -m pipelines.compiler -c ../config/conf.yaml -p train_pipeline -o my_comp
 
 # config path : pipeline module and function name
 pipelines_list = {
-    'vertex_ai.pipelines.feature-creation.execution': "pipelines.feature_engineering_pipelines.pipeline",
-    'vertex_ai.pipelines.propensity.training': None,
-    'vertex_ai.pipelines.propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
-    'vertex_ai.pipelines.segmentation.training': "pipelines.segmentation_pipelines.training_pl", # tabular workflows pipelines is precompiled
-    'vertex_ai.pipelines.segmentation.prediction': "pipelines.segmentation_pipelines.prediction_pl",
+    'vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution': "pipelines.feature_engineering_pipelines.auto_audience_segmentation_feature_engineering_pipeline",
+    'vertex_ai.pipelines.feature-creation-audience-segmentation.execution': "pipelines.feature_engineering_pipelines.audience_segmentation_feature_engineering_pipeline",
+    'vertex_ai.pipelines.feature-creation-purchase-propensity.execution': "pipelines.feature_engineering_pipelines.purchase_propensity_feature_engineering_pipeline",
+    'vertex_ai.pipelines.feature-creation-customer-ltv.execution': "pipelines.feature_engineering_pipelines.customer_lifetime_value_feature_engineering_pipeline",
     'vertex_ai.pipelines.auto_segmentation.prediction': "pipelines.auto_segmentation_pipelines.prediction_pl",
+    'vertex_ai.pipelines.segmentation.training': "pipelines.segmentation_pipelines.training_pl",
+    'vertex_ai.pipelines.segmentation.prediction': "pipelines.segmentation_pipelines.prediction_pl",
+    'vertex_ai.pipelines.propensity.training': None, # tabular workflows pipelines is precompiled
+    'vertex_ai.pipelines.propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
     'vertex_ai.pipelines.clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.prediction':  "pipelines.tabular_pipelines.prediction_regression_pl",
-} # key should match pipeline names as in the dev and prod.yaml files for automatic compilation
+} # key should match pipeline names as in the config.yaml files for automatic compilation
                 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
@@ -41,13 +44,13 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--config-file",
                         dest="config",
                         required=True,
-                        help="path to config YAML file (dev.yaml or prod.yaml)")
+                        help="path to config YAML file (config.yaml)")
     
     parser.add_argument("-p", '--pipeline-config-name',
                     dest="pipeline",
                     required=True,
                     choices=list(pipelines_list.keys()),
-                    help='Pipeline key name as it is in dev.yaml and prod.yaml')
+                    help='Pipeline key name as it is in config.yaml')
 
 
     parser.add_argument("-o", '--output-file',

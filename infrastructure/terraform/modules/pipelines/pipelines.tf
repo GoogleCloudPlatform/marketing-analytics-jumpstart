@@ -205,7 +205,8 @@ resource "null_resource" "build_push_pipelines_components_image" {
   }
 }
 
-resource "null_resource" "compile_feature_engineering_pipelines" {
+## Feature Engineering Pipelines
+resource "null_resource" "compile_feature_engineering_auto_audience_segmentation_pipeline" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
@@ -217,19 +218,80 @@ resource "null_resource" "compile_feature_engineering_pipelines" {
 
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation.execution -o feature_engineering.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f feature_engineering.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation.execution
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution -o fe_auto_audience_segmentation.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_auto_audience_segmentation.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution
     EOT
     working_dir = self.triggers.working_dir
   }
 }
 
+resource "null_resource" "compile_feature_engineering_audience_segmentation_pipeline" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    pipelines_repo_id            = google_artifact_registry_repository.pipelines-repo.id
+    pipelines_repo_create_time   = google_artifact_registry_repository.pipelines-repo.create_time
+    source_content_hash          = local.pipelines_content_hash
+    upstream_resource_dependency = null_resource.compile_feature_engineering_auto_audience_segmentation_pipeline.id
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-audience-segmentation.execution -o fe_audience_segmentation.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_audience_segmentation.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-audience-segmentation.execution
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+resource "null_resource" "compile_feature_engineering_purchase_propensity_pipeline" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    pipelines_repo_id            = google_artifact_registry_repository.pipelines-repo.id
+    pipelines_repo_create_time   = google_artifact_registry_repository.pipelines-repo.create_time
+    source_content_hash          = local.pipelines_content_hash
+    upstream_resource_dependency = null_resource.compile_feature_engineering_audience_segmentation_pipeline.id
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-purchase-propensity.execution -o fe_purchase_propensity.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_purchase_propensity.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-purchase-propensity.execution
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pipeline" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    pipelines_repo_id            = google_artifact_registry_repository.pipelines-repo.id
+    pipelines_repo_create_time   = google_artifact_registry_repository.pipelines-repo.create_time
+    source_content_hash          = local.pipelines_content_hash
+    upstream_resource_dependency = null_resource.compile_feature_engineering_purchase_propensity_pipeline.id
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-customer-ltv.execution -o fe_customer_ltv.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_customer_ltv.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-customer-ltv.execution
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+## Training and Inference Pipelines
 resource "null_resource" "compile_propensity_trainings_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
-    upstream_resource_dependency = null_resource.compile_feature_engineering_pipelines.id
+    upstream_resource_dependency = null_resource.compile_feature_engineering_customer_lifetime_value_pipeline.id
   }
 
   provisioner "local-exec" {
@@ -331,7 +393,7 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
-    upstream_resource_dependency = null_resource.compile_feature_engineering_pipelines.id
+    upstream_resource_dependency = null_resource.compile_segmentation_prediction_pipelines.id
   }
 
   provisioner "local-exec" {
