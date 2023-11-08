@@ -478,7 +478,7 @@ def bq_flatten_tabular_regression_table(
 
     query = f"""
         CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (SELECT 
-            {predictions_column}.value AS {destination_table.metadata["predictions_column"]}, b.*
+            GREATEST(0,{predictions_column}.value) AS {destination_table.metadata["predictions_column"]}, b.*
             FROM `{predictions_table.metadata['table_id']}` as a
             INNER JOIN `{source_table}` as b on a.{bq_unique_key}=b.{bq_unique_key} 
             )

@@ -72,15 +72,132 @@ vertex_ai:
     bucket_name: "${project_id}-pipelines"
     root_path: "gs://${project_id}-pipelines/pipelines/"
 
-    feature-creation:
+    feature-creation-auto-audience-segmentation:
       execution:
-        name: "feature-creation-pl"
-        job_id_prefix: "feature-creation-pl-"
-        experiment_name: "feature-creation"
+        name: "feature-creation-auto-audience-segmentation"
+        job_id_prefix: "eature-creation-auto-audience-segmentation-"
+        experiment_name: "feature-creation-auto-audience-segmentation"
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 1 * * *"
-          #cron: "TZ=America/New_York 0 1 \\* \\* \\*"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_auto_audience_segmentation_inference_preparation: "
+            CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
+          query_auto_audience_segmentation_training_preparation: "
+            CALL `{auto_audience_segmentation_training_preparation_procedure_name}`();"
+          
+          query_parameters:
+            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
+          timeout: 3600.0
+        pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
+          date_timezone: "UTC" # used when input_date is None and need to get current date.
+          auto_audience_segmentation_inference_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_inference_preparation"
+          auto_audience_segmentation_training_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_training_preparation"
+    
+
+    feature-creation-audience-segmentation:
+      execution:
+        name: "feature-creation-audience-segmentation"
+        job_id_prefix: "feature-creation-audience-segmentation-"
+        experiment_name: "feature-creation-audience-segmentation"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 1 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_user_segmentation_dimensions: "
+            CALL `{user_segmentation_dimensions_procedure_name}`();"
+          query_user_lookback_metrics: "
+            CALL `{user_lookback_metrics_procedure_name}`();"
+          query_user_scoped_segmentation_metrics: "
+            CALL `{user_scoped_segmentation_metrics_procedure_name}`();"
+          
+          query_audience_segmentation_inference_preparation: "
+            CALL `{audience_segmentation_inference_preparation_procedure_name}`();"
+
+          query_audience_segmentation_training_preparation: "
+            CALL `{audience_segmentation_training_preparation_procedure_name}`();"
+          
+          query_parameters:
+            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
+          timeout: 3600.0
+        pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
+          user_segmentation_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_segmentation_dimensions"
+          user_lookback_metrics_procedure_name: "${project_id}.feature_store.invoke_user_lookback_metrics"
+          user_scoped_segmentation_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_segmentation_metrics"
+          date_timezone: "UTC" # used when input_date is None and need to get current date.
+
+          audience_segmentation_inference_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_inference_preparation"
+
+          audience_segmentation_training_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_training_preparation"
+
+    
+    feature-creation-purchase-propensity:
+      execution:
+        name: "feature-creation-purchase-propensity"
+        job_id_prefix: "feature-creation-purchase-propensity-"
+        experiment_name: "feature-creation-purchase-propensity"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 1 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_purchase_propensity_label: "
+            CALL `{purchase_propensity_label_procedure_name}`();"
+          query_user_dimensions: "
+            CALL `{user_dimensions_procedure_name}`();"
+          query_user_rolling_window_metrics: "
+            CALL `{user_rolling_window_metrics_procedure_name}`();"
+          query_user_scoped_metrics: "
+            CALL `{user_scoped_metrics_procedure_name}`();"
+          query_user_session_event_aggregated_metrics: "
+            CALL `{user_session_event_aggregated_metrics_procedure_name}`();"
+          
+          query_purchase_propensity_inference_preparation: "
+            CALL `{purchase_propensity_inference_preparation_procedure_name}`();"
+
+          query_purchase_propensity_training_preparation: "
+            CALL `{purchase_propensity_training_preparation_procedure_name}`();"
+          
+          query_parameters:
+            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
+          timeout: 3600.0
+        pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
+          purchase_propensity_label_procedure_name: "${project_id}.feature_store.invoke_purchase_propensity_label"
+          user_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_dimensions"
+          user_rolling_window_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_metrics"
+          user_scoped_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_metrics"
+          user_session_event_aggregated_metrics_procedure_name: "${project_id}.feature_store.invoke_user_session_event_aggregated_metrics"
+          date_timezone: "UTC" # used when input_date is None and need to get current date.
+
+          purchase_propensity_inference_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_inference_preparation"
+          
+          purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
+
+    feature-creation-customer-ltv:
+      execution:
+        name: "feature-creation-customer-ltv"
+        job_id_prefix: "feature-creation-customer-ltv-"
+        experiment_name: "feature-creation-customer-ltv"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 1 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -90,73 +207,33 @@ vertex_ai:
           location: "${location}"
           query_customer_lifetime_value_label: "
             CALL `{customer_lifetime_value_label_procedure_name}`();"
-          query_purchase_propensity_label: "
-            CALL `{purchase_propensity_label_procedure_name}`();"
-          query_user_dimensions: "
-            CALL `{user_dimensions_procedure_name}`();"
           query_user_lifetime_dimensions: "
             CALL `{user_lifetime_dimensions_procedure_name}`();"
-          query_user_lookback_metrics: "
-            CALL `{user_lookback_metrics_procedure_name}`();"
           query_user_rolling_window_lifetime_metrics: "
             CALL `{user_rolling_window_lifetime_metrics_procedure_name}`();"
-          query_user_rolling_window_metrics: "
-            CALL `{user_rolling_window_metrics_procedure_name}`();"
           query_user_scoped_lifetime_metrics: "
             CALL `{user_scoped_lifetime_metrics_procedure_name}`();"
-          query_user_scoped_metrics: "
-            CALL `{user_scoped_metrics_procedure_name}`();"
-          query_user_scoped_segmentation_metrics: "
-            CALL `{user_scoped_segmentation_metrics_procedure_name}`();"
-          query_user_segmentation_dimensions: "
-            CALL `{user_segmentation_dimensions_procedure_name}`();"
-          query_user_session_event_aggregated_metrics: "
-            CALL `{user_session_event_aggregated_metrics_procedure_name}`();"
           
-          query_purchase_propensity_inference_preparation: "
-            CALL `{purchase_propensity_inference_preparation_procedure_name}`();"
           query_customer_lifetime_value_inference_preparation: "
             CALL `{customer_lifetime_value_inference_preparation_procedure_name}`();"
-          query_audience_segmentation_inference_preparation: "
-            CALL `{audience_segmentation_inference_preparation_procedure_name}`();"
-          query_auto_audience_segmentation_inference_preparation: "
-            CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
-
-          query_purchase_propensity_training_preparation: "
-            CALL `{purchase_propensity_training_preparation_procedure_name}`();"
+          
           query_customer_lifetime_value_training_preparation: "
             CALL `{customer_lifetime_value_training_preparation_procedure_name}`();"
-          query_audience_segmentation_training_preparation: "
-            CALL `{audience_segmentation_training_preparation_procedure_name}`();"
           
           query_parameters:
             - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
-          #INT64
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           customer_lifetime_value_label_procedure_name: "${project_id}.feature_store.invoke_customer_lifetime_value_label"
-          purchase_propensity_label_procedure_name: "${project_id}.feature_store.invoke_purchase_propensity_label"
-          user_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_dimensions"
           user_lifetime_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_lifetime_dimensions"
-          user_lookback_metrics_procedure_name: "${project_id}.feature_store.invoke_user_lookback_metrics"
           user_rolling_window_lifetime_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_lifetime_metrics"
-          user_rolling_window_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_metrics"
           user_scoped_lifetime_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_lifetime_metrics"
-          user_scoped_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_metrics"
-          user_scoped_segmentation_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_segmentation_metrics"
-          user_segmentation_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_segmentation_dimensions"
-          user_session_event_aggregated_metrics_procedure_name: "${project_id}.feature_store.invoke_user_session_event_aggregated_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
 
-          purchase_propensity_inference_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_inference_preparation"
           customer_lifetime_value_inference_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation"
-          audience_segmentation_inference_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_inference_preparation"
-          auto_audience_segmentation_inference_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_inference_preparation"
           
-          purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
-          audience_segmentation_training_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_training_preparation"
-        
+          
 
     propensity:
       training:
@@ -188,7 +265,7 @@ vertex_ai:
           test_fraction: null
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_7"
           # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_15"
-          data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15"
+          data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15_balanced"
           data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
@@ -392,7 +469,7 @@ vertex_ai:
           job_name_prefix: "clv-prediction-pl-"
           model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
-          model_metric_threshold: 15
+          model_metric_threshold: 50
           number_of_models_considered: 1
           bigquery_source: "${project_id}.customer_lifetime_value.v_customer_lifetime_value_inference_180_30"
           bigquery_destination_prefix: "${project_id}.customer_lifetime_value"

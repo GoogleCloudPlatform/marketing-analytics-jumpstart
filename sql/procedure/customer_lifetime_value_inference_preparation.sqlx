@@ -101,10 +101,7 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm as (
     MAX(UWM.checkouts_past_60_90_day) OVER(user_lifetime_rolling_window) AS checkouts_past_60_90_day,
     MAX(UWM.checkouts_past_90_120_day) OVER(user_lifetime_rolling_window) AS checkouts_past_90_120_day,
     MAX(UWM.checkouts_past_120_150_day) OVER(user_lifetime_rolling_window) AS checkouts_past_120_150_day,
-    MAX(UWM.checkouts_past_150_180_day) OVER(user_lifetime_rolling_window) AS checkouts_past_150_180_day,
-    --MAX(UWM.ltv_revenue_past_1_30_day) OVER(user_lifetime_rolling_window) AS ltv_revenue_past_1_30_day,
-    --MAX(UWM.ltv_revenue_past_30_90_day) OVER(user_lifetime_rolling_window) AS ltv_revenue_past_30_90_day,
-    --MAX(UWM.ltv_revenue_past_90_180_day) OVER(user_lifetime_rolling_window) AS ltv_revenue_past_90_180_day
+    MAX(UWM.checkouts_past_150_180_day) OVER(user_lifetime_rolling_window) AS checkouts_past_150_180_day
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` UWM
   WHERE
@@ -113,44 +110,6 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm as (
     AND UWM.processed_timestamp = lastest_processed_time_uwm
   WINDOW 
     user_lifetime_rolling_window AS (PARTITION BY UWM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
-);
-
-CREATE OR REPLACE TEMP TABLE inference_preparation_um as (
-  SELECT DISTINCT
-    UM.feature_date,
-    MAX(UM.lifetime_purchasers_users) OVER(user_scoped_lifetime_metrics_window) AS lifetime_purchasers_users,
-    MAX(UM.lifetime_average_daily_purchasers) OVER(user_scoped_lifetime_metrics_window) AS lifetime_average_daily_purchasers,
-    MAX(UM.lifetime_active_users) OVER(user_scoped_lifetime_metrics_window) AS lifetime_active_users,
-    MAX(UM.lifetime_DAU) OVER(user_scoped_lifetime_metrics_window) AS lifetime_DAU,
-    MAX(UM.lifetime_MAU) OVER(user_scoped_lifetime_metrics_window) AS lifetime_MAU,
-    MAX(UM.lifetime_WAU) OVER(user_scoped_lifetime_metrics_window) AS lifetime_WAU,
-    MAX(UM.lifetime_dau_per_mau) OVER(user_scoped_lifetime_metrics_window) AS lifetime_dau_per_mau,
-    MAX(UM.lifetime_dau_per_wau) OVER(user_scoped_lifetime_metrics_window) AS lifetime_dau_per_wau,
-    MAX(UM.lifetime_wau_per_mau) OVER(user_scoped_lifetime_metrics_window) AS lifetime_wau_per_mau,
-    MAX(UM.lifetime_users_engagement_duration_seconds) OVER(user_scoped_lifetime_metrics_window) AS lifetime_users_engagement_duration_seconds,
-    MAX(UM.lifetime_average_engagement_time) OVER(user_scoped_lifetime_metrics_window) AS lifetime_average_engagement_time,
-    MAX(UM.lifetime_average_engagement_time_per_session) OVER(user_scoped_lifetime_metrics_window) AS lifetime_average_engagement_time_per_session,
-    MAX(UM.lifetime_average_sessions_per_user) OVER(user_scoped_lifetime_metrics_window) AS lifetime_average_sessions_per_user,
-    MAX(UM.lifetime_ARPPU) OVER(user_scoped_lifetime_metrics_window) AS lifetime_ARPPU,
-    MAX(UM.lifetime_ARPU) OVER(user_scoped_lifetime_metrics_window) AS lifetime_ARPU,
-    MAX(UM.lifetime_average_daily_revenue) OVER(user_scoped_lifetime_metrics_window) AS lifetime_average_daily_revenue,
-    MAX(UM.lifetime_max_daily_revenue) OVER(user_scoped_lifetime_metrics_window) AS lifetime_max_daily_revenue,
-    MAX(UM.lifetime_min_daily_revenue) OVER(user_scoped_lifetime_metrics_window) AS lifetime_min_daily_revenue,
-    MAX(UM.lifetime_new_users) OVER(user_scoped_lifetime_metrics_window) AS lifetime_new_users,
-    MAX(UM.lifetime_returning_users) OVER(user_scoped_lifetime_metrics_window) AS lifetime_returning_users,
-    MAX(UM.lifetime_first_time_purchasers) OVER(user_scoped_lifetime_metrics_window) AS lifetime_first_time_purchasers,
-    MAX(UM.lifetime_first_time_purchaser_conversion) OVER(user_scoped_lifetime_metrics_window) AS lifetime_first_time_purchaser_conversion,
-    MAX(UM.lifetime_first_time_purchasers_per_new_user) OVER(user_scoped_lifetime_metrics_window) AS lifetime_first_time_purchasers_per_new_user,
-    MAX(UM.lifetime_avg_user_conversion_rate) OVER(user_scoped_lifetime_metrics_window) AS lifetime_avg_user_conversion_rate,
-    MAX(UM.lifetime_avg_session_conversion_rate) OVER(user_scoped_lifetime_metrics_window) AS lifetime_avg_session_conversion_rate
-  FROM
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` UM
-  WHERE
-    -- Define the training+validation subset interval
-    UM.feature_date = inference_date
-    AND UM.processed_timestamp = lastest_processed_time_um
-  WINDOW 
-    user_scoped_lifetime_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 
@@ -218,32 +177,7 @@ CREATE OR REPLACE TEMP TABLE inference_preparation as (
     UWM.checkouts_past_60_90_day,
     UWM.checkouts_past_90_120_day,
     UWM.checkouts_past_120_150_day,
-    UWM.checkouts_past_150_180_day,
-    UM.lifetime_purchasers_users,
-    UM.lifetime_average_daily_purchasers,
-    UM.lifetime_active_users,
-    UM.lifetime_DAU,
-    UM.lifetime_MAU,
-    UM.lifetime_WAU,
-    UM.lifetime_dau_per_mau,
-    UM.lifetime_dau_per_wau,
-    UM.lifetime_wau_per_mau,
-    UM.lifetime_users_engagement_duration_seconds,
-    UM.lifetime_average_engagement_time,
-    UM.lifetime_average_engagement_time_per_session,
-    UM.lifetime_average_sessions_per_user,
-    UM.lifetime_ARPPU,
-    UM.lifetime_ARPU,
-    UM.lifetime_average_daily_revenue,
-    UM.lifetime_max_daily_revenue,
-    UM.lifetime_min_daily_revenue,
-    UM.lifetime_new_users,
-    UM.lifetime_returning_users,
-    UM.lifetime_first_time_purchasers,
-    UM.lifetime_first_time_purchaser_conversion,
-    UM.lifetime_first_time_purchasers_per_new_user,
-    UM.lifetime_avg_user_conversion_rate,
-    UM.lifetime_avg_session_conversion_rate
+    UWM.checkouts_past_150_180_day
   FROM
     inference_preparation_ud UD
   INNER JOIN
@@ -251,17 +185,12 @@ CREATE OR REPLACE TEMP TABLE inference_preparation as (
   ON
     UWM.user_pseudo_id = UD.user_pseudo_id
     AND UWM.feature_date = UD.feature_date
-  INNER JOIN
-    inference_preparation_um UM
-  ON
-    UM.feature_date = UD.feature_date
 );
 
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
 
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-(
-  feature_date,
+(feature_date,
   user_pseudo_id,
   user_id,
   month_of_the_year,
@@ -323,32 +252,7 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate
+  checkouts_past_150_180_day
   )
 SELECT DISTINCT
 feature_date,
@@ -413,32 +317,7 @@ feature_date,
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate 
+  checkouts_past_150_180_day 
   FROM inference_preparation;
 
 
@@ -507,32 +386,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_infe
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate
+  checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
 
@@ -601,32 +455,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_infe
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate
+  checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
 
@@ -695,41 +524,14 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_infe
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate
+  checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
 
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_inference_180_30`
-(processed_timestamp,
-  feature_date,
+(feature_date,
   user_pseudo_id,
-  user_id,
   month_of_the_year,
   week_of_the_year,
   day_of_the_month,
@@ -789,32 +591,8 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_inf
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate)
+  checkouts_past_150_180_day
+  )
 OPTIONS(
   --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_inference_180_30",
@@ -822,10 +600,8 @@ OPTIONS(
   labels=[("org_unit", "development")]
 ) AS 
 SELECT DISTINCT
-  processed_timestamp,
   feature_date,
   user_pseudo_id,
-  user_id,
   month_of_the_year,
   week_of_the_year,
   day_of_the_month,
@@ -885,42 +661,14 @@ SELECT DISTINCT
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate
+  checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_30`;
 
 
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_inference_180_90`
-(
-  processed_timestamp,
-  feature_date,
+(feature_date,
   user_pseudo_id,
-  user_id,
   month_of_the_year,
   week_of_the_year,
   day_of_the_month,
@@ -980,32 +728,8 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_inf
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate)
+  checkouts_past_150_180_day
+  )
 OPTIONS(
   --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_inference_180_90",
@@ -1013,10 +737,8 @@ OPTIONS(
   labels=[("org_unit", "development")]
 ) AS 
 SELECT DISTINCT
-  processed_timestamp,
   feature_date,
   user_pseudo_id,
-  user_id,
   month_of_the_year,
   week_of_the_year,
   day_of_the_month,
@@ -1076,40 +798,13 @@ SELECT DISTINCT
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate
+  checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_90`;
 
 
   CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_180`
-(processed_timestamp, 
-  feature_date,
+(feature_date,
   user_pseudo_id,
-  user_id,
   month_of_the_year,
   week_of_the_year,
   day_of_the_month,
@@ -1169,43 +864,17 @@ SELECT DISTINCT
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate)
+  checkouts_past_150_180_day
+  )
 OPTIONS(
   --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_customer_lifetime_value_inference_180_180",
   description="View Purchase Propensity Inference dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
 ) AS 
-SELECT DISTINCT
-  processed_timestamp, 
+SELECT DISTINCT 
   feature_date,
   user_pseudo_id,
-  user_id,
   month_of_the_year,
   week_of_the_year,
   day_of_the_month,
@@ -1265,32 +934,7 @@ SELECT DISTINCT
   checkouts_past_60_90_day,
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
-  checkouts_past_150_180_day,
-  lifetime_purchasers_users,
-  lifetime_average_daily_purchasers,
-  lifetime_active_users,
-  lifetime_DAU,
-  lifetime_MAU,
-  lifetime_WAU,
-  lifetime_dau_per_mau,
-  lifetime_dau_per_wau,
-  lifetime_wau_per_mau,
-  lifetime_users_engagement_duration_seconds,
-  lifetime_average_engagement_time,
-  lifetime_average_engagement_time_per_session,
-  lifetime_average_sessions_per_user,
-  lifetime_ARPPU,
-  lifetime_ARPU,
-  lifetime_average_daily_revenue,
-  lifetime_max_daily_revenue,
-  lifetime_min_daily_revenue,
-  lifetime_new_users,
-  lifetime_returning_users,
-  lifetime_first_time_purchasers,
-  lifetime_first_time_purchaser_conversion,
-  lifetime_first_time_purchasers_per_new_user,
-  lifetime_avg_user_conversion_rate,
-  lifetime_avg_session_conversion_rate
+  checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_180`;
 
 
