@@ -45,6 +45,7 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
       NULL as purchase_day_12,
       NULL as purchase_day_13,
       NULL as purchase_day_14,
+      NULL as purchases_past_15_30_day
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
     CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
     WHERE Users.event_name='purchase'
@@ -71,7 +72,8 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 11 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_11,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 12 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_12,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 13 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_13,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_14
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_14,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_15_30_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
@@ -104,6 +106,7 @@ SELECT DISTINCT
   LEAST(COALESCE(B.purchase_day_12, 0), 1) AS purchase_day_12,
   LEAST(COALESCE(B.purchase_day_13, 0), 1) AS purchase_day_13,
   LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
+  LEAST(COALESCE(B.purchases_past_15_30_day, 0), 1) AS purchases_past_15_30_day
 FROM all_users_possible_purchases AS A
 LEFT JOIN future_purchases_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id AND B.feature_date = A.feature_date

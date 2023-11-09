@@ -83,5 +83,10 @@
     "name": "purchase_day_14",
     "type": "INTEGER",
     "description": "feature description"
+  },
+  {
+    "name": "purchase_day_15_30",
+    "type": "INTEGER",
+    "description": "feature description"
   }
 ]

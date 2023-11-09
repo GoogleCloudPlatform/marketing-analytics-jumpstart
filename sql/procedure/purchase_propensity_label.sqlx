@@ -35,7 +35,8 @@ CREATE TEMP TABLE future_purchases_per_user AS (
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 11 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_11,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 12 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_12,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 13 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_13,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_14
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_14,
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_15_30_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
@@ -67,6 +68,7 @@ CREATE TEMP TABLE future_purchases_per_user AS (
       NULL as purchase_day_12,
       NULL as purchase_day_13,
       NULL as purchase_day_14,
+      NULL as purchases_past_15_30_day
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
     CROSS JOIN 
     (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
@@ -97,6 +99,7 @@ CREATE TEMP TABLE DataForTargetTable AS
     LEAST(COALESCE(B.purchase_day_12, 0), 1) AS purchase_day_12,
     LEAST(COALESCE(B.purchase_day_13, 0), 1) AS purchase_day_13,
     LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
+    LEAST(COALESCE(B.purchases_past_15_30_day, 0), 1) AS purchases_past_15_30_day
   FROM all_users_possible_purchases AS A
   LEFT JOIN future_purchases_per_user AS B
   ON B.user_pseudo_id = A.user_pseudo_id
@@ -125,7 +128,8 @@ WHEN MATCHED THEN
     I.purchase_day_11 = T.purchase_day_11,
     I.purchase_day_12 = T.purchase_day_12,
     I.purchase_day_13 = T.purchase_day_13,
-    I.purchase_day_14 = T.purchase_day_14
+    I.purchase_day_14 = T.purchase_day_14,
+    I.purchases_past_15_30_day = T.purchases_past_15_30_day
 WHEN NOT MATCHED THEN
   INSERT 
     (processed_timestamp,
@@ -144,7 +148,8 @@ WHEN NOT MATCHED THEN
      purchase_day_11,
      purchase_day_12,
      purchase_day_13,
-     purchase_day_14)
+     purchase_day_14,
+     purchases_past_15_30_day)
   VALUES
     (T.processed_timestamp,
      T.feature_date,
@@ -162,7 +167,8 @@ WHEN NOT MATCHED THEN
      T.purchase_day_11,
      T.purchase_day_12,
      T.purchase_day_13,
-     T.purchase_day_14)
+     T.purchase_day_14,
+     T.purchases_past_15_30_day)
 ;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
