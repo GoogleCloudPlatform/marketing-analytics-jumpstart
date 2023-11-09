@@ -32,8 +32,9 @@ pipelines_list = {
     'vertex_ai.pipelines.segmentation.prediction': "pipelines.segmentation_pipelines.prediction_pl",
     'vertex_ai.pipelines.propensity.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
+    'vertex_ai.pipelines.propensity_clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.training': None, # tabular workflows pipelines is precompiled
-    'vertex_ai.pipelines.clv.prediction':  "pipelines.tabular_pipelines.prediction_regression_pl",
+    'vertex_ai.pipelines.clv.prediction':  "pipelines.tabular_pipelines.prediction_binary_classification_regression_pl",
 } # key should match pipeline names as in the config.yaml files for automatic compilation
                 
 if __name__ == "__main__":
@@ -83,9 +84,9 @@ if __name__ == "__main__":
             )
     else:    
         module_name = '.'.join(pipelines_list[args.pipeline].split('.')[:-1])
-        funtion_name = pipelines_list[args.pipeline].split('.')[-1]
+        function_name = pipelines_list[args.pipeline].split('.')[-1]
         compile_pipeline(
-            pipeline_func = getattr(importlib.import_module(module_name),funtion_name),
+            pipeline_func = getattr(importlib.import_module(module_name),function_name),
             template_path = args.output,
             pipeline_name = pipeline_params['name'],
             pipeline_parameters = pipeline_params['pipeline_parameters'],

@@ -287,7 +287,7 @@ resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pi
 }
 
 ## Training and Inference Pipelines
-resource "null_resource" "compile_propensity_trainings_pipelines" {
+resource "null_resource" "compile_propensity_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
@@ -308,7 +308,7 @@ resource "null_resource" "compile_propensity_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
-    upstream_resource_dependency = null_resource.compile_propensity_trainings_pipelines.id
+    upstream_resource_dependency = null_resource.compile_propensity_training_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -321,11 +321,28 @@ resource "null_resource" "compile_propensity_prediction_pipelines" {
   }
 }
 
-resource "null_resource" "compile_clv_training_pipelines" {
+resource "null_resource" "compile_propensity_clv_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
     upstream_resource_dependency = null_resource.compile_propensity_prediction_pipelines.id
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity_clv.training -o propensity_clv_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f propensity_clv_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity_clv.training
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+resource "null_resource" "compile_clv_training_pipelines" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_propensity_clv_training_pipelines.id
   }
 
   provisioner "local-exec" {

@@ -143,7 +143,7 @@ vertex_ai:
           audience_segmentation_training_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_training_preparation"
 
     
-    feature-creation-purchase-propensity:
+    feature-creation-purchase-propensity: 
       execution:
         name: "feature-creation-purchase-propensity"
         job_id_prefix: "feature-creation-purchase-propensity-"
@@ -286,7 +286,6 @@ vertex_ai:
           - user_pseudo_id
           - user_id
           - will_purchase
-
         pipeline_parameters_substitutions: null 
       prediction:
         name: "propensity-prediction-pl"
@@ -403,6 +402,58 @@ vertex_ai:
           pubsub_activation_type: "auto-audience-segmentation-15"
         pipeline_parameters_substitutions: null
 
+    ## CLV training and inference pipeline requires a purchase propensity model training and a ltv regression model training. 
+    ## Finally, a unique prediction pipeline.
+    propensity_clv:
+      training:
+        name: "propensity-clv-training-pl"
+        job_id_prefix: "propensity-clv-training-pl-"
+        experiment_name: "propensity-clv-training"
+        type: "tabular-workflows"
+        schedule:
+          cron: "TZ=America/New_York 0 0 * * SAT"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project: "${project_id}"
+          location: "${cloud_region}"
+          root_dir: "gs://${project_id}-pipelines/propensity-clv-training"
+          transformations: "gs://${project_id}-pipelines/propensity-clv-training/transformations_config_{timestamp}.json"
+          train_budget_milli_node_hours: 1000 # 1 hour
+          run_evaluation: true
+          run_distillation: false
+          prediction_type: "classification"
+          optimization_objective: "minimize-log-loss"
+          target_column: "will_purchase"
+          predefined_split_key: "data_split"
+          data_source_csv_filenames: null
+          training_fraction: null
+          validation_fraction: null
+          test_fraction: null
+          data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_30_balanced"
+          data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
+          dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          timestamp_split_key: null
+          stratified_split_key: null
+          weight_column: null
+          additional_experiments: null
+          export_additional_model_without_custom_ops: false
+          study_spec_parameters_override:
+            - parameter_id: "model_type"
+              categorical_value_spec:
+                values: 
+                  - nn
+                  - boosted_trees
+        exclude_features:
+          - processed_timestamp
+          - data_split
+          - feature_date
+          - user_pseudo_id
+          - user_id
+          - will_purchase
+        pipeline_parameters_substitutions: null 
     clv:
       training:
         name: "clv-training-pl"
@@ -431,7 +482,7 @@ vertex_ai:
           test_fraction: null
           data_source_csv_filenames: null
           optimization_objective: minimize-mae # minimize-mae | minimize-rmse | minimize-rmsle
-          data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30_balanced"
+          data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30"
           data_source_bigquery_table_schema: "../sql/schema/table/customer_lifetime_value_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
@@ -466,14 +517,25 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${cloud_region}"
-          job_name_prefix: "clv-prediction-pl-"
-          model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
-          model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
-          model_metric_threshold: 50
-          number_of_models_considered: 1
-          bigquery_source: "${project_id}.customer_lifetime_value.v_customer_lifetime_value_inference_180_30"
-          bigquery_destination_prefix: "${project_id}.customer_lifetime_value"
-          bq_unique_key: "user_pseudo_id"
+          purchase_job_name_prefix: "propensity-prediction-pl-"
+          clv_job_name_prefix: "clv-prediction-pl-"
+          purchase_model_display_name: "propensity-clv-training-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          purchase_model_metric_name: "logLoss"
+          purchase_model_metric_threshold: 0.9
+          number_of_purchase_models_considered: 1
+          generate_explanation: false
+          threashold: 0.5
+          positive_label: "1"
+          clv_model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          clv_model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
+          clv_model_metric_threshold: 50
+          number_of_clv_models_considered: 1
+          purchase_bigquery_source: "${project_id}.purchase_propensity.v_purchase_propensity_inference_30_30"
+          purchase_bigquery_destination_prefix: "${project_id}.customer_lifetime_value"
+          clv_bigquery_source: "${project_id}.customer_lifetime_value.v_customer_lifetime_value_inference_180_30"
+          clv_bigquery_destination_prefix: "${project_id}.customer_lifetime_value"
+          purchase_bq_unique_key: "user_pseudo_id"
+          clv_bq_unique_key: "user_pseudo_id"
           machine_type: "n1-standard-4"
           max_replica_count: 10
           batch_size: 64
@@ -481,7 +543,7 @@ vertex_ai:
           accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
           generate_explanation: false
           pubsub_activation_topic: "activation-trigger"
-          pubsub_activation_type: "cltv-180-180" # cltv-180-180 | cltv-180-90 | cltv-180-30
+          pubsub_activation_type: "cltv-180-30" # cltv-180-180 | cltv-180-90 | cltv-180-30
         pipeline_parameters_substitutions: null
 
 bigquery:

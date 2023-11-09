@@ -568,3 +568,90 @@ def bq_flatten_kmeans_prediction_table(
 
     for row in results:
         logging.info("row info: {}".format(row))
+
+
+
+##TODO: improve code
+@component(base_image=base_image)
+def bq_union_predictions_tables(
+    project_id: str,
+    location: str,
+    predictions_table_left: Input[Dataset],
+    predictions_table_right: Input[Dataset],
+    table_left_bq_unique_key: str,
+    table_right_bq_unique_key: str,
+    destination_table: Output[Dataset]
+):
+
+    from google.cloud import bigquery
+    import logging
+
+    # Construct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=location
+    )
+
+    # Inspect the metadata set on destination_table and predictions_table
+    logging.info(destination_table.metadata)
+    logging.info(predictions_table_left.metadata)
+    logging.info(predictions_table_right.metadata)
+
+    # Make an API request.
+    bq_table_left = client.get_table(predictions_table_left.metadata['table_id'])
+    # View table properties
+    logging.info(
+        "Got table '{}.{}.{} located at {}'.".format(
+            bq_table_left.project, bq_table_left.dataset_id, bq_table_left.table_id, bq_table_left.location)
+    )
+    # Make an API request.
+    bq_table_right = client.get_table(predictions_table_right.metadata['table_id'])
+    # View table properties
+    logging.info(
+        "Got table '{}.{}.{} located at {}'.".format(
+            bq_table_right.project, bq_table_right.dataset_id, bq_table_right.table_id, bq_table_right.location)
+    )
+
+    predictions_column_left = None
+    for i in bq_table_left.schema:
+        if (i.name.startswith(bq_table_left.metadata['predictions_column_prefix'])):
+            predictions_column_left = i.name
+    if predictions_column_left is None:
+        raise Exception(
+            f"no prediction field found in given table {predictions_table_left.metadata['table_id']}")
+    predictions_column_right = None
+    for i in bq_table_left.schema:
+        if (i.name.startswith(bq_table_left.metadata['predictions_column_prefix'])):
+            predictions_column_right = i.name
+    if predictions_column_right is None:
+        raise Exception(
+            f"no prediction field found in given table {predictions_table_left.metadata['table_id']}")
+
+    destination_table.metadata["table_id"] = f"{predictions_table_left.metadata['table_id']}_view"
+    destination_table.metadata["predictions_column"] = 'prediction'
+    query = f"""
+        CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (SELECT 
+            GREATEST(0,{predictions_column}.value) AS {destination_table.metadata["predictions_column"]}, b.*
+            FROM `{predictions_table_left.metadata['table_id']}` as a
+            INNER JOIN `{predictions_table_right.metadata['table_id']}` as b on a.{table_left_bq_unique_key}=b.{table_right_bq_unique_key} 
+            )
+    """
+    job_config = bigquery.QueryJobConfig()
+    job_config.write_disposition = 'WRITE_TRUNCATE'
+    
+    # Reconstruct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=bq_table.location
+    )
+    #query_job = client.query(
+    #    query=query,
+    #    location=bq_table.location,
+    #)
+
+    #results = query_job.result()
+
+    #logging.info(query)
+
+    #for row in results:
+    #    logging.info("row info: {}".format(row))

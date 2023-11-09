@@ -357,6 +357,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   checkouts_past_150_180_day,
   pltv_revenue_30_days
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
+  WHERE pltv_revenue_30_days >= 10.0
 );
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_90` AS(
@@ -428,6 +429,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   checkouts_past_150_180_day,
   pltv_revenue_90_days
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
+  WHERE pltv_revenue_90_days >= 10.0
 );
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_180` AS(
@@ -499,6 +501,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   checkouts_past_150_180_day,
   pltv_revenue_180_days
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
+  WHERE pltv_revenue_180_days >= 10.0
 );
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30`
