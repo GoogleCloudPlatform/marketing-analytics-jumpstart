@@ -103,18 +103,19 @@ def load_custom_dimensions(query_file: str):
 
 
 def load_existing_ga4_custom_events(configuration: map):
-  client = admin_v1alpha.AnalyticsAdminServiceClient()
-  request = admin_v1alpha.ListEventCreateRulesRequest(
-    parent=f"properties/{configuration['property_id']}/dataStreams/{configuration['stream_id']}",
-  )
-  response = client.list_event_create_rules(request=request)
+  response = load_existing_ga4_custom_event_objs(configuration)
   existing_event_rules = []
   for page in response.pages:
     for event_rule_obj in page.event_create_rules:
       existing_event_rules.append(event_rule_obj.destination_event)
-
   return existing_event_rules
 
+def load_existing_ga4_custom_event_objs(configuration: map):
+  client = admin_v1alpha.AnalyticsAdminServiceClient()
+  request = admin_v1alpha.ListEventCreateRulesRequest(
+    parent=f"properties/{configuration['property_id']}/dataStreams/{configuration['stream_id']}",
+  )
+  return client.list_event_create_rules(request=request)
 
 def create_custom_event(configuration: map, event_name: str):
   client = admin_v1alpha.AnalyticsAdminServiceClient()
@@ -142,7 +143,7 @@ def create_custom_dimensions(configuration: map):
     'sql/query/audience_segmentation_query_template.sqlx')
   use_case = 'Audience Segmentation'
   for field in fields:
-    display_name = f'MDE {use_case} {field}'
+    display_name = f'MAJ {use_case} {field}'
     if not display_name in existing_dimensions:
       print(f'Create custom dimension: {display_name}')
       create_custom_dimension(configuration, field, display_name)
@@ -163,19 +164,53 @@ def create_custom_dimension(configuration: map, field_name: str, display_name: s
 
   client.create_custom_dimension(request=request)
 
-
-def load_existing_ga4_custom_dimensions(configuration: map):
+def load_existing_ga4_custom_dimension_objs(configuration: map):
   client = admin_v1alpha.AnalyticsAdminServiceClient()
   request = admin_v1alpha.ListCustomDimensionsRequest(
     parent=f"properties/{configuration['property_id']}",
   )
-  page_result = client.list_custom_dimensions(request=request)
+  return client.list_custom_dimensions(request=request)
+
+def load_existing_ga4_custom_dimensions(configuration: map):
+  page_result = load_existing_ga4_custom_dimension_objs(configuration)
   existing_custom_dimensions = []
   for page in page_result.pages:
     for custom_dimension in page.custom_dimensions:
       existing_custom_dimensions.append(custom_dimension.display_name)
   return existing_custom_dimensions
 
+def update_custom_event_with_new_prefix(event_create_rule, old_prefix, new_prefix):
+  client = admin_v1alpha.AnalyticsAdminServiceClient()
+  event_create_rule.destination_event = event_create_rule.destination_event.replace(old_prefix, new_prefix)
+  event_create_rule.event_conditions[0].value = event_create_rule.event_conditions[0].value.replace(old_prefix, new_prefix)
+  request = admin_v1alpha.UpdateEventCreateRuleRequest(
+    event_create_rule=event_create_rule,
+    update_mask="destinationEvent,eventConditions"
+  )
+  client.update_event_create_rule(request=request)
+
+def rename_existing_ga4_custom_events(configuration: map, old_prefix, new_prefix):
+  existing_event_rules = load_existing_ga4_custom_event_objs(configuration)
+  for page in existing_event_rules.pages:
+    for create_event_rule in page.event_create_rules:
+      if create_event_rule.destination_event.startswith(old_prefix):
+        update_custom_event_with_new_prefix(create_event_rule, old_prefix, new_prefix)
+
+def update_custom_dimension_with_new_prefix(custom_dimension, old_prefix, new_prefix):
+  client = admin_v1alpha.AnalyticsAdminServiceClient()
+  custom_dimension.display_name = custom_dimension.display_name.replace(old_prefix, new_prefix)
+  request = admin_v1alpha.UpdateCustomDimensionRequest(
+    custom_dimension=custom_dimension,
+    update_mask="displayName"
+  )
+  client.update_custom_dimension(request=request)
+
+def rename_existing_ga4_custom_dimensions(configuration: map, old_prefix, new_prefix):
+  page_result = load_existing_ga4_custom_dimension_objs(configuration)
+  for page in page_result.pages:
+    for custom_dimension in page.custom_dimensions:
+      if custom_dimension.display_name.startswith(old_prefix):
+        update_custom_dimension_with_new_prefix(custom_dimension, old_prefix, new_prefix)
 
 def entry():
   '''
@@ -204,7 +239,7 @@ def entry():
 
   # python setup.py --ga4_resource=measurement_properties
   if args.ga4_resource == "measurement_properties":
-    secret_display_name = 'MDE Activation'
+    secret_display_name = 'MAJ Activation'
     properties = {
       'measurement_id': get_measurement_id(configuration),
       'measurement_secret': get_measurement_protocol_secret(configuration, secret_display_name)
@@ -213,8 +248,10 @@ def entry():
 
   # python setup.py --ga4_resource=custom_events
   if args.ga4_resource == "custom_events":
+    rename_existing_ga4_custom_events(configuration, "mas_", "maj_")
     create_custom_events(configuration)
 
   # python setup.py --ga4_resource=custom_dimensions
   if args.ga4_resource == "custom_dimensions":
+    rename_existing_ga4_custom_dimensions(configuration, "MDE ", "MAJ ")
     create_custom_dimensions(configuration)
