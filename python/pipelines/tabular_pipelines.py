@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyregression 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -263,10 +263,10 @@ def prediction_binary_classification_regression_pl(
     union_predictions = bq_union_predictions_tables(
         project_id=project_id,
         location=location,
-        predictions_table_left=flatten_propensity_predictions.outputs['destination_table'],
-        predictions_table_right=clv_flatten_predictions.outputs['destination_table'],
-        table_left_bq_unique_key=purchase_bq_unique_key,
-        table_right_bq_unique_key=clv_bq_unique_key,
+        predictions_table_propensity=propensity_predictions.outputs['destination_table'],
+        predictions_table_regression=clv_flatten_predictions.outputs['destination_table'],
+        table_propensity_bq_unique_key=purchase_bq_unique_key,
+        table_regression_bq_unique_key=clv_bq_unique_key,
     ).set_display_name('union_predictions')
 
     send_pubsub_activation_msg(

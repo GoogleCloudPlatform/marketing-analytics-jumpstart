@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyregression 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -377,6 +377,7 @@ def bq_flatten_tabular_binary_prediction_table(
     bq_table = client.get_table(predictions_table.metadata['table_id'])
     destination_table.metadata["table_id"] = f"{predictions_table.metadata['table_id']}_view"
     destination_table.metadata["predictions_column"] = 'prediction'
+    destination_table.metadata["predictions_prob_column"] = "prediction_prob"
 
     # View table properties
     logging.info(
@@ -478,7 +479,7 @@ def bq_flatten_tabular_regression_table(
 
     query = f"""
         CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (SELECT 
-            GREATEST(0,{predictions_column}.value) AS {destination_table.metadata["predictions_column"]}, b.*
+            GREATEST(0.0,{predictions_column}.value) AS {destination_table.metadata["predictions_column"]}, b.*
             FROM `{predictions_table.metadata['table_id']}` as a
             INNER JOIN `{source_table}` as b on a.{bq_unique_key}=b.{bq_unique_key} 
             )
@@ -571,18 +572,19 @@ def bq_flatten_kmeans_prediction_table(
 
 
 
+
 ##TODO: improve code
 @component(base_image=base_image)
 def bq_union_predictions_tables(
     project_id: str,
     location: str,
-    predictions_table_left: Input[Dataset],
-    predictions_table_right: Input[Dataset],
-    table_left_bq_unique_key: str,
-    table_right_bq_unique_key: str,
-    destination_table: Output[Dataset]
+    predictions_table_propensity: Input[Dataset],
+    predictions_table_regression: Input[Dataset],
+    table_propensity_bq_unique_key: str,
+    table_propensity_bq_unique_key: str,
+    destination_table: Output[Dataset],
+    threashold: float = 0.5
 ):
-
     from google.cloud import bigquery
     import logging
 
@@ -594,48 +596,113 @@ def bq_union_predictions_tables(
 
     # Inspect the metadata set on destination_table and predictions_table
     logging.info(destination_table.metadata)
-    logging.info(predictions_table_left.metadata)
-    logging.info(predictions_table_right.metadata)
+    logging.info(predictions_table_propensity.metadata)
+    logging.info(predictions_table_regression.metadata)
 
-    # Make an API request.
-    bq_table_left = client.get_table(predictions_table_left.metadata['table_id'])
+    # Get BigQuery Table Object
+    bq_table_propensity = client.get_table(predictions_table_propensity.metadata['table_id'])
     # View table properties
     logging.info(
         "Got table '{}.{}.{} located at {}'.".format(
-            bq_table_left.project, bq_table_left.dataset_id, bq_table_left.table_id, bq_table_left.location)
+            bq_table_propensity.project, bq_table_propensity.dataset_id, bq_table_propensity.table_id, bq_table_propensity.location)
     )
-    # Make an API request.
-    bq_table_right = client.get_table(predictions_table_right.metadata['table_id'])
+    # Get BigQuery Table Object
+    bq_table_regression = client.get_table(predictions_table_regression.metadata['table_id'])
     # View table properties
     logging.info(
         "Got table '{}.{}.{} located at {}'.".format(
-            bq_table_right.project, bq_table_right.dataset_id, bq_table_right.table_id, bq_table_right.location)
+            bq_table_regression.project, bq_table_regression.dataset_id, bq_table_regression.table_id, bq_table_regression.location)
     )
 
-    predictions_column_left = None
-    for i in bq_table_left.schema:
-        if (i.name.startswith(bq_table_left.metadata['predictions_column_prefix'])):
-            predictions_column_left = i.name
-    if predictions_column_left is None:
+    # Get table prediction column
+    predictions_column_propensity = None
+    for i in bq_table_propensity.schema:
+        if (i.name.startswith(predictions_table_propensity.metadata['predictions_column_prefix'])):
+            predictions_column_propensity = i.name
+    if predictions_column_propensity is None:
         raise Exception(
-            f"no prediction field found in given table {predictions_table_left.metadata['table_id']}")
-    predictions_column_right = None
-    for i in bq_table_left.schema:
-        if (i.name.startswith(bq_table_left.metadata['predictions_column_prefix'])):
-            predictions_column_right = i.name
-    if predictions_column_right is None:
+            f"no prediction field found in given table {predictions_table_propensity.metadata['table_id']}")
+    predictions_prob_column_propensity = None
+    for i in bq_table_propensity.schema:
+        if (i.name.startswith(predictions_table_propensity.metadata['predictions_prob_column'])):
+            predictions_prob_column_propensity = i.name
+    if predictions_prob_column_propensity is None:
         raise Exception(
-            f"no prediction field found in given table {predictions_table_left.metadata['table_id']}")
+            f"no prediction field found in given table {predictions_table_propensity.metadata['table_id']}")
+    predictions_column_regression = None
+    for i in bq_table_regression.schema:
+        if (i.name.startswith(predictions_table_regression.metadata['predictions_column'])):
+            predictions_column_regression = i.name
+    if predictions_column_regression is None:
+        raise Exception(
+            f"no prediction field found in given table {predictions_table_regression.metadata['table_id']}")
 
-    destination_table.metadata["table_id"] = f"{predictions_table_left.metadata['table_id']}_view"
+    destination_table.metadata["table_id"] = f"{predictions_table_regression.metadata['table_id']}_final_view"
     destination_table.metadata["predictions_column"] = 'prediction'
     query = f"""
-        CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (SELECT 
-            GREATEST(0,{predictions_column}.value) AS {destination_table.metadata["predictions_column"]}, b.*
-            FROM `{predictions_table_left.metadata['table_id']}` as a
-            INNER JOIN `{predictions_table_right.metadata['table_id']}` as b on a.{table_left_bq_unique_key}=b.{table_right_bq_unique_key} 
-            )
+        CREATE TEMP TABLE flattened_prediction AS (
+        SELECT 
+            CASE 
+                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 'false'
+                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN 'true'
+                ELSE 'false'
+            END AS prediction,
+            CASE 
+                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 
+                {predictions_column_propensity}.scores[OFFSET(0)]
+                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN
+                {predictions_column_propensity}.scores[OFFSET(1)]
+                ELSE {predictions_column_propensity}.scores[OFFSET(0)]
+            END AS {predictions_prob_column_propensity}, 
+            a.* EXCEPT({predictions_column_propensity})
+            FROM `{predictions_table_propensity.metadata['table_id']}` as a
+        );
+        
+        CREATE TEMP TABLE non_purchasers_prediction AS (
+        SELECT
+            B.user_pseudo_id,
+            0.0 AS clv_prediction,
+            B.* EXCEPT(user_pseudo_id, prediction)
+        FROM
+            flattened_prediction A
+        INNER JOIN
+            `{predictions_table_regression.metadata['table_id']}` B
+        ON
+            A.prediction = "false" AND A.{predictions_prob_column_propensity} > {threashold}
+            AND A.user_pseudo_id = B.user_pseudo_id 
+        );
+
+        CREATE TEMP TABLE purchasers_prediction AS (
+        SELECT
+            B.user_pseudo_id,
+            GREATEST(0.0, B.prediction) AS clv_prediction,
+            B.* EXCEPT(user_pseudo_id, prediction)
+        FROM
+            flattened_prediction A
+        INNER JOIN
+            `{predictions_table_regression.metadata['table_id']}` B
+        ON
+            A.prediction = "true" AND A.{predictions_prob_column_propensity} > {threashold}
+            AND A.user_pseudo_id = B.user_pseudo_id
+        );
+
+        CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS
+        SELECT
+            A.clv_prediction AS {destination_table.metadata["predictions_column"]},
+            A.* EXCEPT(clv_prediction)
+        FROM
+            non_purchasers_prediction A
+        UNION ALL
+        SELECT
+            B.clv_prediction AS {destination_table.metadata["predictions_column"]},
+            B.* EXCEPT(clv_prediction)
+        FROM
+            purchasers_prediction B
+        ;
     """
+
+    logging.info(query)
+
     job_config = bigquery.QueryJobConfig()
     job_config.write_disposition = 'WRITE_TRUNCATE'
     
@@ -644,14 +711,11 @@ def bq_union_predictions_tables(
         project=project_id,
         location=bq_table.location
     )
-    #query_job = client.query(
-    #    query=query,
-    #    location=bq_table.location,
-    #)
+    query_job = client.query(
+        query=query,
+        location=bq_table.location,
+    )
+    results = query_job.result()
 
-    #results = query_job.result()
-
-    #logging.info(query)
-
-    #for row in results:
-    #    logging.info("row info: {}".format(row))
+    for row in results:
+        logging.info("row info: {}".format(row))

@@ -2252,7 +2252,7 @@ SELECT DISTINCT
 OPTIONS(
   --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
   friendly_name="v_purchase_propensity_inference_30_30",
-  description="View Purchase Propensity Inference dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
+  description="View Purchase Propensity Inference dataset using 30 days back to predict 30 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
 ) AS 
 SELECT DISTINCT
