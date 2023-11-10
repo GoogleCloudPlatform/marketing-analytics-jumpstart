@@ -581,7 +581,7 @@ def bq_union_predictions_tables(
     predictions_table_propensity: Input[Dataset],
     predictions_table_regression: Input[Dataset],
     table_propensity_bq_unique_key: str,
-    table_propensity_bq_unique_key: str,
+    table_regression_bq_unique_key: str,
     destination_table: Output[Dataset],
     threashold: float = 0.5
 ):
@@ -660,30 +660,30 @@ def bq_union_predictions_tables(
         
         CREATE TEMP TABLE non_purchasers_prediction AS (
         SELECT
-            B.user_pseudo_id,
+            B.{table_regression_bq_unique_key},
             0.0 AS clv_prediction,
-            B.* EXCEPT(user_pseudo_id, prediction)
+            B.* EXCEPT({table_regression_bq_unique_key}, prediction)
         FROM
             flattened_prediction A
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
             A.prediction = "false" AND A.{predictions_prob_column_propensity} > {threashold}
-            AND A.user_pseudo_id = B.user_pseudo_id 
+            AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key} 
         );
 
         CREATE TEMP TABLE purchasers_prediction AS (
         SELECT
-            B.user_pseudo_id,
+            B.{table_regression_bq_unique_key},
             GREATEST(0.0, B.prediction) AS clv_prediction,
-            B.* EXCEPT(user_pseudo_id, prediction)
+            B.* EXCEPT({table_regression_bq_unique_key}, prediction)
         FROM
             flattened_prediction A
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
             A.prediction = "true" AND A.{predictions_prob_column_propensity} > {threashold}
-            AND A.user_pseudo_id = B.user_pseudo_id
+            AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key}
         );
 
         CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS

@@ -220,15 +220,15 @@ def prediction_binary_classification_regression_pl(
         generate_explanation=generate_explanation
     ).set_display_name('propensity_predictions')
 
-    flatten_propensity_predictions = bq_flatten_tabular_binary_prediction_table(
-        project_id=project_id,
-        location=location,
-        source_table=purchase_bigquery_source,
-        predictions_table=propensity_predictions.outputs['destination_table'],
-        bq_unique_key=purchase_bq_unique_key,
-        threashold=threashold,
-        positive_label=positive_label
-    ).set_display_name('flatten_propensity_predictions')
+    ##flatten_propensity_predictions = bq_flatten_tabular_binary_prediction_table(
+    ##    project_id=project_id,
+    ##    location=location,
+    ##    source_table=purchase_bigquery_source,
+    ##    predictions_table=propensity_predictions.outputs['destination_table'],
+    ##    bq_unique_key=purchase_bq_unique_key,
+    ##    threashold=threashold,
+    ##    positive_label=positive_label
+    ##).set_display_name('flatten_propensity_predictions')
 
     customer_lifetime_value_model = elect_best_tabular_model(
         project=project_id,
