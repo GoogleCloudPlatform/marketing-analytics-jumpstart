@@ -17,40 +17,16 @@ locals {
   dataset_name    = "maj_dashboard"
   link_load_file  = "load_links.json"
 
-  base_url          = "https://console.cloud.google.com"
-  bq_base_url       = "${local.base_url}/bigquery"
-  vertex_base_url   = "${local.base_url}/vertex-ai"
-  dataflow_base_url = "${local.base_url}/dataflow"
-  dataform_base_url = "${local.bq_base_url}/dataform"
+  console        = "https://console.cloud.google.com"
+  bq_console     = "${local.console}/bigquery"
+  vertex_console = "${local.console}/vertex-ai"
 
-  p_key                = "project"
-  ws_key               = "ws"
-  ws_value_for_dataset = "!1m4!1m3!3m2"
-  ws_value_for_table   = "!1m5!1m4!4m3"
-  first_separator      = "!1s"
-  second_separator     = "!2s"
-  third_separator      = "!3s"
+  p_key                     = "project"
+  mds_project_url           = "${local.p_key}=${var.mds_project_id}"
+  feature_store_project_url = "${local.p_key}=${var.feature_store_project_id}"
+  activation_project_url    = "${local.p_key}=${var.activation_project_id}"
 
-  mds_project_url_param           = "${local.p_key}=${var.mds_project_id}"
-  feature_store_project_url_param = "${local.p_key}=${var.feature_store_project_id}"
-  activation_project_url_param    = "${local.p_key}=${var.activation_project_id}"
-
-  mds_dataset_url_base           = "${local.bq_base_url}?${local.mds_project_url_param}&${local.ws_key}=${local.ws_value_for_dataset}${local.first_separator}${var.mds_project_id}${local.second_separator}"
-  feature_store_dataset_url_base = "${local.bq_base_url}?${local.feature_store_project_url_param}&${local.ws_key}=${local.ws_value_for_dataset}${local.first_separator}${var.feature_store_project_id}${local.second_separator}"
-  activation_dataset_url_base    = "${local.bq_base_url}?${local.activation_project_url_param}&${local.ws_key}=${local.ws_value_for_dataset}${local.first_separator}${var.activation_project_id}${local.second_separator}"
-
-  mds_table_url_base = "${local.bq_base_url}?${local.mds_project_url_param}&${local.ws_key}=${local.ws_value_for_table}${local.first_separator}${var.mds_project_id}${local.second_separator}marketing_ga4_v1_${var.mds_dataset_suffix}${local.third_separator}"
-
-  dataform_repository_url_base = "${local.dataform_base_url}/locations/${var.mds_location}/repositories/marketing-analytics"
-  dataform_graph_url           = "${local.dataform_repository_url_base}/workspaces/${var.mds_dataform_workspace}/actions?${local.mds_project_url_param}"
-  dataform_workflows_url       = "${local.dataform_repository_url_base}/details/workflows?${local.mds_project_url_param}"
-
-  vertex_pipelines_url_base = "${local.vertex_base_url}/pipelines"
-  vertex_pipelines_url      = "${local.vertex_pipelines_url_base}/templates?${local.feature_store_project_url_param}"
-  vertex_pipelines_runs_url = "${local.vertex_pipelines_url_base}/runs?${local.feature_store_project_url_param}"
-  vertex_models_url         = "${local.vertex_base_url}/models?${local.feature_store_project_url_param}"
-
-  activation_pipelines_runs_url = "${local.dataflow_base_url}/jobs?${local.activation_project_url_param}"
+  mds_dataform_repo = "marketing-analytics"
 }
 
 module "bigquery" {
@@ -88,17 +64,22 @@ module "load_bucket" {
 data "template_file" "resource_link_content" {
   template = file("${local.source_root_dir}/templates/monitoring_resource_link_template.tpl")
   vars = {
-    mds_dataset_url_base           = local.mds_dataset_url_base
-    mds_dataset_suffix             = var.mds_dataset_suffix
-    dataform_graph_url             = local.dataform_graph_url
-    feature_store_dataset_url_base = local.feature_store_dataset_url_base
-    vertex_pipelines_url           = local.vertex_pipelines_url
-    vertex_models_url              = local.vertex_models_url
-    mds_table_url_base             = local.mds_table_url_base
-    activation_dataset_url_base    = local.activation_dataset_url_base
-    dataform_workflows_url         = local.dataform_workflows_url
-    vertex_pipelines_runs_url      = local.vertex_pipelines_runs_url
-    activation_pipelines_runs_url  = local.activation_pipelines_runs_url
+    console        = local.console
+    bq_console     = local.bq_console
+    vertex_console = local.vertex_console
+
+    mds_project           = var.mds_project_id
+    feature_store_project = var.feature_store_project_id
+    activation_project    = var.activation_project_id
+
+    mds_project_url           = local.mds_project_url
+    feature_store_project_url = local.feature_store_project_url
+    activation_project_url    = local.activation_project_url
+
+    mds_dataset_suffix     = var.mds_dataset_suffix
+    mds_location           = var.mds_location
+    mds_dataform_repo      = local.mds_dataform_repo
+    mds_dataform_workspace = var.mds_dataform_workspace
   }
 }
 resource "google_storage_bucket_object" "resource_link_load_file" {
