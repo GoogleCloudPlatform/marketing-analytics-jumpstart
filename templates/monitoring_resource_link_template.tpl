@@ -1,6 +1,7 @@
 "MDS GA4 Dataset","mds","${bq_console}?${mds_project_url}&ws=!1m4!1m3!3m2!1s${mds_project}!2smarketing_ga4_base_${mds_dataset_suffix}",1
 "MDS Ads Dataset","mds","${bq_console}?${mds_project_url}&ws=!1m4!1m3!3m2!1s${mds_project}!2smarketing_ads_base_${mds_dataset_suffix}",2
 "MDS Dependency Graph","mds","${bq_console}/dataform/locations/${mds_location}/repositories/${mds_dataform_repo}/workspaces/${mds_dataform_workspace}/actions?${mds_project_url}",3
+"MDS Daily Schedule","mds","${console}/cloudscheduler?${mds_project_url}",4
 "Feature Store Dataset","analysis","${bq_console}?${feature_store_project_url}&ws=!1m4!1m3!3m2!1s${feature_store_project}!2sfeature_store",1
 "Vertex AI Pipelines","analysis","${vertex_console}/pipelines/templates?${feature_store_project_url}",2
 "Model Registry","analysis","${vertex_console}/models?${feature_store_project_url}",3
