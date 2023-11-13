@@ -62,7 +62,7 @@ module "load_bucket" {
 }
 
 data "template_file" "resource_link_content" {
-  template = file("${local.source_root_dir}/templates/monitoring_resource_link_template.tpl")
+  template = file("${local.source_root_dir}/templates/monitoring_resource_link_template.csv")
   vars = {
     console        = local.console
     bq_console     = local.bq_console
