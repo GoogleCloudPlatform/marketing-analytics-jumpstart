@@ -44,6 +44,12 @@ variable "dataform_region" {
   default     = ""
 }
 
+variable "dataform_workspace" {
+  description = "Dataform workspace name"
+  type        = string
+  default     = "demo"
+}
+
 variable "project_owner_email" {
   description = "Email address of the project owner."
   type        = string

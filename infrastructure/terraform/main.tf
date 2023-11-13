@@ -168,3 +168,15 @@ module "activation" {
   count                     = var.deploy_activation ? 1 : 0
   poetry_installed          = null_resource.poetry_install.id
 }
+
+module "monitoring" {
+  source                   = "./modules/monitor"
+  project_id               = var.data_project_id
+  location                 = var.google_default_region
+  mds_project_id           = var.data_project_id
+  mds_dataset_suffix       = local.mds_dataset_suffix
+  mds_location             = var.google_default_region
+  mds_dataform_workspace   = var.dataform_workspace
+  feature_store_project_id = var.feature_store_project_id
+  activation_project_id    = var.activation_project_id
+}
