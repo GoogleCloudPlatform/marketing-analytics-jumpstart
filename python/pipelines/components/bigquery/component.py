@@ -377,7 +377,6 @@ def bq_flatten_tabular_binary_prediction_table(
     bq_table = client.get_table(predictions_table.metadata['table_id'])
     destination_table.metadata["table_id"] = f"{predictions_table.metadata['table_id']}_view"
     destination_table.metadata["predictions_column"] = 'prediction'
-    destination_table.metadata["predictions_prob_column"] = "prediction_prob"
 
     # View table properties
     logging.info(
@@ -622,13 +621,6 @@ def bq_union_predictions_tables(
     if predictions_column_propensity is None:
         raise Exception(
             f"no prediction field found in given table {predictions_table_propensity.metadata['table_id']}")
-    predictions_prob_column_propensity = None
-    for i in bq_table_propensity.schema:
-        if (i.name.startswith(predictions_table_propensity.metadata['predictions_prob_column'])):
-            predictions_prob_column_propensity = i.name
-    if predictions_prob_column_propensity is None:
-        raise Exception(
-            f"no prediction field found in given table {predictions_table_propensity.metadata['table_id']}")
     predictions_column_regression = None
     for i in bq_table_regression.schema:
         if (i.name.startswith(predictions_table_regression.metadata['predictions_column'])):
@@ -637,7 +629,7 @@ def bq_union_predictions_tables(
         raise Exception(
             f"no prediction field found in given table {predictions_table_regression.metadata['table_id']}")
 
-    destination_table.metadata["table_id"] = f"{predictions_table_regression.metadata['table_id']}_final_view"
+    destination_table.metadata["table_id"] = f"{predictions_table_regression.metadata['table_id']}_final"
     destination_table.metadata["predictions_column"] = 'prediction'
     query = f"""
         CREATE TEMP TABLE flattened_prediction AS (
@@ -646,14 +638,14 @@ def bq_union_predictions_tables(
                 WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 'false'
                 WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN 'true'
                 ELSE 'false'
-            END AS prediction,
+            END AS {predictions_column_regression},
             CASE 
                 WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 
                 {predictions_column_propensity}.scores[OFFSET(0)]
                 WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN
                 {predictions_column_propensity}.scores[OFFSET(1)]
                 ELSE {predictions_column_propensity}.scores[OFFSET(0)]
-            END AS {predictions_prob_column_propensity}, 
+            END AS prediction_prob, 
             a.* EXCEPT({predictions_column_propensity})
             FROM `{predictions_table_propensity.metadata['table_id']}` as a
         );
@@ -662,27 +654,27 @@ def bq_union_predictions_tables(
         SELECT
             B.{table_regression_bq_unique_key},
             0.0 AS clv_prediction,
-            B.* EXCEPT({table_regression_bq_unique_key}, prediction)
+            B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
-            A.prediction = "false" AND A.{predictions_prob_column_propensity} > {threashold}
+            A.prediction = "false" AND A.prediction_prob > {threashold}
             AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key} 
         );
 
         CREATE TEMP TABLE purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            GREATEST(0.0, B.prediction) AS clv_prediction,
-            B.* EXCEPT({table_regression_bq_unique_key}, prediction)
+            GREATEST(0.0, B.{predictions_column_regression}) AS clv_prediction,
+            B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
-            A.prediction = "true" AND A.{predictions_prob_column_propensity} > {threashold}
+            A.prediction = "true" AND A.prediction_prob > {threashold}
             AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key}
         );
 
@@ -709,11 +701,11 @@ def bq_union_predictions_tables(
     # Reconstruct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=bq_table.location
+        location=bq_table_regression.location
     )
     query_job = client.query(
         query=query,
-        location=bq_table.location,
+        location=bq_table_regression.location,
     )
     results = query_job.result()
 
