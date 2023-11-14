@@ -33,8 +33,7 @@ from google_cloud_pipeline_components.v1.model import ModelUploadOp
 from kfp.components.importer_node import importer
 
 from pipelines.components.bigquery.component import (
-    bq_clustering_exec,
-    bq_evaluation_table)
+    bq_clustering_exec)
 
 @dsl.pipeline()
 def training_pl(
@@ -61,10 +60,6 @@ def training_pl(
 
 ):
 
-    #bq_dataset = BigqueryQueryJobOp(
-    #    project=project_id, location=location, query=f"CREATE SCHEMA {dataset}"
-    #)
-
     bq_model = bq_clustering_exec(
         project_id= project_id,
         location= location,
@@ -82,23 +77,14 @@ def training_pl(
         km_early_stop= km_early_stop,
         km_min_rel_progress= km_min_rel_progress,
         km_warm_start= km_warm_start
-    )#.after(bq_dataset)
-
+    )
     
     evaluateModel = bq_evaluate(
         project=project_id, 
         location=location, 
         model=bq_model.outputs["model"]).after(bq_model)
     
-    #evaluateModel = BigqueryEvaluateModelJobOp(
-    #    project=project_id, 
-    #    location=location, 
-    #    model=bq_model.outputs["model"]
-    #).after(bq_model)
 
-    #_ = bq_evaluation_table(
-    #    eval=evaluateModel.outputs["evaluation_metrics"]
-    #).after(evaluateModel)
 
 @dsl.pipeline()
 def prediction_pl(

@@ -116,7 +116,8 @@ def test_bq_select_best_kmeans_model(variables):
 @pytest.mark.inte
 @pytest.mark.compo
 @pytest.mark.segmentation
-def test_bq_clustering_predictions(variables):
+@pytest.mark.parametrize("prediction_model_id", ["audience_segmentation_model_1699070460"])
+def test_bq_clustering_predictions(variables, prediction_model_id):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']
     my_pipeline_vars = variables['vertex_ai']['pipelines']['segmentation']['prediction']
@@ -127,9 +128,9 @@ def test_bq_clustering_predictions(variables):
         uri=os.path.join(artifacts_path,"model"),
         path=os.path.join(artifacts_path,"model"),
         metadata={
-            "projectId": "propensity-modelling-368616",
+            "projectId": my_pipeline_vars['pipeline_parameters']['project_id'],
             "datasetId": "audience_segmentation",
-            "modelId": "test_audience_segmentation_model_1680785176"
+            "modelId": prediction_model_id
         })
         
     destination_table = mock.Mock(
@@ -148,12 +149,14 @@ def test_bq_clustering_predictions(variables):
         destination_table=destination_table
     )
 
+
 @pytest.mark.inte
 @pytest.mark.compo
-def test_bq_flatten_tabular_binary_prediction_table(variables):
+@pytest.mark.parametrize("prediction_table_id", ["marketing-data-engine-demo.purchase_propensity.predictions_2023_11_11T21_02_54_223Z_502"])
+def test_bq_flatten_tabular_binary_prediction_table(variables, prediction_table_id):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']
-    my_pipeline_vars = variables['vertex_ai']['pipelines']['segmentation']['prediction']
+    my_pipeline_vars = variables['vertex_ai']['pipelines']['propensity']['prediction']
 
     mock = MockerFixture(config=None)
     prediction_table = mock.Mock(
@@ -161,13 +164,11 @@ def test_bq_flatten_tabular_binary_prediction_table(variables):
         uri=os.path.join(artifacts_path,"model"),
         path=os.path.join(artifacts_path,"model"),
         metadata={
-            "table_id": "propensity-modelling-368616.ds.bank_marketing_prediction_1678207170",
-            "predictions_column_prefix": "predicted_loan",
+            "table_id": prediction_table_id,
+            "predictions_column_prefix": "predicted_",
+            "predictions_column": "prediction"
         })
-
-    
-    source_table = "propensity-modelling-368616.ds.bank_marketing_prediction_1678207170"
-        
+  
     destination_table = mock.Mock(
         spec=Artifact, 
         uri=os.path.join(artifacts_path,"artifact"),
@@ -178,11 +179,11 @@ def test_bq_flatten_tabular_binary_prediction_table(variables):
     bq_flatten_tabular_binary_prediction_table.python_func(
         project_id= my_pipeline_vars['pipeline_parameters']['project_id'],
         location= my_pipeline_vars['pipeline_parameters']['location'],
-        source_table=source_table,
-        destination_table=destination_table
+        source_table= my_pipeline_vars['pipeline_parameters']['bigquery_source'],
+        destination_table= destination_table,
+        bq_unique_key= my_pipeline_vars['pipeline_parameters']['bq_unique_key'],
+        predictions_table=prediction_table
     )
-
-
 
 
 @pytest.mark.inte_eval
@@ -209,4 +210,119 @@ def test_bq_evaluate(variables):
             uri=os.path.join(artifacts_path,"model"),
             path=os.path.join(artifacts_path,"model"),
             metadata={})
+    )
+
+
+@pytest.mark.inte
+@pytest.mark.compo
+@pytest.mark.parametrize("prediction_table_id", ["marketing-data-engine-demo.customer_lifetime_value.predictions_2023_10_21T21_02_48_726Z_412"])
+def test_bq_flatten_tabular_regression_table(variables, prediction_table_id):
+
+    generic_pipeline_vars = variables['vertex_ai']['pipelines']
+    my_pipeline_vars = variables['vertex_ai']['pipelines']['propensity']['prediction']
+
+    mock = MockerFixture(config=None)
+    prediction_table = mock.Mock(
+        spec=Dataset,
+        uri=os.path.join(artifacts_path,"model"),
+        path=os.path.join(artifacts_path,"model"),
+        metadata={
+            "table_id": prediction_table_id,
+            "predictions_column_prefix": "predicted_",
+            "predictions_column": "prediction"
+        })
+  
+    destination_table = mock.Mock(
+        spec=Artifact, 
+        uri=os.path.join(artifacts_path,"artifact"),
+        path=os.path.join(artifacts_path,"artifact"),
+        metadata={}
+    )
+
+    bq_flatten_tabular_regression_table.python_func(
+        project_id= my_pipeline_vars['pipeline_parameters']['project_id'],
+        location= my_pipeline_vars['pipeline_parameters']['location'],
+        source_table= my_pipeline_vars['pipeline_parameters']['bigquery_source'],
+        destination_table= destination_table,
+        bq_unique_key= my_pipeline_vars['pipeline_parameters']['bq_unique_key'],
+        predictions_table=prediction_table
+    )
+
+
+@pytest.mark.inte
+@pytest.mark.compo
+@pytest.mark.parametrize("prediction_table_id", ["marketing-data-engine-demo.audience_segmentation.pred_audience_segmentation_inference_15_1699765348"])
+def test_bq_flatten_kmeans_prediction_table(variables, prediction_table_id):
+
+    generic_pipeline_vars = variables['vertex_ai']['pipelines']
+    my_pipeline_vars = variables['vertex_ai']['pipelines']['segmentation']['prediction']
+
+    mock = MockerFixture(config=None)
+    source_table = mock.Mock(
+        spec=Dataset,
+        uri=os.path.join(artifacts_path,"model"),
+        path=os.path.join(artifacts_path,"model"),
+        metadata={
+            "table_id": prediction_table_id,
+            "predictions_column_prefix": "CENTROID_ID"
+        })
+  
+    destination_table = mock.Mock(
+        spec=Artifact, 
+        uri=os.path.join(artifacts_path,"artifact"),
+        path=os.path.join(artifacts_path,"artifact"),
+        metadata={}
+    )
+
+    bq_flatten_kmeans_prediction_table.python_func(
+        project_id= my_pipeline_vars['pipeline_parameters']['project_id'],
+        location= my_pipeline_vars['pipeline_parameters']['location'],
+        destination_table= destination_table,
+        source_table=source_table
+    )
+
+
+@pytest.mark.inte
+@pytest.mark.compo
+@pytest.mark.parametrize("prediction_table_propensity_id", ["marketing-data-engine-demo.customer_lifetime_value.predictions_2023_11_13T13_25_43_019Z_693"])
+@pytest.mark.parametrize("prediction_table_regression_id", ["marketing-data-engine-demo.customer_lifetime_value.predictions_2023_11_13T13_23_54_663Z_941_view"])
+def test_bq_union_predictions_tables(variables, prediction_table_propensity_id, prediction_table_regression_id):
+
+    generic_pipeline_vars = variables['vertex_ai']['pipelines']
+    my_pipeline_vars = variables['vertex_ai']['pipelines']['clv']['prediction']
+
+    mock = MockerFixture(config=None)
+    predictions_table_propensity = mock.Mock(
+        spec=Dataset,
+        uri=os.path.join(artifacts_path,"model"),
+        path=os.path.join(artifacts_path,"model"),
+        metadata={
+            "table_id": prediction_table_propensity_id,
+            "predictions_column_prefix": "predicted_",
+            "predictions_column": "prediction"
+        })
+    predictions_table_regression = mock.Mock(
+        spec=Dataset,
+        uri=os.path.join(artifacts_path,"model"),
+        path=os.path.join(artifacts_path,"model"),
+        metadata={
+            "table_id": prediction_table_regression_id,
+            "predictions_column": "prediction"
+        })
+  
+    destination_table = mock.Mock(
+        spec=Artifact, 
+        uri=os.path.join(artifacts_path,"artifact"),
+        path=os.path.join(artifacts_path,"artifact"),
+        metadata={}
+    )
+
+    bq_union_predictions_tables.python_func(
+        project_id= my_pipeline_vars['pipeline_parameters']['project_id'],
+        location= my_pipeline_vars['pipeline_parameters']['location'],
+        predictions_table_propensity= predictions_table_propensity,
+        predictions_table_regression= predictions_table_regression,
+        table_propensity_bq_unique_key= my_pipeline_vars['pipeline_parameters']['purchase_bq_unique_key'],
+        table_regression_bq_unique_key= my_pipeline_vars['pipeline_parameters']['clv_bq_unique_key'],
+        destination_table= destination_table,
     )

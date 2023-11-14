@@ -143,6 +143,7 @@ def bq_clustering_exec(
     #TODO: Implement TRAINING info summary on the metrics
     # SELECT * FROM ML.TRAINING_INFO(MODEL `<project-id>.<datasets>.audience_segmentation_model`)
 
+
 @component(base_image=base_image)
 def bq_evaluate(
     model: Input[Artifact],
@@ -184,14 +185,12 @@ def bq_evaluate(
     """
     
     
-
-
+## NOT USED
 @component(base_image=base_image)
 def bq_evaluation_table(
     eval: Input[Artifact],
     metrics: Output[Metrics]
 ) -> None:
-
     for row in eval.metadata["rows"]:
         for idx, f in enumerate(row["f"]):
             metrics.log_metric(eval.metadata["schema"]["fields"][idx]["name"], f["v"])
