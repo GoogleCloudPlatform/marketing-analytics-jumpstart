@@ -89,8 +89,8 @@ vertex_ai:
           location: "${location}"
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
-          query_auto_audience_segmentation_training_preparation: "
-            CALL `{auto_audience_segmentation_training_preparation_procedure_name}`();"
+          #query_auto_audience_segmentation_training_preparation: "
+          #  CALL `{auto_audience_segmentation_training_preparation_procedure_name}`();"
           
           query_parameters:
             - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()

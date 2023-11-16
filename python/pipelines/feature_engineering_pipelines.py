@@ -23,7 +23,7 @@ def auto_audience_segmentation_feature_engineering_pipeline(
     project_id: str,
     location: Optional[str],
     query_auto_audience_segmentation_inference_preparation: str,
-    query_auto_audience_segmentation_training_preparation: str,
+    #query_auto_audience_segmentation_training_preparation: str,
     query_parameters: Optional[list] = None,
     timeout: Optional[float] = 3600.0
 ):

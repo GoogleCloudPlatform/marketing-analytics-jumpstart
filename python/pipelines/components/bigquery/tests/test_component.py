@@ -116,7 +116,7 @@ def test_bq_select_best_kmeans_model(variables):
 @pytest.mark.inte
 @pytest.mark.compo
 @pytest.mark.segmentation
-@pytest.mark.parametrize("prediction_model_id", ["audience_segmentation_model_1699070460"])
+@pytest.mark.parametrize("prediction_model_id", ["<prediction_model_id>"])
 def test_bq_clustering_predictions(variables, prediction_model_id):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']
@@ -152,7 +152,7 @@ def test_bq_clustering_predictions(variables, prediction_model_id):
 
 @pytest.mark.inte
 @pytest.mark.compo
-@pytest.mark.parametrize("prediction_table_id", ["marketing-data-engine-demo.purchase_propensity.predictions_2023_11_11T21_02_54_223Z_502"])
+@pytest.mark.parametrize("prediction_table_id", ["<prediction_table_id>"])
 def test_bq_flatten_tabular_binary_prediction_table(variables, prediction_table_id):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']
@@ -215,7 +215,7 @@ def test_bq_evaluate(variables):
 
 @pytest.mark.inte
 @pytest.mark.compo
-@pytest.mark.parametrize("prediction_table_id", ["marketing-data-engine-demo.customer_lifetime_value.predictions_2023_10_21T21_02_48_726Z_412"])
+@pytest.mark.parametrize("prediction_table_id", ["<prediction_table_id>"])
 def test_bq_flatten_tabular_regression_table(variables, prediction_table_id):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']
@@ -251,7 +251,7 @@ def test_bq_flatten_tabular_regression_table(variables, prediction_table_id):
 
 @pytest.mark.inte
 @pytest.mark.compo
-@pytest.mark.parametrize("prediction_table_id", ["marketing-data-engine-demo.audience_segmentation.pred_audience_segmentation_inference_15_1699765348"])
+@pytest.mark.parametrize("prediction_table_id", ["<prediction_table_id>"])
 def test_bq_flatten_kmeans_prediction_table(variables, prediction_table_id):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']
@@ -284,8 +284,8 @@ def test_bq_flatten_kmeans_prediction_table(variables, prediction_table_id):
 
 @pytest.mark.inte
 @pytest.mark.compo
-@pytest.mark.parametrize("prediction_table_propensity_id", ["marketing-data-engine-demo.customer_lifetime_value.predictions_2023_11_13T13_25_43_019Z_693"])
-@pytest.mark.parametrize("prediction_table_regression_id", ["marketing-data-engine-demo.customer_lifetime_value.predictions_2023_11_13T13_23_54_663Z_941_view"])
+@pytest.mark.parametrize("prediction_table_propensity_id", ["<prediction_table_propensity_id>"])
+@pytest.mark.parametrize("prediction_table_regression_id", ["<prediction_table_regression_id>"])
 def test_bq_union_predictions_tables(variables, prediction_table_propensity_id, prediction_table_regression_id):
 
     generic_pipeline_vars = variables['vertex_ai']['pipelines']

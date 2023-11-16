@@ -247,8 +247,8 @@ def test_get_latest_model_auto_segmentation_prediction(variables):
 
 @pytest.mark.inte
 @pytest.mark.compo
-@pytest.mark.parametrize("model_resource_number", ["5857166610883674112"])
-@pytest.mark.parametrize("metadata_store_resource_number", ["3904079768983229514"])
+@pytest.mark.parametrize("model_resource_number", ["<model_resource_number>"])
+@pytest.mark.parametrize("metadata_store_resource_number", ["<metadata_store_resource_number>"])
 def test_batch_prediction_auto_segmentation_prediction(variables, model_resource_number, metadata_store_resource_number):
     from kfp.components.executor import Executor
     from kfp.components.executor_main import component_executor
