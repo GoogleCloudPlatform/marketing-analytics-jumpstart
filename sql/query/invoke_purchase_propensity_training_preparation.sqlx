@@ -16,6 +16,7 @@ DECLARE train_start_date DATE DEFAULT NULL;
 DECLARE train_end_date DATE DEFAULT NULL;
 DECLARE train_split_end_number INT64 DEFAULT NULL;
 DECLARE validation_split_end_number INT64 DEFAULT NULL;
+DECLARE purchasers INT64 DEFAULT NULL;
 
 DECLARE max_date DATE;
 DECLARE min_date DATE;
@@ -29,7 +30,19 @@ SET train_end_date = DATE '{{train_end_date}}';
 SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% for training use number 5. If you want 80% use number 7.
 SET validation_split_end_number = {{validation_split_end_number}};
 
-SET train_start_date =  GREATEST(train_start_date, min_date);
-SET train_end_date = LEAST(train_end_date, max_date);
+# IF there are no purchasers users in the time interval selected, then set "train_start_date" and "train_end_date" as "max_date" and "min_date".
+SET purchasers = (SELECT COUNT(DISTINCT user_pseudo_id) 
+                FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+                WHERE event_name = 'purchase' AND
+                event_date BETWEEN train_start_date AND train_end_date
+                );
+
+IF purchasers > 0 THEN
+    SET train_start_date =  GREATEST(train_start_date, min_date);
+    SET train_end_date = LEAST(train_end_date, max_date);
+ELSE
+    SET train_start_date =  min_date;
+    SET train_end_date = max_date;
+END IF;
 
 CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(train_start_date, train_end_date, train_split_end_number, validation_split_end_number);

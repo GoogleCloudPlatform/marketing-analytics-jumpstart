@@ -33,8 +33,7 @@ from google_cloud_pipeline_components.v1.model import ModelUploadOp
 from kfp.components.importer_node import importer
 
 from pipelines.components.bigquery.component import (
-    bq_clustering_exec,
-    bq_evaluation_table)
+    bq_clustering_exec)
 
 from pipelines.components.vertex.component import (
     get_latest_model,

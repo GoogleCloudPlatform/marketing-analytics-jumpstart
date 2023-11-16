@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyregression 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -143,6 +143,7 @@ def bq_clustering_exec(
     #TODO: Implement TRAINING info summary on the metrics
     # SELECT * FROM ML.TRAINING_INFO(MODEL `<project-id>.<datasets>.audience_segmentation_model`)
 
+
 @component(base_image=base_image)
 def bq_evaluate(
     model: Input[Artifact],
@@ -184,14 +185,12 @@ def bq_evaluate(
     """
     
     
-
-
+## NOT USED
 @component(base_image=base_image)
 def bq_evaluation_table(
     eval: Input[Artifact],
     metrics: Output[Metrics]
 ) -> None:
-
     for row in eval.metadata["rows"]:
         for idx, f in enumerate(row["f"]):
             metrics.log_metric(eval.metadata["schema"]["fields"][idx]["name"], f["v"])
@@ -478,7 +477,7 @@ def bq_flatten_tabular_regression_table(
 
     query = f"""
         CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (SELECT 
-            {predictions_column}.value AS {destination_table.metadata["predictions_column"]}, b.*
+            GREATEST(0.0,{predictions_column}.value) AS {destination_table.metadata["predictions_column"]}, b.*
             FROM `{predictions_table.metadata['table_id']}` as a
             INNER JOIN `{source_table}` as b on a.{bq_unique_key}=b.{bq_unique_key} 
             )
@@ -564,6 +563,149 @@ def bq_flatten_kmeans_prediction_table(
         location=location
     )
 
+    results = query_job.result()
+
+    for row in results:
+        logging.info("row info: {}".format(row))
+
+
+
+
+##TODO: improve code
+@component(base_image=base_image)
+def bq_union_predictions_tables(
+    project_id: str,
+    location: str,
+    predictions_table_propensity: Input[Dataset],
+    predictions_table_regression: Input[Dataset],
+    table_propensity_bq_unique_key: str,
+    table_regression_bq_unique_key: str,
+    destination_table: Output[Dataset],
+    threashold: float = 0.5
+):
+    from google.cloud import bigquery
+    import logging
+
+    # Construct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=location
+    )
+
+    # Inspect the metadata set on destination_table and predictions_table
+    logging.info(destination_table.metadata)
+    logging.info(predictions_table_propensity.metadata)
+    logging.info(predictions_table_regression.metadata)
+
+    # Get BigQuery Table Object
+    bq_table_propensity = client.get_table(predictions_table_propensity.metadata['table_id'])
+    # View table properties
+    logging.info(
+        "Got table '{}.{}.{} located at {}'.".format(
+            bq_table_propensity.project, bq_table_propensity.dataset_id, bq_table_propensity.table_id, bq_table_propensity.location)
+    )
+    # Get BigQuery Table Object
+    bq_table_regression = client.get_table(predictions_table_regression.metadata['table_id'])
+    # View table properties
+    logging.info(
+        "Got table '{}.{}.{} located at {}'.".format(
+            bq_table_regression.project, bq_table_regression.dataset_id, bq_table_regression.table_id, bq_table_regression.location)
+    )
+
+    # Get table prediction column
+    predictions_column_propensity = None
+    for i in bq_table_propensity.schema:
+        if (i.name.startswith(predictions_table_propensity.metadata['predictions_column_prefix'])):
+            predictions_column_propensity = i.name
+    if predictions_column_propensity is None:
+        raise Exception(
+            f"no prediction field found in given table {predictions_table_propensity.metadata['table_id']}")
+    predictions_column_regression = None
+    for i in bq_table_regression.schema:
+        if (i.name.startswith(predictions_table_regression.metadata['predictions_column'])):
+            predictions_column_regression = i.name
+    if predictions_column_regression is None:
+        raise Exception(
+            f"no prediction field found in given table {predictions_table_regression.metadata['table_id']}")
+
+    destination_table.metadata["table_id"] = f"{predictions_table_regression.metadata['table_id']}_final"
+    destination_table.metadata["predictions_column"] = 'prediction'
+    query = f"""
+        CREATE TEMP TABLE flattened_prediction AS (
+        SELECT 
+            CASE 
+                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 'false'
+                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN 'true'
+                ELSE 'false'
+            END AS {predictions_column_regression},
+            CASE 
+                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 
+                {predictions_column_propensity}.scores[OFFSET(0)]
+                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN
+                {predictions_column_propensity}.scores[OFFSET(1)]
+                ELSE {predictions_column_propensity}.scores[OFFSET(0)]
+            END AS prediction_prob, 
+            a.* EXCEPT({predictions_column_propensity})
+            FROM `{predictions_table_propensity.metadata['table_id']}` as a
+        );
+        
+        CREATE TEMP TABLE non_purchasers_prediction AS (
+        SELECT
+            B.{table_regression_bq_unique_key},
+            0.0 AS clv_prediction,
+            B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
+        FROM
+            flattened_prediction A
+        INNER JOIN
+            `{predictions_table_regression.metadata['table_id']}` B
+        ON
+            A.prediction = "false" AND A.prediction_prob > {threashold}
+            AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key} 
+        );
+
+        CREATE TEMP TABLE purchasers_prediction AS (
+        SELECT
+            B.{table_regression_bq_unique_key},
+            GREATEST(0.0, B.{predictions_column_regression}) AS clv_prediction,
+            B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
+        FROM
+            flattened_prediction A
+        INNER JOIN
+            `{predictions_table_regression.metadata['table_id']}` B
+        ON
+            A.prediction = "true" AND A.prediction_prob > {threashold}
+            AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key}
+        );
+
+        CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS
+        SELECT
+            A.clv_prediction AS {destination_table.metadata["predictions_column"]},
+            A.* EXCEPT(clv_prediction)
+        FROM
+            non_purchasers_prediction A
+        UNION ALL
+        SELECT
+            B.clv_prediction AS {destination_table.metadata["predictions_column"]},
+            B.* EXCEPT(clv_prediction)
+        FROM
+            purchasers_prediction B
+        ;
+    """
+
+    logging.info(query)
+
+    job_config = bigquery.QueryJobConfig()
+    job_config.write_disposition = 'WRITE_TRUNCATE'
+    
+    # Reconstruct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=bq_table_regression.location
+    )
+    query_job = client.query(
+        query=query,
+        location=bq_table_regression.location,
+    )
     results = query_job.result()
 
     for row in results:

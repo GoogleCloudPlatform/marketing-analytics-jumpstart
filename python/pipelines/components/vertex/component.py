@@ -39,11 +39,12 @@ if os.path.exists(config_file_path):
     #target_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['image_name']}:{vertex_components_params['tag']}"
     base_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['base_image_name']}:{vertex_components_params['base_image_tag']}"
 
+
+
 @component(
     base_image=base_image,
     #target_image=target_image,
     #packages_to_install=packages_to_install
-    
 )
 def elect_best_tabular_model(
     project: str,
@@ -210,8 +211,7 @@ def elect_best_tabular_model(
 @component(
     base_image=base_image,
     #target_image=target_image,
-    #packages_to_install=packages_to_install
-    
+    #packages_to_install=packages_to_install 
 )
 def get_latest_model(
     project: str,
@@ -325,6 +325,7 @@ def batch_prediction(
     destination_table.metadata["table_id"] = f"{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputDataset'].replace('bq://','')}.{batch_prediction_job.to_dict()['outputInfo']['bigqueryOutputTable']}"
     destination_table.metadata["predictions_column_prefix"] = "predicted_"
     destination_table.metadata["predictions_column"] = "prediction"
+    destination_table.metadata["predictions_prob_column"] = "prediction_prob"
 
     if dst_table_expiration_hours > 0:
         client = bigquery.Client(project=model.project)
