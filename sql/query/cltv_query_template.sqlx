@@ -1,4 +1,4 @@
-SELECT * EXCEPT(user_pseudo_id, processed_timestamp, user_id),
+SELECT * EXCEPT(user_pseudo_id, processed_timestamp),
  user_pseudo_id AS client_id,
  EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date
  FROM `{{source_table}}`
