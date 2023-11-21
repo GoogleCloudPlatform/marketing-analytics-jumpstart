@@ -176,7 +176,7 @@ def compile_automl_tabular_pipeline(
         exclude_features = List[Any],
         enable_caching: bool = True) -> tuple:
 
-    from google_cloud_pipeline_components.experimental.automl.tabular import utils as automl_tabular_utils
+    from google_cloud_pipeline_components.preview.automl.tabular import utils as automl_tabular_utils
 
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
@@ -278,7 +278,7 @@ def compile_automl_tabular_pipeline(
         parameter_values,
     ) = automl_tabular_utils.get_automl_tabular_pipeline_and_parameters(**pipeline_parameters)
 
-    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v3.yaml'), 'r') as file:
+    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v4.yaml'), 'r') as file:
         configuration = yaml.safe_load(file)
 
     # can process yaml to change pipeline name

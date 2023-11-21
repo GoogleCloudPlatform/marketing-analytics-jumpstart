@@ -197,6 +197,7 @@ resource "null_resource" "build_push_pipelines_components_image" {
     docker_repo_id          = google_artifact_registry_repository.pipelines_docker_repo.id
     docker_repo_create_time = google_artifact_registry_repository.pipelines_docker_repo.create_time
     source_content_hash     = local.component_image_content_hash
+    poetry_installed        = var.poetry_installed
   }
 
   provisioner "local-exec" {
