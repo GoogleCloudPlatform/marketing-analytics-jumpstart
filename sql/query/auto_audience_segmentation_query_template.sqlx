@@ -1,6 +1,5 @@
 SELECT
-    user_id AS client_id,
-    FORMAT_TIMESTAMP("%Y-%m-%dT%X%Ez", feature_timestamp) AS inference_date,
-    prediction as interest_segment,
-
-FROM `{{source_table}}`
+  user_id AS client_id,
+  EXTRACT(DATE FROM feature_timestamp AT TIME ZONE 'UTC') AS inference_date,
+  prediction as prediction
+  FROM `{{source_table}}`
