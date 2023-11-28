@@ -18,7 +18,7 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
 # Run these once each day.
 ## Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU 
-CREATE TEMP TABLE engagement as (
+CREATE OR REPLACE TEMP TABLE engagement as (
 SELECT 
     user_pseudo_id,
   ga_session_id as session_id, 
@@ -35,7 +35,7 @@ WHERE E.ga_session_id IS NOT NULL
 GROUP BY user_pseudo_id, session_id
 );
 
-CREATE TEMP TABLE revenue as (
+CREATE OR REPLACE TEMP TABLE revenue as (
 SELECT 
   SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day 
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
@@ -47,7 +47,7 @@ WHERE E.ga_session_id IS NOT NULL
 GROUP BY event_date
 );
 
-CREATE TEMP TABLE users as (
+CREATE OR REPLACE TEMP TABLE users as (
 SELECT 
   COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END) as active_users 
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
@@ -57,7 +57,7 @@ WHERE D.device_os IS NOT NULL
   AND event_date BETWEEN end_date AND input_date
 );
 
-CREATE TEMP TABLE first_purchasers as (
+CREATE OR REPLACE TEMP TABLE first_purchasers as (
   SELECT COUNT(user_pseudo_id) as first_time_purchasers
   FROM (
       SELECT 
@@ -73,7 +73,7 @@ CREATE TEMP TABLE first_purchasers as (
   WHERE unique_purchase=1
 );
 
-CREATE TEMP TABLE new_users_ as (
+CREATE OR REPLACE TEMP TABLE new_users_ as (
   SELECT 
   COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
@@ -84,7 +84,7 @@ CREATE TEMP TABLE new_users_ as (
   AND E.event_date BETWEEN end_date AND input_date
   );
 
-CREATE TEMP TABLE all_user_scoped_metrics as (
+CREATE OR REPLACE TEMP TABLE all_user_scoped_metrics as (
   SELECT
     user_pseudo_id, 
     event_date, 
@@ -99,7 +99,7 @@ CREATE TEMP TABLE all_user_scoped_metrics as (
     GROUP BY user_pseudo_id, session_id, event_date, event_name
   );
 
-CREATE TEMP TABLE DataForTargetTable AS
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     input_date AS feature_date,
@@ -135,9 +135,6 @@ CREATE TEMP TABLE DataForTargetTable AS
     CROSS JOIN users
     CROSS JOIN first_purchasers
     CROSS JOIN new_users_;
-
---INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
---  SELECT * FROM DataForTargetTable;
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
@@ -230,11 +227,3 @@ WHEN NOT MATCHED THEN
 ;
 
 SET rows_added = 1;
-
-DROP TABLE engagement;
-DROP TABLE revenue;
-DROP TABLE users;
-DROP TABLE first_purchasers;
-DROP TABLE new_users_;
-DROP TABLE all_user_scoped_metrics;
-DROP TABLE DataForTargetTable;

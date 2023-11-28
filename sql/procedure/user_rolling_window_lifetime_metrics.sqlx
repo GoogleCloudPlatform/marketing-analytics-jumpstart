@@ -18,7 +18,7 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
   
 # Run these windows aggregations every day. For each date in training and inference date ranges.
 ##All users metrics: 7-day active users, 8–30-day active users, 31-90-day active users 
-CREATE TEMP TABLE rolling_active_users AS (
+CREATE OR REPLACE TEMP TABLE rolling_active_users AS (
   SELECT
     user_pseudo_id,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_1_30_day,
@@ -34,7 +34,7 @@ CREATE TEMP TABLE rolling_active_users AS (
 );
 
 ## Past User metrics: 1-day purchase per user, 2-7-day purchases per user, 8-14-day purchases per user, 15-30-day purchases per user, 31–90-day purchases per user
-CREATE TEMP TABLE rolling_purchases_per_user AS (
+CREATE OR REPLACE TEMP TABLE rolling_purchases_per_user AS (
   SELECT
     user_pseudo_id,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_1_30_day,
@@ -53,7 +53,7 @@ CREATE TEMP TABLE rolling_purchases_per_user AS (
 );
 
 ## Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user
-CREATE TEMP TABLE rolling_visits_per_user AS (
+CREATE OR REPLACE TEMP TABLE rolling_visits_per_user AS (
   SELECT
     user_pseudo_id,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 1 AND 31 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_1_30_day,
@@ -69,7 +69,7 @@ CREATE TEMP TABLE rolling_visits_per_user AS (
 );
 
 ## Past User metrics: 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user
-CREATE TEMP TABLE rolling_view_item_per_user AS (
+CREATE OR REPLACE TEMP TABLE rolling_view_item_per_user AS (
   SELECT
     user_pseudo_id,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_1_30_day,
@@ -86,7 +86,7 @@ CREATE TEMP TABLE rolling_view_item_per_user AS (
 );
 
 ## Past User metrics: 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
-CREATE TEMP TABLE rolling_add_to_cart_per_user AS (
+CREATE OR REPLACE TEMP TABLE rolling_add_to_cart_per_user AS (
   SELECT
     user_pseudo_id,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_1_30_day,
@@ -103,7 +103,7 @@ CREATE TEMP TABLE rolling_add_to_cart_per_user AS (
 );
 
 ## Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user, 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user, 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
-CREATE TEMP TABLE rolling_checkout_per_user AS (
+CREATE OR REPLACE TEMP TABLE rolling_checkout_per_user AS (
   SELECT
     user_pseudo_id,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_1_30_day,
@@ -119,7 +119,7 @@ CREATE TEMP TABLE rolling_checkout_per_user AS (
   GROUP BY user_pseudo_id
 );
 
-CREATE TEMP TABLE rolling_revenue_per_user AS (
+CREATE OR REPLACE TEMP TABLE rolling_revenue_per_user AS (
   SELECT DISTINCT
     user_pseudo_id,
     MAX(GREATEST(
@@ -151,7 +151,7 @@ CREATE TEMP TABLE rolling_revenue_per_user AS (
 );
 
 ## All users in the platform
-CREATE TEMP TABLE events_users_days as (
+CREATE OR REPLACE TEMP TABLE events_users_days as (
   SELECT DISTINCT
   Users.user_pseudo_id,
   Days.event_date as event_date
@@ -165,7 +165,7 @@ CREATE TEMP TABLE events_users_days as (
     AND Days.event_date BETWEEN end_date AND input_date
 );
 
-CREATE TEMP TABLE DataForTargetTable AS
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     input_date AS feature_date,
@@ -225,9 +225,6 @@ CREATE TEMP TABLE DataForTargetTable AS
     FULL OUTER JOIN rolling_revenue_per_user AS G
     ON EUD.user_pseudo_id = G.user_pseudo_id
     WHERE EUD.user_pseudo_id IS NOT NULL;
-
---INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
---  SELECT * FROM DataForTargetTable
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
@@ -365,13 +362,3 @@ WHEN NOT MATCHED THEN
 ;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
-
-DROP TABLE events_users_days;
-DROP TABLE rolling_active_users;
-DROP TABLE rolling_purchases_per_user;
-DROP TABLE rolling_visits_per_user;
-DROP TABLE rolling_view_item_per_user;
-DROP TABLE rolling_add_to_cart_per_user;
-DROP TABLE rolling_checkout_per_user;
-DROP TABLE rolling_revenue_per_user;
-DROP TABLE DataForTargetTable;

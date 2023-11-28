@@ -63,7 +63,7 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
     user_segmentation_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
-CREATE TEMP TABLE inference_preparation_uwm AS (
+CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
   SELECT DISTINCT
     UWM.user_pseudo_id,
     UWM.feature_date,
@@ -93,7 +93,7 @@ CREATE TEMP TABLE inference_preparation_uwm AS (
 
 
 
-CREATE TEMP TABLE inference_preparation_um AS (
+CREATE OR REPLACE TEMP TABLE inference_preparation_um AS (
   SELECT DISTINCT
     UM.feature_date,
     MAX(UM.purchasers_users) OVER(user_scoped_segmentation_metrics_window) AS purchasers_users,
@@ -132,7 +132,7 @@ CREATE TEMP TABLE inference_preparation_um AS (
 );
 
 
-CREATE TEMP TABLE inference_preparation AS (
+CREATE OR REPLACE TEMP TABLE inference_preparation AS (
   SELECT DISTINCT
     UD.user_pseudo_id,
     UD.user_id,

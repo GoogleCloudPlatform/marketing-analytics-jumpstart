@@ -279,6 +279,11 @@ vertex_ai:
                 values: 
                   - nn
                   - boosted_trees
+            - parameter_id: "feature_selection_rate"
+              double_value_spec:
+                  - min_value: 0.5
+                  - max_value: 1.0
+                  - scale_type: UNIT_LINEAR_SCALE
         exclude_features:
           - processed_timestamp
           - data_split
@@ -446,6 +451,11 @@ vertex_ai:
                 values: 
                   - nn
                   - boosted_trees
+            - parameter_id: "feature_selection_rate"
+              double_value_spec:
+                  - min_value: 0.5
+                  - max_value: 1.0
+                  - scale_type: UNIT_LINEAR_SCALE
         exclude_features:
           - processed_timestamp
           - data_split
@@ -496,6 +506,11 @@ vertex_ai:
               values: 
                 - nn
                 - boosted_trees
+          - parameter_id: "feature_selection_rate"
+              double_value_spec:
+                  - min_value: 0.5
+                  - max_value: 1.0
+                  - scale_type: UNIT_LINEAR_SCALE
         exclude_features:
           - processed_timestamp
           - data_split
