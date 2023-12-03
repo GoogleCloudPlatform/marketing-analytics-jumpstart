@@ -17,24 +17,7 @@
 set -o errexit
 set -o nounset
 
-# grep -o '${[A-Z_0-9]\+}' infrastructure/terraform/terraform-template.tfvars
-# ${MAJ_DEFAULT_PROJECT_ID}
-# ${MAJ_DEFAULT_REGION}
-# ${MAJ_MDS_PROJECT_ID}
-# ${MAJ_MDS_DATA_LOCATION}
-# ${MAJ_MDS_DATAFORM_PROJECT_ID}
-# ${MAJ_GA4_EXPORT_PROJECT_ID}
-# ${MAJ_GA4_EXPORT_DATASET}
-# ${MAJ_ADS_EXPORT_PROJECT_ID}
-# ${MAJ_ADS_EXPORT_DATASET}
-# ${MAJ_ADS_EXPORT_TABLE_SUFFIX}
-# ${MAJ_FEATURE_STORE_PROJECT_ID}
-# ${MAJ_ACTIVATION_PROJECT_ID}
-# ${MAJ_GA4_PROPERTY_ID}
-# ${MAJ_GA4_STREAM_ID}
-# ${MAJ_DATAFORM_REPO_OWNER_EMAIL}
-# ${MAJ_DATAFORM_GITHUB_REPO_URL}
-# ${MAJ_DATAFORM_GITHUB_ACCESS_TOKEN}
+# grep -o '${[A-Z_0-9]\+}' infrastructure/cloudshell/terraform-template.tfvars
 
 . scripts/common.sh
 set_environment_variable_from_input_if_not_set "PROJECT_ID" "default project" "Marketing Analytics Jumpstart"
@@ -57,5 +40,6 @@ set_environment_variable_from_input_if_not_set "MAJ_DATAFORM_GITHUB_REPO_URL" "U
 export LOCATION=${MAJ_DEFAULT_REGION}
 export SOURCE_ROOT=$(pwd)
 export TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
+
 set +o nounset
 set +o errexit
