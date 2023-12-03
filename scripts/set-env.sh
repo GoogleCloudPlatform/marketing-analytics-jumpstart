@@ -57,6 +57,5 @@ set_environment_variable_from_input_if_not_set "MAJ_DATAFORM_GITHUB_REPO_URL" "U
 export LOCATION=${MAJ_DEFAULT_REGION}
 export SOURCE_ROOT=$(pwd)
 export TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
-envsubst < "${TERRAFORM_RUN_DIR}/terraform-template.tfvars" > "${TERRAFORM_RUN_DIR}/terraform.tfvars"
 set +o nounset
 set +o errexit

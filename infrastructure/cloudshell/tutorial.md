@@ -34,7 +34,7 @@ Run the set variable script and follow the steps to provide value for every vari
 ## Create the Terraform variables file
 
 ```sh
-envsubst < "${TERRAFORM_RUN_DIR}/terraform-template.tfvars" > "${TERRAFORM_RUN_DIR}/terraform.tfvars"
+envsubst < "${SOURCE_ROOT}/infrastructure/cloudshell/terraform-template.tfvars" > "${TERRAFORM_RUN_DIR}/terraform.tfvars"
 ```
 Provide value for the `dataform_github_token` variable in the generated 
 <walkthrough-editor-open-file filePath="infrastructure/terraform/terraform.tfvars">terraform.tfvars file</walkthrough-editor-open-file>
