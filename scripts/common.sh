@@ -101,6 +101,49 @@ set_environment_variable_if_not_set() {
   unset _VARIABLE_VALUE
 }
 
+set_environment_variable_from_input_or_default_if_not_set() {
+  _VARIABLE_NAME=$1
+  _VALUE_TO_SET=$2
+  _VALUE_DESC=$3
+  _ENTITY_DESC=$4
+  _VARIABLE_VALUE="${!_VARIABLE_NAME:-}"
+  if [ -z "${_VARIABLE_VALUE}" ]; then
+    echo Input ${_VALUE_DESC} for ${_ENTITY_DESC} or press Enter to use the default ${_VALUE_DESC}: ${_VALUE_TO_SET}
+    read _INPUT
+    if [[ ${_INPUT} == "" ]]; then
+      export "${_VARIABLE_NAME}"="${_VALUE_TO_SET}"
+    else
+      export "${_VARIABLE_NAME}"="${_INPUT}"
+    fi
+  fi
+  unset _VARIABLE_NAME
+  unset _VALUE_TO_SET
+  unset _VARIABLE_VALUE
+  unset _VALUE_DESC
+  unset _ENTITY_DESC
+  unset _INPUT
+}
+
+set_environment_variable_from_input_if_not_set() {
+  _VARIABLE_NAME=$1
+  _VALUE_DESC=$2
+  _ENTITY_DESC=$3
+  _VARIABLE_VALUE="${!_VARIABLE_NAME:-}"
+  if [ -z "${_VARIABLE_VALUE}" ]; then
+    echo Input ${_VALUE_DESC} for ${_ENTITY_DESC}:
+    _INPUT=
+    while [[ ${_INPUT} = "" ]]; do
+      read _INPUT
+    done
+    export "${_VARIABLE_NAME}"="${_INPUT}"
+  fi
+  unset _VARIABLE_NAME
+  unset _VARIABLE_VALUE
+  unset _VALUE_DESC
+  unset _ENTITY_DESC
+  unset _INPUT
+}
+
 run_terraform() {
   _TERRAFORM_RUN_DIR=$1
   terraform -chdir="${_TERRAFORM_RUN_DIR}" version

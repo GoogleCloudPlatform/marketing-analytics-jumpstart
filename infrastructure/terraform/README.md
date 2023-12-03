@@ -11,6 +11,7 @@ or a Linux machine or a Mac with `gcloud` command installed. The instructions pr
 installation.
 
 ## Installation Guide
+Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/kingman/marketing-data-engine.git&cloudshell_git_branch=open-in-cloudshell&cloudshell_workspace=.&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
 ### Initial Environment Setup
 
