@@ -105,6 +105,9 @@ resource "google_bigquery_job" "monitor_resources_load" {
     write_disposition = "WRITE_TRUNCATE"
   }
   location = var.location
+  lifecycle {
+    ignore_changes = [job_id]
+  }
 }
 
 module "log_export_bigquery" {
