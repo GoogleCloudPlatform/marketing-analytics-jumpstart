@@ -20,9 +20,13 @@ Add poetry to PATH
 ```sh
 export PATH="$HOME/.local/bin:$PATH"
 ```
-Verify poestry is properly installed, run:
+Verify poetry is properly installed, run:
 ```sh
 poetry --version
+```
+Install python dependencies, run:
+```sh
+poetry install
 ```
 
 ## Set environment variables
