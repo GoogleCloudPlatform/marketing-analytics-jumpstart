@@ -69,7 +69,7 @@ terraform -chdir="${TERRAFORM_RUN_DIR}" apply
 ## Create Looker Studio Dashboard
 Extract the URL used to create the dashboard from the Terraform output value:
 ```sh
-terraform output -raw lookerstudio_create_dashboard_url
+echo "$(terraform -chdir=${TERRAFORM_RUN_DIR} output -raw lookerstudio_create_dashboard_url)"
 ```
 1. Click on the long URL from the command output. This will take you to the copy dashboard flow in Looker Studio.
 1. The copy may take a few moments to execute. If it does not, close the tab and try clicking the link again.
