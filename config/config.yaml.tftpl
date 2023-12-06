@@ -519,7 +519,7 @@ vertex_ai:
           location: "${cloud_region}"
           purchase_job_name_prefix: "propensity-prediction-pl-"
           clv_job_name_prefix: "clv-prediction-pl-"
-          purchase_model_display_name: "propensity-clv-training-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          purchase_model_display_name: "propensity-clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           purchase_model_metric_name: "logLoss"
           purchase_model_metric_threshold: 0.9
           number_of_purchase_models_considered: 1
