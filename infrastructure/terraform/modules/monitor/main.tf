@@ -172,3 +172,14 @@ resource "google_project_iam_member" "activation_pipeline_execution_member" {
   role    = "roles/bigquery.dataEditor"
   member  = element(concat(google_logging_project_sink.activation_pipeline_execution[*].writer_identity, [""]), 0)
 }
+
+data "template_file" "looker_studio_dashboard_url" {
+  template = file("${local.source_root_dir}/templates/looker_studio_create_dashboard_url_template.txt")
+  vars = {
+    mds_project = var.mds_project_id
+    monitor_project = var.project_id
+    report_id  = "f61f65fe-4991-45fc-bcdc-80593966f28c"
+    mds_product_dataset = "marketing_ga4_v1_${var.var.mds_dataset_suffix}"
+    logs_dataset = module.log_export_bigquery.bigquery_dataset.dataset_id
+  }
+}
