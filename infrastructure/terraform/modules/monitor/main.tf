@@ -179,7 +179,7 @@ data "template_file" "looker_studio_dashboard_url" {
     mds_project = var.mds_project_id
     monitor_project = var.project_id
     report_id  = "f61f65fe-4991-45fc-bcdc-80593966f28c"
-    mds_product_dataset = "marketing_ga4_v1_${var.var.mds_dataset_suffix}"
+    mds_product_dataset = "marketing_ga4_v1_${var.mds_dataset_suffix}"
     logs_dataset = module.log_export_bigquery.bigquery_dataset.dataset_id
   }
 }
