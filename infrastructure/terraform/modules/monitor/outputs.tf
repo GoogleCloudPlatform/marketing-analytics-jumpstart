@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "tf_state_project_id" {
-  description = "Google Cloud project id to set on gcloud"
-  value       = var.tf_state_project_id
-}
-
 output "lookerstudio_create_dashboard_url" {
   description = "URL for creating Looker Studio dashboard from template"
-  value       = module.monitoring.lookerstudio_create_dashboard_url
+  value       = data.template_file.looker_studio_dashboard_url.rendered
 }
