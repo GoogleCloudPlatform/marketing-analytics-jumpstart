@@ -23,6 +23,6 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "cloud-solutions/marketing-analytics-jumpstart–deploy-v1"
+    module_name = "cloud-solutions/marketing-analytics-jumpstart-deploy-v1"
   }
 }
