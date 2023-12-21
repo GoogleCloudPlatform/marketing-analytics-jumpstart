@@ -18,8 +18,11 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.49.0"
+      version = "~> 4.49.0"
     }
+  }
 
+  provider_meta "google" {
+    module_name = "cloud-solutions/marketing-analytics-jumpstart-deploy-v1"
   }
 }
