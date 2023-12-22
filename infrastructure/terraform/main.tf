@@ -63,11 +63,11 @@ locals {
   project_toml_content_hash = filesha512(local.project_toml_file_path)
 
   generated_sql_queries_directory_path = "${local.source_root_dir}/sql/query"
-  generated_sql_queries_fileset        = [for f in fileset(local.generated_sql_queries_directory_path, "*.sql") : "${local.generated_sql_queries_directory_path}/${f}"]
+  generated_sql_queries_fileset        = [for f in fileset(local.generated_sql_queries_directory_path, "*.sqlx") : "${local.generated_sql_queries_directory_path}/${f}"]
   generated_sql_queries_content_hash   = sha512(join("", [for f in local.generated_sql_queries_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
 
   generated_sql_procedures_directory_path = "${local.source_root_dir}/sql/procedure"
-  generated_sql_procedures_fileset        = [for f in fileset(local.generated_sql_procedures_directory_path, "*.sql") : "${local.generated_sql_procedures_directory_path}/${f}"]
+  generated_sql_procedures_fileset        = [for f in fileset(local.generated_sql_procedures_directory_path, "*.sqlx") : "${local.generated_sql_procedures_directory_path}/${f}"]
   generated_sql_procedures_content_hash   = sha512(join("", [for f in local.generated_sql_procedures_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
 }
 

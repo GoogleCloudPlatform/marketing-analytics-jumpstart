@@ -242,7 +242,7 @@ vertex_ai:
         experiment_name: "propensity-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 8 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -293,7 +293,7 @@ vertex_ai:
         experiment_name: "propensity-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SUN"
+          cron: "TZ=America/New_York 0 5 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -328,7 +328,7 @@ vertex_ai:
         experiment_name: "segmentation-training"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 12 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -361,7 +361,7 @@ vertex_ai:
         experiment_name: "segmentation-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SUN"
+          cron: "TZ=America/New_York 0 7 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -387,7 +387,7 @@ vertex_ai:
         experiment_name: "auto-segmentation-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 12 * * *"
+          cron: "TZ=America/New_York 0 2 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -411,7 +411,7 @@ vertex_ai:
         experiment_name: "propensity-clv-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 16 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -461,7 +461,7 @@ vertex_ai:
         experiment_name: "clv-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 20 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -509,7 +509,7 @@ vertex_ai:
         experiment_name: "clv-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SUN"
+          cron: "TZ=America/New_York 0 6 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null

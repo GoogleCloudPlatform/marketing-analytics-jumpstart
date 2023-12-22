@@ -395,12 +395,15 @@ def bq_flatten_tabular_binary_prediction_table(
     query = f"""
         CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (SELECT 
             CASE 
-                WHEN {predictions_column}.classes[OFFSET(0)]='{positive_label}' AND {predictions_column}.scores[OFFSET(0)]> {threashold} THEN 'true'
-                WHEN {predictions_column}.classes[OFFSET(1)]='{positive_label}' AND {predictions_column}.scores[OFFSET(1)]> {threashold} THEN 'true'
+                WHEN {predictions_column}.classes[OFFSET(0)]='0' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN 'false'
+                WHEN {predictions_column}.classes[OFFSET(0)]='1' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN 'true'
                 ELSE 'false'
             END AS {destination_table.metadata["predictions_column"]},
             CASE 
-                WHEN {predictions_column}.classes[OFFSET(0)]='{positive_label}' THEN {predictions_column}.scores[OFFSET(0)]
+                WHEN {predictions_column}.classes[OFFSET(0)]='0' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN 
+                {predictions_column}.scores[OFFSET(1)]
+                WHEN {predictions_column}.classes[OFFSET(0)]='1' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN
+                {predictions_column}.scores[OFFSET(0)]
                 ELSE {predictions_column}.scores[OFFSET(1)]
             END AS prediction_prob, b.*
             FROM `{predictions_table.metadata['table_id']}` as a
@@ -652,7 +655,7 @@ def bq_union_predictions_tables(
         CREATE TEMP TABLE non_purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            0.0 AS clv_prediction,
+            GREATEST(0.0, COALESCE(B.max_daily_revenue / B.average_daily_purchasers, 0.0) * B.avg_user_conversion_rate) AS clv_prediction,
             B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A
