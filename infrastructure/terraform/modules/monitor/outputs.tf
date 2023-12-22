@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-terraform {
-  required_version = ">=1.3.7"
-
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "4.49.0"
-    }
-
-  }
+output "lookerstudio_create_dashboard_url" {
+  description = "URL for creating Looker Studio dashboard from template"
+  value       = data.template_file.looker_studio_dashboard_url.rendered
 }

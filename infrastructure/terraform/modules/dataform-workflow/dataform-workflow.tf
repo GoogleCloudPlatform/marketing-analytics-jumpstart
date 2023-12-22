@@ -54,7 +54,7 @@ main:
         auth:
           type: OAuth2
         headers:
-          User-Agent: "cloud-solutions/marketing-analytics-jumpstart-v0"
+          User-Agent: "cloud-solutions/marketing-analytics-jumpstart-usage-v1"
         body:
           compilationResult: $${compilationResult.body.name}
           invocationConfig:${local.tagSection}

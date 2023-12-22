@@ -634,15 +634,15 @@ def bq_union_predictions_tables(
         CREATE TEMP TABLE flattened_prediction AS (
         SELECT 
             CASE 
-                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 'false'
-                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN 'true'
+                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='0' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN 'false'
+                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='1' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 'true'
                 ELSE 'false'
             END AS {predictions_column_regression},
             CASE 
-                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='0' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN 
-                {predictions_column_propensity}.scores[OFFSET(0)]
-                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='1' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN
+                WHEN {predictions_column_propensity}.classes[OFFSET(1)]='0' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN 
                 {predictions_column_propensity}.scores[OFFSET(1)]
+                WHEN {predictions_column_propensity}.classes[OFFSET(0)]='1' AND {predictions_column_propensity}.scores[OFFSET(0)]> {threashold} THEN
+                {predictions_column_propensity}.scores[OFFSET(0)]
                 ELSE {predictions_column_propensity}.scores[OFFSET(0)]
             END AS prediction_prob, 
             a.* EXCEPT({predictions_column_propensity})
