@@ -393,22 +393,40 @@ def bq_flatten_tabular_binary_prediction_table(
             f"no prediction field found in given table {predictions_table.metadata['table_id']}")
  
     query = f"""
-        CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (SELECT 
-            CASE 
-                WHEN {predictions_column}.classes[OFFSET(0)]='0' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN 'false'
-                WHEN {predictions_column}.classes[OFFSET(0)]='1' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN 'true'
-                ELSE 'false'
-            END AS {destination_table.metadata["predictions_column"]},
-            CASE 
-                WHEN {predictions_column}.classes[OFFSET(0)]='0' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN 
-                {predictions_column}.scores[OFFSET(1)]
-                WHEN {predictions_column}.classes[OFFSET(0)]='1' AND {predictions_column}.scores[OFFSET(0)]>= {threashold} THEN
-                {predictions_column}.scores[OFFSET(0)]
-                ELSE {predictions_column}.scores[OFFSET(1)]
-            END AS prediction_prob, b.*
-            FROM `{predictions_table.metadata['table_id']}` as a
-            INNER JOIN `{source_table}` as b on a.{bq_unique_key}=b.{bq_unique_key}            
-            )
+        CREATE OR REPLACE TEMP TABLE prediction_indexes AS (
+            SELECT 
+            (SELECT offset from UNNEST({predictions_column}.classes) c with offset where c = "0") AS index_z,
+            (SELECT offset from UNNEST({predictions_column}.classes) c with offset where c = "1") AS index_one,
+            {predictions_column} as {predictions_column},
+            * EXCEPT({predictions_column})
+            FROM `{predictions_table.metadata['table_id']}`
+        );
+
+        CREATE OR REPLACE TEMP TABLE prediction_greatest_scores AS (
+            SELECT 
+            {predictions_column}.scores[SAFE_OFFSET(index_z)] AS score_zero,
+            {predictions_column}.scores[SAFE_OFFSET(index_one)] AS score_one,
+            GREATEST({predictions_column}.scores[SAFE_OFFSET(index_z)], {predictions_column}.scores[SAFE_OFFSET(index_one)]) AS greatest_score,
+            *
+            FROM prediction_indexes
+        );
+
+        CREATE OR REPLACE TABLE `{destination_table.metadata["table_id"]}` AS (
+            SELECT
+                CASE 
+                WHEN a.score_zero > 0.5 THEN 'false'
+                WHEN a.score_one > 0.5 THEN 'true'
+                ELSE 'false' 
+                END AS {destination_table.metadata["predictions_column"]},
+                CASE
+                WHEN a.score_zero > 0.5 THEN a.score_zero
+                WHEN a.score_one > 0.5 THEN a.score_one
+                ELSE a.score_zero 
+                END as prediction_prob,
+                b.* 
+            FROM prediction_greatest_scores as a
+            INNER JOIN `{source_table}` as b on a.{bq_unique_key}=b.{bq_unique_key} 
+        );
     """
   
   
@@ -634,7 +652,7 @@ def bq_union_predictions_tables(
     destination_table.metadata["table_id"] = f"{predictions_table_regression.metadata['table_id']}_final"
     destination_table.metadata["predictions_column"] = 'prediction'
     query = f"""
-        CREATE TEMP TABLE flattened_prediction AS (
+        CREATE OR REPLACE TEMP TABLE flattened_prediction AS (
         SELECT 
             CASE 
                 WHEN {predictions_column_propensity}.classes[OFFSET(1)]='0' AND {predictions_column_propensity}.scores[OFFSET(1)]> {threashold} THEN 'false'
@@ -652,7 +670,7 @@ def bq_union_predictions_tables(
             FROM `{predictions_table_propensity.metadata['table_id']}` as a
         );
         
-        CREATE TEMP TABLE non_purchasers_prediction AS (
+        CREATE OR REPLACE TEMP TABLE non_purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
             GREATEST(0.0, COALESCE(B.max_daily_revenue / B.average_daily_purchasers, 0.0) * B.avg_user_conversion_rate) AS clv_prediction,
@@ -666,7 +684,7 @@ def bq_union_predictions_tables(
             AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key} 
         );
 
-        CREATE TEMP TABLE purchasers_prediction AS (
+        CREATE OR REPLACE TEMP TABLE purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
             GREATEST(0.0, B.{predictions_column_regression}) AS clv_prediction,
