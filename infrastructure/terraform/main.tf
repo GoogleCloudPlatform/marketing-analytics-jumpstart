@@ -104,8 +104,8 @@ resource "null_resource" "generate_sql_queries" {
 
   triggers = {
     create_command = <<-EOT
-    ${local.poetry_run_alias} inv apply-env-variables-queries --env-name=${local.config_file_name}
-    ${local.poetry_run_alias} inv apply-env-variables-procedures --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-config-parameters-to-all-queries --env-name=${local.config_file_name}
+    ${local.poetry_run_alias} inv apply-config-parameters-to-all-procedures --env-name=${local.config_file_name}
     EOT
 
     destroy_command = <<-EOT

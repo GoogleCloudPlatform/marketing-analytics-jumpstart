@@ -12,6 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+---
+The config.yaml.tftpl file is a YAML file that contains the configuration 
+parameters for the marketing analytics jumpstart. 
+The file is located in the config directory of the jumpstart repository.
+
+It contains the following sections:
+
+google_cloud_project: This section contains the Google Cloud project ID and project number.
+cloud_build: This section contains the configuration parameters for the Cloud Build pipeline.
+container: This section contains the configuration parameters for the container images.
+artifact_registry: This section contains the configuration parameters for the Artifact Registry repository.
+dataflow: This section contains the configuration parameters for the Dataflow pipeline.
+vertex_ai: This section contains the configuration parameters for the Vertex AI pipeline.
+bigquery: This section contains the configuration parameters for the BigQuery artifacts.
+---
+
 google_cloud_project:
   project_id: "${project_id}"
   project_name: "${project_name}"
