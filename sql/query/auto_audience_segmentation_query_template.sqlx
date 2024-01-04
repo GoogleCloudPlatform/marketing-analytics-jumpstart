@@ -3,3 +3,5 @@ SELECT
   EXTRACT(DATE FROM feature_timestamp AT TIME ZONE 'UTC') AS inference_date,
   prediction as prediction
   FROM `{{source_table}}`
+WHERE prediction IS NOT NULL
+LIMIT 10000
