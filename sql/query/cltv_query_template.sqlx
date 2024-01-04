@@ -4,4 +4,4 @@ SELECT * EXCEPT(user_pseudo_id, processed_timestamp),
  FROM `{{source_table}}`
  WHERE prediction > 0
  ORDER BY prediction DESC
- LIMIT 1000
+ LIMIT 10000

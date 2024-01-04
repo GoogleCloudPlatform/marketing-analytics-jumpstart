@@ -242,7 +242,7 @@ vertex_ai:
         experiment_name: "propensity-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 8 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -293,7 +293,7 @@ vertex_ai:
         experiment_name: "propensity-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SUN"
+          cron: "TZ=America/New_York 0 5 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -328,7 +328,7 @@ vertex_ai:
         experiment_name: "segmentation-training"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 12 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -361,7 +361,7 @@ vertex_ai:
         experiment_name: "segmentation-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SUN"
+          cron: "TZ=America/New_York 0 7 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -387,7 +387,7 @@ vertex_ai:
         experiment_name: "auto-segmentation-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 12 * * *"
+          cron: "TZ=America/New_York 0 2 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -411,7 +411,7 @@ vertex_ai:
         experiment_name: "propensity-clv-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 16 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -461,7 +461,7 @@ vertex_ai:
         experiment_name: "clv-training"
         type: "tabular-workflows"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SAT"
+          cron: "TZ=America/New_York 0 20 * * SAT"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -509,7 +509,7 @@ vertex_ai:
         experiment_name: "clv-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 0 * * SUN"
+          cron: "TZ=America/New_York 0 6 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -528,7 +528,7 @@ vertex_ai:
           positive_label: "1"
           clv_model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           clv_model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
-          clv_model_metric_threshold: 100
+          clv_model_metric_threshold: 400
           number_of_clv_models_considered: 1
           purchase_bigquery_source: "${project_id}.purchase_propensity.v_purchase_propensity_inference_30_30"
           purchase_bigquery_destination_prefix: "${project_id}.customer_lifetime_value"
