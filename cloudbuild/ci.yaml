@@ -12,8 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This build configuration can be manually triggered by the following command
+#
+#   $ gcloud builds submit --config ci-sql.yaml
+#
+
+# This continuous deployment build configuration is not ready yet.
+# TODO: Fix this build configuration.
+
+# As a developer, customizing and using the repository, you will apply 
+# your changes to the repo and manually run the tests.
+# For changes in the python code, run the command:
+# $> poetry run pytest
+# For changes in the SQL code, run the command:
+# $> zetasql-formatter sql/query/*.sql
+# For changes in the terraform code, run the command:
+# $> terraform fmt && terraform vet
+
+# [START cloudbuild_ci]
 steps:
 
+  # Install dependencies using poetry
   - id: "Install Dependencies"
     name: 'docker.io/library/python:3.8-slim'
     dir: $_SRC_FOLDER
@@ -24,39 +43,40 @@ steps:
         poetry config settings.virtualenvs.create false && \
         poetry install -v --no-interaction --no-ansi --with dev
 
-  - id: "Apply variables to templated files"
+  # Apply configuration parameters to templated stored procedures
+  - id: "Apply variables to templated stored procedures"
     name: $_PYTHON_VERSION
     dir: $_SRC_FOLDER
     entrypoint: python
-    args: ["-m", "invoke", "apply-env-variables-procedures", "--env-name=prod"]
+    args: ["-m", "invoke", "apply-config-parameters-to-all-procedures", "--env-name=config"]
 
+  # Apply variables to templated datasets
+  - id: "Apply variables to templated datasets"
+    name: $_PYTHON_VERSION
+    dir: $_SRC_FOLDER
+    entrypoint: python
+    args: ["-m", "invoke", "apply-config-parameters-to-all-datasets", "--env-name=config"]
+  
+  # Apply variables to templated queries
+  - id: "Apply variables to templated queries"
+    name: $_PYTHON_VERSION
+    dir: $_SRC_FOLDER
+    entrypoint: python
+    args: ["-m", "invoke", "apply-config-parameters-to-all-queries", "--env-name=config"]
+
+  # Run linting
   - id: "Lint"
     name: $_PYTHON_VERSION
     entrypoint: python
     args: ["-m", "invoke", "lint"]
 
+  # Run unit tests
   - id: "Run Unit Tests"
     name: $_PYTHON_VERSION
     entrypoint: python
     args: ["-m", "invoke", "test"]
 
-  # Setup resources for system tests
-
-  - id: "Build Container Image"
-    name: "gcr.io/k8s-skaffold/pack"
-    entrypoint: pack
-    args:
-      - build
-      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA" # Tag docker image with git commit SHA
-      - "--builder=gcr.io/buildpacks/builder:v1"
-      - "--path=."
-
-  - id: "Push Container Image"
-    name: "gcr.io/cloud-builders/docker:latest"
-    args:
-      - push
-      - "$_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"
-
+  # Run system tests
   - id: "Run System Tests"
     name: "${_PYTHON_VERSION}"
     entrypoint: /bin/bash
@@ -66,21 +86,24 @@ steps:
         export BASE_URL=$(cat _service_url)
         export ID_TOKEN=$(cat _id_token)
         python -m invoke system-test
-  # Clean up system test resources
 
-  - id: "Delete image"
-    name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: "/bin/bash"
-    args:
-      - "-c"
-      - |
-        gcloud artifact docker images delete $_GCR_HOSTNAME/$PROJECT_ID/$_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA --quiet
+# [END cloudbuild_ci]
+
+# Options for the build.
+# https://cloud.google.com/cloud-build/docs/build-config
 options:
   dynamic_substitutions: true
   substitution_option: "ALLOW_LOOSE"
 
+# Substitutions to the environment variables in the above steps.
+# https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
+# TODO: Fix the substitutions.
 substitutions:
-  _GCR_HOSTNAME: us-central1-docker.pkg.dev
+  # _GCR_HOSTNAME is the hostname of the container registry.
+  _GCR_HOSTNAME: "${cloud_region}-docker.pkg.dev"
+  # DEPLOY_REGION is the region of the Cloud Run service.
   _DEPLOY_REGION: us-central1
-  _PYTHON_VERSION: python:3.7.2-slim # matches buildpack latest
-  _REPOSITORY: samples
+  # PYTHON_VERSION is the version of Python to use.
+  _PYTHON_VERSION: python:3.9-slim'
+  # _REPOSITORY is the name of the container repository.
+  _REPOSITORY: "${pipelines_github_repo}"

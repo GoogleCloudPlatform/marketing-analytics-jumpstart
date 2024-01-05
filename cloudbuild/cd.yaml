@@ -12,12 +12,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# [START cloudbuild_cd]
 steps:
 
+# TODO: Fix the build steps.
+# Create a feature table in BigQuery
 - id: "Create feature table in BigQuery"
   name: gcr.io/community-builders/bq
   args:
   - mk
-  - --project_id=porcupine-demo
+  - --project_id=$_GCP_PROJECT_ID
+  - --dataset_id=$_BQ_DATASET_NAME
   - --table=test_dataset.bobs_from_builder
   - sql/table/schema/user-scoped-metrics.json
+  - --location=US
+# [END cloudbuild_cd]
+
+# Substitutions to the environment variables in the above steps.
+# https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
+# TODO: Fix the substitutions.
+substitutions:
+  # _SRC_FOLDER is the path to the source code folder relative to the current directory in the container.
+  _SRC_FOLDER: "src"
+  # _GCP_PROJECT_ID is the ID of the gcp project.
+  _GCP_PROJECT_ID: "${project_id}"
+  # _BQ_DATASET_NAME is the name of the BigQuery dataset.
+  _BQ_DATASET_NAME: "feature_store"
+  # _BQ_LOCATION is the location of the BigQuery dataset.
+  _BQ_LOCATION: "${location}"
+  # _GCR_HOSTNAME is the hostname of the container registry.
+  _GCR_HOSTNAME: "${cloud_region}-docker.pkg.dev"
+  # _DEPLOY_REGION is the region to deploy the container to.
+  _DEPLOY_REGION: "${cloud_region}"
+  # _PYTHON_VERSION is the Python version to use for the container.
+  _PYTHON_VERSION: "python:3.9-slim"
+  # _REPOSITORY is the name of the container repository.
+  _REPOSITORY: "${pipelines_github_repo}"

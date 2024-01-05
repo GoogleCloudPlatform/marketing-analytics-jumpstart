@@ -12,8 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This build configuration can be manually triggered by the following command
+#
+#   $ gcloud builds submit --config cd-sql.yaml
+#
+
+# This continuous deployment build configuration is not ready yet.
+# TODO: Fix this build configuration.
+
+# [START cloudbuild_cd_sql]
 steps:
 
+  # Install dependencies on the remote machine hosted in Cloud Build.
   - id: "Install Dependencies"
     name: $_PYTHON_VERSION
     dir: $_SRC_FOLDER
@@ -24,18 +34,21 @@ steps:
         poetry config settings.virtualenvs.create false && \
         poetry install -v --no-interaction --no-ansi --with dev
 
+  # Calls python invoke to apply configuration parameters to templated sql queries
   - id: "Apply variables to templated stored procedures"
     name: $_PYTHON_VERSION
     dir: $_SRC_FOLDER
     entrypoint: python
-    args: ["-m", "invoke", "apply-env-variables-procedures", "--env-name=dev"]
+    args: ["-m", "invoke", "apply-config-parameters-to-all-queries", "--env-name=config"]
 
+  # Calls python invoke to apply configuration parameters to templated sql stored procedures
   - id: "Apply variables to templated datasets"
     name: $_PYTHON_VERSION
     dir: $_SRC_FOLDER
     entrypoint: python
-    args: ["-m", "invoke", "apply-env-variables-datasets", "--env-name=dev"]
+    args: ["-m", "invoke", "apply-config-parameters-to-all-procedures", "--env-name=config"]
 
+  # TODO: Fix this building step.
   - id: "Create datasets in BigQuery"
     name: gcr.io/community-builders/bq
     args:
@@ -43,6 +56,7 @@ steps:
     - --project_id=$_GCP_PROJECT_ID
     - --dataset=
 
+  # TODO: Fix this building step.
   - id: "Create tables in BigQuery"
     name: gcr.io/community-builders/bq
     args:
@@ -51,12 +65,25 @@ steps:
     - --location=$_BQ_LOCATION
     - --table=$_BQ_DATASET_NAME.user_dimensions
     - --schema=sql/table/schema/user_dimensions.json
+# [END cloudbuild_cd_sql]
 
+# Substitutions to the environment variables in the above steps.
+# https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values
+# TODO: Fix the substitutions.
 substitutions:
-  _GCP_PROJECT_ID: "propensity-modelling-368616"
+  # _SRC_FOLDER is the path to the source code folder relative to the current directory in the container.
+  _SRC_FOLDER: "src"
+  # _GCP_PROJECT_ID is the ID of the gcp project.
+  _GCP_PROJECT_ID: "${project_id}"
+  # _BQ_DATASET_NAME is the name of the BigQuery dataset.
   _BQ_DATASET_NAME: "feature_store"
-  _BQ_LOCATION: "us"
-  _GCR_HOSTNAME: us-central1-docker.pkg.dev
-  _DEPLOY_REGION: us-central1
-  _PYTHON_VERSION: python:3.9-slim'
-  _REPOSITORY: samples
+  # _BQ_LOCATION is the location of the BigQuery dataset.
+  _BQ_LOCATION: "${location}"
+  # _GCR_HOSTNAME is the hostname of the container registry.
+  _GCR_HOSTNAME: "${cloud_region}-docker.pkg.dev"
+  # _DEPLOY_REGION is the region to deploy the container to.
+  _DEPLOY_REGION: "${cloud_region}"
+  # _PYTHON_VERSION is the Python version to use for the container.
+  _PYTHON_VERSION: "python:3.9-slim"
+  # _REPOSITORY is the name of the container repository.
+  _REPOSITORY: "${pipelines_github_repo}"
