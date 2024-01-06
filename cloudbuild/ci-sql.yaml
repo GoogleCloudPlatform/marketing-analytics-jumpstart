@@ -22,10 +22,14 @@
 
 # As a developer, customizing and using the repository, you will apply 
 # your changes to the repo and manually run the tests.
+#
 # For changes in the python code, run the command:
 # $> poetry run pytest
+#
 # For changes in the SQL code, run the command:
 # $> zetasql-formatter sql/query/*.sql
+# Check this repo to learn how to install: https://github.com/Matts966/zetasql-formatter
+#
 # For changes in the terraform code, run the command:
 # $> terraform fmt && terraform vet
 
