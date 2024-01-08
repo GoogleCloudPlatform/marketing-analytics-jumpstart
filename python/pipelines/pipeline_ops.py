@@ -166,7 +166,8 @@ def _extract_schema_from_bigquery(
         schema = [feature['name'] for feature in d]
     return schema
 
-
+# Compile Tabular Workflow Training pipelines
+# You don't need to define the pipeline elsewhere since the pre-compiled pipeline component is defined in the `automl_tabular_pl_v?.yaml`
 def compile_automl_tabular_pipeline(
         template_path: str,
         parameters_path: str,
@@ -313,6 +314,7 @@ def compile_automl_tabular_pipeline(
     return template_path, parameter_values
 
 
+# Function to upload the pipeline YAML files to gcs
 def upload_pipeline_artefact_registry(
         template_path: str,
         project_id: str,
@@ -355,6 +357,7 @@ def get_gcp_bearer_token() -> str:
     return creds.token
 
 
+# Function to schedule the pipeline.
 def schedule_pipeline(
         project_id: str,
         region: str,

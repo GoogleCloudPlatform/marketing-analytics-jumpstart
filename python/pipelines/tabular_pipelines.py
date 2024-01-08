@@ -27,6 +27,8 @@ from pipelines.components.pubsub.component import send_pubsub_activation_msg
 #  )
 
 
+# Function containing a KFP definition for a Prediction pipeline that uses a Tabular Workflow Model.
+# This is for Binary Classification model.
 @dsl.pipeline()
 def prediction_binary_classification_pl(
     project_id: str,
@@ -95,6 +97,8 @@ def prediction_binary_classification_pl(
     )
 
 
+# Function containing a KFP definition for a Prediction pipeline that uses a Tabular Workflow Model.
+# This is for Regression model.
 @dsl.pipeline()
 def prediction_regression_pl(
     project_id: str,
@@ -265,3 +269,39 @@ def prediction_binary_classification_regression_pl(
         activation_type=pubsub_activation_type,
         predictions_table=union_predictions.outputs['destination_table'],
     )
+
+
+# Function containing a KFP definition for a Explanation pipeline that uses a Tabular Workflow Model.
+# This is a Explanation Pipeline Definition that will output the Feature Attribution
+@dsl.pipeline()
+def explanation_tabular_workflow_regression_pl(
+    project_id: str,
+    location: Optional[str],
+    model_display_name: str,
+    model_metric_name: str,
+    model_metric_threshold: float,
+    number_of_models_considered: int,
+
+    bigquery_source: str,
+    bigquery_destination_prefix: str,
+    bq_unique_key: str,
+
+    job_name_prefix: str,
+    machine_type: str = "n1-standard-4",
+    max_replica_count: int = 10,
+    batch_size: int = 64,
+    accelerator_count: int = 0,
+    accelerator_type: str = None,
+    generate_explanation: bool = True
+):
+    #TODO: Implement the explanation pipeline for the value based bidding model
+    value_based_bidding_model = elect_best_tabular_model(
+        project=project_id,
+        location=location,
+        display_name=model_display_name,
+        metric_name=model_metric_name,
+        metric_threshold=model_metric_threshold,
+        number_of_models_considered=number_of_models_considered,
+    ).set_display_name('elect_best_vbb_model')
+
+    pass

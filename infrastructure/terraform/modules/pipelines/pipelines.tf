@@ -422,3 +422,39 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
     working_dir = self.triggers.working_dir
   }
 }
+
+# Compilation for the value based bidding training pipeline
+resource "null_resource" "compile_value_based_bidding_training_pipelines" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_auto_segmentation_prediction_pipelines.id
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.training -o vbb_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f vbb_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.training
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+# Compilation for the value based bidding explanation pipeline
+resource "null_resource" "compile_value_based_bidding_explanation_pipelines" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_value_based_bidding_training_pipelines.id
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.explanation -o vbb_explanation.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f vbb_explanation.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.explanation
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
