@@ -1,21 +1,7 @@
-SELECT user_pseudo_id AS client_id,
- EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
- prediction,
- active_users_past_1_7_day AS active_users_past_1_7,
- active_users_past_8_14_day AS active_users_past_8_14,
- purchases_past_1_7_day AS purchases_past_1_7,
- purchases_past_8_14_day AS purchases_past_8_14,
- visits_past_1_7_day AS visits_past_1_7,
- visits_past_8_14_day AS visits_past_8_14,
- view_items_past_1_7_day AS view_items_past_1_7,
- view_items_past_8_14_day AS view_items_past_8_14,
- add_to_carts_past_1_7_day AS add_to_carts_past_1_7,
- add_to_carts_past_8_14_day AS add_to_carts_past_8_14,
- checkouts_past_1_7_day AS checkouts_past_1_7,
- checkouts_past_8_14_day AS checkouts_past_8_14,
- ltv_revenue_past_1_7_day AS ltv_revenue_past_1_7,
- ltv_revenue_past_7_15_day AS ltv_revenue_past_7_15,
- geo_region
- FROM `{{source_table}}`
- WHERE prediction IS NOT NULL
- LIMIT 10000
+SELECT 
+    prediction,
+    user_pseudo_id AS client_id,
+    EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
+    FROM `{{source_table}}`
+    WHERE prediction IS NOT NULL
+    LIMIT 10000
