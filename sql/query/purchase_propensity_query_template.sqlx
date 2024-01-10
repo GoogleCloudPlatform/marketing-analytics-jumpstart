@@ -1,7 +1,7 @@
 SELECT
     prediction,
     prediction_prob,
-    user_pseudo_id AS client_id,
+    COALESCE(user_id, user_pseudo_id) AS client_id,
     EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
     FROM `{{source_table}}`
     WHERE prediction = 'true'

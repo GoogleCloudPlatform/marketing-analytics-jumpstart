@@ -13,6 +13,7 @@
 # limitations under the License.
 import logging
 import re
+import traceback
 
 from apache_beam.io.gcp.internal.clients import bigquery
 from apache_beam.options.pipeline_options import GoogleCloudOptions
@@ -119,13 +120,26 @@ class ToLogFormat(beam.DoFn):
     else:
       state_msg = 'SEND_FAIL'
 
-    yield {
-      'id': str(uuid.uuid4()),
-      'activation_id': element[0]['events'][0]['name'],
-      'payload': json.dumps(element[0]),
-      'latest_state': f"{state_msg} {element[1]}",
-      'updated_at': str(time_cast)
-    }
+    result = {}
+    try:
+      result = {
+        'id': str(uuid.uuid4()),
+        'activation_id': element[0]['events'][0]['name'],
+        'payload': json.dumps(element[0]),
+        'latest_state': f"{state_msg} {element[1]}",
+        'updated_at': str(time_cast)
+      }
+    except KeyError as e:
+      logging.error(element)
+      result = {
+        'id': str(uuid.uuid4()),
+        'activation_id': "",
+        'payload': json.dumps(element[0]),
+        'latest_state': f"{state_msg} {element[1]}",
+        'updated_at': str(time_cast)
+      }
+      logging.error(traceback.format_exc())
+    yield result
 
 class DecimalEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -143,14 +157,24 @@ class TransformToPayload(beam.DoFn):
     self.payload_template = Environment(loader=BaseLoader).from_string(self.template_str)
 
   def process(self, element):
+    # Removing bad shaping strings in client_id
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20007)"', '')
+    
     payload_str = self.payload_template.render(
-      client_id=element['client_id'],
+      client_id=_client_id,
       event_timestamp=self.date_to_micro(element["inference_date"]),
       event_name=self.event_name,
       user_properties=self.generate_user_properties(element),
       event_parameters=self.generate_event_parameters(element),
     )
-    yield json.loads(payload_str)
+    result = {}
+    try:
+      result = json.loads(r'{}'.format(payload_str))
+    except json.decoder.JSONDecodeError as e:
+      logging.error(payload_str)
+      logging.error(traceback.format_exc())
+    yield result
+    
 
   def date_to_micro(self, date_str):
     try:  # try if date_str is in ISO timestamp format
