@@ -158,7 +158,12 @@ class TransformToPayload(beam.DoFn):
 
   def process(self, element):
     # Removing bad shaping strings in client_id
-    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20007)"', '')
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20007)', '')
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20023)', '')
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20013)', '')
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20010)', '')
+    _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40007)</script>', '')
+    _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40013)</script>', '')
     
     payload_str = self.payload_template.render(
       client_id=_client_id,
