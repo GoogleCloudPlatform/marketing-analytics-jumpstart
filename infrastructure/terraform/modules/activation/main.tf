@@ -40,6 +40,19 @@ locals {
   activation_type_configuration_file              = "${local.source_root_dir}/templates/activation_type_configuration_template.tpl"
   activation_type_configuration_file_content_hash = filesha512(local.activation_type_configuration_file)
 
+  app_payload_template_file              = "${local.source_root_dir}/templates/app_payload_template.jinja2"
+  app_payload_template_file_content_hash = filesha512(local.activation_type_configuration_file)
+  
+  activation_application_dir = "${local.source_root_dir}/python/activation"
+  activation_application_fileset = [
+    "${local.activation_application_dir}/main.py",
+    "${local.activation_application_dir}/Dockerfile",
+    "${local.activation_application_dir}/metadata.json",
+    "${local.activation_application_dir}/requirements.txt",
+    "${local.activation_application_dir}/pipeline_test.py",
+  ]
+  activation_application_content_hash = sha512(join("", [for f in local.activation_application_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+
   audience_segmentation_activation_query_file              = "${local.source_root_dir}/sql/query/audience_segmentation_query_template.sqlx"
   audience_segmentation_activation_query_file_content_hash = filesha512(local.audience_segmentation_activation_query_file)
 }
@@ -112,6 +125,8 @@ resource "null_resource" "create_custom_events" {
   triggers = {
     services_enabled_project = module.project_services.project_id
     source_contents_hash = local.activation_type_configuration_file_content_hash
+    #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
+    #source_activation_application_python_hash = local.activation_application_content_hash
   }
   provisioner "local-exec" {
     command     = <<-EOT
@@ -125,6 +140,8 @@ resource "null_resource" "create_custom_dimensions" {
   triggers = {
     services_enabled_project = module.project_services.project_id
     source_contents_hash = local.audience_segmentation_activation_query_file_content_hash
+    #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
+    #source_activation_application_python_hash = local.activation_application_content_hash
   }
   provisioner "local-exec" {
     command     = <<-EOT
@@ -266,6 +283,7 @@ resource "google_storage_bucket_object" "purchase_propensity_query_template_file
 
 data "template_file" "activation_type_configuration" {
   template = file("${local.template_dir}/activation_type_configuration_template.tpl")
+
   vars = {
     audience_segmentation_query_template_gcs_path       = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.audience_segmentation_query_template_file.output_name}"
     auto_audience_segmentation_query_template_gcs_path  = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.auto_audience_segmentation_query_template_file.output_name}"
@@ -279,6 +297,7 @@ resource "google_storage_bucket_object" "activation_type_configuration_file" {
   name    = "${local.configuration_folder}/activation_type_configuration.json"
   content = data.template_file.activation_type_configuration.rendered
   bucket  = module.pipeline_bucket.name
+  detect_md5hash = base64encode("${local.activation_type_configuration_file_content_hash}${local.activation_application_content_hash}")
 }
 
 module "activation_pipeline_container" {

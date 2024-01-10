@@ -13,6 +13,7 @@
 # limitations under the License.
 import logging
 import re
+import traceback
 
 from apache_beam.io.gcp.internal.clients import bigquery
 from apache_beam.options.pipeline_options import GoogleCloudOptions
@@ -119,13 +120,26 @@ class ToLogFormat(beam.DoFn):
     else:
       state_msg = 'SEND_FAIL'
 
-    yield {
-      'id': str(uuid.uuid4()),
-      'activation_id': element[0]['events'][0]['name'],
-      'payload': json.dumps(element[0]),
-      'latest_state': f"{state_msg} {element[1]}",
-      'updated_at': str(time_cast)
-    }
+    result = {}
+    try:
+      result = {
+        'id': str(uuid.uuid4()),
+        'activation_id': element[0]['events'][0]['name'],
+        'payload': json.dumps(element[0]),
+        'latest_state': f"{state_msg} {element[1]}",
+        'updated_at': str(time_cast)
+      }
+    except KeyError as e:
+      logging.error(element)
+      result = {
+        'id': str(uuid.uuid4()),
+        'activation_id': "",
+        'payload': json.dumps(element[0]),
+        'latest_state': f"{state_msg} {element[1]}",
+        'updated_at': str(time_cast)
+      }
+      logging.error(traceback.format_exc())
+    yield result
 
 class DecimalEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -143,13 +157,29 @@ class TransformToPayload(beam.DoFn):
     self.payload_template = Environment(loader=BaseLoader).from_string(self.template_str)
 
   def process(self, element):
+    # Removing bad shaping strings in client_id
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20007)', '')
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20023)', '')
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20013)', '')
+    _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20010)', '')
+    _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40007)</script>', '')
+    _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40013)</script>', '')
+    
     payload_str = self.payload_template.render(
-      client_id=element['client_id'],
+      client_id=_client_id,
       event_timestamp=self.date_to_micro(element["inference_date"]),
       event_name=self.event_name,
       user_properties=self.generate_user_properties(element),
+      event_parameters=self.generate_event_parameters(element),
     )
-    yield json.loads(payload_str)
+    result = {}
+    try:
+      result = json.loads(r'{}'.format(payload_str))
+    except json.decoder.JSONDecodeError as e:
+      logging.error(payload_str)
+      logging.error(traceback.format_exc())
+    yield result
+    
 
   def date_to_micro(self, date_str):
     try:  # try if date_str is in ISO timestamp format
@@ -174,6 +204,16 @@ class TransformToPayload(beam.DoFn):
       if v:
         user_properties_obj[k] = {'value': v}
     return json.dumps(user_properties_obj, cls=DecimalEncoder)
+  
+  def generate_event_parameters(self, element):
+    element_copy = element.copy()
+    del element_copy['client_id']
+    del element_copy['inference_date']
+    event_parameters_obj =  {}
+    for k, v in element_copy.items():
+      if v:
+        event_parameters_obj[k] = v
+    return json.dumps(event_parameters_obj, cls=DecimalEncoder)
 
 def send_success(element):
   return element[1] == requests.status_codes.codes.NO_CONTENT
@@ -199,6 +239,7 @@ def run(argv=None):
   activation_type_configuration = load_activation_type_configuration(activation_options)
 
   load_from_source_query = build_query(activation_options, activation_type_configuration)
+  logging.info(load_from_source_query)
 
   table_suffix =f"{datetime.datetime.today().strftime('%Y_%m_%d')}_{str(uuid.uuid4())[:8]}"
   log_table_names = [f'activation_log_{table_suffix}', f'activation_retry_{table_suffix}']
@@ -232,7 +273,7 @@ def run(argv=None):
         query=load_from_source_query,
         use_json_exports=True,
         use_standard_sql=True)
-    | "transform to Measurement Protocol API payload" >> beam.ParDo(TransformToPayload(activation_type_configuration['measurement_protocol_payload_template'], activation_type_configuration['activation_event_name']))
+    | 'Prepare Measurement Protocol API payload' >> beam.ParDo(TransformToPayload(activation_type_configuration['measurement_protocol_payload_template'], activation_type_configuration['activation_event_name']))
     | 'POST event to Measurement Protocol API' >> beam.ParDo(CallMeasurementProtocolAPI(activation_options.ga4_measurement_id, activation_options.ga4_api_secret, debug=activation_options.use_api_validation))
     )
 
@@ -245,8 +286,8 @@ def run(argv=None):
     )
 
     _ = ( success_responses
-    | 'transform log format' >> beam.ParDo(ToLogFormat())
-    | 'store to log table' >> beam.io.WriteToBigQuery(
+    | 'Transform log format' >> beam.ParDo(ToLogFormat())
+    | 'Store to log BQ table' >> beam.io.WriteToBigQuery(
       success_log_table_spec,
       schema=table_schema,
       write_disposition=beam.io.BigQueryDisposition.WRITE_APPEND,
@@ -254,8 +295,8 @@ def run(argv=None):
     )
 
     _ = ( failed_responses
-    | 'transform failure log format' >> beam.ParDo(ToLogFormat())
-    | 'store to failure log table' >> beam.io.WriteToBigQuery(
+    | 'Transform failure log format' >> beam.ParDo(ToLogFormat())
+    | 'Store to failure log BQ table' >> beam.io.WriteToBigQuery(
       failure_log_table_spec,
       schema=table_schema,
       write_disposition=beam.io.BigQueryDisposition.WRITE_APPEND,
