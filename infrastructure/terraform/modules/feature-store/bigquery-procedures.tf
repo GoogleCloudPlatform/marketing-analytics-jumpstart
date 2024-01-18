@@ -554,6 +554,18 @@ resource "google_bigquery_routine" "user_session_event_aggregated_metrics" {
   }
 }
 
+data "local_file" "aggregate_predictions_procudure_file" {
+  filename = "${local.sql_dir}/procedure/aggregate_predictions_procedure.sql"
+}
+
+resource "google_bigquery_routine" "aggregate_last_day_predictions" {
+  project         = var.project_id
+  dataset_id      = module.aggregated_predictions.bigquery_dataset.dataset_id
+  routine_id      = "aggregate_last_day_predictions"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.aggregate_predictions_procudure_file.content
+}
 
 /*
  *Including the backfill routines

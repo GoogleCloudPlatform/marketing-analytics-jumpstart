@@ -18,7 +18,7 @@ import kfp.dsl as dsl
 
 from pipelines.components.bigquery.component import (
     bq_select_best_kmeans_model, bq_clustering_predictions, 
-    bq_flatten_kmeans_prediction_table, bq_evaluate)
+    bq_flatten_kmeans_prediction_table, bq_evaluate, bq_stored_procedure_exec)
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
 
 from google_cloud_pipeline_components.types import artifact_types
@@ -97,9 +97,10 @@ def prediction_pl(
     number_of_models_considered: int,
     bigquery_source: str,
     bigquery_destination_prefix: str,
-
+    query_aggregate_last_day_predictions: str,
     pubsub_activation_topic: str,
-    pubsub_activation_type: str
+    pubsub_activation_type: str,
+    query_parameters: Optional[list] = None,
 ):
 
     purchase_propensity_label = bq_select_best_kmeans_model(
@@ -125,6 +126,14 @@ def prediction_pl(
         location=location,
         source_table=predictions_op.outputs['destination_table']
     )
+
+    bq_stored_procedure_exec(
+        project=project_id,
+        location=location,
+        query=query_aggregate_last_day_predictions,
+        query_parameters=query_parameters
+
+    ).set_display_name('aggregate_predictions').after(flatten_predictions)
 
     send_pubsub_activation_msg(
         project=project_id,
