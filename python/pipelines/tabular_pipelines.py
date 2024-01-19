@@ -54,7 +54,6 @@ def prediction_binary_classification_pl(
 
     threashold: float = 0.5,
     positive_label: str = 'true',
-    query_parameters: Optional[list] = None,
 ):
 
     purchase_propensity_label = elect_best_tabular_model(
@@ -93,7 +92,7 @@ def prediction_binary_classification_pl(
         project=project_id,
         location=location,
         query=query_aggregate_last_day_predictions,
-        query_parameters=query_parameters
+        query_parameters=[]
     ).set_display_name('aggregate_predictions').after(flatten_predictions)
 
     send_pubsub_activation_msg(
@@ -207,8 +206,6 @@ def prediction_binary_classification_regression_pl(
 
     threashold: float = 0.5,
     positive_label: str = 'true',
-
-    query_parameters: Optional[list] = None,
 ):
 
     purchase_propensity_best_model = elect_best_tabular_model(
@@ -276,7 +273,7 @@ def prediction_binary_classification_regression_pl(
         project=project_id,
         location=location,
         query=query_aggregate_last_day_predictions,
-        query_parameters=query_parameters
+        query_parameters=[]
     ).set_display_name('aggregate_predictions').after(union_predictions)
 
     send_pubsub_activation_msg(

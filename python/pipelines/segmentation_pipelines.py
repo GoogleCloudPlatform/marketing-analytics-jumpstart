@@ -100,7 +100,6 @@ def prediction_pl(
     query_aggregate_last_day_predictions: str,
     pubsub_activation_topic: str,
     pubsub_activation_type: str,
-    query_parameters: Optional[list] = None,
 ):
 
     purchase_propensity_label = bq_select_best_kmeans_model(
@@ -131,7 +130,7 @@ def prediction_pl(
         project=project_id,
         location=location,
         query=query_aggregate_last_day_predictions,
-        query_parameters=query_parameters
+        query_parameters=[]
 
     ).set_display_name('aggregate_predictions').after(flatten_predictions)
 
