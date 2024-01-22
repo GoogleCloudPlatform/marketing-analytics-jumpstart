@@ -317,6 +317,7 @@ vertex_ai:
           generate_explanation: false
           threashold: 0.5
           positive_label: "1"
+          aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "purchase-propensity-30-15"  # purchase-propensity-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
@@ -377,6 +378,7 @@ vertex_ai:
           number_of_models_considered: 2
           bigquery_source: "${project_id}.audience_segmentation.v_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
+          aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "audience-segmentation-15" # audience-segmentation-15
@@ -544,6 +546,7 @@ vertex_ai:
           accelerator_count: 0
           accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
           generate_explanation: false
+          aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "cltv-180-30" # cltv-180-180 | cltv-180-90 | cltv-180-30

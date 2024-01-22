@@ -40,6 +40,7 @@ def prediction_binary_classification_pl(
 
     pubsub_activation_topic: str,
     pubsub_activation_type: str,
+    aggregated_predictions_dataset_location: str,
     query_aggregate_last_day_predictions: str,
     bigquery_source: str,
     bigquery_destination_prefix: str,
@@ -90,7 +91,7 @@ def prediction_binary_classification_pl(
 
     bq_stored_procedure_exec(
         project=project_id,
-        location=location,
+        location=aggregated_predictions_dataset_location,
         query=query_aggregate_last_day_predictions,
         query_parameters=[]
     ).set_display_name('aggregate_predictions').after(flatten_predictions)
@@ -192,6 +193,7 @@ def prediction_binary_classification_regression_pl(
     clv_model_metric_threshold: float,
     number_of_clv_models_considered: int,
 
+    aggregated_predictions_dataset_location: str,
     query_aggregate_last_day_predictions: str,
 
     pubsub_activation_topic: str,
@@ -271,7 +273,7 @@ def prediction_binary_classification_regression_pl(
 
     bq_stored_procedure_exec(
         project=project_id,
-        location=location,
+        location=aggregated_predictions_dataset_location,
         query=query_aggregate_last_day_predictions,
         query_parameters=[]
     ).set_display_name('aggregate_predictions').after(union_predictions)

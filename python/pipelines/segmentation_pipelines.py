@@ -97,6 +97,7 @@ def prediction_pl(
     number_of_models_considered: int,
     bigquery_source: str,
     bigquery_destination_prefix: str,
+    aggregated_predictions_dataset_location: str,
     query_aggregate_last_day_predictions: str,
     pubsub_activation_topic: str,
     pubsub_activation_type: str,
@@ -128,7 +129,7 @@ def prediction_pl(
 
     bq_stored_procedure_exec(
         project=project_id,
-        location=location,
+        location=aggregated_predictions_dataset_location,
         query=query_aggregate_last_day_predictions,
         query_parameters=[]
 
