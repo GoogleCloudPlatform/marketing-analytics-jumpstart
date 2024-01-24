@@ -19,7 +19,8 @@ import kfp.dsl as dsl
 from pipelines.components.vertex.component import elect_best_tabular_model, batch_prediction
 from pipelines.components.bigquery.component import bq_flatten_tabular_binary_prediction_table, \
                                                     bq_flatten_tabular_regression_table, \
-                                                    bq_union_predictions_tables
+                                                    bq_union_predictions_tables, \
+                                                    bq_stored_procedure_exec
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
 
 # elect_best_tabular_model = components.load_component_from_file(
@@ -41,7 +42,8 @@ def prediction_binary_classification_pl(
 
     pubsub_activation_topic: str,
     pubsub_activation_type: str,
-
+    aggregated_predictions_dataset_location: str,
+    query_aggregate_last_day_predictions: str,
     bigquery_source: str,
     bigquery_destination_prefix: str,
     bq_unique_key: str,
@@ -88,6 +90,13 @@ def prediction_binary_classification_pl(
         threashold=threashold,
         positive_label=positive_label
     )
+
+    bq_stored_procedure_exec(
+        project=project_id,
+        location=aggregated_predictions_dataset_location,
+        query=query_aggregate_last_day_predictions,
+        query_parameters=[]
+    ).set_display_name('aggregate_predictions').after(flatten_predictions)
 
     send_pubsub_activation_msg(
         project=project_id,
@@ -188,6 +197,9 @@ def prediction_binary_classification_regression_pl(
     clv_model_metric_threshold: float,
     number_of_clv_models_considered: int,
 
+    aggregated_predictions_dataset_location: str,
+    query_aggregate_last_day_predictions: str,
+
     pubsub_activation_topic: str,
     pubsub_activation_type: str,
 
@@ -262,6 +274,13 @@ def prediction_binary_classification_regression_pl(
         table_propensity_bq_unique_key=purchase_bq_unique_key,
         table_regression_bq_unique_key=clv_bq_unique_key,
     ).set_display_name('union_predictions')
+
+    bq_stored_procedure_exec(
+        project=project_id,
+        location=aggregated_predictions_dataset_location,
+        query=query_aggregate_last_day_predictions,
+        query_parameters=[]
+    ).set_display_name('aggregate_predictions').after(union_predictions)
 
     send_pubsub_activation_msg(
         project=project_id,

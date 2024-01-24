@@ -80,7 +80,7 @@ def create_custom_events(configuration: map):
 
 
 def load_custom_dimensions(query_file: str):
-  reserved_words = ['select', 'extract', 'from', 'where', 'and', 'order', 'limit']
+  reserved_words = ['select', 'coalesce', 'extract', 'from', 'where', 'and', 'order', 'limit']
   ret_fields = []
   with open(query_file, "r") as f:
     lines = f.readlines()

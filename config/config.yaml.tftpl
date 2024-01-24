@@ -492,6 +492,8 @@ vertex_ai:
           generate_explanation: false
           threashold: 0.5
           positive_label: "1"
+          aggregated_predictions_dataset_location: "${location}"
+          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "purchase-propensity-30-15"  # purchase-propensity-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
         pipeline_parameters_substitutions: null
@@ -552,6 +554,8 @@ vertex_ai:
           number_of_models_considered: 2
           bigquery_source: "${project_id}.audience_segmentation.v_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
+          aggregated_predictions_dataset_location: "${location}"
+          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "audience-segmentation-15" # audience-segmentation-15
         pipeline_parameters_substitutions: null
@@ -721,6 +725,8 @@ vertex_ai:
           accelerator_count: 0
           accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
           generate_explanation: false
+          aggregated_predictions_dataset_location: "${location}"
+          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "cltv-180-30" # cltv-180-180 | cltv-180-90 | cltv-180-30
         pipeline_parameters_substitutions: null
@@ -785,6 +791,12 @@ bigquery:
       max_time_travel_hours: 48
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    aggregated_predictions:
+      project_id: "${project_id}"
+      name: "aggregated_predictions"
+      location: "${location}"
+      description: "Dataset with aggregated prediction results from multiple use cases"
+      friendly_name: "Aggregated Predictions Dataset"
   table:
     audience_segmentation_inference_preparation:
       project_id: "${project_id}"
@@ -1040,7 +1052,7 @@ bigquery:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_dimensions"
-      interval_end_date: 30
+      interval_end_date: 180
     invoke_user_lifetime_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1055,12 +1067,12 @@ bigquery:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_session_event_aggregated_metrics"
-      interval_end_date: 30
+      interval_end_date: 180
     invoke_user_lookback_metrics: 
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_lookback_metrics"
-      interval_end_date: 15
+      interval_end_date: 180
     invoke_user_rolling_window_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1070,22 +1082,22 @@ bigquery:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_segmentation_metrics"
-      interval_end_date: 15
+      interval_end_date: 180
     invoke_user_segmentation_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_segmentation_dimensions"
-      interval_end_date: 15
+      interval_end_date: 180
     invoke_user_rolling_window_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_rolling_window_metrics"
-      interval_end_date: 30
+      interval_end_date: 180
     invoke_user_scoped_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_metrics"
-      interval_end_date: 30 
+      interval_end_date: 180 
     invoke_purchase_propensity_inference_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -1252,5 +1264,12 @@ bigquery:
       insert_table: "auto_audience_segmentation_inference_preparation"
       expiration_duration_hours: 12
       mds_dataset: "${mds_dataset}"
+    aggregate_predictions_procedure:
+      project_id: "${project_id}"
+      dataset_id: "aggregated_predictions"
+      table_id: "latest"
+      customer_lifetime_value_dataset: "customer_lifetime_value"
+      purchase_propensity_dataset: "purchase_propensity"
+      audience_segmentation_dataset: "audience_segmentation"
 
   

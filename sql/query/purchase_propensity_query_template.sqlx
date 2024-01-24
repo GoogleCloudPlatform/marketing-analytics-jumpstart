@@ -1,7 +1,9 @@
-SELECT * EXCEPT(user_pseudo_id, processed_timestamp, user_id),
- user_pseudo_id AS client_id,
- EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date
- FROM `{{source_table}}`
- WHERE prediction = 'true'
- ORDER BY prediction_prob DESC
- LIMIT 10000
+SELECT
+    prediction,
+    prediction_prob,
+    COALESCE(user_id, user_pseudo_id) AS client_id,
+    EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
+    FROM `{{source_table}}`
+    WHERE prediction = 'true'
+    ORDER BY prediction_prob DESC
+    LIMIT 10000
