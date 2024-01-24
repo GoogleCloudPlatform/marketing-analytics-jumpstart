@@ -860,7 +860,7 @@ bigquery:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_dimensions"
-      interval_end_date: 30
+      interval_end_date: 180
     invoke_user_lifetime_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -875,12 +875,12 @@ bigquery:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_session_event_aggregated_metrics"
-      interval_end_date: 30
+      interval_end_date: 180
     invoke_user_lookback_metrics: 
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_lookback_metrics"
-      interval_end_date: 15
+      interval_end_date: 180
     invoke_user_rolling_window_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -890,22 +890,22 @@ bigquery:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_segmentation_metrics"
-      interval_end_date: 15
+      interval_end_date: 180
     invoke_user_segmentation_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_segmentation_dimensions"
-      interval_end_date: 15
+      interval_end_date: 180
     invoke_user_rolling_window_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_rolling_window_metrics"
-      interval_end_date: 30
+      interval_end_date: 180
     invoke_user_scoped_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_metrics"
-      interval_end_date: 30 
+      interval_end_date: 180 
     invoke_purchase_propensity_inference_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
