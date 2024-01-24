@@ -101,3 +101,15 @@ resource "google_bigquery_dataset" "auto_audience_segmentation" {
     ignore_changes = all
   }
 }
+
+module "aggregated_predictions" {
+  source  = "terraform-google-modules/bigquery/google"
+  version = "~> 5.4"
+
+  dataset_id                 = local.config_bigquery.dataset.aggregated_predictions.name
+  dataset_name               = local.config_bigquery.dataset.aggregated_predictions.friendly_name
+  description                = local.config_bigquery.dataset.aggregated_predictions.description
+  project_id                 = local.config_bigquery.dataset.aggregated_predictions.project_id
+  location                   = local.config_bigquery.dataset.aggregated_predictions.location
+  delete_contents_on_destroy = true
+}

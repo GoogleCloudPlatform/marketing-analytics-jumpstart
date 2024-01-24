@@ -112,7 +112,7 @@ resource "local_file" "feature_store_configuration" {
 # The command is: poetry install
 resource "null_resource" "poetry_install" {
   triggers = {
-    create_command       = "${var.poetry_cmd} install"
+    create_command       = "${var.poetry_cmd} lock && ${var.poetry_cmd} install"
     source_contents_hash = local.project_toml_content_hash
   }
 

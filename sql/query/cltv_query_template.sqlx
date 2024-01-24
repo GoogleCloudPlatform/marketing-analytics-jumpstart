@@ -1,7 +1,8 @@
-SELECT * EXCEPT(user_pseudo_id, processed_timestamp),
- user_pseudo_id AS client_id,
- EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date
- FROM `{{source_table}}`
- WHERE prediction > 0
- ORDER BY prediction DESC
- LIMIT 10000
+SELECT 
+    prediction,
+    user_pseudo_id AS client_id,
+    EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
+    FROM `{{source_table}}`
+    WHERE prediction > 0
+    ORDER BY prediction DESC
+    LIMIT 10000
