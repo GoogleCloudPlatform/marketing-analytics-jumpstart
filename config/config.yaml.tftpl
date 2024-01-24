@@ -379,13 +379,13 @@ vertex_ai:
       pipeline_parameters:
         project: "${project_id}"
         location: "${cloud_region}"
-        root_dir: "gs://${project_id}-pipelines/propensity-training"
-        transformations: "gs://${project_id}-pipelines/propensity-training/transformations_config_{timestamp}.json"
+        root_dir: "gs://${project_id}-pipelines/value-based-bidding"
+        transformations: "gs://${project_id}-pipelines/value-based-bidding/transformations_config_{timestamp}.json"
         train_budget_milli_node_hours: 1000 # 1 hour
         run_evaluation: true
         run_distillation: false
         prediction_type: "regression"
-        optimization_objective: "minimize-mae"
+        optimization_objective: "minimize-mae" #minimize-rmse
         target_column: "Purchase_Product"
         predefined_split_key: "data_split"
         data_source_csv_filenames: null
@@ -394,7 +394,7 @@ vertex_ai:
         test_fraction: null
         # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
         # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
-        data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_purchase_propensity_training_360"
+        data_source_bigquery_table_path: "bq://${project_id}.${mds_dataset}.aggregated_vbb_twice"
         data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
         dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
         timestamp_split_key: null
