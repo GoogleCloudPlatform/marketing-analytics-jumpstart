@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "python"}]
 
 [tool.poetry.dependencies]
-python = ">=3.7.1,<3.11"
+python = ">=3.8,<3.11"
 google-cloud-aiplatform = "1.22.0"
 google-cloud = "^0.34.0"
 jinja2 = ">=3.0.1,<4.0.0"
@@ -32,6 +32,12 @@ kfp-server-api = "2.0.0-rc.1"
 urllib3 = "1.26.15"
 toml = "0.10.2"
 docker = "^6.0.1"
+db-dtypes = "1.2.0"
+optuna = "3.2.0"
+scikit-learn = "1.2.2"
+#plotly = "5.16.0" 
+#matplotlib= "3.7.2" 
+#seaborn = "0.12.2"
 ma-components = {path = "python/base_component_image/", develop = true}
 google-cloud-pubsub = "2.15.0"
 google-analytics-admin = "0.17.0"

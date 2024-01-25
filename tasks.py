@@ -29,14 +29,21 @@ from pathlib import Path
 from jinja2 import Template
 from jinja2 import FileSystemLoader
 from jinja2 import Environment
+import re
 
 
 GOOGLE_CLOUD_PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT")
 REGION = os.environ.get("REGION", "us-central1")
 
 
+def _clean_column_values(f):
+    if f == '/' or f == '' or f is None: return 'homepage'
+    if f.startswith('/'): f = f[1:]
+    if f.endswith('/'): f = f[:-1]
+    return re.sub('[^0-9a-zA-Z]+', '_', f)
+
 @task
-def apply_env_variables_procedures(c, env_name="prod"):
+def apply_env_variables_procedures(c, env_name="config"):
     current_path = Path(__file__).parent.resolve()
     conf = yaml.safe_load(Path.joinpath(current_path,"config", "{}.yaml".format(env_name)).read_text())
     procedure_dict = conf['bigquery']['procedure']
@@ -50,14 +57,21 @@ def apply_env_variables_procedures(c, env_name="prod"):
     for template_file in template_path.iterdir(): 
         if template_file.is_file() and template_file.resolve().suffix == '.sqlx':
             template = templateEnv.get_template(template_file.name)
+            template.globals.update({'clean_column_values': _clean_column_values})
             new_sql = template.render(procedure_dict[template_file.stem])
             rendered_sql_file = Path.joinpath(template_path, template_file.resolve().stem+".sql")
             with rendered_sql_file.open("w+", encoding ="utf-8") as f:
                 f.write(new_sql)
             print("New SQL file rendered at {}".format(rendered_sql_file))
-    
+
+# Create a task to apply a function update to a jinja2 template 
 @task
-def apply_env_variables_datasets(c, env_name="prod"):
+def apply_env_variables_update_procedure(c, update_function):
+    pass
+
+
+@task
+def apply_env_variables_datasets(c, env_name="config"):
     # Load configuration file according to environment name
     current_path = Path(__file__).parent.resolve()
     conf = yaml.safe_load(Path.joinpath(current_path,"config", "{}.yaml".format(env_name)).read_text())
@@ -82,7 +96,7 @@ def apply_env_variables_datasets(c, env_name="prod"):
 
 
 @task
-def apply_env_variables_queries(c, env_name="prod"):
+def apply_env_variables_queries(c, env_name="config"):
     # Load configuration file according to environment name
     current_path = Path(__file__).parent.resolve()
     conf = yaml.safe_load(Path.joinpath(current_path,"config", "{}.yaml".format(env_name)).read_text())
@@ -106,7 +120,7 @@ def apply_env_variables_queries(c, env_name="prod"):
             print("New SQL file rendered at {}".format(rendered_sql_file))
 
 @task
-def apply_env_variables_tables(c, env_name="prod"):
+def apply_env_variables_tables(c, env_name="config"):
     import json
     # Load configuration file according to environment name
     current_path = Path(__file__).parent.resolve()
@@ -159,7 +173,7 @@ def setup_poetry_test(c):  # noqa: ANN001, ANN201
 
 
 @task
-def setup_poetry_prod(c):  # noqa: ANN001, ANN201
+def setup_poetry_config(c):  # noqa: ANN001, ANN201
     """Create virtualenv, and install requirements, with output"""
     require_venv(c, test_requirements=False)
 
@@ -192,7 +206,7 @@ def _determine_local_import_names(start_dir: str) -> List[str]:
     ]
 
 
-@task(pre=[setup_poetry_prod])
+@task(pre=[setup_poetry_config])
 def fix(c):  # noqa: ANN001, ANN201
     """Apply linting fixes"""
     c.run("poetry run black *.py **/*.py --force-exclude .venv")

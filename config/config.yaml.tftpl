@@ -359,11 +359,11 @@ vertex_ai:
           vertex_model_name: "audience_segmentation_model"
           training_data_bq_table: "${project_id}.audience_segmentation.v_audience_segmentation_training_15"
           exclude_features:
-          - processed_timestamp
-          - data_split
-          - feature_date
-          - user_pseudo_id
-          - user_id
+            - processed_timestamp
+            - data_split
+            - feature_date
+            - user_pseudo_id
+            - user_id
         pipeline_parameters_substitutions: null
       prediction:
         name: "segmentation-prediction-pl"
@@ -393,6 +393,29 @@ vertex_ai:
         pipeline_parameters_substitutions: null
 
     auto_segmentation:
+      training:
+        name: "auto-segmentation-training-pl"
+        job_id_prefix: "auto-segmentation-training-pl-"
+        experiment_name: "auto-segmentation-training"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 12 * * SAT"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          model_name: "interest-cluster-model"
+          training_data_bq_table: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_training_15"
+          exclude_features:
+            - processed_timestamp
+            - data_split
+            - feature_date
+            - user_pseudo_id
+            - user_id
+        pipeline_parameters_substitutions: null
       prediction:
         name: "auto-segmentation-prediction-pl"
         job_id_prefix: "auto-segmentation-prediction-pl-"
@@ -764,6 +787,16 @@ bigquery:
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    invoke_auto_audience_segmentation_training_preparation:
+      project_id: "${project_id}"
+      dataset: "auto_audience_segmentation"
+      stored_procedure: "auto_audience_segmentation_training_preparation"
+      src_project_id: "${project_id}"
+      src_dataset_id: "${mds_dataset}"
+      dst_dataset_id: "auto_audience_segmentation"
+      date_start: "2023-01-01"
+      date_end: "2023-12-31"
+      lookback_days: 15
     invoke_customer_lifetime_value_training_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
@@ -953,6 +986,14 @@ bigquery:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
       stored_procedure: "audience_segmentation_inference_preparation"
+    invoke_page_path_cumulative_traffic:
+      project_id: "${project_id}"
+      dataset: "${mds_dataset}"
+      stored_procedure: "page_path_cumulative_traffic"
+      date_start: "2023-01-01"
+      date_end: "2023-12-31"
+      re_page_path: '^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$'
+      perc_keep: 35
     invoke_auto_audience_segmentation_inference_preparation:
       project_id: "${project_id}"
       dataset: "auto_audience_segmentation"
@@ -1097,6 +1138,15 @@ bigquery:
       feature_store_dataset: "feature_store"
       insert_table: "audience_segmentation_inference_preparation"
       expiration_duration_hours: 168
+      mds_dataset: "${mds_dataset}"
+    auto_audience_segmentation_training_preparation:
+      project_id: "${project_id}"
+      dataset: "auto_audience_segmentation"
+      name: "auto_audience_segmentation_training_preparation"
+      feature_store_project_id: "${project_id}"
+      feature_store_dataset: "feature_store"
+      re_page_path: "^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$"
+      create_table: "auto_audience_segmentation_training_full_dataset"
       mds_dataset: "${mds_dataset}"
     auto_audience_segmentation_inference_preparation:
       project_id: "${project_id}"

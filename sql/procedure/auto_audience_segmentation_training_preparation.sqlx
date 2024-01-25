@@ -1,0 +1,43 @@
+CREATE OR REPLACE PROCEDURE {{project_id}}.{{dataset}}.{{name}}(
+  DATE_START DATE, 
+  DATE_END DATE, 
+  LOOKBACK_DAYS INT64
+)
+BEGIN
+
+    DECLARE RE_PAGE_PATH STRING DEFAULT "{{re_page_path|e}}";
+    
+    CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{create_table}}`
+    AS
+    WITH 
+        visitor_pool AS (
+            SELECT
+              user_pseudo_id,
+              MAX(event_timestamp) as feature_timestamp,
+              DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
+            FROM `{{project_id}}.{{mds_dataset}}.event`
+            WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
+            GROUP BY 1
+    )
+
+    SELECT
+        user_id,
+        feature_timestamp,
+        {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
+        {% endfor %}
+    FROM (
+        SELECT
+            vp.feature_timestamp,
+            ga.user_pseudo_id as user_id,
+            page_location as page_path
+        FROM `{{project_id}}.{{mds_dataset}}.event` as ga
+        INNER JOIN visitor_pool as vp
+            ON vp.user_pseudo_id = ga.user_pseudo_id
+                AND DATE(ga.event_timestamp) >= vp.date_lookback
+        WHERE
+            event_name = 'page_view'
+            AND DATE(ga.event_timestamp) BETWEEN DATE_START - LOOKBACK_DAYS AND DATE_END
+    )
+    GROUP BY 1, 2;
+
+END
