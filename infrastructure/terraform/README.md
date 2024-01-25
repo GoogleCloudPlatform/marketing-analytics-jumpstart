@@ -34,7 +34,20 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     gcloud config set project $PROJECT_ID
     ```
 
-1. Install Python's Poetry
+1. Install or update Python3
+    Install a compatible version of Python 3.8-3.10 and set the CLOUDSDK_PYTHON environment variable to point to it.
+
+    ```bash
+    apt-get install python3.10
+    CLOUDSDK_PYTHON=python3.10
+    ```
+    If you are installing on a Mac:
+   ```shell
+   brew install python@3.10
+   CLOUDSDK_PYTHON=python3.10
+   ```
+
+1. Install Python's Poetry and set Poetry to use Python3.8-3.10 version
 
    [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
 
@@ -50,11 +63,15 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    ```shell
    export PATH="$HOME/.local/bin:$PATH" 
    ```
-
    If you are installing on a Mac:
    ```shell
    brew install poetry
    ```
+   Set poetry to use your latest python3
+   ```shell
+   poetry env use python3
+   ```
+   
 
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
    ```shell

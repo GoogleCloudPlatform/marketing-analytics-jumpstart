@@ -254,14 +254,16 @@ def compile_automl_tabular_pipeline(
         table_schema=pipeline_parameters['data_source_bigquery_table_schema']
         )
 
-    for column_to_remove in exclude_features + [
-            pipeline_parameters['target_column'],
-            pipeline_parameters['stratified_split_key'],
-            pipeline_parameters['predefined_split_key'],
-            pipeline_parameters['timestamp_split_key']
-    ]:
-        if column_to_remove in schema:
-            schema.remove(column_to_remove)
+    # If there is no features to exclude, skip the step of removing columns from the schema
+    if exclude_features:
+        for column_to_remove in exclude_features + [
+                pipeline_parameters['target_column'],
+                pipeline_parameters['stratified_split_key'],
+                pipeline_parameters['predefined_split_key'],
+                pipeline_parameters['timestamp_split_key']
+        ]:
+            if column_to_remove in schema:
+                schema.remove(column_to_remove)
 
     logging.info(f'features:{schema}')
 

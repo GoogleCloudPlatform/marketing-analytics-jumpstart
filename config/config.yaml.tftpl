@@ -367,47 +367,86 @@ vertex_ai:
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
     
     # This pipeline contains the configuration parameters for the value based bidding training and inference pipelines.
-    value-based-bidding:
+    value_based_bidding:
       training:
         name: "value-based-bidding-training-pl"
         job_id_prefix: "value-based-bidding-training-pl-"
         experiment_name: "value-based-bidding-training"
         type: "tabular-workflows"
-      schedule:
-        # define the schedule for the pipeline
-        cron: "TZ=America/New_York 0 1 * * *"
-      pipeline_parameters:
-        project: "${project_id}"
-        location: "${cloud_region}"
-        root_dir: "gs://${project_id}-pipelines/value-based-bidding"
-        transformations: "gs://${project_id}-pipelines/value-based-bidding/transformations_config_{timestamp}.json"
-        train_budget_milli_node_hours: 1000 # 1 hour
-        run_evaluation: true
-        run_distillation: false
-        prediction_type: "regression"
-        optimization_objective: "minimize-mae" #minimize-rmse
-        target_column: "Purchase_Product"
-        predefined_split_key: "data_split"
-        data_source_csv_filenames: null
-        training_fraction: null
-        validation_fraction: null
-        test_fraction: null
-        # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
-        # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
-        data_source_bigquery_table_path: "bq://${project_id}.${mds_dataset}.aggregated_vbb_twice"
-        data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
-        dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
-        timestamp_split_key: null
-        stratified_split_key: null
-        weight_column: null
-        additional_experiments: null
-        export_additional_model_without_custom_ops: false
-        study_spec_parameters_override:
-          - parameter_id: "model_type"
-            categorical_value_spec:
-              values: 
-                - boosted_trees
-
+        schedule:
+          # define the schedule for the pipeline
+          cron: "TZ=America/New_York 0 1 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED 
+        pipeline_parameters:
+          project: "${project_id}"
+          location: "${cloud_region}"
+          root_dir: "gs://${project_id}-pipelines/value-based-bidding"
+          transformations: "gs://${project_id}-pipelines/value-based-bidding/transformations_config_{timestamp}.json"
+          train_budget_milli_node_hours: 1000 # 1 hour
+          run_evaluation: true
+          run_distillation: false
+          prediction_type: "regression"
+          optimization_objective: "minimize-mae" #minimize-rmse
+          target_column: "Purchase_Product"
+          predefined_split_key: "data_split"
+          data_source_csv_filenames: null
+          training_fraction: null
+          validation_fraction: null
+          test_fraction: null
+          # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
+          # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
+          data_source_bigquery_table_path: "bq://${project_id}.${mds_dataset}.aggregated_vbb_training"
+          data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
+          dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          timestamp_split_key: null
+          stratified_split_key: null
+          weight_column: null
+          additional_experiments: null
+          export_additional_model_without_custom_ops: false
+          study_spec_parameters_override:
+            - parameter_id: "model_type"
+              categorical_value_spec:
+                values: 
+                  - boosted_trees
+        exclude_features:
+          - Purchase_Product
+          - Dt
+          - data_split
+        pipeline_parameters_substitutions: null
+      explanation:
+        name: "value-based-bidding-explanation-pl"
+        job_id_prefix: "value-based-bidding-explanation-pl-"
+        experiment_name: "value-based-bidding-explanation"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 5 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${cloud_region}"
+          job_name_prefix: "value-based-bidding-explanation-pl-"
+          model_display_name: "value-based-bidding-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
+          model_metric_threshold: 400
+          number_of_models_considered: 1
+          bigquery_source: "${project_id}.${mds_dataset}.aggregated_vbb_inference"
+          bigquery_destination_prefix: "${project_id}.value_based_bidding"
+          bq_unique_key: "Dt"
+          machine_type: "n1-standard-4"
+          max_replica_count: 10
+          batch_size: 64
+          accelerator_count: 0
+          accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
+          generate_explanation: true
+          aggregated_predictions_dataset_location: "${location}"
+          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
+        pipeline_parameters_substitutions: null
 
     # This pipeline contains the configuration parameters for the propensity training and inference pipelines for the purchase propensity model.
     propensity:
@@ -634,7 +673,7 @@ vertex_ai:
           - user_pseudo_id
           - user_id
           - will_purchase
-        pipeline_parameters_substitutions: null 
+        pipeline_parameters_substitutions: null
     
     # This pipeline contains the configuration parameters for the customer lifetime value training and inference pipelines for the customer lifetime value model.
     clv:

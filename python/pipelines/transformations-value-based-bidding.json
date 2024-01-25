@@ -38,10 +38,5 @@
         "numeric": {
             "column_name": "Added_Payment_Info"
         }
-    },
-    {
-        "numeric": {
-            "column_name": "Purchase_Product"
-        }
     }
 ]

@@ -166,11 +166,11 @@ resource "null_resource" "generate_sql_queries" {
   }
 
   # Only run the command when `terraform destroy` executes and the resource exists.
-  provisioner "local-exec" {
-    when        = destroy
-    command     = self.triggers.destroy_command
-    working_dir = self.triggers.working_dir
-  }
+  #provisioner "local-exec" {
+  #  when        = destroy
+  #  command     = self.triggers.destroy_command
+  #  working_dir = self.triggers.working_dir
+  #}
 }
 
 
