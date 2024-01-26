@@ -428,7 +428,7 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
-    upstream_resource_dependency = null_resource.compile_segmentation_prediction_pipelines.id
+    upstream_resource_dependency = null_resource.compile_auto_segmentation_training_pipelines.id
   }
 
   provisioner "local-exec" {

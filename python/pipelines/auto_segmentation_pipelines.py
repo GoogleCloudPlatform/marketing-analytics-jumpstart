@@ -18,7 +18,8 @@ import kfp.dsl as dsl
 
 from pipelines.components.bigquery.component import (
     bq_select_best_kmeans_model, bq_clustering_predictions, 
-    bq_flatten_kmeans_prediction_table, bq_evaluate)
+    bq_flatten_kmeans_prediction_table, bq_evaluate,
+    bq_dynamic_query_exec_output)
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
 
 from google_cloud_pipeline_components.types import artifact_types
@@ -39,6 +40,36 @@ from pipelines.components.vertex.component import (
     get_latest_model,
     batch_prediction
 )
+
+
+
+@dsl.pipeline()
+def training_pl(
+    project_id: str,
+    location: Optional[str],
+    dataset: str,
+    feature_table: str,
+    mds_project_id: str,
+    mds_dataset: str,
+    date_start: str,
+    date_end: str,
+    perc_keep: int = 35,
+    reg_expression: str = '^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$'
+):
+
+    feature_preparation = bq_dynamic_query_exec_output(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        create_table=feature_table,
+        mds_project_id=mds_project_id,
+        mds_dataset=mds_dataset,
+        date_start=date_start,
+        date_end=date_end,
+        perc_keep=perc_keep,
+        reg_expression=reg_expression
+    )
+
 
 @dsl.pipeline()
 def prediction_pl(
