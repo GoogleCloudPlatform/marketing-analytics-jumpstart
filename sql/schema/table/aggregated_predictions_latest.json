@@ -1,0 +1,746 @@
+[
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING"
+  },
+  {
+    "name": "ltv",
+    "type": "FLOAT"
+  },
+  {
+    "name": "ltv_processed_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "ltv_Feature_date",
+    "type": "DATE"
+  },
+  {
+    "name": "month_of_the_year",
+    "type": "STRING"
+  },
+  {
+    "name": "week_of_the_year",
+    "type": "STRING"
+  },
+  {
+    "name": "day_of_week",
+    "type": "STRING"
+  },
+  {
+    "name": "day_of_the_month",
+    "type": "STRING"
+  },
+  {
+    "name": "device_category",
+    "type": "STRING"
+  },
+  {
+    "name": "device_mobile_brand_name",
+    "type": "STRING"
+  },
+  {
+    "name": "device_mobile_model_name",
+    "type": "STRING"
+  },
+  {
+    "name": "device_os",
+    "type": "STRING"
+  },
+  {
+    "name": "device_os_version",
+    "type": "STRING"
+  },
+  {
+    "name": "device_language",
+    "type": "STRING"
+  },
+  {
+    "name": "device_web_browser",
+    "type": "STRING"
+  },
+  {
+    "name": "device_web_browser_version",
+    "type": "STRING"
+  },
+  {
+    "name": "geo_sub_continent",
+    "type": "STRING"
+  },
+  {
+    "name": "geo_country",
+    "type": "STRING"
+  },
+  {
+    "name": "geo_region",
+    "type": "STRING"
+  },
+  {
+    "name": "geo_city",
+    "type": "STRING"
+  },
+  {
+    "name": "geo_metro",
+    "type": "STRING"
+  },
+  {
+    "name": "last_traffic_source_medium",
+    "type": "STRING"
+  },
+  {
+    "name": "last_traffic_source_name",
+    "type": "STRING"
+  },
+  {
+    "name": "last_traffic_source_source",
+    "type": "STRING"
+  },
+  {
+    "name": "first_traffic_source_medium",
+    "type": "STRING"
+  },
+  {
+    "name": "first_traffic_source_name",
+    "type": "STRING"
+  },
+  {
+    "name": "first_traffic_source_source",
+    "type": "STRING"
+  },
+  {
+    "name": "has_signed_in_with_user_id",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "active_users_past_1_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_30_60_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_60_90_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_90_120_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_120_150_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_150_180_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_1_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_30_60_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_60_90_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_90_120_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_120_150_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_150_180_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_1_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_30_60_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_60_90_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_90_120_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_120_150_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_150_180_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_1_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_30_60_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_60_90_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_90_120_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_120_150_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_150_180_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_1_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_30_60_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_60_90_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_90_120_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_120_150_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_150_180_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_1_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_30_60_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_60_90_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_90_120_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_120_150_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_150_180_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "likely_to_purchase",
+    "type": "STRING"
+  },
+  {
+    "name": "propensity_score",
+    "type": "FLOAT"
+  },
+  {
+    "name": "propensity_processed_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "propensity_feature_date",
+    "type": "DATE"
+  },
+  {
+    "name": "user_ltv_revenue",
+    "type": "FLOAT"
+  },
+  {
+    "name": "engagement_rate",
+    "type": "FLOAT"
+  },
+  {
+    "name": "engaged_sessions_per_user",
+    "type": "INTEGER"
+  },
+  {
+    "name": "session_conversion_rate",
+    "type": "FLOAT"
+  },
+  {
+    "name": "bounces",
+    "type": "INTEGER"
+  },
+  {
+    "name": "bounce_rate_per_user",
+    "type": "FLOAT"
+  },
+  {
+    "name": "sessions_per_user",
+    "type": "INTEGER"
+  },
+  {
+    "name": "avg_views_per_session",
+    "type": "FLOAT"
+  },
+  {
+    "name": "sum_engagement_time_seconds",
+    "type": "FLOAT"
+  },
+  {
+    "name": "avg_engagement_time_seconds",
+    "type": "FLOAT"
+  },
+  {
+    "name": "new_visits",
+    "type": "INTEGER"
+  },
+  {
+    "name": "returning_visits",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts",
+    "type": "INTEGER"
+  },
+  {
+    "name": "cart_to_view_rate",
+    "type": "FLOAT"
+  },
+  {
+    "name": "checkouts",
+    "type": "INTEGER"
+  },
+  {
+    "name": "ecommerce_purchases",
+    "type": "INTEGER"
+  },
+  {
+    "name": "ecommerce_quantity",
+    "type": "INTEGER"
+  },
+  {
+    "name": "ecommerce_revenue",
+    "type": "FLOAT"
+  },
+  {
+    "name": "item_revenue",
+    "type": "FLOAT"
+  },
+  {
+    "name": "item_quantity",
+    "type": "INTEGER"
+  },
+  {
+    "name": "item_view_events",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchase_revenue",
+    "type": "FLOAT"
+  },
+  {
+    "name": "purchase_to_view_rate",
+    "type": "FLOAT"
+  },
+  {
+    "name": "transactions_per_purchaser",
+    "type": "FLOAT"
+  },
+  {
+    "name": "user_conversion_rate",
+    "type": "FLOAT"
+  },
+  {
+    "name": "how_many_purchased_before",
+    "type": "INTEGER"
+  },
+  {
+    "name": "has_abandoned_cart",
+    "type": "BOOLEAN"
+  },
+  {
+    "name": "active_users_past_1_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_2_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_3_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_4_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_5_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_6_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_8_14_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "active_users_past_15_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_1_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_2_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_3_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_4_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_5_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_6_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_8_14_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_15_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_1_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_2_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_3_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_4_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_5_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_6_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_8_14_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_15_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_1_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_2_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_3_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_4_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_5_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_6_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_8_14_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_15_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_1_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_2_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_3_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_4_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_5_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_6_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_8_14_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_15_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_1_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_2_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_3_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_4_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_5_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_6_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_8_14_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_15_30_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchasers_users",
+    "type": "INTEGER"
+  },
+  {
+    "name": "average_daily_purchasers",
+    "type": "FLOAT"
+  },
+  {
+    "name": "active_users",
+    "type": "INTEGER"
+  },
+  {
+    "name": "DAU",
+    "type": "FLOAT"
+  },
+  {
+    "name": "MAU",
+    "type": "FLOAT"
+  },
+  {
+    "name": "WAU",
+    "type": "FLOAT"
+  },
+  {
+    "name": "dau_per_mau",
+    "type": "FLOAT"
+  },
+  {
+    "name": "dau_per_wau",
+    "type": "FLOAT"
+  },
+  {
+    "name": "wau_per_mau",
+    "type": "FLOAT"
+  },
+  {
+    "name": "users_engagement_duration_seconds",
+    "type": "FLOAT"
+  },
+  {
+    "name": "average_engagement_time",
+    "type": "FLOAT"
+  },
+  {
+    "name": "average_engagement_time_per_session",
+    "type": "FLOAT"
+  },
+  {
+    "name": "average_sessions_per_user",
+    "type": "FLOAT"
+  },
+  {
+    "name": "ARPPU",
+    "type": "FLOAT"
+  },
+  {
+    "name": "ARPU",
+    "type": "FLOAT"
+  },
+  {
+    "name": "average_daily_revenue",
+    "type": "FLOAT"
+  },
+  {
+    "name": "max_daily_revenue",
+    "type": "FLOAT"
+  },
+  {
+    "name": "min_daily_revenue",
+    "type": "FLOAT"
+  },
+  {
+    "name": "new_users",
+    "type": "INTEGER"
+  },
+  {
+    "name": "returning_users",
+    "type": "INTEGER"
+  },
+  {
+    "name": "first_time_purchasers",
+    "type": "INTEGER"
+  },
+  {
+    "name": "first_time_purchaser_conversion",
+    "type": "FLOAT"
+  },
+  {
+    "name": "first_time_purchasers_per_new_user",
+    "type": "FLOAT"
+  },
+  {
+    "name": "avg_user_conversion_rate",
+    "type": "FLOAT"
+  },
+  {
+    "name": "avg_session_conversion_rate",
+    "type": "FLOAT"
+  },
+  {
+    "name": "Segment_ID",
+    "type": "INTEGER"
+  },
+  {
+    "name": "DISTANCE",
+    "type": "FLOAT"
+  },
+  {
+    "name": "segment_processed_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "segment_feature_date",
+    "type": "DATE"
+  },
+  {
+    "name": "active_users_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "ltv_revenue_past_1_7_day",
+    "type": "FLOAT"
+  },
+  {
+    "name": "ltv_revenue_past_7_15_day",
+    "type": "FLOAT"
+  }
+]

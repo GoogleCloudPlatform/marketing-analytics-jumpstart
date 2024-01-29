@@ -48,7 +48,7 @@ resource "google_bigquery_table" "customer_lifetime_value_label" {
   }
   schema = file("${local.sql_dir}/schema/table/customer_lifetime_value_label.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -76,7 +76,7 @@ resource "google_bigquery_table" "purchase_propensity_label" {
   }
   schema = file("${local.sql_dir}/schema/table/purchase_propensity_label.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -92,7 +92,7 @@ resource "google_bigquery_table" "user_dimensions" {
   }
   schema = file("${local.sql_dir}/schema/table/user_dimensions.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -108,7 +108,7 @@ resource "google_bigquery_table" "user_lifetime_dimensions" {
   }
   schema = file("${local.sql_dir}/schema/table/user_lifetime_dimensions.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -125,7 +125,7 @@ resource "google_bigquery_table" "user_lookback_metrics" {
   }
   schema = file("${local.sql_dir}/schema/table/user_lookback_metrics.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -142,7 +142,7 @@ resource "google_bigquery_table" "user_rolling_window_lifetime_metrics" {
   }
   schema = file("${local.sql_dir}/schema/table/user_rolling_window_lifetime_metrics.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -158,7 +158,7 @@ resource "google_bigquery_table" "user_rolling_window_metrics" {
   }
   schema = file("${local.sql_dir}/schema/table/user_rolling_window_metrics.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -174,7 +174,7 @@ resource "google_bigquery_table" "user_scoped_lifetime_metrics" {
   }
   schema = file("${local.sql_dir}/schema/table/user_scoped_lifetime_metrics.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -190,7 +190,7 @@ resource "google_bigquery_table" "user_scoped_metrics" {
   }
   schema = file("${local.sql_dir}/schema/table/user_scoped_metrics.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -206,7 +206,7 @@ resource "google_bigquery_table" "user_scoped_segmentation_metrics" {
   }
   schema = file("${local.sql_dir}/schema/table/user_scoped_segmentation_metrics.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -222,7 +222,7 @@ resource "google_bigquery_table" "user_segmentation_dimensions" {
   }
   schema = file("${local.sql_dir}/schema/table/user_segmentation_dimensions.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }
@@ -238,7 +238,7 @@ resource "google_bigquery_table" "user_session_event_aggregated_metrics" {
   }
   schema = file("${local.sql_dir}/schema/table/user_session_event_aggregated_metrics.json")
   lifecycle {
-    ignore_changes = all
+    ignore_changes  = all
     prevent_destroy = true
   }
 }

@@ -13,23 +13,23 @@
 # limitations under the License.
 
 locals {
-  app_prefix                                 = "activation"
-  source_root_dir                            = "../.."
-  poetry_run_alias                           = "${var.poetry_cmd} run"
-  sql_dir                                    = "${local.source_root_dir}/sql/query"
-  template_dir                               = "${local.source_root_dir}/templates"
-  pipeline_source_dir                        = "${local.source_root_dir}/python/activation"
-  trigger_function_dir                       = "${local.source_root_dir}/python/function"
-  configuration_folder                       = "configuration"
-  audience_segmentation_query_template_file  = "audience_segmentation_query_template.sqlx"
-  auto_audience_segmentation_query_template_file  = "auto_audience_segmentation_query_template.sqlx"
-  cltv_query_template_file                   = "cltv_query_template.sqlx"
-  purchase_propensity_query_template_file    = "purchase_propensity_query_template.sqlx"
-  measurement_protocol_payload_template_file = "app_payload_template.jinja2"
-  activation_container_image_id              = "activation-pipeline"
-  docker_repo_prefix                         = "${var.location}-docker.pkg.dev/${var.project_id}"
-  activation_container_name                  = "dataflow/${local.activation_container_image_id}"
-  source_archive_file                        = "activation_trigger_source.zip"
+  app_prefix                                     = "activation"
+  source_root_dir                                = "../.."
+  poetry_run_alias                               = "${var.poetry_cmd} run"
+  sql_dir                                        = "${local.source_root_dir}/sql/query"
+  template_dir                                   = "${local.source_root_dir}/templates"
+  pipeline_source_dir                            = "${local.source_root_dir}/python/activation"
+  trigger_function_dir                           = "${local.source_root_dir}/python/function"
+  configuration_folder                           = "configuration"
+  audience_segmentation_query_template_file      = "audience_segmentation_query_template.sqlx"
+  auto_audience_segmentation_query_template_file = "auto_audience_segmentation_query_template.sqlx"
+  cltv_query_template_file                       = "cltv_query_template.sqlx"
+  purchase_propensity_query_template_file        = "purchase_propensity_query_template.sqlx"
+  measurement_protocol_payload_template_file     = "app_payload_template.jinja2"
+  activation_container_image_id                  = "activation-pipeline"
+  docker_repo_prefix                             = "${var.location}-docker.pkg.dev/${var.project_id}"
+  activation_container_name                      = "dataflow/${local.activation_container_image_id}"
+  source_archive_file                            = "activation_trigger_source.zip"
 
   pipeline_service_account_name  = "dataflow-worker"
   pipeline_service_account_email = "${local.app_prefix}-${local.pipeline_service_account_name}@${var.project_id}.iam.gserviceaccount.com"
@@ -42,7 +42,7 @@ locals {
 
   app_payload_template_file              = "${local.source_root_dir}/templates/app_payload_template.jinja2"
   app_payload_template_file_content_hash = filesha512(local.activation_type_configuration_file)
-  
+
   activation_application_dir = "${local.source_root_dir}/python/activation"
   activation_application_fileset = [
     "${local.activation_application_dir}/main.py",
@@ -93,12 +93,12 @@ module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
   version = "~> 5.4"
 
-  dataset_id                  = local.app_prefix
-  dataset_name                = local.app_prefix
-  description                 = "activation appliction logs"
-  project_id                  = var.project_id
-  location                    = var.data_location
-  delete_contents_on_destroy  = false
+  dataset_id                 = local.app_prefix
+  dataset_name               = local.app_prefix
+  description                = "activation appliction logs"
+  project_id                 = var.project_id
+  location                   = var.data_location
+  delete_contents_on_destroy = false
 }
 
 resource "null_resource" "check_artifactregistry_api" {
@@ -124,7 +124,7 @@ resource "null_resource" "check_artifactregistry_api" {
 resource "null_resource" "create_custom_events" {
   triggers = {
     services_enabled_project = module.project_services.project_id
-    source_contents_hash = local.activation_type_configuration_file_content_hash
+    source_contents_hash     = local.activation_type_configuration_file_content_hash
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
     #source_activation_application_python_hash = local.activation_application_content_hash
   }
@@ -139,7 +139,7 @@ resource "null_resource" "create_custom_events" {
 resource "null_resource" "create_custom_dimensions" {
   triggers = {
     services_enabled_project = module.project_services.project_id
-    source_contents_hash = local.audience_segmentation_activation_query_file_content_hash
+    source_contents_hash     = local.audience_segmentation_activation_query_file_content_hash
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
     #source_activation_application_python_hash = local.activation_application_content_hash
   }
@@ -285,18 +285,18 @@ data "template_file" "activation_type_configuration" {
   template = file("${local.template_dir}/activation_type_configuration_template.tpl")
 
   vars = {
-    audience_segmentation_query_template_gcs_path       = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.audience_segmentation_query_template_file.output_name}"
-    auto_audience_segmentation_query_template_gcs_path  = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.auto_audience_segmentation_query_template_file.output_name}"
-    cltv_query_template_gcs_path                        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.cltv_query_template_file.output_name}"
-    purchase_propensity_query_template_gcs_path         = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_query_template_file.output_name}"
-    measurement_protocol_payload_template_gcs_path      = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.measurement_protocol_payload_template_file.output_name}"
+    audience_segmentation_query_template_gcs_path      = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.audience_segmentation_query_template_file.output_name}"
+    auto_audience_segmentation_query_template_gcs_path = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.auto_audience_segmentation_query_template_file.output_name}"
+    cltv_query_template_gcs_path                       = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.cltv_query_template_file.output_name}"
+    purchase_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_query_template_file.output_name}"
+    measurement_protocol_payload_template_gcs_path     = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.measurement_protocol_payload_template_file.output_name}"
   }
 }
 
 resource "google_storage_bucket_object" "activation_type_configuration_file" {
-  name    = "${local.configuration_folder}/activation_type_configuration.json"
-  content = data.template_file.activation_type_configuration.rendered
-  bucket  = module.pipeline_bucket.name
+  name           = "${local.configuration_folder}/activation_type_configuration.json"
+  content        = data.template_file.activation_type_configuration.rendered
+  bucket         = module.pipeline_bucket.name
   detect_md5hash = base64encode("${local.activation_type_configuration_file_content_hash}${local.activation_application_content_hash}")
 }
 
@@ -383,7 +383,8 @@ resource "google_cloudfunctions2_function" "activation_trigger_cf" {
         object = google_storage_bucket_object.activation_trigger_archive.name
       }
     }
-    entry_point = "subscribe"
+    entry_point       = "subscribe"
+    docker_repository = "projects/${module.project_services.project_id}/locations/${var.trigger_function_location}/repositories/gcf-artifacts"
   }
 
   event_trigger {
