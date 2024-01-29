@@ -1,4 +1,4 @@
-# Copyregression 2023 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Optional, List
 from kfp.dsl import component, Output, Artifact, Model, Input, Metrics, Dataset
 import os
 import yaml
@@ -598,9 +598,9 @@ def bq_dynamic_query_exec_output(
     mds_dataset: str,
     date_start: str,
     date_end: str,
+    reg_expression: str,
     destination_table: Output[Dataset],
     perc_keep: int = 35,
-    reg_expression: str = '^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$'
 ) -> None:
     
     from google.cloud import bigquery
@@ -618,33 +618,33 @@ def bq_dynamic_query_exec_output(
 
     # Construct query template
     template = jinja2.Template("""
-    CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{create_table}}` AS (
-    SELECT
-        feature,
-        ROUND(100 * SUM(users) OVER (ORDER BY users DESC) / SUM(users) OVER (), 2) as cumulative_traffic_percent,
-
-    FROM (
+        CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{create_table}}` AS (
         SELECT
-            REGEXP_EXTRACT(page_path, '{{re_page_path}}') as feature,
-            COUNT(DISTINCT user_id) as users
+            feature,
+            ROUND(100 * SUM(users) OVER (ORDER BY users DESC) / SUM(users) OVER (), 2) as cumulative_traffic_percent,
 
         FROM (
             SELECT
-                user_pseudo_id as user_id,
-                page_location as page_path
-            FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-            WHERE
-                event_name = 'page_view'
-                AND DATE(event_timestamp) BETWEEN '{{date_start}}' AND '{{date_end}}'
+                REGEXP_EXTRACT(page_path, '{{re_page_path}}') as feature,
+                COUNT(DISTINCT user_id) as users
+
+            FROM (
+                SELECT
+                    user_pseudo_id as user_id,
+                    page_location as page_path
+                FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+                WHERE
+                    event_name = 'page_view'
+                    AND DATE(event_timestamp) BETWEEN '{{date_start}}' AND '{{date_end}}'
+            )
+            GROUP BY 1
         )
-        GROUP BY 1
-    )
-    WHERE
-        feature IS NOT NULL
-    QUALIFY
-        cumulative_traffic_percent <= {{perc_keep}}
-    ORDER BY 2 ASC
-    )
+        WHERE
+            feature IS NOT NULL
+        QUALIFY
+            cumulative_traffic_percent <= {{perc_keep}}
+        ORDER BY 2 ASC
+        )
     """)
 
     # Apply parameters to template
@@ -679,73 +679,135 @@ def bq_dynamic_query_exec_output(
 
     # Prepare component output
     destination_table.metadata["table_id"] = f"{project_id}.{dataset}.{create_table}"
-    destination_table.metadata["features"] = query_df.feature.tolist()
+    destination_table.metadata["features"] = list(query_df.feature.tolist())
     
 
 @component(base_image=base_image)
-def bq_dynamic_create_stored_procedure_exec(
-    project: str,
+def bq_dynamic_stored_procedure_exec_output(
+    project_id: str,
     location: str,
     dataset: str,
-    feature_store_project: str,
-    feature_store_dataset: str,
-    destination_table: Output[Dataset],
-    re_page_path: str = "^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$",
+    mds_project_id: str,
+    mds_dataset: str,
+    dynamic_table_input: Input[Dataset],
+    training_table_output: Output[Dataset],
+    date_start: str,
+    date_end: str,
+    lookback_days: int,
+    reg_expression: str,
+    stored_procedure_name: str,
+    training_table: str,
     timeout: Optional[float] = 1800
-    #project_id: "${project_id}"
-    #dataset: "auto_audience_segmentation"
-    #name: "auto_audience_segmentation_training_preparation"
-    #feature_store_project_id: "${project_id}"
-    #feature_store_dataset: "feature_store"
-    #re_page_path: "^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$"
-    #create_table: "auto_audience_segmentation_training_full_dataset"
-    #mds_dataset: "${mds_dataset}"
 ) -> None:
-    
-    sql = """
-    CREATE OR REPLACE PROCEDURE {{project_id}}.{{dataset}}.{{name}}(
-    DATE_START DATE, 
-    DATE_END DATE, 
-    LOOKBACK_DAYS INT64
+
+    from google.cloud import bigquery
+    import logging
+    import numpy as np
+    import pandas as pd
+    import jinja2
+    import re
+
+    # Construct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=location
     )
-    BEGIN
 
-        DECLARE RE_PAGE_PATH STRING DEFAULT "{{re_page_path|e}}";
-        
-        CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{create_table}}`
-        AS
-        WITH 
-            visitor_pool AS (
-                SELECT
-                user_pseudo_id,
-                MAX(event_timestamp) as feature_timestamp,
-                DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
-                FROM `{{project_id}}.{{mds_dataset}}.event`
-                WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
-                GROUP BY 1
+    def _clean_column_values(f):
+        if f == '/' or f == '' or f is None: return 'homepage'
+        if f.startswith('/'): f = f[1:]
+        if f.endswith('/'): f = f[:-1]
+        return re.sub('[^0-9a-zA-Z]+', '_', f)
+    
+    template = jinja2.Template("""
+        CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{stored_procedure_name}}`(
+        DATE_START DATE, 
+        DATE_END DATE, 
+        LOOKBACK_DAYS INT64
         )
+        BEGIN
 
-        SELECT
-            user_id,
-            feature_timestamp,
-            {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
-            {% endfor %}
-        FROM (
+            DECLARE RE_PAGE_PATH STRING DEFAULT "{{reg_expression|e}}";
+            
+            CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{training_table}}`
+            AS
+            WITH 
+                visitor_pool AS (
+                    SELECT
+                    user_pseudo_id,
+                    MAX(event_timestamp) as feature_timestamp,
+                    DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
+                    FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+                    WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
+                    GROUP BY 1
+            )
+
             SELECT
-                vp.feature_timestamp,
-                ga.user_pseudo_id as user_id,
-                page_location as page_path
-            FROM `{{project_id}}.{{mds_dataset}}.event` as ga
-            INNER JOIN visitor_pool as vp
-                ON vp.user_pseudo_id = ga.user_pseudo_id
-                    AND DATE(ga.event_timestamp) >= vp.date_lookback
-            WHERE
-                event_name = 'page_view'
-                AND DATE(ga.event_timestamp) BETWEEN DATE_START - LOOKBACK_DAYS AND DATE_END
-        )
-        GROUP BY 1, 2;
+                user_id,
+                feature_timestamp,
+                {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
+                {% endfor %}
+            FROM (
+                SELECT
+                    vp.feature_timestamp,
+                    ga.user_pseudo_id as user_id,
+                    page_location as page_path
+                FROM `{{mds_project_id}}.{{mds_dataset}}.event` as ga
+                INNER JOIN visitor_pool as vp
+                    ON vp.user_pseudo_id = ga.user_pseudo_id
+                        AND DATE(ga.event_timestamp) >= vp.date_lookback
+                WHERE
+                    event_name = 'page_view'
+                    AND DATE(ga.event_timestamp) BETWEEN DATE_START - LOOKBACK_DAYS AND DATE_END
+            )
+            GROUP BY 1, 2;
+        END
+    """)
+    template.globals.update({'clean_column_values': _clean_column_values})
 
-    END"""
+    sql = template.render(
+        project_id=project_id,
+        dataset=dataset,
+        stored_procedure_name = stored_procedure_name,
+        training_table=training_table,
+        mds_project_id=mds_project_id,
+        mds_dataset=mds_dataset,
+        reg_expression=reg_expression,
+        features= dynamic_table_input.metadata['features'] if isinstance(dynamic_table_input.metadata['features'], List) else list(dynamic_table_input.metadata['features'])
+    )
+
+    logging.info(f"{sql}")
+
+    # Run the BQ query
+    query_job = client.query(
+        query=sql,
+        location=location
+    )
+    results = query_job.result()
+
+    for row in results:
+        logging.info("row info: {}".format(row))
+    
+    query_job = client.query(
+        query=f"CALL `{project_id}.{dataset}.{stored_procedure_name}`(@DATE_START, @DATE_END, @LOOKBACK_DAYS);",
+        job_config=bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("DATE_START", "DATE", date_start),
+                bigquery.ScalarQueryParameter("DATE_END", "DATE", date_end),
+                bigquery.ScalarQueryParameter("LOOKBACK_DAYS", "INTEGER", lookback_days)
+            ]
+        )
+    )
+    results = query_job.result()
+
+    for row in results:
+        logging.info("row info: {}".format(row))
+    
+    # Prepare component output
+    training_table_output.metadata["table_id"] = f"{project_id}.{dataset}.{training_table}"
+    training_table_output.metadata["stored_procedure_name"] = f"{project_id}.{dataset}.{stored_procedure_name}"
+
+
 
 
 ##TODO: improve code

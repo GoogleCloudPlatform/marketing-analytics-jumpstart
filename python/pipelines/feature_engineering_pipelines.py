@@ -16,24 +16,58 @@ from typing import Optional
 import kfp as kfp
 import kfp.dsl as dsl
 from pipelines.components.bigquery.component import bq_stored_procedure_exec as sp
+from pipelines.components.bigquery.component import (
+    bq_dynamic_query_exec_output, bq_dynamic_stored_procedure_exec_output)
 
 
 @dsl.pipeline()
 def auto_audience_segmentation_feature_engineering_pipeline(
     project_id: str,
     location: Optional[str],
+    dataset: str,
+    feature_table: str,
+    mds_project_id: str,
+    mds_dataset: str,
+    date_start: str,
+    date_end: str,
+    stored_procedure_name: str,
+    training_table: str,
+    reg_expression: str,
     query_auto_audience_segmentation_inference_preparation: str,
-    #query_auto_audience_segmentation_training_preparation: str,
+    lookback_days: int = 15,
+    perc_keep: int = 35,
     query_parameters: Optional[list] = None,
     timeout: Optional[float] = 3600.0
 ):
     # Training data preparation
-    #auto_audience_segmentation_train_prep = sp(
-    #    project=project_id,
-    #    location=location,
-    #    query=query_auto_audience_segmentation_training_preparation,
-    #    query_parameters=query_parameters,
-    #    timeout=timeout).set_display_name('auto_audience_segmentation_training_preparation')
+    feature_table_preparation = bq_dynamic_query_exec_output(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        create_table=feature_table,
+        mds_project_id=mds_project_id,
+        mds_dataset=mds_dataset,
+        date_start=date_start,
+        date_end=date_end,
+        perc_keep=perc_keep,
+        reg_expression=reg_expression
+    )
+
+    training_table_preparation = bq_dynamic_stored_procedure_exec_output(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        mds_project_id=mds_project_id,
+        mds_dataset=mds_dataset,
+        dynamic_table_input=feature_table_preparation.outputs['destination_table'],
+        date_start=date_start,
+        date_end=date_end,
+        lookback_days=lookback_days,
+        stored_procedure_name=stored_procedure_name,
+        training_table=training_table,
+        reg_expression=reg_expression
+    ).after(*[feature_table_preparation])
+    
     # Inference data preparation
     auto_audience_segmentation_inf_prep = sp(
         project=project_id,

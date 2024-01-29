@@ -19,8 +19,15 @@ import kfp.dsl as dsl
 from pipelines.components.bigquery.component import (
     bq_select_best_kmeans_model, bq_clustering_predictions, 
     bq_flatten_kmeans_prediction_table, bq_evaluate,
-    bq_dynamic_query_exec_output)
+    bq_clustering_exec)
+
+from pipelines.components.vertex.component import (
+    get_latest_model,
+    batch_prediction,
+    return_unmanaged_model
+)
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
+from pipelines.components.python.component import train_scikit_cluster_model
 
 from google_cloud_pipeline_components.types import artifact_types
 from google_cloud_pipeline_components.v1.bigquery import (
@@ -31,44 +38,51 @@ from google_cloud_pipeline_components.v1.bigquery import (
 from google_cloud_pipeline_components.v1.endpoint import (EndpointCreateOp,
                                                             ModelDeployOp)
 from google_cloud_pipeline_components.v1.model import ModelUploadOp
-from kfp.components.importer_node import importer
-
-from pipelines.components.bigquery.component import (
-    bq_clustering_exec)
-
-from pipelines.components.vertex.component import (
-    get_latest_model,
-    batch_prediction
-)
+from google_cloud_pipeline_components.types import artifact_types
 
 
 
 @dsl.pipeline()
 def training_pl(
     project_id: str,
-    location: Optional[str],
     dataset: str,
-    feature_table: str,
-    mds_project_id: str,
-    mds_dataset: str,
-    date_start: str,
-    date_end: str,
-    perc_keep: int = 35,
-    reg_expression: str = '^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$'
+    location: Optional[str],
+    training_table: str,
+    bucket_name: str,
+    model_name: str,
+    p_wiggle: int,
+    min_num_clusters: int, 
+    image_uri: str,
 ):
-
-    feature_preparation = bq_dynamic_query_exec_output(
+    # Train scikit-learn clustering model and upload to GCS
+    train_interest_based_segmentation_model = train_scikit_cluster_model(
         location=location,
         project_id=project_id,
         dataset=dataset,
-        create_table=feature_table,
-        mds_project_id=mds_project_id,
-        mds_dataset=mds_dataset,
-        date_start=date_start,
-        date_end=date_end,
-        perc_keep=perc_keep,
-        reg_expression=reg_expression
+        training_table=training_table,
+        p_wiggle=10,
+        min_num_clusters=3,
+        bucket_name=bucket_name,
+        model_name=model_name
     )
+
+    # Return unmanaged model resource uploaded to GCS
+    unmanaged_model = return_unmanaged_model(
+        image_uri=image_uri,
+        bucket_name=bucket_name,
+        model_name=model_name
+    ).after(*[train_interest_based_segmentation_model])
+
+    # Consuming the UnmanagedContainerModel artifact for the previous step
+    model_upload_with_artifact = ModelUploadOp(
+        project=project_id,
+        location=location,
+        display_name=model_name,
+        unmanaged_container_model=unmanaged_model.outputs['model']
+    ).after(*[unmanaged_model])
+
+
+
 
 
 @dsl.pipeline()

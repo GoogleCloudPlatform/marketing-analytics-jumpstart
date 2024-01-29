@@ -180,11 +180,13 @@ locals {
     "${local.pipelines_dir}/components/bigquery/component.py",
     "${local.pipelines_dir}/components/pubsub/component.py",
     "${local.pipelines_dir}/components/vertex/component.py",
+    "${local.pipelines_dir}/components/python/component.py",
     "${local.pipelines_dir}/compiler.py",
     "${local.pipelines_dir}/feature_engineering_pipelines.py",
     "${local.pipelines_dir}/pipeline_ops.py",
     "${local.pipelines_dir}/scheduler.py",
     "${local.pipelines_dir}/segmentation_pipelines.py",
+    "${local.pipelines_dir}/auto_segmentation_pipelines.py",
     "${local.pipelines_dir}/tabular_pipelines.py",
     "${local.pipelines_dir}/uploader.py",
   ]

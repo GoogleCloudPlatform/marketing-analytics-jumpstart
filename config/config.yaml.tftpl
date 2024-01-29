@@ -87,11 +87,19 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
+          dataset: "auto_audience_segmentation"
+          feature_table: "page_path_cumulative_traffic"
+          mds_project_id: "${mds_project_id}"
+          mds_dataset: "${mds_dataset}"
+          date_start: "2023-01-01"
+          date_end: "2023-12-31"
+          stored_procedure_name: "auto_audience_segmentation_training_preparation"
+          training_table: "auto_audience_segmentation_training_full_dataset"
+          reg_expression: '^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$'
+          perc_keep: 35
+          lookback_days: 15
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
-          #query_auto_audience_segmentation_training_preparation: "
-          #  CALL `{auto_audience_segmentation_training_preparation_procedure_name}`();"
-          
           query_parameters:
             - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
@@ -408,23 +416,12 @@ vertex_ai:
           location: "${location}"
           project_id: "${project_id}"
           dataset: "auto_audience_segmentation"
-          mds_project_id: "${mds_project_id}"
-          mds_dataset: "${mds_dataset}"
-          date_start: "2023-01-01"
-          date_end: "2023-12-31"
-          reg_expression: '^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$'
-          perc_keep: 35
-          feature_table: "page_path_cumulative_traffic"
-          #lookback_days: 15
-          #model_name: "interest-cluster-model"
-          #dst_table: "auto_audience_segmentation_training_preparation"
-          #training_data_bq_table: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_training_15"
-          #exclude_features:
-          #  - processed_timestamp
-          #  - data_split
-          #  - feature_date
-          #  - user_pseudo_id
-          #  - user_id
+          model_name: "interest-cluster-model"
+          training_table: "auto_audience_segmentation_training_full_dataset"
+          p_wiggle: 10
+          min_num_clusters: 3
+          bucket_name: "${project_id}-custom-models"
+          image_uri: "us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-2:latest"
         pipeline_parameters_substitutions: null
       prediction:
         name: "auto-segmentation-prediction-pl"
