@@ -110,6 +110,17 @@ resource "google_bigquery_job" "monitor_resources_load" {
   }
 }
 
+locals {
+  dataform_log_table_id         = "dataform_googleapis_com_workflow_invocation_completion"
+  vertex_pipelines_log_table_id = "aiplatform_googleapis_com_pipeline_job_events"
+  dataflow_log_table_id         = "dataflow_googleapis_com_job_message"
+  log_table_ids = [
+    local.dataform_log_table_id,
+    local.vertex_pipelines_log_table_id,
+    local.dataflow_log_table_id
+  ]
+}
+
 module "log_export_bigquery" {
   source  = "terraform-google-modules/bigquery/google"
   version = "~> 5.4"
@@ -120,6 +131,22 @@ module "log_export_bigquery" {
   project_id                 = var.project_id
   location                   = var.location
   delete_contents_on_destroy = true
+
+  tables = [for table_id in local.log_table_ids :
+    {
+      table_id = table_id,
+      schema   = file("../../sql/schema/table/${table_id}.json"),
+      time_partitioning = {
+        type                     = "DAY",
+        field                    = "timestamp",
+        require_partition_filter = false,
+        expiration_ms            = null,
+      },
+      range_partitioning = null,
+      expiration_time    = null,
+      clustering         = [],
+      labels             = {},
+  }]
 }
 
 resource "google_logging_project_sink" "mds_daily_execution" {
@@ -176,10 +203,13 @@ resource "google_project_iam_member" "activation_pipeline_execution_member" {
 data "template_file" "looker_studio_dashboard_url" {
   template = file("${local.source_root_dir}/templates/looker_studio_create_dashboard_url_template.txt")
   vars = {
-    mds_project = var.mds_project_id
-    monitor_project = var.project_id
-    report_id  = "f61f65fe-4991-45fc-bcdc-80593966f28c"
-    mds_product_dataset = "marketing_ga4_v1_${var.mds_dataset_suffix}"
-    logs_dataset = module.log_export_bigquery.bigquery_dataset.dataset_id
+    mds_project                   = var.mds_project_id
+    monitor_project               = var.project_id
+    report_id                     = "f61f65fe-4991-45fc-bcdc-80593966f28c"
+    mds_product_dataset           = "marketing_ga4_v1_${var.mds_dataset_suffix}"
+    logs_dataset                  = module.log_export_bigquery.bigquery_dataset.dataset_id
+    dataform_log_table_id         = local.dataform_log_table_id
+    vertex_pipelines_log_table_id = local.vertex_pipelines_log_table_id
+    dataflow_log_table_id         = local.dataflow_log_table_id
   }
 }
