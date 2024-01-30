@@ -35,13 +35,6 @@ import re
 GOOGLE_CLOUD_PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT")
 REGION = os.environ.get("REGION", "us-central1")
 
-
-def _clean_column_values(f):
-    if f == '/' or f == '' or f is None: return 'homepage'
-    if f.startswith('/'): f = f[1:]
-    if f.endswith('/'): f = f[:-1]
-    return re.sub('[^0-9a-zA-Z]+', '_', f)
-
 @task
 def apply_env_variables_procedures(c, env_name="config"):
     current_path = Path(__file__).parent.resolve()
@@ -57,17 +50,11 @@ def apply_env_variables_procedures(c, env_name="config"):
     for template_file in template_path.iterdir(): 
         if template_file.is_file() and template_file.resolve().suffix == '.sqlx':
             template = templateEnv.get_template(template_file.name)
-            template.globals.update({'clean_column_values': _clean_column_values})
             new_sql = template.render(procedure_dict[template_file.stem])
             rendered_sql_file = Path.joinpath(template_path, template_file.resolve().stem+".sql")
             with rendered_sql_file.open("w+", encoding ="utf-8") as f:
                 f.write(new_sql)
             print("New SQL file rendered at {}".format(rendered_sql_file))
-
-# Create a task to apply a function update to a jinja2 template 
-@task
-def apply_env_variables_update_procedure(c, update_function):
-    pass
 
 
 @task

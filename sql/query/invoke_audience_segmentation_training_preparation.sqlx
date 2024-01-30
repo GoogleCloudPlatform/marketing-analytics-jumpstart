@@ -22,9 +22,7 @@ DECLARE min_date DATE;
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
 
-#SET train_start_date = DATE '{{train_start_date}}';
 SET train_start_date = min_date;
-#SET train_end_date = DATE '{{train_end_date}}';
 SET train_end_date = max_date;
 
 SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% for training use number 5. If you want 80% use number 7.

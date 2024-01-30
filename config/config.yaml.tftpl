@@ -369,7 +369,8 @@ vertex_ai:
           model_metric_threshold: 10 
           number_of_models_considered: 2
           bigquery_source: "${project_id}.audience_segmentation.v_audience_segmentation_inference_15"
-          bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
+          #bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
+          bigquery_destination_prefix: "${project_id}.audience_segmentation"
           aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
@@ -415,7 +416,8 @@ vertex_ai:
           location: "${cloud_region}"
           model_name: "interest-cluster-model"
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
-          bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.p_auto_audience_segmentation_inference_15"
+          #bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.pred_auto_audience_segmentation_inference_15"
+          bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "auto-audience-segmentation-15"
         pipeline_parameters_substitutions: null
@@ -754,8 +756,6 @@ bigquery:
       stored_procedure: "purchase_propensity_training_preparation"
       interval_max_date: 15
       interval_min_date: 30
-      train_start_date: "2022-01-01"
-      train_end_date: "2023-03-12"
       train_split_end_number: 5
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
@@ -766,8 +766,6 @@ bigquery:
       stored_procedure: "audience_segmentation_training_preparation"
       interval_max_date: 1
       interval_min_date: 15
-      train_start_date: "2022-01-01"
-      train_end_date: "2023-03-12"
       train_split_end_number: 5
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
@@ -778,8 +776,6 @@ bigquery:
       stored_procedure: "customer_lifetime_value_training_preparation"
       interval_max_date: 180
       interval_min_date: 180
-      train_start_date: "2022-01-01"
-      train_end_date: "2023-03-12"
       train_split_end_number: 5
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
