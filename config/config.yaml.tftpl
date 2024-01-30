@@ -70,6 +70,7 @@ vertex_ai:
     service_account: "vertex-pipelines-sa@${project_id}.iam.gserviceaccount.com"
     region: "${cloud_region}"
     bucket_name: "${project_id}-pipelines"
+    model_bucket_name: "${project_id}-custom-models"
     root_path: "gs://${project_id}-pipelines/pipelines/"
 
     feature-creation-auto-audience-segmentation:
@@ -413,7 +414,7 @@ vertex_ai:
           end_time: null
           state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
-          location: "${location}"
+          location: "${cloud_region}"
           project_id: "${project_id}"
           dataset: "auto_audience_segmentation"
           model_name: "interest-cluster-model"

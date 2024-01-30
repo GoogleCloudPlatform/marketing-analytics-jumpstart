@@ -35,7 +35,7 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     "roles/aiplatform.user",
     "roles/artifactregistry.reader",
     "roles/pubsub.publisher",
-    "roles/dataflow.developer"
+    "roles/dataflow.developer",
   ])
   role = each.key
 }
@@ -81,6 +81,19 @@ resource "google_service_account_iam_member" "dataflow_sa_iam" {
 resource "google_storage_bucket" "pipelines_bucket" {
   project                     = local.pipeline_vars.project_id
   name                        = local.pipeline_vars.bucket_name
+  storage_class               = "REGIONAL"
+  location                    = local.pipeline_vars.region
+  uniform_bucket_level_access = true
+  force_destroy               = false
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = false ##true
+  }
+}
+
+resource "google_storage_bucket" "custom_model_bucket" {
+  project                     = local.pipeline_vars.project_id
+  name                        = local.pipeline_vars.model_bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
   uniform_bucket_level_access = true

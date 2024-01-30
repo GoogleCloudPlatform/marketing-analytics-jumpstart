@@ -67,7 +67,7 @@ def train_scikit_cluster_model(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        #location=location
     )
 
     training_dataset_df = client.query(
