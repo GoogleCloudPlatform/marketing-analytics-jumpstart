@@ -80,6 +80,7 @@ resource "local_file" "feature_store_configuration" {
     cloud_region           = var.google_default_region
     mds_project_id         = var.data_project_id
     mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_suffix}"
+    website_url            = var.website_url
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
     #    TODO: this needs to be specific to environment.

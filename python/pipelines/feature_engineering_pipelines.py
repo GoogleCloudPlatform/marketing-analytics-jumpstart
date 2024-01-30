@@ -16,30 +16,62 @@ from typing import Optional
 import kfp as kfp
 import kfp.dsl as dsl
 from pipelines.components.bigquery.component import bq_stored_procedure_exec as sp
+from pipelines.components.bigquery.component import (
+    bq_dynamic_query_exec_output, bq_dynamic_stored_procedure_exec_output)
 
 
 @dsl.pipeline()
 def auto_audience_segmentation_feature_engineering_pipeline(
     project_id: str,
     location: Optional[str],
+    dataset: str,
+    feature_table: str,
+    mds_project_id: str,
+    mds_dataset: str,
+    date_start: str,
+    date_end: str,
+    stored_procedure_name: str,
+    training_table: str,
+    reg_expression: str,
     query_auto_audience_segmentation_inference_preparation: str,
-    #query_auto_audience_segmentation_training_preparation: str,
-    query_parameters: Optional[list] = None,
+    lookback_days: int = 15,
+    perc_keep: int = 35,
     timeout: Optional[float] = 3600.0
 ):
     # Training data preparation
-    #auto_audience_segmentation_train_prep = sp(
-    #    project=project_id,
-    #    location=location,
-    #    query=query_auto_audience_segmentation_training_preparation,
-    #    query_parameters=query_parameters,
-    #    timeout=timeout).set_display_name('auto_audience_segmentation_training_preparation')
+    feature_table_preparation = bq_dynamic_query_exec_output(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        create_table=feature_table,
+        mds_project_id=mds_project_id,
+        mds_dataset=mds_dataset,
+        date_start=date_start,
+        date_end=date_end,
+        perc_keep=perc_keep,
+        reg_expression=reg_expression
+    )
+
+    training_table_preparation = bq_dynamic_stored_procedure_exec_output(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        mds_project_id=mds_project_id,
+        mds_dataset=mds_dataset,
+        dynamic_table_input=feature_table_preparation.outputs['destination_table'],
+        date_start=date_start,
+        date_end=date_end,
+        lookback_days=lookback_days,
+        stored_procedure_name=stored_procedure_name,
+        training_table=training_table,
+        reg_expression=reg_expression
+    ).after(*[feature_table_preparation])
+    
     # Inference data preparation
     auto_audience_segmentation_inf_prep = sp(
         project=project_id,
         location=location,
         query=query_auto_audience_segmentation_inference_preparation,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('auto_audience_segmentation_inference_preparation')
   
 
@@ -52,7 +84,6 @@ def audience_segmentation_feature_engineering_pipeline(
     query_user_segmentation_dimensions: str,
     query_audience_segmentation_inference_preparation: str,
     query_audience_segmentation_training_preparation: str,
-    query_parameters: Optional[list] = None,
     timeout: Optional[float] = 3600.0
 ):
     # Features Preparation
@@ -61,7 +92,6 @@ def audience_segmentation_feature_engineering_pipeline(
         project=project_id,
         location=location,
         query=query_user_lookback_metrics,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('user_lookback_metrics')
     )
     phase_1.append(
@@ -69,7 +99,6 @@ def audience_segmentation_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_scoped_segmentation_metrics,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_scoped_segmentation_metrics')
     )
     phase_1.append(
@@ -77,7 +106,6 @@ def audience_segmentation_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_segmentation_dimensions,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_segmentation_dimensions')
     )
     # Training data preparation
@@ -85,14 +113,12 @@ def audience_segmentation_feature_engineering_pipeline(
         project=project_id,
         location=location,
         query=query_audience_segmentation_training_preparation,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('audience_segmentation_training_preparation').after(*phase_1)
     # Inference data preparation
     audience_segmentation_inf_prep = sp(
         project=project_id,
         location=location,
         query=query_audience_segmentation_inference_preparation,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('audience_segmentation_inference_preparation').after(*phase_1)
   
       
@@ -107,7 +133,6 @@ def purchase_propensity_feature_engineering_pipeline(
     query_user_session_event_aggregated_metrics: str,
     query_purchase_propensity_inference_preparation: str,
     query_purchase_propensity_training_preparation: str,
-    query_parameters: Optional[list] = None,
     timeout: Optional[float] = 3600.0
 ):
     # Features Preparation
@@ -117,7 +142,6 @@ def purchase_propensity_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_purchase_propensity_label,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('purchase_propensity_label')
     )
     phase_1.append(
@@ -125,7 +149,6 @@ def purchase_propensity_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_dimensions,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_dimensions')
     )
     phase_1.append(
@@ -133,7 +156,6 @@ def purchase_propensity_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_rolling_window_metrics,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_rolling_window_metrics')
     )
     phase_1.append(
@@ -141,7 +163,6 @@ def purchase_propensity_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_scoped_metrics,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_scoped_metrics')
     )
     phase_1.append(
@@ -149,7 +170,6 @@ def purchase_propensity_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_session_event_aggregated_metrics,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_session_event_aggregated_metrics')
     )
     # Training data preparation
@@ -157,14 +177,12 @@ def purchase_propensity_feature_engineering_pipeline(
         project=project_id,
         location=location,
         query=query_purchase_propensity_training_preparation,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('purchase_propensity_training_preparation').after(*phase_1)
     # Inference data preparation
     purchase_propensity_inf_prep = sp(
         project=project_id,
         location=location,
         query=query_purchase_propensity_inference_preparation,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('purchase_propensity_inference_preparation').after(*phase_1)
   
 
@@ -178,7 +196,6 @@ def customer_lifetime_value_feature_engineering_pipeline(
     query_user_scoped_lifetime_metrics: str,
     query_customer_lifetime_value_inference_preparation: str,
     query_customer_lifetime_value_training_preparation: str,
-    query_parameters: Optional[list] = None,
     timeout: Optional[float] = 3600.0
 ):
     # Features Preparation
@@ -188,7 +205,6 @@ def customer_lifetime_value_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_customer_lifetime_value_label,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('customer_lifetime_value_label')
     )
     phase_1.append(
@@ -196,7 +212,6 @@ def customer_lifetime_value_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_lifetime_dimensions,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_lifetime_dimensions')
     )
     phase_1.append(
@@ -204,7 +219,6 @@ def customer_lifetime_value_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_rolling_window_lifetime_metrics,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_rolling_window_lifetime_metrics')
     )
     phase_1.append(
@@ -212,7 +226,6 @@ def customer_lifetime_value_feature_engineering_pipeline(
             project=project_id,
             location=location,
             query=query_user_scoped_lifetime_metrics,
-            query_parameters=query_parameters,
             timeout=timeout).set_display_name('user_scoped_lifetime_metrics')
     )
     # Training data preparation
@@ -220,14 +233,12 @@ def customer_lifetime_value_feature_engineering_pipeline(
         project=project_id,
         location=location,
         query=query_customer_lifetime_value_training_preparation,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('customer_lifetime_value_training_preparation').after(*phase_1)
     # Inference data preparation
     customer_lifetime_value_inf_prep = sp(
         project=project_id,
         location=location,
         query=query_customer_lifetime_value_inference_preparation,
-        query_parameters=query_parameters,
         timeout=timeout).set_display_name('customer_lifetime_value_inference_preparation').after(*phase_1)
 
 

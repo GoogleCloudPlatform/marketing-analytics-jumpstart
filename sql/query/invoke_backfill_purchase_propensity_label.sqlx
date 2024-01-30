@@ -55,7 +55,7 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
   );
 
   ## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
-  CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
+CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
   SELECT
     user_pseudo_id,
     input_date as feature_date,

@@ -70,6 +70,7 @@ vertex_ai:
     service_account: "vertex-pipelines-sa@${project_id}.iam.gserviceaccount.com"
     region: "${cloud_region}"
     bucket_name: "${project_id}-pipelines"
+    model_bucket_name: "${project_id}-custom-models"
     root_path: "gs://${project_id}-pipelines/pipelines/"
 
     feature-creation-auto-audience-segmentation:
@@ -87,20 +88,25 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
+          dataset: "auto_audience_segmentation"
+          feature_table: "page_path_cumulative_traffic"
+          mds_project_id: "${mds_project_id}"
+          mds_dataset: "${mds_dataset}"
+          date_start: "2023-01-01"
+          date_end: "2023-12-31"
+          stored_procedure_name: "auto_audience_segmentation_training_preparation"
+          training_table: "auto_audience_segmentation_training_full_dataset"
+          reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)$"
+          perc_keep: 35
+          lookback_days: 15
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
-          #query_auto_audience_segmentation_training_preparation: "
-          #  CALL `{auto_audience_segmentation_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           date_timezone: "UTC" # used when input_date is None and need to get current date.
           auto_audience_segmentation_inference_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_inference_preparation"
           auto_audience_segmentation_training_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_training_preparation"
     
-
     feature-creation-audience-segmentation:
       execution:
         name: "feature-creation-audience-segmentation"
@@ -122,27 +128,19 @@ vertex_ai:
             CALL `{user_lookback_metrics_procedure_name}`();"
           query_user_scoped_segmentation_metrics: "
             CALL `{user_scoped_segmentation_metrics_procedure_name}`();"
-          
           query_audience_segmentation_inference_preparation: "
             CALL `{audience_segmentation_inference_preparation_procedure_name}`();"
-
           query_audience_segmentation_training_preparation: "
             CALL `{audience_segmentation_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           user_segmentation_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_segmentation_dimensions"
           user_lookback_metrics_procedure_name: "${project_id}.feature_store.invoke_user_lookback_metrics"
           user_scoped_segmentation_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_segmentation_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
-
           audience_segmentation_inference_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_inference_preparation"
-
           audience_segmentation_training_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_training_preparation"
 
-    
     feature-creation-purchase-propensity: 
       execution:
         name: "feature-creation-purchase-propensity"
@@ -168,15 +166,10 @@ vertex_ai:
             CALL `{user_scoped_metrics_procedure_name}`();"
           query_user_session_event_aggregated_metrics: "
             CALL `{user_session_event_aggregated_metrics_procedure_name}`();"
-          
           query_purchase_propensity_inference_preparation: "
             CALL `{purchase_propensity_inference_preparation_procedure_name}`();"
-
           query_purchase_propensity_training_preparation: "
             CALL `{purchase_propensity_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           purchase_propensity_label_procedure_name: "${project_id}.feature_store.invoke_purchase_propensity_label"
@@ -185,9 +178,7 @@ vertex_ai:
           user_scoped_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_metrics"
           user_session_event_aggregated_metrics_procedure_name: "${project_id}.feature_store.invoke_user_session_event_aggregated_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
-
           purchase_propensity_inference_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_inference_preparation"
-          
           purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
 
     feature-creation-customer-ltv:
@@ -213,15 +204,10 @@ vertex_ai:
             CALL `{user_rolling_window_lifetime_metrics_procedure_name}`();"
           query_user_scoped_lifetime_metrics: "
             CALL `{user_scoped_lifetime_metrics_procedure_name}`();"
-          
           query_customer_lifetime_value_inference_preparation: "
             CALL `{customer_lifetime_value_inference_preparation_procedure_name}`();"
-          
           query_customer_lifetime_value_training_preparation: "
             CALL `{customer_lifetime_value_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           customer_lifetime_value_label_procedure_name: "${project_id}.feature_store.invoke_customer_lifetime_value_label"
@@ -229,12 +215,9 @@ vertex_ai:
           user_rolling_window_lifetime_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_lifetime_metrics"
           user_scoped_lifetime_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_lifetime_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
-
           customer_lifetime_value_inference_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation"
-          
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
           
-
     propensity:
       training:
         name: "propensity-training-pl"
@@ -252,7 +235,10 @@ vertex_ai:
           location: "${cloud_region}"
           root_dir: "gs://${project_id}-pipelines/propensity-training"
           transformations: "gs://${project_id}-pipelines/propensity-training/transformations_config_{timestamp}.json"
+          custom_transformations: "pipelines/transformations-purchase-propensity.json"
           train_budget_milli_node_hours: 1000 # 1 hour
+          max_selected_features: 20
+          apply_feature_selection_tuning: true
           run_evaluation: true
           run_distillation: false
           prediction_type: "classification"
@@ -273,12 +259,18 @@ vertex_ai:
           weight_column: null
           additional_experiments: null
           export_additional_model_without_custom_ops: false
-          study_spec_parameters_override:
-            - parameter_id: "model_type"
-              categorical_value_spec:
-                values: 
-                  - nn
-                  - boosted_trees
+          #Don't use when parameter `apply_feature_selection_tuning` is `true`
+          #study_spec_parameters_override:
+          #  - parameter_id: "model_type"
+          #    categorical_value_spec:
+          #      values: 
+          #        - nn
+          #        - boosted_trees
+          #  - parameter_id: "feature_selection_rate"
+          #    double_value_spec:
+          #      min_value: 0.5
+          #      max_value: 1.0
+          #    scale_type: UNIT_LINEAR_SCALE
         exclude_features:
           - processed_timestamp
           - data_split
@@ -351,11 +343,11 @@ vertex_ai:
           vertex_model_name: "audience_segmentation_model"
           training_data_bq_table: "${project_id}.audience_segmentation.v_audience_segmentation_training_15"
           exclude_features:
-          - processed_timestamp
-          - data_split
-          - feature_date
-          - user_pseudo_id
-          - user_id
+            - processed_timestamp
+            - data_split
+            - feature_date
+            - user_pseudo_id
+            - user_id
         pipeline_parameters_substitutions: null
       prediction:
         name: "segmentation-prediction-pl"
@@ -385,13 +377,35 @@ vertex_ai:
         pipeline_parameters_substitutions: null
 
     auto_segmentation:
+      training:
+        name: "auto-segmentation-training-pl"
+        job_id_prefix: "auto-segmentation-training-pl-"
+        experiment_name: "auto-segmentation-training"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 12 * * SAT"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          location: "${cloud_region}"
+          project_id: "${project_id}"
+          dataset: "auto_audience_segmentation"
+          model_name: "interest-cluster-model"
+          training_table: "auto_audience_segmentation_training_full_dataset"
+          p_wiggle: 10
+          min_num_clusters: 3
+          bucket_name: "${project_id}-custom-models"
+          image_uri: "us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-2:latest"
+        pipeline_parameters_substitutions: null
       prediction:
         name: "auto-segmentation-prediction-pl"
         job_id_prefix: "auto-segmentation-prediction-pl-"
         experiment_name: "auto-segmentation-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 2 * * *"
+          cron: "TZ=America/New_York 0 7 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -401,7 +415,8 @@ vertex_ai:
           location: "${cloud_region}"
           model_name: "interest-cluster-model"
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
-          bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.p_auto_audience_segmentation_inference_15"
+          #bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.pred_auto_audience_segmentation_inference_15"
+          bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "auto-audience-segmentation-15"
         pipeline_parameters_substitutions: null
@@ -426,6 +441,8 @@ vertex_ai:
           root_dir: "gs://${project_id}-pipelines/propensity-clv-training"
           transformations: "gs://${project_id}-pipelines/propensity-clv-training/transformations_config_{timestamp}.json"
           train_budget_milli_node_hours: 1000 # 1 hour
+          max_selected_features: 20
+          apply_feature_selection_tuning: true
           run_evaluation: true
           run_distillation: false
           prediction_type: "classification"
@@ -444,12 +461,18 @@ vertex_ai:
           weight_column: null
           additional_experiments: null
           export_additional_model_without_custom_ops: false
-          study_spec_parameters_override:
-            - parameter_id: "model_type"
-              categorical_value_spec:
-                values: 
-                  - nn
-                  - boosted_trees
+          #Don't use when parameter `apply_feature_selection_tuning` is `true`
+          #study_spec_parameters_override:
+          #  - parameter_id: "model_type"
+          #    categorical_value_spec:
+          #      values: 
+          #        - nn
+          #        - boosted_trees
+          #  - parameter_id: "feature_selection_rate"
+          #    double_value_spec:
+          #      min_value: 0.5
+          #      max_value: 1.0
+          #    scale_type: UNIT_LINEAR_SCALE
         exclude_features:
           - processed_timestamp
           - data_split
@@ -475,7 +498,10 @@ vertex_ai:
           location: "${cloud_region}"
           root_dir: "gs://${project_id}-pipelines/clv-training"
           transformations: "gs://${project_id}-pipelines/clv-training/transformations_config_{timestamp}.json"
+          custom_transformations: "pipelines/transformations-customer-ltv.json"
           train_budget_milli_node_hours: 1000 # 1 hour
+          max_selected_features: 20 
+          apply_feature_selection_tuning: true
           run_evaluation: true
           run_distillation: false
           prediction_type: "regression"
@@ -494,12 +520,18 @@ vertex_ai:
           weight_column: null
           additional_experiments: null
           export_additional_model_without_custom_ops: false
-          study_spec_parameters_override:
-          - parameter_id: "model_type"
-            categorical_value_spec:
-              values: 
-                - nn
-                - boosted_trees
+          #Don't use when parameter `apply_feature_selection_tuning` is `true`
+          #study_spec_parameters_override:
+          #  - parameter_id: "model_type"
+          #    categorical_value_spec:
+          #      values: 
+          #        - nn
+          #        - boosted_trees
+          #  - parameter_id: "feature_selection_rate"
+          #    double_value_spec:
+          #      min_value: 0.5
+          #      max_value: 1.0
+          #    scale_type: UNIT_LINEAR_SCALE
         exclude_features:
           - processed_timestamp
           - data_split
@@ -723,8 +755,6 @@ bigquery:
       stored_procedure: "purchase_propensity_training_preparation"
       interval_max_date: 15
       interval_min_date: 30
-      train_start_date: "2022-01-01"
-      train_end_date: "2023-03-12"
       train_split_end_number: 5
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
@@ -735,8 +765,6 @@ bigquery:
       stored_procedure: "audience_segmentation_training_preparation"
       interval_max_date: 1
       interval_min_date: 15
-      train_start_date: "2022-01-01"
-      train_end_date: "2023-03-12"
       train_split_end_number: 5
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
@@ -747,8 +775,6 @@ bigquery:
       stored_procedure: "customer_lifetime_value_training_preparation"
       interval_max_date: 180
       interval_min_date: 180
-      train_start_date: "2022-01-01"
-      train_end_date: "2023-03-12"
       train_split_end_number: 5
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"

@@ -61,7 +61,7 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
 );
 
 -- All users in the platform
-CREATE TEMP TABLE events_users as (
+CREATE OR REPLACE TEMP TABLE events_users as (
   SELECT DISTINCT
   Users.user_pseudo_id,
   Users.user_id,
@@ -74,7 +74,7 @@ CREATE TEMP TABLE events_users as (
 );
 
 
-CREATE TEMP TABLE DataForTargetTable AS
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     input_date as feature_date,

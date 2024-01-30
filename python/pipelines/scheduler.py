@@ -39,6 +39,7 @@ pipelines_list = {
     'vertex_ai.pipelines.propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
     'vertex_ai.pipelines.segmentation.training': "pipelines.segmentation_pipelines.training_pl",
     'vertex_ai.pipelines.segmentation.prediction': "pipelines.segmentation_pipelines.prediction_pl",
+    'vertex_ai.pipelines.auto_segmentation.training': "pipelines.auto_segmentation_pipelines.training_pl",
     'vertex_ai.pipelines.auto_segmentation.prediction': "pipelines.auto_segmentation_pipelines.prediction_pl",
     'vertex_ai.pipelines.propensity_clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.training': None, # tabular workflows pipelines is precompiled
