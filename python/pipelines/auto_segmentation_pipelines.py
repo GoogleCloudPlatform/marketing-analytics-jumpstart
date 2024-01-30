@@ -60,8 +60,8 @@ def training_pl(
         project_id=project_id,
         dataset=dataset,
         training_table=training_table,
-        p_wiggle=10,
-        min_num_clusters=3,
+        p_wiggle=p_wiggle,
+        min_num_clusters=min_num_clusters,
         bucket_name=bucket_name,
         model_name=model_name
     )

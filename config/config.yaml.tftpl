@@ -96,20 +96,17 @@ vertex_ai:
           date_end: "2023-12-31"
           stored_procedure_name: "auto_audience_segmentation_training_preparation"
           training_table: "auto_audience_segmentation_training_full_dataset"
-          reg_expression: '^https://shop.googlemerchandisestore.com/([-a-zA-Z0-9@:%_+.~#?//=]*)$'
+          reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)$"
           perc_keep: 35
           lookback_days: 15
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           date_timezone: "UTC" # used when input_date is None and need to get current date.
           auto_audience_segmentation_inference_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_inference_preparation"
           auto_audience_segmentation_training_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_training_preparation"
     
-
     feature-creation-audience-segmentation:
       execution:
         name: "feature-creation-audience-segmentation"
@@ -131,27 +128,19 @@ vertex_ai:
             CALL `{user_lookback_metrics_procedure_name}`();"
           query_user_scoped_segmentation_metrics: "
             CALL `{user_scoped_segmentation_metrics_procedure_name}`();"
-          
           query_audience_segmentation_inference_preparation: "
             CALL `{audience_segmentation_inference_preparation_procedure_name}`();"
-
           query_audience_segmentation_training_preparation: "
             CALL `{audience_segmentation_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           user_segmentation_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_segmentation_dimensions"
           user_lookback_metrics_procedure_name: "${project_id}.feature_store.invoke_user_lookback_metrics"
           user_scoped_segmentation_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_segmentation_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
-
           audience_segmentation_inference_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_inference_preparation"
-
           audience_segmentation_training_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_training_preparation"
 
-    
     feature-creation-purchase-propensity: 
       execution:
         name: "feature-creation-purchase-propensity"
@@ -177,15 +166,10 @@ vertex_ai:
             CALL `{user_scoped_metrics_procedure_name}`();"
           query_user_session_event_aggregated_metrics: "
             CALL `{user_session_event_aggregated_metrics_procedure_name}`();"
-          
           query_purchase_propensity_inference_preparation: "
             CALL `{purchase_propensity_inference_preparation_procedure_name}`();"
-
           query_purchase_propensity_training_preparation: "
             CALL `{purchase_propensity_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           purchase_propensity_label_procedure_name: "${project_id}.feature_store.invoke_purchase_propensity_label"
@@ -194,9 +178,7 @@ vertex_ai:
           user_scoped_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_metrics"
           user_session_event_aggregated_metrics_procedure_name: "${project_id}.feature_store.invoke_user_session_event_aggregated_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
-
           purchase_propensity_inference_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_inference_preparation"
-          
           purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
 
     feature-creation-customer-ltv:
@@ -222,15 +204,10 @@ vertex_ai:
             CALL `{user_rolling_window_lifetime_metrics_procedure_name}`();"
           query_user_scoped_lifetime_metrics: "
             CALL `{user_scoped_lifetime_metrics_procedure_name}`();"
-          
           query_customer_lifetime_value_inference_preparation: "
             CALL `{customer_lifetime_value_inference_preparation_procedure_name}`();"
-          
           query_customer_lifetime_value_training_preparation: "
             CALL `{customer_lifetime_value_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           timeout: 3600.0
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           customer_lifetime_value_label_procedure_name: "${project_id}.feature_store.invoke_customer_lifetime_value_label"
@@ -238,12 +215,9 @@ vertex_ai:
           user_rolling_window_lifetime_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_lifetime_metrics"
           user_scoped_lifetime_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_lifetime_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
-
           customer_lifetime_value_inference_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation"
-          
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
           
-
     propensity:
       training:
         name: "propensity-training-pl"
@@ -430,7 +404,7 @@ vertex_ai:
         experiment_name: "auto-segmentation-prediction"
         type: "custom"
         schedule:
-          cron: "TZ=America/New_York 0 2 * * *"
+          cron: "TZ=America/New_York 0 7 * * *"
           max_concurrent_run_count: 1
           start_time: null
           end_time: null

@@ -223,3 +223,9 @@ variable "feature_store_project_id" {
   type        = string
   description = "Project ID where feature store resources are created"
 }
+
+variable "website_url" {
+  description = "Website url to be provided to the auto segmentation model"
+  type = string
+  default = null
+}

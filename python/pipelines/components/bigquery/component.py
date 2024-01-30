@@ -37,7 +37,7 @@ def bq_stored_procedure_exec(
     project: str,
     location: str,
     query: str,
-    query_parameters: Optional[list],
+    query_parameters: Optional[list] = [],
     timeout: Optional[float] = 1800
 ) -> None:
 
