@@ -369,8 +369,7 @@ vertex_ai:
           model_metric_threshold: 10 
           number_of_models_considered: 2
           bigquery_source: "${project_id}.audience_segmentation.v_audience_segmentation_inference_15"
-          #bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
-          bigquery_destination_prefix: "${project_id}.audience_segmentation"
+          bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
           aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
