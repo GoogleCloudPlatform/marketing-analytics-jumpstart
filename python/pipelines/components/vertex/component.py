@@ -359,3 +359,64 @@ def return_unmanaged_model(
     }
     model.uri = model_uri
     
+
+
+# Create tabular model explanation component
+@component(base_image=base_image)
+def get_tabular_model_explanation(
+    project: str,
+    location: str,
+    model: Input[VertexModel],
+    model_explanation: Output[Dataset],
+) -> None:
+    from google.cloud import aiplatform
+    import logging
+    import re
+
+    #Get explanaitions from the AutoML API
+    aiplatform.init(project=project, location=location)
+    model = aiplatform.Model(model.metadata["resourceName"]) # exmaple: 'projects/mde-aggregated-vbb/locations/us-central1/models/1391715638950494208' # replace with your model id
+    model_evals = model.api_client.select_version('v1beta1').list_model_evaluations(parent=model.resource_name)
+
+    #Get model id
+    model_id = model.resource_name.split('/')[-1]
+
+    #Get model name
+    model_name = model.display_name
+
+    #Get model version
+    model_version = model.version_id
+    logging.info(model_version)
+
+    # convert the pager format into lists containing Json
+    modelEvalJson= []
+    for val in model_evals:
+        #print(val.model_explanation)
+        modelEvalJson.append(val.model_explanation)
+    modelEvalJson = modelEvalJson[0] # keep only the json data
+
+    # Filter the API response pager to keep only keys as feature_name and values as the coefficients
+    # Extract values using regular expressions in 2 lists
+    feature_names = re.findall(r'(?<=key: ").*?(?=")', str(modelEvalJson))
+    values = re.findall(r"(?<=number_value: )[0-9]+\.[0-9]+", str(modelEvalJson))
+
+    #DEBUG PRINT: print the extracted feature names and values
+    logging.info(feature_names)
+    logging.info(values)
+
+    # Format data as rows for BigQuery insertion
+    rows_to_insert = [
+        dict(zip(['feature_names', 'values'], row))
+        for row in zip(feature_names, values)
+    ]
+
+    # Component output
+    model_explanation.metadata = {
+        'model_id': model_id,
+        'model_name': model_name,
+        'model_version': model_version,
+        'model_uri': f"https://{location}-aiplatform.googleapis.com/v1/{model.resource_name}/versions/{model.version_id}",
+        'feature_names': feature_names,
+        'values': values,
+        }
+

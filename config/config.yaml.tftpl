@@ -202,11 +202,6 @@ vertex_ai:
           lookback_days: 15
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
-          #query_auto_audience_segmentation_training_preparation: "
-          #  CALL `{auto_audience_segmentation_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           # The `timeout` parameter defines the timeout of the pipeline in seconds.
           # The default value is 3600 seconds (1 hour).
           timeout: 3600.0
@@ -265,9 +260,6 @@ vertex_ai:
             CALL `{audience_segmentation_inference_preparation_procedure_name}`();"
           query_audience_segmentation_training_preparation: "
             CALL `{audience_segmentation_training_preparation_procedure_name}`();"
-          
-          query_parameters:
-            - { name: "input_date", type: "DATE", value: None } # If value is not defined then assume current_date()
           # The `timeout` parameter defines the timeout of the pipeline in seconds.
           # The default value is 3600 seconds (1 hour).
           timeout: 3600.0
@@ -424,24 +416,13 @@ vertex_ai:
           end_time: null
           state: ACTIVE # possible states ACTIVE or PAUSED
         pipeline_parameters:
-          project_id: "${project_id}"
+          project: "${project_id}"
           location: "${cloud_region}"
-          job_name_prefix: "value-based-bidding-explanation-pl-"
           model_display_name: "value-based-bidding-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
           model_metric_threshold: 400
           number_of_models_considered: 1
-          bigquery_source: "${project_id}.${mds_dataset}.aggregated_vbb_inference"
-          bigquery_destination_prefix: "${project_id}.value_based_bidding"
-          bq_unique_key: "Dt"
-          machine_type: "n1-standard-4"
-          max_replica_count: 10
-          batch_size: 64
-          accelerator_count: 0
-          accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
-          generate_explanation: true
-          aggregated_predictions_dataset_location: "${location}"
-          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
+          bigquery_destination_prefix: "${project_id}.aggregated_vbb.vbb_weights"
         pipeline_parameters_substitutions: null
 
     # This pipeline contains the configuration parameters for the propensity training and inference pipelines for the purchase propensity model.
@@ -790,7 +771,6 @@ vertex_ai:
           purchase_model_metric_name: "logLoss"
           purchase_model_metric_threshold: 0.9
           number_of_purchase_models_considered: 1
-          generate_explanation: false
           threashold: 0.5
           positive_label: "1"
           clv_model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
@@ -872,6 +852,17 @@ bigquery:
       is_case_insensitive: TRUE
       description: "Auto Audience Segmentation Use Case dataset for Marketing behavioural modeling"
       friendly_name: "Auto Audience Segmentation Dataset"
+      max_time_travel_hours: 48
+      default_partition_expiration_days: 365
+      default_table_expiration_days: 365
+    aggregated_vbb:
+      project_id: "${project_id}"
+      name: "aggregated_vbb"
+      location: "${location}"
+      collation: "und:ci"
+      is_case_insensitive: TRUE
+      description: "Aggregated VBB Use Case dataset for Marketing behavioural modeling"
+      friendly_name: "Aggregated VBB Dataset"
       max_time_travel_hours: 48
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
@@ -1349,5 +1340,11 @@ bigquery:
       customer_lifetime_value_dataset: "customer_lifetime_value"
       purchase_propensity_dataset: "purchase_propensity"
       audience_segmentation_dataset: "audience_segmentation"
+    aggregated_value_based_bidding_training_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      name: "aggregated_value_based_bidding_training_preparation"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
 
   

@@ -102,6 +102,27 @@ resource "google_bigquery_dataset" "auto_audience_segmentation" {
   }
 }
 
+
+resource "google_bigquery_dataset" "aggregated_vbb" {
+  dataset_id                 = local.config_bigquery.dataset.aggregated_vbb.name
+  friendly_name              = local.config_bigquery.dataset.aggregated_vbb.friendly_name
+  project                    = local.aggregated_vbb_project_id
+  description                = local.config_bigquery.dataset.aggregated_vbb.description
+  location                   = local.config_bigquery.dataset.aggregated_vbb.location
+  max_time_travel_hours      = local.config_bigquery.dataset.aggregated_vbb.max_time_travel_hours
+  delete_contents_on_destroy = false
+
+  labels = {
+    version = "pilot"
+  }
+
+  lifecycle {
+    ignore_changes = all
+  }
+}
+
+
+
 module "aggregated_predictions" {
   source  = "terraform-google-modules/bigquery/google"
   version = "~> 5.4"

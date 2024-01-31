@@ -965,3 +965,109 @@ def bq_union_predictions_tables(
 
     for row in results:
         logging.info("row info: {}".format(row))
+
+
+@component(base_image=base_image)
+def write_tabular_model_explanation_to_bigquery(
+    project: str,
+    location: str,
+    destination_table: str,
+    model_explanation: Input[Dataset],
+):
+    """
+    Writes the tabular model explanation to BigQuery.
+    """
+    import logging
+    from google.cloud import bigquery
+    from google.cloud.exceptions import NotFound
+    from google.api_core.retry import Retry
+    from google.api_core import exceptions
+    import time
+
+    client = bigquery.Client(project=project, 
+                             location=location)
+    
+    feature_names = model_explanation.metadata['feature_names']
+    values = model_explanation.metadata['values']
+    model_id = model_explanation.metadata['model_id']
+    model_name = model_explanation.metadata['model_name']
+    model_version = model_explanation.metadata['model_version']
+    
+        # Check if table exists continue otherwise create table
+    query = """CREATE OR REPLACE TABLE `"""+ destination_table +"""` (
+        processed_timestamp TIMESTAMP,
+        model_id STRING,
+        model_name STRING,
+        model_version STRING,
+        feature_names STRING,
+        values FLOAT64
+    )
+    OPTIONS (
+    description = "A table with feature names and numerical values"
+    );
+    """
+    # Execute the query as a job
+    try:
+        query_job = client.query(query)
+        # Wait for the query job to complete
+        query_job.result()  # Waits for job to finish
+        # Get query results and convert to pandas DataFrame
+        df = query_job.to_dataframe()
+        logging.info(df)
+    except NotFound as e:
+        logging.error(f"Error during vbb weights CREATE query job execution: {e}")
+
+    # Build the INSERT query
+    insert_query = "INSERT INTO `{}` (processed_timestamp, model_id, model_name, model_version, feature_names, values) VALUES ".format(destination_table)
+    for i in range(len(feature_names)):
+        insert_query += "(CURRENT_TIMESTAMP(), '{}', '{}', '{}', '{}', {}), ".format(model_id, model_name, model_version, feature_names[i], values[i])
+    insert_query = insert_query[:-2]
+
+    logging.info(insert_query)
+
+    # Execute the insert a job with retries because the table isnt ready to be used sometimes after creation
+
+    # Retry configuration
+    max_retries = 5
+    retry_delay = 15  # Seconds to wait between retries
+
+    def retry_if_exception_type(exception_types):
+        def decorator(func):
+            def new_func(*args, **kwargs):
+                try:
+                    return func(*args, **kwargs)
+                except exception_types as error:
+                    raise exceptions.RetryError(error, cause=error)
+            return new_func
+        return decorator
+
+    retry_predicate = Retry(
+        predicate=retry_if_exception_type(
+            exceptions.NotFound
+        ),
+    )
+
+    def execute_query_with_retries(query):
+        """Executes the query with retries."""
+        query_job = client.query(query, retry=retry_predicate)
+
+        while not query_job.done():  # Check if the query job is complete
+            print("Query running...")
+            time.sleep(retry_delay)  # Wait before checking status again
+            query_job.reload()  # Reload the job state
+
+        if query_job.errors:
+            raise RuntimeError(f"Query errors: {query_job.errors}")
+
+        return query_job.result()  # Return the results
+
+    # Execute the query
+    try:
+        result = execute_query_with_retries(insert_query)
+
+
+    except RuntimeError as e:
+        logging.error(f"Query failed after retries: {e}")
+    
+
+    
