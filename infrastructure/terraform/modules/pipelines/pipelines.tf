@@ -462,7 +462,6 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
     working_dir = self.triggers.working_dir
   }
 }
-<<<<<<< HEAD
 
 # Compilation for the value based bidding training pipeline
 resource "null_resource" "compile_value_based_bidding_training_pipelines" {
@@ -499,5 +498,3 @@ resource "null_resource" "compile_value_based_bidding_explanation_pipelines" {
     working_dir = self.triggers.working_dir
   }
 }
-=======
->>>>>>> main
