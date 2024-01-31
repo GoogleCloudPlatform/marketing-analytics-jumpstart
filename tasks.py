@@ -38,13 +38,14 @@ from pathlib import Path
 from jinja2 import Template
 from jinja2 import FileSystemLoader
 from jinja2 import Environment
+import re
 
 
 GOOGLE_CLOUD_PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT")
 REGION = os.environ.get("REGION", "us-central1")
 
-
 @task
+<<<<<<< HEAD
 def apply_config_parameters_to_all_procedures(c, env_name="prod"):
     """
     Applies parameters from a configuration file to .sqlx stored procedure template files,
@@ -74,6 +75,9 @@ def apply_config_parameters_to_all_procedures(c, env_name="prod"):
             and renders them into templates, so it should handle the new parameter without modification.
     """
     # Load configuration file according to environment name
+=======
+def apply_env_variables_procedures(c, env_name="config"):
+>>>>>>> main
     current_path = Path(__file__).parent.resolve()
     conf = yaml.safe_load(Path.joinpath(current_path,"config", "{}.yaml".format(env_name)).read_text())
 
@@ -94,8 +98,10 @@ def apply_config_parameters_to_all_procedures(c, env_name="prod"):
             with rendered_sql_file.open("w+", encoding ="utf-8") as f:
                 f.write(new_sql)
             print("New SQL file rendered at {}".format(rendered_sql_file))
-    
+
+
 @task
+<<<<<<< HEAD
 def apply_config_parameters_to_all_datasets(c, env_name="prod"):
     """
     Applies parameters from a configuration file to .sqlx dataset template files,
@@ -124,6 +130,9 @@ def apply_config_parameters_to_all_datasets(c, env_name="prod"):
             c) No code changes required: The existing code already retrieves configuration values 
             and renders them into templates, so it should handle the new parameter without modification.
     """
+=======
+def apply_env_variables_datasets(c, env_name="config"):
+>>>>>>> main
     # Load configuration file according to environment name
     current_path = Path(__file__).parent.resolve()
     conf = yaml.safe_load(Path.joinpath(current_path,"config", "{}.yaml".format(env_name)).read_text())
@@ -148,6 +157,7 @@ def apply_config_parameters_to_all_datasets(c, env_name="prod"):
 
 
 @task
+<<<<<<< HEAD
 def apply_config_parameters_to_all_queries(c, env_name="prod"):
     """
     Applies parameters from a configuration file to .sqlx query template files,
@@ -176,6 +186,9 @@ def apply_config_parameters_to_all_queries(c, env_name="prod"):
             c) No code changes required: The existing code already retrieves configuration values 
             and renders them into templates, so it should handle the new parameter without modification.
     """
+=======
+def apply_env_variables_queries(c, env_name="config"):
+>>>>>>> main
     # Load configuration file according to environment name
     current_path = Path(__file__).parent.resolve()
     conf = yaml.safe_load(Path.joinpath(current_path,"config", "{}.yaml".format(env_name)).read_text())
@@ -199,6 +212,7 @@ def apply_config_parameters_to_all_queries(c, env_name="prod"):
             print("New SQL file rendered at {}".format(rendered_sql_file))
 
 @task
+<<<<<<< HEAD
 def apply_config_parameters_to_all_tables(c, env_name="prod"):
     """
     Applies parameters from a configuration file and table schemas to .sqlx table template files,
@@ -217,6 +231,9 @@ def apply_config_parameters_to_all_tables(c, env_name="prod"):
     Example usage:
         apply_config_parameters_to_all_tables(my_task_context, env_name="dev")
     """
+=======
+def apply_env_variables_tables(c, env_name="config"):
+>>>>>>> main
     import json
     # Load configuration file according to environment name
     current_path = Path(__file__).parent.resolve()
@@ -269,7 +286,7 @@ def setup_poetry_test(c):  # noqa: ANN001, ANN201
 
 
 @task
-def setup_poetry_prod(c):  # noqa: ANN001, ANN201
+def setup_poetry_config(c):  # noqa: ANN001, ANN201
     """Create virtualenv, and install requirements, with output"""
     require_venv(c, test_requirements=False)
 
@@ -302,7 +319,7 @@ def _determine_local_import_names(start_dir: str) -> List[str]:
     ]
 
 
-@task(pre=[setup_poetry_prod])
+@task(pre=[setup_poetry_config])
 def fix(c):  # noqa: ANN001, ANN201
     """Apply linting fixes"""
     c.run("poetry run black *.py **/*.py --force-exclude .venv")

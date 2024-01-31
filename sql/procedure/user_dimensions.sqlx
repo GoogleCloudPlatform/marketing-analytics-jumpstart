@@ -61,7 +61,7 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
 );
 
 -- All users in the platform
-CREATE TEMP TABLE events_users as (
+CREATE OR REPLACE TEMP TABLE events_users as (
   SELECT DISTINCT
   Users.user_pseudo_id,
   Users.user_id,
@@ -74,7 +74,7 @@ CREATE TEMP TABLE events_users as (
 );
 
 
-CREATE TEMP TABLE DataForTargetTable AS
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     input_date as feature_date,
@@ -110,9 +110,6 @@ CREATE TEMP TABLE DataForTargetTable AS
   ON EU.user_pseudo_id = UDESS.user_pseudo_id --AND EU.user_id = UDESS.user_id
   GROUP BY input_date, EU.user_pseudo_id
 ;
-
---INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
---  SELECT * FROM DataForTargetTable;
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T

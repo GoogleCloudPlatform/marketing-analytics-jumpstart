@@ -72,6 +72,19 @@ def write_auto_transformations(uri: str, column_names: List[str]):
     logging.info("Transformations config written: {}".format(uri))
 
 
+def read_custom_transformation_file(custom_transformation_file: str):
+    import json
+    with open(custom_transformation_file, "r") as f:
+        transformations = json.load(f)
+    return transformations
+
+def write_custom_transformations(uri: str, custom_transformation_file: str):
+    transformations = read_custom_transformation_file(custom_transformation_file)
+    write_to_gcs(uri, json.dumps(transformations))
+
+    logging.info("Transformations config written: {}".format(uri))
+
+
 def compile_pipeline(
         pipeline_func: Callable, 
         template_path: str,
@@ -177,7 +190,7 @@ def compile_automl_tabular_pipeline(
         exclude_features = List[Any],
         enable_caching: bool = True) -> tuple:
 
-    from google_cloud_pipeline_components.experimental.automl.tabular import utils as automl_tabular_utils
+    from google_cloud_pipeline_components.preview.automl.tabular import utils as automl_tabular_utils
 
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
@@ -267,21 +280,28 @@ def compile_automl_tabular_pipeline(
 
     logging.info(f'features:{schema}')
 
-    write_auto_transformations(pipeline_parameters['transformations'], schema)
+    if 'custom_transformations' in pipeline_parameters.keys():
+        logging.info("Reading from custom features transformations file: {}".format(pipeline_parameters['custom_transformations']))
+        write_custom_transformations(pipeline_parameters['transformations'], 
+                                      pipeline_parameters['custom_transformations'])
+    else:
+        logging.info("Writing automatics features transformations file: {}".format(pipeline_parameters['transformations']))
+        write_auto_transformations(pipeline_parameters['transformations'], schema)
+
     if pipeline_parameters['predefined_split_key']:
         pipeline_parameters['training_fraction'] = None
         pipeline_parameters['validation_fraction'] = None
         pipeline_parameters['test_fraction'] = None
 
-    # write_to_gcs(pipeline_parameters['transform_config_path'], json.dumps(transformations))
-
     pipeline_parameters.pop('data_source_bigquery_table_schema', None)
+    pipeline_parameters.pop('custom_transformations', None) 
+    
     (
         tp,
         parameter_values,
-    ) = automl_tabular_utils.get_automl_tabular_pipeline_and_parameters(**pipeline_parameters)
+    ) = automl_tabular_utils.get_automl_tabular_feature_selection_pipeline_and_parameters(**pipeline_parameters) #automl_tabular_utils.get_automl_tabular_pipeline_and_parameters(**pipeline_parameters)
 
-    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v3.yaml'), 'r') as file:
+    with open(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_pl_v4.yaml'), 'r') as file:
         configuration = yaml.safe_load(file)
 
     # can process yaml to change pipeline name

@@ -337,4 +337,25 @@ def batch_prediction(
         client.update_table(table, ["expires"])
 
     logging.info(batch_prediction_job.to_dict())
+
+
+@component(base_image=base_image)
+# Note currently KFP SDK doesn't support outputting artifacts in `google` namespace.
+# Use the base type dsl.Artifact instead.
+def return_unmanaged_model(
+    image_uri: str,
+    bucket_name: str,
+    model_name: str,
+    model: Output[Artifact]
+) -> None:
+    from google_cloud_pipeline_components import v1
+    from google_cloud_pipeline_components.types import artifact_types
+    from kfp import dsl
+
+    model_uri = f"gs://{bucket_name}/{model_name}"
+    model.metadata['containerSpec'] = {
+        'imageUri':
+            f"{image_uri}"
+    }
+    model.uri = model_uri
     

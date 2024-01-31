@@ -17,7 +17,7 @@ DECLARE min_date DATE;
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
-CREATE TEMP TABLE training_preparation_ud as (
+CREATE OR REPLACE TEMP TABLE training_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
     MAX(UD.user_id) OVER(user_segmentation_dimensions_window) AS user_id,
@@ -56,7 +56,7 @@ WINDOW
 );
 
 
-CREATE TEMP TABLE training_preparation_uwm as (
+CREATE OR REPLACE TEMP TABLE training_preparation_uwm as (
   SELECT DISTINCT
     UWM.user_pseudo_id,
     UWM.feature_date,
@@ -83,7 +83,7 @@ WINDOW
   user_lookback_metrics_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
-CREATE TEMP TABLE training_preparation_um as (
+CREATE OR REPLACE TEMP TABLE training_preparation_um as (
   SELECT DISTINCT
     UM.feature_date,
     MAX(UM.purchasers_users) OVER(user_scoped_segmentation_metrics_window) AS purchasers_users,
@@ -121,7 +121,7 @@ WINDOW
 );
 
 
-CREATE TEMP TABLE training_preparation as (
+CREATE OR REPLACE TEMP TABLE training_preparation as (
   SELECT DISTINCT
     UD.user_pseudo_id,
     UD.user_id,
@@ -203,7 +203,7 @@ ON
 );
 
 
-CREATE TEMP TABLE DataForTargetTable AS(
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   SELECT DISTINCT
   CASE 
     WHEN (ABS(MOD(FARM_FINGERPRINT(user_pseudo_id), 10)) BETWEEN 0 AND train_split_end_number) THEN "TRAIN" 
@@ -400,9 +400,3 @@ FROM (
     `{{project_id}}.{{dataset}}.audience_segmentation_training_15` )
 WHERE
   rn <= {{samples_per_split}};
-
-#SELECT DISTINCT *
-#  FROM `{{project_id}}.{{dataset}}.audience_segmentation_training_15`;
-
-DROP TABLE training_preparation;
-DROP TABLE DataForTargetTable;

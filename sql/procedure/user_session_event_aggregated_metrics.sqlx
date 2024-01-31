@@ -272,7 +272,7 @@ WHERE event_date BETWEEN DI.end_date AND DI.input_date
     AND D.device_os IS NOT NULL
 );
 
-CREATE TEMP TABLE DataForTargetTable AS
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
 SELECT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     EUD.feature_date,
@@ -320,9 +320,6 @@ INNER JOIN repeated_purchase R
 ON R.user_pseudo_id = EPDSS.user_pseudo_id AND R.feature_date = EPDSS.feature_date
 INNER JOIN cart_to_purchase CP
 ON CP.user_pseudo_id = EPDSS.user_pseudo_id AND CP.feature_date = EPDSS.feature_date;
-
--- INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
---   SELECT * FROM DataForTargetTable;
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T

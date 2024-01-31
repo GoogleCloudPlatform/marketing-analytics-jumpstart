@@ -942,6 +942,3 @@ SELECT DISTINCT
   checkouts_past_120_150_day,
   checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_180`;
-
-
-DROP TABLE inference_preparation;

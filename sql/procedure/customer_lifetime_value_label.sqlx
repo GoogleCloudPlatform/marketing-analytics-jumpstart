@@ -18,7 +18,7 @@ SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
 ## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
-CREATE TEMP TABLE future_revenue_per_user AS (
+CREATE OR REPLACE TEMP TABLE future_revenue_per_user AS (
   SELECT DISTINCT
     user_pseudo_id,
     MAX(GREATEST(
@@ -53,7 +53,7 @@ CREATE TEMP TABLE future_revenue_per_user AS (
 );
 
 ## All users in the platform
-CREATE TEMP TABLE events_users_days as (
+CREATE OR REPLACE TEMP TABLE events_users_days as (
   SELECT DISTINCT
   Users.user_pseudo_id
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
@@ -64,7 +64,7 @@ CREATE TEMP TABLE events_users_days as (
   AND Users.event_date BETWEEN input_date AND end_date
 );
 
-CREATE TEMP TABLE DataForTargetTable AS
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     input_date as feature_date,
@@ -75,9 +75,6 @@ CREATE TEMP TABLE DataForTargetTable AS
     FROM events_users_days AS A
     LEFT JOIN future_revenue_per_user AS B
     ON A.user_pseudo_id = B.user_pseudo_id;
-
---INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
---  SELECT DISTINCT * FROM DataForTargetTable;
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
@@ -107,7 +104,3 @@ WHEN NOT MATCHED THEN
 ;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
-
-DROP TABLE future_revenue_per_user;
-DROP TABLE events_users_days;
-DROP TABLE DataForTargetTable;

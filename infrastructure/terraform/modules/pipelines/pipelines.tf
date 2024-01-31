@@ -35,7 +35,7 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     "roles/aiplatform.user",
     "roles/artifactregistry.reader",
     "roles/pubsub.publisher",
-    "roles/dataflow.developer"
+    "roles/dataflow.developer",
   ])
   role = each.key
 }
@@ -91,26 +91,44 @@ resource "google_storage_bucket" "pipelines_bucket" {
   }
 }
 
+resource "google_storage_bucket" "custom_model_bucket" {
+  project                     = local.pipeline_vars.project_id
+  name                        = local.pipeline_vars.model_bucket_name
+  storage_class               = "REGIONAL"
+  location                    = local.pipeline_vars.region
+  uniform_bucket_level_access = true
+  force_destroy               = false
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = false ##true
+  }
+}
+
 locals {
   vertex_pipelines_available_locations = [
     "asia-east1",
     "asia-east2",
     "asia-northeast1",
+    "asia-northeast2",
     "asia-northeast3",
     "asia-south1",
     "asia-southeast1",
     "asia-southeast2",
     "europe-central2",
+    "europe-north1",
     "europe-west1",
     "europe-west2",
     "europe-west3",
     "europe-west4",
     "europe-west6",
+    "europe-west8",
     "europe-west9",
+    "europe-southwest1",
     "me-west1",
     "northamerica-northeast1",
     "northamerica-northeast2",
     "southamerica-east1",
+    "southamerica-west1",
     "us-central1",
     "us-east1",
     "us-east4",
@@ -119,6 +137,8 @@ locals {
     "us-west2",
     "us-west3",
     "us-west4",
+    "australia-southeast1",
+    "australia-southeast2",
   ]
 }
 
@@ -180,11 +200,13 @@ locals {
     "${local.pipelines_dir}/components/bigquery/component.py",
     "${local.pipelines_dir}/components/pubsub/component.py",
     "${local.pipelines_dir}/components/vertex/component.py",
+    "${local.pipelines_dir}/components/python/component.py",
     "${local.pipelines_dir}/compiler.py",
     "${local.pipelines_dir}/feature_engineering_pipelines.py",
     "${local.pipelines_dir}/pipeline_ops.py",
     "${local.pipelines_dir}/scheduler.py",
     "${local.pipelines_dir}/segmentation_pipelines.py",
+    "${local.pipelines_dir}/auto_segmentation_pipelines.py",
     "${local.pipelines_dir}/tabular_pipelines.py",
     "${local.pipelines_dir}/uploader.py",
   ]
@@ -197,6 +219,7 @@ resource "null_resource" "build_push_pipelines_components_image" {
     docker_repo_id          = google_artifact_registry_repository.pipelines_docker_repo.id
     docker_repo_create_time = google_artifact_registry_repository.pipelines_docker_repo.create_time
     source_content_hash     = local.component_image_content_hash
+    poetry_installed        = var.poetry_installed
   }
 
   provisioner "local-exec" {
@@ -406,11 +429,28 @@ resource "null_resource" "compile_segmentation_prediction_pipelines" {
   }
 }
 
-resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
+resource "null_resource" "compile_auto_segmentation_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
     upstream_resource_dependency = null_resource.compile_segmentation_prediction_pipelines.id
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.training -o auto_segmentation_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f auto_segmentation_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.training
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_auto_segmentation_training_pipelines.id
   }
 
   provisioner "local-exec" {
@@ -422,6 +462,7 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
     working_dir = self.triggers.working_dir
   }
 }
+<<<<<<< HEAD
 
 # Compilation for the value based bidding training pipeline
 resource "null_resource" "compile_value_based_bidding_training_pipelines" {
@@ -458,3 +499,5 @@ resource "null_resource" "compile_value_based_bidding_explanation_pipelines" {
     working_dir = self.triggers.working_dir
   }
 }
+=======
+>>>>>>> main

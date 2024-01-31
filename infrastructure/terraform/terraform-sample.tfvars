@@ -36,8 +36,11 @@ source_ads_export_data = [
   { project = "xyz", dataset = "dataset2", table_suffix = "_567890" }
 ]
 
-####################  FEATEURE STORE VARIABLES  #################################
+####################  FEATURE STORE VARIABLES  #################################
 feature_store_project_id = "Project ID where feature store resources will be created"
+
+####################     ML MODEL VARIABLES    #################################
+website_url = "Customer Website URL" # i.e. "https://shop.googlemerchandisestore.com/"
 
 ####################  ACTIVATION VARIABLES  #################################
 
