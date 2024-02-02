@@ -32,60 +32,20 @@ OPTIONS(
     labels=[("org_unit", "development")]
 ) AS
 
-WITH Base_Events AS (
-  SELECT
-    EXTRACT(date from event_timestamp) AS event_date,
-    event_name
-  FROM
-    `{{mds_project_id}}.{{mds_dataset}}.event`
-)
 SELECT
-  event_date AS Dt,
   "TRAIN"AS data_split,
-  COUNTIF(event_name = "first_visit") AS First_Visits,
-  COUNTIF(event_name = "page_view") AS Visit_Product_Page,
-  COUNTIF(event_name = "view_item") AS View_Product_Details,
-  COUNTIF(event_name = "add_to_cart") AS Add_Product_to_Cart,
-  COUNTIF(event_name = "view_cart") AS View_Cart,
-  COUNTIF(event_name = "begin_checkout") AS Begin_Checkout,
-  COUNTIF(event_name = "add_shipping_info") AS Added_Shipping_Info,
-  COUNTIF(event_name = "add_payment_info") AS Added_Payment_Info,
-  COUNTIF(event_name = "purchase") AS Purchase_Product
+  *
 FROM
-  Base_Events
-GROUP BY
-  event_date
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
 UNION ALL
 SELECT
-  event_date AS Dt,
   "VALIDATE"AS data_split,
-  COUNTIF(event_name = "first_visit") AS First_Visits,
-  COUNTIF(event_name = "page_view") AS Visit_Product_Page,
-  COUNTIF(event_name = "view_item") AS View_Product_Details,
-  COUNTIF(event_name = "add_to_cart") AS Add_Product_to_Cart,
-  COUNTIF(event_name = "view_cart") AS View_Cart,
-  COUNTIF(event_name = "begin_checkout") AS Begin_Checkout,
-  COUNTIF(event_name = "add_shipping_info") AS Added_Shipping_Info,
-  COUNTIF(event_name = "add_payment_info") AS Added_Payment_Info,
-  COUNTIF(event_name = "purchase") AS Purchase_Product
+  *
 FROM
-  Base_Events
-GROUP BY
-  event_date
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
 UNION ALL
 SELECT
-  event_date AS Dt,
   "TEST"AS data_split,
-  COUNTIF(event_name = "first_visit") AS First_Visits,
-  COUNTIF(event_name = "page_view") AS Visit_Product_Page,
-  COUNTIF(event_name = "view_item") AS View_Product_Details,
-  COUNTIF(event_name = "add_to_cart") AS Add_Product_to_Cart,
-  COUNTIF(event_name = "view_cart") AS View_Cart,
-  COUNTIF(event_name = "begin_checkout") AS Begin_Checkout,
-  COUNTIF(event_name = "add_shipping_info") AS Added_Shipping_Info,
-  COUNTIF(event_name = "add_payment_info") AS Added_Payment_Info,
-  COUNTIF(event_name = "purchase") AS Purchase_Product
+  *
 FROM
-  Base_Events
-GROUP BY
-  event_date;
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`;

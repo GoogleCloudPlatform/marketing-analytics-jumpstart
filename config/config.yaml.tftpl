@@ -392,7 +392,6 @@ vertex_ai:
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
-          data_location: "${location}"
           root_dir: "gs://${project_id}-pipelines/value-based-bidding"
           transformations: "gs://${project_id}-pipelines/value-based-bidding/transformations_config_{timestamp}.json"
           train_budget_milli_node_hours: 1000 # 1 hour
@@ -439,6 +438,7 @@ vertex_ai:
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
+          data_location: "${location}"
           model_display_name: "value-based-bidding-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
           model_metric_threshold: 400
@@ -1226,7 +1226,7 @@ bigquery:
       feature_store_dataset: "feature_store"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
-      expiration_duration_hours: 168
+      expiration_duration_hours: 168 
       samples_per_split: 100000
     customer_lifetime_value_label:
       project_id: "${project_id}"
