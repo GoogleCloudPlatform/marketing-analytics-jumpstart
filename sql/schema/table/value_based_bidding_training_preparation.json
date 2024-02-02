@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Dt",
+    "type": "DATE",
+    "description": "feature column description"
+  },
+  {
+    "name": "First_Visits",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "Visit_Product_Page",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "View_Product_Details",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "Add_Product_to_Cart",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "View_Cart",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "Begin_Checkout",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "Added_Shipping_Info",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "Added_Payment_Info",
+    "type": "INTEGER",
+    "description": "feature column description"
+  },
+  {
+    "name": "Purchase_Product",
+    "type": "INTEGER",
+    "description": "feature column description"
+  }
+]

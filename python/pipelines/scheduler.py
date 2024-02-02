@@ -32,6 +32,7 @@ def check_extention(file_path: str, type: str = '.yaml'):
 # config path : pipeline module and function name
 pipelines_list = {
     'vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution': "pipelines.feature_engineering_pipelines.auto_audience_segmentation_feature_engineering_pipeline",
+    'vertex_ai.pipelines.feature-creation-aggregated-value-based-bidding.execution': "pipelines.feature_engineering_pipelines.aggregated_value_based_bidding_feature_engineering_pipeline",
     'vertex_ai.pipelines.feature-creation-audience-segmentation.execution': "pipelines.feature_engineering_pipelines.audience_segmentation_feature_engineering_pipeline",
     'vertex_ai.pipelines.feature-creation-purchase-propensity.execution': "pipelines.feature_engineering_pipelines.purchase_propensity_feature_engineering_pipeline",
     'vertex_ai.pipelines.feature-creation-customer-ltv.execution': "pipelines.feature_engineering_pipelines.customer_lifetime_value_feature_engineering_pipeline",
@@ -44,6 +45,8 @@ pipelines_list = {
     'vertex_ai.pipelines.propensity_clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.prediction':  "pipelines.tabular_pipelines.prediction_binary_classification_regression_pl",
+    'vertex_ai.pipelines.value_based_bidding.training': None, # tabular workflows pipelines is precompiled
+    'vertex_ai.pipelines.value_based_bidding.explanation': "pipelines.tabular_pipelines.explanation_tabular_workflow_regression_pl"
 } # key should match pipeline names as in the config.yaml files for automatic compilation
 
 if __name__ == "__main__":

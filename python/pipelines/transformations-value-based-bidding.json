@@ -1,0 +1,42 @@
+[
+    {
+        "numeric": {
+            "column_name": "First_Visits"
+        }
+    },
+    {
+        "numeric": {
+            "column_name": "Visit_Product_Page"
+        }
+    },
+    {
+        "numeric": {
+            "column_name": "View_Product_Details"
+        }
+    },
+    {
+        "numeric": {
+            "column_name": "Add_Product_to_Cart"
+        }
+    },
+    {
+        "numeric": {
+            "column_name": "View_Cart"
+        }
+    },
+    {
+        "numeric": {
+            "column_name": "Begin_Checkout"
+        }
+    },
+    {
+        "numeric": {
+            "column_name": "Added_Shipping_Info"
+        }
+    },
+    {
+        "numeric": {
+            "column_name": "Added_Payment_Info"
+        }
+    }
+]

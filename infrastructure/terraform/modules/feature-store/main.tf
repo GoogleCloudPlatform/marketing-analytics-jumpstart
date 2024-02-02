@@ -23,6 +23,7 @@ locals {
   purchase_propensity_project_id        = local.config_vars.bigquery.dataset.purchase_propensity.project_id
   audience_segmentation_project_id      = local.config_vars.bigquery.dataset.audience_segmentation.project_id
   auto_audience_segmentation_project_id = local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id
+  aggregated_vbb_project_id             = local.config_vars.bigquery.dataset.aggregated_vbb.project_id
   customer_lifetime_value_project_id    = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id
   project_id                            = local.feature_store_project_id
   sql_dir                               = var.sql_dir_input

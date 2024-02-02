@@ -1,0 +1,51 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.{{view_name}}`
+(data_split,
+    Dt,
+    First_Visits,
+    Visit_Product_Page,
+    View_Product_Details,
+    Add_Product_to_Cart,
+    View_Cart,
+    Begin_Checkout,
+    Added_Shipping_Info,
+    Added_Payment_Info,
+    Purchase_Product
+)
+OPTIONS(
+    --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+    friendly_name="aggregated_value_based_bidding_training_full_dataset",
+    description="View for aggregated value based bidding training dataset. View expires after 7d and should run daily.",
+    labels=[("org_unit", "development")]
+) AS
+
+SELECT
+  "TRAIN" AS data_split,
+  *
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+UNION ALL
+SELECT
+  "VALIDATE" AS data_split,
+  *
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+UNION ALL
+SELECT
+  "TEST" AS data_split,
+  *
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`;

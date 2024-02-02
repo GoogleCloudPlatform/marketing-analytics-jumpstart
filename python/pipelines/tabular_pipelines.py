@@ -16,11 +16,16 @@ from typing import Optional
 import kfp as kfp
 import kfp.components as components
 import kfp.dsl as dsl
-from pipelines.components.vertex.component import elect_best_tabular_model, batch_prediction
+from pipelines.components.vertex.component import elect_best_tabular_model, \
+                                                  batch_prediction, \
+                                                  get_tabular_model_explanation
+
 from pipelines.components.bigquery.component import bq_flatten_tabular_binary_prediction_table, \
                                                     bq_flatten_tabular_regression_table, \
                                                     bq_union_predictions_tables, \
-                                                    bq_stored_procedure_exec
+                                                    bq_stored_procedure_exec, \
+                                                    write_tabular_model_explanation_to_bigquery
+
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
 
 # elect_best_tabular_model = components.load_component_from_file(
@@ -28,6 +33,8 @@ from pipelines.components.pubsub.component import send_pubsub_activation_msg
 #  )
 
 
+# Function containing a KFP definition for a Prediction pipeline that uses a Tabular Workflow Model.
+# This is for Binary Classification model.
 @dsl.pipeline()
 def prediction_binary_classification_pl(
     project_id: str,
@@ -104,6 +111,8 @@ def prediction_binary_classification_pl(
     )
 
 
+# Function containing a KFP definition for a Prediction pipeline that uses a Tabular Workflow Model.
+# This is for Regression model.
 @dsl.pipeline()
 def prediction_regression_pl(
     project_id: str,
@@ -284,3 +293,41 @@ def prediction_binary_classification_regression_pl(
         activation_type=pubsub_activation_type,
         predictions_table=union_predictions.outputs['destination_table'],
     )
+
+
+# Function containing a KFP definition for a Explanation pipeline that uses a Tabular Workflow Model.
+# This is a Explanation Pipeline Definition that will output the Feature Attribution
+@dsl.pipeline()
+def explanation_tabular_workflow_regression_pl(
+    project: str,
+    location: str,
+    data_location: str,
+    model_display_name: str,
+    model_metric_name: str,
+    model_metric_threshold: float,
+    number_of_models_considered: int,
+    bigquery_destination_prefix: str,
+):
+    #TODO: Implement the explanation pipeline for the value based bidding model
+    value_based_bidding_model = elect_best_tabular_model(
+        project=project,
+        location=location,
+        display_name=model_display_name,
+        metric_name=model_metric_name,
+        metric_threshold=model_metric_threshold,
+        number_of_models_considered=number_of_models_considered,
+    ).set_display_name('elect_best_vbb_model')
+
+    value_based_bidding_model_explanation = get_tabular_model_explanation(
+        project=project,
+        location=location,
+        model=value_based_bidding_model.outputs['elected_model'],
+    ).set_display_name('get_vbb_model_explanation')
+
+    value_based_bidding_flatten_explanation = write_tabular_model_explanation_to_bigquery(
+        project=project,
+        location=location,
+        data_location = data_location,
+        model_explanation=value_based_bidding_model_explanation.outputs['model_explanation'],
+        destination_table=bigquery_destination_prefix,
+    ).set_display_name('write_vbb_model_explanation')

@@ -84,6 +84,8 @@ def write_custom_transformations(uri: str, custom_transformation_file: str):
 
     logging.info("Transformations config written: {}".format(uri))
 
+    return transformations
+
 
 def compile_pipeline(
         pipeline_func: Callable, 
@@ -160,13 +162,18 @@ def run_pipeline_from_func(
 
 
 def _extract_schema_from_bigquery(
+        project: str,
+        location: str,
         table_name: str,
         table_schema: str,
         ) -> list:
     from google.cloud import bigquery
     from google.api_core import exceptions
     try:
-        client = bigquery.Client()
+        client = bigquery.Client(
+            project=project,
+            #location=location,
+        )
         table = client.get_table(table_name)
         schema = [schema.name for schema in table.schema]
     except exceptions.NotFound as e:
@@ -179,7 +186,8 @@ def _extract_schema_from_bigquery(
         schema = [feature['name'] for feature in d]
     return schema
 
-
+# Compile Tabular Workflow Training pipelines
+# You don't need to define the pipeline elsewhere since the pre-compiled pipeline component is defined in the `automl_tabular_pl_v?.yaml`
 def compile_automl_tabular_pipeline(
         template_path: str,
         parameters_path: str,
@@ -260,30 +268,36 @@ def compile_automl_tabular_pipeline(
 
     pipeline_parameters['transformations'] = pipeline_parameters['transformations'].format(
         timestamp=datetime.now().strftime("%Y%m%d%H%M%S"))
-
-    schema = _extract_schema_from_bigquery(
-        table_name=pipeline_parameters['data_source_bigquery_table_path'].split('/')[-1],
-        table_schema=pipeline_parameters['data_source_bigquery_table_schema']
-        )
-
-    for column_to_remove in exclude_features + [
-            pipeline_parameters['target_column'],
-            pipeline_parameters['stratified_split_key'],
-            pipeline_parameters['predefined_split_key'],
-            pipeline_parameters['timestamp_split_key']
-    ]:
-        if column_to_remove in schema:
-            schema.remove(column_to_remove)
-
-    logging.info(f'features:{schema}')
+    
+    schema = {}
 
     if 'custom_transformations' in pipeline_parameters.keys():
         logging.info("Reading from custom features transformations file: {}".format(pipeline_parameters['custom_transformations']))
-        write_custom_transformations(pipeline_parameters['transformations'], 
+        schema = write_custom_transformations(pipeline_parameters['transformations'], 
                                       pipeline_parameters['custom_transformations'])
     else:
-        logging.info("Writing automatics features transformations file: {}".format(pipeline_parameters['transformations']))
+        schema = _extract_schema_from_bigquery(
+            project=pipeline_parameters['project'],
+            location=pipeline_parameters['location'],
+            table_name=pipeline_parameters['data_source_bigquery_table_path'].split('/')[-1],
+            table_schema=pipeline_parameters['data_source_bigquery_table_schema']
+            )
+
+        # If there is no features to exclude, skip the step of removing columns from the schema
+        if exclude_features:
+            for column_to_remove in exclude_features + [
+                    pipeline_parameters['target_column'],
+                    pipeline_parameters['stratified_split_key'],
+                    pipeline_parameters['predefined_split_key'],
+                    pipeline_parameters['timestamp_split_key']
+            ]:
+                if column_to_remove in schema:
+                    schema.remove(column_to_remove)
+
+        logging.info("Writing automatically generated features transformations file: {}".format(pipeline_parameters['transformations']))
         write_auto_transformations(pipeline_parameters['transformations'], schema)
+    
+    logging.info(f'features:{schema}')
 
     if pipeline_parameters['predefined_split_key']:
         pipeline_parameters['training_fraction'] = None
@@ -333,6 +347,7 @@ def compile_automl_tabular_pipeline(
     return template_path, parameter_values
 
 
+# Function to upload the pipeline YAML files to gcs
 def upload_pipeline_artefact_registry(
         template_path: str,
         project_id: str,
@@ -375,6 +390,7 @@ def get_gcp_bearer_token() -> str:
     return creds.token
 
 
+# Function to schedule the pipeline.
 def schedule_pipeline(
         project_id: str,
         region: str,

@@ -73,7 +73,22 @@ def auto_audience_segmentation_feature_engineering_pipeline(
         location=location,
         query=query_auto_audience_segmentation_inference_preparation,
         timeout=timeout).set_display_name('auto_audience_segmentation_inference_preparation')
-  
+
+
+@dsl.pipeline()
+def aggregated_value_based_bidding_feature_engineering_pipeline(
+    project_id: str,
+    location: Optional[str],
+    query_aggregated_value_based_bidding_training_preparation: str,
+    timeout: Optional[float] = 3600.0
+):
+    # Training data preparation
+    training_table_preparation = sp(
+        project=project_id,
+        location=location,
+        query=query_aggregated_value_based_bidding_training_preparation,
+        timeout=timeout).set_display_name('aggregated_value_based_bidding_training_preparation')
+
 
 @dsl.pipeline()
 def audience_segmentation_feature_engineering_pipeline(

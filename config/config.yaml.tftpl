@@ -12,12 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-google_cloud_project:
-  project_id: "${project_id}"
-  project_name: "${project_name}"
-  project_number: "${project_number}"
-  region: "${cloud_region}"
+# This *.tftpl file is a Terraform template file. It is used to create or update 
+# resources in a Google Cloud project. A Terraform template file contains the 
+# configuration parameters for the resources that you want to create or update. 
+# It also contains the logic for creating or updating the resources. Terraform 
+# template files are typically used to create or update resources that are 
+# complex or that require a lot of configuration.
+#
+# The config.yaml.tftpl file is a YAML file that contains all the configuration 
+# parameters for the marketing analytics jumpstart solution. 
 
+# It contains the following sections:
+#
+# google_cloud_project: This section contains the Google Cloud project ID and project number.
+# cloud_build: This section contains the configuration parameters for the Cloud Build pipeline.
+# container: This section contains the configuration parameters for the container images.
+# artifact_registry: This section contains the configuration parameters for the Artifact Registry repository.
+# dataflow: This section contains the configuration parameters for the Dataflow pipeline.
+# vertex_ai: This section contains the configuration parameters for the Vertex AI pipeline.
+# bigquery: This section contains the configuration parameters for the BigQuery artifacts.
+
+# This block contains general configuration parameters for the Google Cloud Project.
+google_cloud_project:
+  project_id: "${project_id}" # project_id terraform variable hidrated by terraform.
+  project_name: "${project_name}" # project name terraform variable hidrated by terraform.
+  project_number: "${project_number}" # project number terraform variable hidrated by terraform.
+  region: "${cloud_region}" # region terraform variable hidrated by terraform.
+
+# This block contains configuration parameters for the Cloud Build steps.
+# The CI/CD pipelines are going to use Cloud Build to validate and test the solution at any time the
+# developer wants.
+# The Cloud Build pipeline will be created via a Terraform resource.
+# This capability is still under construction, it is not ready to use.
 cloud_build:
   project_id: "${project_id}"
   region: "${cloud_region}"
@@ -32,19 +58,34 @@ cloud_build:
   _GCR_HOSTNAME: "${cloud_region}-docker.pkg.dev"
   _BUILD_REGION: "${cloud_region}"
 
+# This block contains configuration parameters for the container images.
+# The CI/CD pipelines are going to use the container parameters to auxiliate the Docker containers
+# creation.
+# The container images will be created via a Terraform resource.
+# This capability is still under construction, it is not ready to use.
 container:
   builder:
+    # This is the base image used to run linting, formatting and unit tests of the python code.
     base:
       from_image: "python:3.7-alpine3.7"
       base_image_name: "base-builder"
-      base_image_prefix: "propensity-modeling"
+      base_image_prefix: "maj"
+    # This is the zetasql formatter image used to format and validate the SQL queries.
     zetasql:
       from_image: "wbsouza/zetasql-formatter:latest"
       base_image_name: "zetasql-formatter"
-      base_image_prefix: "propensity-modeling"
+      base_image_prefix: "maj"
   container_registry_hostname: "${cloud_region}-docker.pkg.dev"
   container_registry_region: "${cloud_region}"
 
+# This block contains configuration parameters for the Artifact Registry repositories.
+# The Pipelines terraform module uses Artifact Registry to store the pipelines YAML configuration files
+# and the docker images.
+# Two repositories are created: one for the pipelines and one for the docker images.
+# The pipelines repository is used to store the pipelines YAML configuration files to be compiled 
+# and uploaded via a Terraform resource.
+# The docker repository is used to store the Docker image built via a Terraform resource. 
+# The only image being built right now is the pipeline components container image.
 artifact_registry:
   pipelines_repo:
     name: "pipelines-repo"
@@ -55,15 +96,54 @@ artifact_registry:
     region: "${cloud_region}"
     project_id: "${project_id}"
 
+# This block contains configuration parameters for the Dataflow jobs and templates.
+# The Activation Application terraform module uses Dataflow templates to create the Dataflow job.
+# The Dataflow job is responsible for sending the model predictions to the GA4 / GAds platforms via
+# Measurement Protocol API.
 dataflow:
+  # The `worker_service_account_id` is the service account ID used by the dataflow workers. 
   worker_service_account_id: "df-worker"
+  # The `worker_service_account` is the service account used by the dataflow workers. 
+  # The service account is created via a Terraform resource.
   worker_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
 
+# This block contains configuration parameters for the Vertex AI pipeline components.
+# The Pipelines terraform module uses Vertex AI pipeline components to create the Vertex AI pipeline.
+# The Vertex AI pipeline uses a Docker image at every step which is customized for this solution.
+# Navigate to Vertex AI -> Training -> Custom Job to see the pipeline components executions.
 vertex_ai:
+  # The components block contains configuration parameters for the Vertex AI pipeline components.
   components:
+    # The `base_image_name` is the name of the Docker container image used by the pipeline components.
+    # The base image is created via a Terraform resource.
+    # The Dockerfile recipe can be found at `pipelines/base_component_image/Dockerfile`.
+    # Any python library dependencies should be installed in the `pyproject.toml` file.
+    # The `pyproject.toml` file is a configuration file used by packaging tools, as well as other 
+    # tools such as linters, type checkers, etc.
+    # The `pyproject.toml` file can be found at `pipelines/base_component_image/pyproject.toml`.
     base_image_name: "ma-components"
     base_image_tag: "dev"
 
+  # This pipelines block contains configuration parameters for the Vertex AI pipelines.
+  # The current pipelines are:
+  # - feature-creation-auto-audience-segmentation
+  # - feature-creation-audience-segmentation
+  # - feature-creation-purchase-propensity
+  # - feature-creation-customer-ltv
+  # - propensity
+  #   - training
+  #   - prediction
+  # - segmentation
+  #   - training
+  #   - prediction
+  # - auto_segmentation
+  #   - training
+  #   - prediction
+  # - propensity_clv
+  #   - training
+  # - clv
+  #   - training
+  #   - prediction
   pipelines: 
     project_id: "${project_id}"
     service_account_id: "vertex-pipelines-sa"
@@ -73,18 +153,39 @@ vertex_ai:
     model_bucket_name: "${project_id}-custom-models"
     root_path: "gs://${project_id}-pipelines/pipelines/"
 
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the auto audience segmentation model.
+    # This block defines the pipeline parameters that are going to be used for three tasks: compilation, upload and scheduling.
+    # The python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    # The python function that `schedules`` the pipeline is defined in `python/pipelines/scheduler.py`.
     feature-creation-auto-audience-segmentation:
       execution:
+        # The `name` parameter is the name of the pipeline that will appear in the Vertex AI pipeline UI.
         name: "feature-creation-auto-audience-segmentation"
+        # The `job_id_prefix` is the prefix of the Vertex AI Custom Job that will be used at the execution of each individual component step.
         job_id_prefix: "feature-creation-auto-audience-segmentation-"
+        # The `experiment_name` is the name of the experiment that will appear in the Vertex AI Experiments UI.
         experiment_name: "feature-creation-auto-audience-segmentation"
+        # The `type` defines whether the pipeline is going to be a `tabular-workflows` or a `custom` pipeline.
         type: "custom"
+        # The `schedule` defines the schedule values of the pipeline.
+        # This solution uses the Vertex AI Pipeline Scheduler.
+        # More information can be found at https://cloud.google.com/vertex-ai/docs/pipelines/scheduler.
         schedule:
+          # The `cron` is the cron schedule. Make sure you review the TZ=America/New_York timezone.
+          # More information can be found at https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules.
           cron: "TZ=America/New_York 0 1 * * *"
+          # The `max_concurrent_run_count` defines the maximum number of concurrent pipeline runs.
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: ACTIVE # possible states ACTIVE or PAUSED
+        # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
+        # Those values may difer depending on the pipeline type and the pipeline steps being used.
+        # Make sure you review the python function the defines the pipeline.
+        # The pipeline definition function can be found in `python/pipelines/feature_engineering_pipelines.py` 
+        # or other files ending with `python/pipelines/*_pipeline.py`.
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -101,24 +202,51 @@ vertex_ai:
           lookback_days: 15
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
+          # The `timeout` parameter defines the timeout of the pipeline in seconds.
+          # The default value is 3600 seconds (1 hour).
           timeout: 3600.0
-        pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
+        # The `pipeline_parameters_substitutions` defines the substitutions that are going to be applied to the pipeline parameters before compilation.
+        # Check the parameter values above to see if they are used. 
+        # They typically follow this format {parameter_subsititution_key}.
+        # To apply a substitution, make sure you define the pair: {parameter_subsititution_key}: {parameter_subsititution_value}.
+        pipeline_parameters_substitutions:
           date_timezone: "UTC" # used when input_date is None and need to get current date.
           auto_audience_segmentation_inference_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_inference_preparation"
           auto_audience_segmentation_training_preparation_procedure_name: "${project_id}.auto_audience_segmentation.invoke_auto_audience_segmentation_training_preparation"
     
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the audience segmentation model.
+    # This block defines the pipeline parameters that are going to be used for three tasks: compilation, upload and scheduling.
+    # The python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    # The python function that `schedules`` the pipeline is defined in `python/pipelines/scheduler.py`.
     feature-creation-audience-segmentation:
       execution:
+        # The `name` parameter is the name of the pipeline that will appear in the Vertex AI pipeline UI.
         name: "feature-creation-audience-segmentation"
+        # The `job_id_prefix` is the prefix of the Vertex AI Custom Job that will be used at the execution of each individual component step.
         job_id_prefix: "feature-creation-audience-segmentation-"
+        # The `experiment_name` is the name of the experiment that will appear in the Vertex AI Experiments UI.
         experiment_name: "feature-creation-audience-segmentation"
+        # The `type` defines whether the pipeline is going to be a `tabular-workflows` or a `custom` pipeline.
         type: "custom"
+        # The `schedule` defines the schedule values of the pipeline.
+        # This solution uses the Vertex AI Pipeline Scheduler.
+        # More information can be found at https://cloud.google.com/vertex-ai/docs/pipelines/scheduler.
         schedule:
+          # The `cron` is the cron schedule. Make sure you review the TZ=America/New_York timezone.
+          # More information can be found at https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules.
           cron: "TZ=America/New_York 0 1 * * *"
+          # The `max_concurrent_run_count` defines the maximum number of concurrent pipeline runs.
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: ACTIVE # possible states ACTIVE or PAUSED
+        # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
+        # Those values may difer depending on the pipeline type and the pipeline steps being used.
+        # Make sure you review the python function the defines the pipeline.
+        # The pipeline definition function can be found in `python/pipelines/feature_engineering_pipelines.py` 
+        # or other files ending with `python/pipelines/*_pipeline.py`.
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -132,7 +260,13 @@ vertex_ai:
             CALL `{audience_segmentation_inference_preparation_procedure_name}`();"
           query_audience_segmentation_training_preparation: "
             CALL `{audience_segmentation_training_preparation_procedure_name}`();"
+          # The `timeout` parameter defines the timeout of the pipeline in seconds.
+          # The default value is 3600 seconds (1 hour).
           timeout: 3600.0
+        # The `pipeline_parameters_substitutions` defines the substitutions that are going to be applied to the pipeline parameters before compilation.
+        # Check the parameter values above to see if they are used. 
+        # They typically follow this format {parameter_subsititution_key}.
+        # To apply a substitution, make sure you define the pair: {parameter_subsititution_key}: {parameter_subsititution_value}.
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           user_segmentation_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_segmentation_dimensions"
           user_lookback_metrics_procedure_name: "${project_id}.feature_store.invoke_user_lookback_metrics"
@@ -141,6 +275,7 @@ vertex_ai:
           audience_segmentation_inference_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_inference_preparation"
           audience_segmentation_training_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_training_preparation"
 
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the purchase propensity model.
     feature-creation-purchase-propensity: 
       execution:
         name: "feature-creation-purchase-propensity"
@@ -181,6 +316,7 @@ vertex_ai:
           purchase_propensity_inference_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_inference_preparation"
           purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
 
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the customer lifetime value model.
     feature-creation-customer-ltv:
       execution:
         name: "feature-creation-customer-ltv"
@@ -217,7 +353,100 @@ vertex_ai:
           date_timezone: "UTC" # used when input_date is None and need to get current date.
           customer_lifetime_value_inference_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation"
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
-          
+
+    feature-creation-aggregated-value-based-bidding:
+      execution:
+        name: "feature-creation-aggregated-value-based-bidding"
+        job_id_prefix: "feature-creation-aggregated-value-based-bidding-"
+        experiment_name: "feature-creation-aggregated-value-based-bidding"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 1 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_aggregated_value_based_bidding_training_preparation: "
+            CALL `{aggregated_value_based_bidding_training_preparation_procedure_name}`();"
+          timeout: 3600
+        pipeline_parameters_substitutions:
+          aggregated_value_based_bidding_training_preparation_procedure_name: "${project_id}.aggregated_vbb.invoke_aggregated_value_based_bidding_training_preparation"
+    
+    # This pipeline contains the configuration parameters for the value based bidding training and inference pipelines.
+    value_based_bidding:
+      training:
+        name: "value-based-bidding-training-pl"
+        job_id_prefix: "value-based-bidding-training-pl-"
+        experiment_name: "value-based-bidding-training"
+        type: "tabular-workflows"
+        schedule:
+          # define the schedule for the pipeline
+          cron: "TZ=America/New_York 0 1 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED 
+        pipeline_parameters:
+          project: "${project_id}"
+          location: "${cloud_region}"
+          root_dir: "gs://${project_id}-pipelines/value-based-bidding"
+          transformations: "gs://${project_id}-pipelines/value-based-bidding/transformations_config_{timestamp}.json"
+          train_budget_milli_node_hours: 1000 # 1 hour
+          run_evaluation: true
+          run_distillation: false
+          prediction_type: "regression"
+          optimization_objective: "minimize-mae" #minimize-rmse
+          target_column: "Purchase_Product"
+          predefined_split_key: "data_split"
+          data_source_csv_filenames: null
+          training_fraction: null
+          validation_fraction: null
+          test_fraction: null
+          # data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_vbb_training""
+          data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_value_based_bidding_training_full_dataset"
+          data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
+          dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          timestamp_split_key: null
+          stratified_split_key: null
+          weight_column: null
+          additional_experiments: null
+          export_additional_model_without_custom_ops: false
+          study_spec_parameters_override:
+            - parameter_id: "model_type"
+              categorical_value_spec:
+                values: 
+                  - boosted_trees
+        exclude_features:
+          - Purchase_Product
+          - Dt
+          - data_split
+        pipeline_parameters_substitutions: null
+      explanation:
+        name: "value-based-bidding-explanation-pl"
+        job_id_prefix: "value-based-bidding-explanation-pl-"
+        experiment_name: "value-based-bidding-explanation"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 5 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project: "${project_id}"
+          location: "${cloud_region}"
+          data_location: "${location}"
+          model_display_name: "value-based-bidding-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
+          model_metric_threshold: 400
+          number_of_models_considered: 1
+          bigquery_destination_prefix: "${project_id}.aggregated_vbb.vbb_weights"
+        pipeline_parameters_substitutions: null
+
+    # This pipeline contains the configuration parameters for the propensity training and inference pipelines for the purchase propensity model.
     propensity:
       training:
         name: "propensity-training-pl"
@@ -315,6 +544,7 @@ vertex_ai:
           pubsub_activation_type: "purchase-propensity-30-15"  # purchase-propensity-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
         pipeline_parameters_substitutions: null
     
+    # This pipeline contains the configuration parameters for the segmentation training and inference pipelines for the audience segmentation model.
     segmentation:
       training:
         name: "segmentation-training-pl"
@@ -376,6 +606,7 @@ vertex_ai:
           pubsub_activation_type: "audience-segmentation-15" # audience-segmentation-15
         pipeline_parameters_substitutions: null
 
+    # This pipeline contains the configuration parameters for the auto audience segmentation inference pipelines for the audience segmentation model.
     auto_segmentation:
       training:
         name: "auto-segmentation-training-pl"
@@ -421,8 +652,8 @@ vertex_ai:
           pubsub_activation_type: "auto-audience-segmentation-15"
         pipeline_parameters_substitutions: null
 
-    ## CLV training and inference pipeline requires a purchase propensity model training and a ltv regression model training. 
-    ## Finally, a unique prediction pipeline.
+    # This pipeline contains the configuration parameters for the purchase propensity model training pipelines used as part of the customer lifetime value (clv) inference pipeline.
+    # The CLV training and inference pipeline requires a purchase propensity model training and a ltv regression model training. 
     propensity_clv:
       training:
         name: "propensity-clv-training-pl"
@@ -480,7 +711,9 @@ vertex_ai:
           - user_pseudo_id
           - user_id
           - will_purchase
-        pipeline_parameters_substitutions: null 
+        pipeline_parameters_substitutions: null
+    
+    # This pipeline contains the configuration parameters for the customer lifetime value training and inference pipelines for the customer lifetime value model.
     clv:
       training:
         name: "clv-training-pl"
@@ -559,7 +792,6 @@ vertex_ai:
           purchase_model_metric_name: "logLoss"
           purchase_model_metric_threshold: 0.9
           number_of_purchase_models_considered: 1
-          generate_explanation: false
           threashold: 0.5
           positive_label: "1"
           clv_model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
@@ -584,6 +816,7 @@ vertex_ai:
           pubsub_activation_type: "cltv-180-30" # cltv-180-180 | cltv-180-90 | cltv-180-30
         pipeline_parameters_substitutions: null
 
+# This block contains configuration parameters for the BigQuery Datasets, Tables, Queries and Stored Procedures.
 bigquery:
   project_id: "${project_id}"
   region: "${location}"
@@ -640,6 +873,17 @@ bigquery:
       is_case_insensitive: TRUE
       description: "Auto Audience Segmentation Use Case dataset for Marketing behavioural modeling"
       friendly_name: "Auto Audience Segmentation Dataset"
+      max_time_travel_hours: 48
+      default_partition_expiration_days: 365
+      default_table_expiration_days: 365
+    aggregated_vbb:
+      project_id: "${project_id}"
+      name: "aggregated_vbb"
+      location: "${location}"
+      collation: "und:ci"
+      is_case_insensitive: TRUE
+      description: "Aggregated VBB Use Case dataset for Marketing behavioural modeling"
+      friendly_name: "Aggregated VBB Dataset"
       max_time_travel_hours: 48
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
@@ -749,6 +993,10 @@ bigquery:
       none: none
     cltv_query_template:
       none: none
+    invoke_aggregated_value_based_bidding_training_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      stored_procedure: "aggregated_value_based_bidding_training_preparation"
     invoke_purchase_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -961,6 +1209,14 @@ bigquery:
       dataset: "auto_audience_segmentation"
       stored_procedure: "auto_audience_segmentation_inference_preparation"
   procedure:
+    aggregated_value_based_bidding_training_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      name: "aggregated_value_based_bidding_training_preparation"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      view_name: "aggregated_value_based_bidding_training_full_dataset"
+      expiration_duration_hours: 168
     audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
@@ -970,7 +1226,7 @@ bigquery:
       feature_store_dataset: "feature_store"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
-      expiration_duration_hours: 168
+      expiration_duration_hours: 168 
       samples_per_split: 100000
     customer_lifetime_value_label:
       project_id: "${project_id}"

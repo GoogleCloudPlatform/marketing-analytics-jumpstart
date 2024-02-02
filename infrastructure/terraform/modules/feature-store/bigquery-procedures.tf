@@ -31,6 +31,22 @@ resource "google_bigquery_routine" "audience_segmentation_inference_preparation"
   }
 }
 
+
+data "local_file" "aggregated_value_based_bidding_training_preparation_file" {
+  filename = "${local.sql_dir}/procedure/aggregated_value_based_bidding_training_preparation.sql"
+}
+
+resource "google_bigquery_routine" "aggregated_value_based_bidding_training_preparation" {
+  project = var.project_id
+  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  routine_id = "aggregated_value_based_bidding_training_preparation"
+  routine_type = "PROCEDURE"
+  language = "SQL"
+  definition_body = data.local_file.aggregated_value_based_bidding_training_preparation_file.content
+  description = "Procedure that prepares features for Aggregated VBB model training. User-per-day granularity level features."
+}
+
+
 data "local_file" "auto_audience_segmentation_inference_preparation_file" {
   filename = "${local.sql_dir}/procedure/auto_audience_segmentation_inference_preparation.sql"
 }
@@ -830,6 +846,19 @@ resource "google_bigquery_routine" "invoke_audience_segmentation_training_prepar
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_audience_segmentation_training_preparation_file.content
+}
+
+data "local_file" "invoke_aggregated_value_based_bidding_training_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_aggregated_value_based_bidding_training_preparation.sql"
+}
+
+resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_training_preparation" {
+  project = var.project_id
+  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  routine_id = "invoke_aggregated_value_based_bidding_training_preparation"
+  routine_type = "PROCEDURE"
+  language = "SQL"
+  definition_body = data.local_file.invoke_aggregated_value_based_bidding_training_preparation_file.content
 }
 
 /*
