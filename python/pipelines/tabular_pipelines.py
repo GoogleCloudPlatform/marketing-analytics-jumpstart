@@ -300,7 +300,8 @@ def prediction_binary_classification_regression_pl(
 @dsl.pipeline()
 def explanation_tabular_workflow_regression_pl(
     project: str,
-    location: Optional[str],
+    location: str,
+    data_location: str,
     model_display_name: str,
     model_metric_name: str,
     model_metric_threshold: float,
@@ -326,6 +327,7 @@ def explanation_tabular_workflow_regression_pl(
     value_based_bidding_flatten_explanation = write_tabular_model_explanation_to_bigquery(
         project=project,
         location=location,
+        data_location = data_location,
         model_explanation=value_based_bidding_model_explanation.outputs['model_explanation'],
         destination_table=bigquery_destination_prefix,
     ).set_display_name('write_vbb_model_explanation')

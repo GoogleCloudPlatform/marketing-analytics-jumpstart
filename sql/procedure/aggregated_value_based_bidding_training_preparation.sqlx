@@ -37,7 +37,7 @@ WITH Base_Events AS (
     EXTRACT(date from event_timestamp) AS event_date,
     event_name
   FROM
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.event`
+    `{{mds_project_id}}.{{mds_dataset}}.event`
 )
 SELECT
   event_date AS Dt,

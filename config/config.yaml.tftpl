@@ -353,6 +353,27 @@ vertex_ai:
           date_timezone: "UTC" # used when input_date is None and need to get current date.
           customer_lifetime_value_inference_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation"
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
+
+    feature-creation-aggregated-value-based-bidding:
+      execution:
+        name: "feature-creation-aggregated-value-based-bidding"
+        job_id_prefix: "feature-creation-aggregated-value-based-bidding-"
+        experiment_name: "feature-creation-aggregated-value-based-bidding"
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 1 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_aggregated_value_based_bidding_training_preparation: "
+            CALL `{aggregated_value_based_bidding_training_preparation_procedure_name}`();"
+          timeout: 3600
+        pipeline_parameters_substitutions:
+          aggregated_value_based_bidding_training_preparation_procedure_name: "${project_id}.aggregated_vbb.invoke_aggregated_value_based_bidding_training_preparation"
     
     # This pipeline contains the configuration parameters for the value based bidding training and inference pipelines.
     value_based_bidding:
@@ -371,6 +392,7 @@ vertex_ai:
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
+          data_location: "${location}"
           root_dir: "gs://${project_id}-pipelines/value-based-bidding"
           transformations: "gs://${project_id}-pipelines/value-based-bidding/transformations_config_{timestamp}.json"
           train_budget_milli_node_hours: 1000 # 1 hour
@@ -384,9 +406,8 @@ vertex_ai:
           training_fraction: null
           validation_fraction: null
           test_fraction: null
-          # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
-          # data_source_bigquery_table_path: "bq://${project_id}.value_based_bidding.v_value_based_bidding_training_360"
-          data_source_bigquery_table_path: "bq://${project_id}.${mds_dataset}.aggregated_vbb_training"
+          # data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_vbb_training""
+          data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_value_based_bidding_training_full_dataset"
           data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           timestamp_split_key: null
@@ -972,6 +993,10 @@ bigquery:
       none: none
     cltv_query_template:
       none: none
+    invoke_aggregated_value_based_bidding_training_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      stored_procedure: "aggregated_value_based_bidding_training_preparation"
     invoke_purchase_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -1184,6 +1209,14 @@ bigquery:
       dataset: "auto_audience_segmentation"
       stored_procedure: "auto_audience_segmentation_inference_preparation"
   procedure:
+    aggregated_value_based_bidding_training_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      name: "aggregated_value_based_bidding_training_preparation"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      view_name: "aggregated_value_based_bidding_training_full_dataset"
+      expiration_duration_hours: 168
     audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
@@ -1340,11 +1373,5 @@ bigquery:
       customer_lifetime_value_dataset: "customer_lifetime_value"
       purchase_propensity_dataset: "purchase_propensity"
       audience_segmentation_dataset: "audience_segmentation"
-    aggregated_value_based_bidding_training_preparation:
-      project_id: "${project_id}"
-      dataset: "aggregated_vbb"
-      name: "aggregated_value_based_bidding_training_preparation"
-      mds_project_id: "${mds_project_id}"
-      mds_dataset: "${mds_dataset}"
 
   

@@ -971,6 +971,7 @@ def bq_union_predictions_tables(
 def write_tabular_model_explanation_to_bigquery(
     project: str,
     location: str,
+    data_location: str,
     destination_table: str,
     model_explanation: Input[Dataset],
 ):
@@ -985,7 +986,7 @@ def write_tabular_model_explanation_to_bigquery(
     import time
 
     client = bigquery.Client(project=project, 
-                             location=location)
+                             location=data_location)
     
     feature_names = model_explanation.metadata['feature_names']
     values = model_explanation.metadata['values']
