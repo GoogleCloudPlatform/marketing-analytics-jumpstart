@@ -966,7 +966,7 @@ def bq_union_predictions_tables(
     for row in results:
         logging.info("row info: {}".format(row))
 
-
+# This component writes Tabular Workflows feature importance values to a BigQuery table
 @component(base_image=base_image)
 def write_tabular_model_explanation_to_bigquery(
     project: str,

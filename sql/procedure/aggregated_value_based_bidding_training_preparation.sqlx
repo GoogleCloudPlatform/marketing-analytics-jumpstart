@@ -13,8 +13,8 @@
 -- limitations under the License.
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.{{view_name}}`
-(Dt,
-    data_split,
+(data_split,
+    Dt,
     First_Visits,
     Visit_Product_Page,
     View_Product_Details,
@@ -28,24 +28,24 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.{{view_name}}`
 OPTIONS(
     --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
     friendly_name="aggregated_value_based_bidding_training_full_dataset",
-    description="View for aggregated value based bidding training dataset. View expires after 48h and should run daily.",
+    description="View for aggregated value based bidding training dataset. View expires after 7d and should run daily.",
     labels=[("org_unit", "development")]
 ) AS
 
 SELECT
-  "TRAIN"AS data_split,
+  "TRAIN" AS data_split,
   *
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
 UNION ALL
 SELECT
-  "VALIDATE"AS data_split,
+  "VALIDATE" AS data_split,
   *
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
 UNION ALL
 SELECT
-  "TEST"AS data_split,
+  "TEST" AS data_split,
   *
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`;
