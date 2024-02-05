@@ -1,6 +1,6 @@
 SELECT 
-    prediction,
-    user_pseudo_id AS client_id,
+    NTILE(10) OVER (ORDER BY prediction) AS cltv_decile,
+    COALESCE(user_pseudo_id) AS client_id,
     EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
     FROM `{{source_table}}`
     WHERE prediction > 0

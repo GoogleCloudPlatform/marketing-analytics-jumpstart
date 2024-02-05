@@ -16,6 +16,7 @@
 import json
 from google.analytics import admin_v1alpha
 from google.analytics.admin import AnalyticsAdminServiceClient
+from typing import List
 
 
 def get_data_stream(property_id: str, stream_id: str, transport: str = None):
@@ -139,9 +140,13 @@ def create_custom_event(configuration: map, event_name: str):
 
 def create_custom_dimensions(configuration: map):
   existing_dimensions = load_existing_ga4_custom_dimensions(configuration)
-  fields = load_custom_dimensions(
-    'sql/query/audience_segmentation_query_template.sqlx')
-  use_case = 'Audience Segmentation'
+  create_custom_dimensions_for('Audience Segmentation', 'sql/query/audience_segmentation_query_template.sqlx', existing_dimensions, configuration)
+  create_custom_dimensions_for('Purchase Propensity', 'sql/query/purchase_propensity_query_template.sqlx', existing_dimensions, configuration)
+  create_custom_dimensions_for('CLTV', 'sql/query/cltv_query_template.sqlx', existing_dimensions, configuration)
+
+
+def create_custom_dimensions_for(use_case: str, query_template_path: str, existing_dimensions: List[str], configuration: map):
+  fields = load_custom_dimensions(query_template_path)
   for field in fields:
     display_name = f'MAJ {use_case} {field}'
     if not display_name in existing_dimensions:
