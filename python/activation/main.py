@@ -170,7 +170,6 @@ class TransformToPayload(beam.DoFn):
       event_timestamp=self.date_to_micro(element["inference_date"]),
       event_name=self.event_name,
       user_properties=self.generate_user_properties(element),
-      event_parameters=self.generate_event_parameters(element),
     )
     result = {}
     try:
@@ -202,7 +201,7 @@ class TransformToPayload(beam.DoFn):
     user_properties_obj =  {}
     for k, v in element_copy.items():
       if v:
-        user_properties_obj[k] = {'value': v}
+        user_properties_obj[k] = {'value': str(v)}
     return json.dumps(user_properties_obj, cls=DecimalEncoder)
   
   def generate_event_parameters(self, element):

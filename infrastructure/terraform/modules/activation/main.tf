@@ -308,6 +308,10 @@ module "activation_pipeline_container" {
 
   create_cmd_body  = "builds submit --project=${var.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
   destroy_cmd_body = "artifacts docker images delete --project=${var.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
+
+  create_cmd_triggers = {
+    source_contents_hash = local.activation_application_content_hash
+  }
 }
 
 module "activation_pipeline_template" {
@@ -318,6 +322,10 @@ module "activation_pipeline_template" {
   platform         = "linux"
   create_cmd_body  = "dataflow flex-template build --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
   destroy_cmd_body = "storage rm --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\""
+
+  create_cmd_triggers = {
+    source_contents_hash = local.activation_application_content_hash
+  }
 
   module_depends_on = [
     module.activation_pipeline_container.wait
