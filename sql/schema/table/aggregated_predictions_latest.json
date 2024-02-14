@@ -8,11 +8,15 @@
     "type": "FLOAT"
   },
   {
+    "name": "ltv_decile",
+    "type": "INTEGER"
+  },
+  {
     "name": "ltv_processed_timestamp",
     "type": "TIMESTAMP"
   },
   {
-    "name": "ltv_Feature_date",
+    "name": "ltv_feature_date",
     "type": "DATE"
   },
   {
@@ -262,6 +266,10 @@
   {
     "name": "propensity_score",
     "type": "FLOAT"
+  },
+  {
+    "name": "p_p_decile",
+    "type": "INTEGER"
   },
   {
     "name": "propensity_processed_timestamp",
