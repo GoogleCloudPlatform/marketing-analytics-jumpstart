@@ -1,26 +1,6 @@
 [
     {
       "auto": {
-        "column_name": "month_of_the_year"
-      }
-    },
-    {
-      "auto": {
-        "column_name": "week_of_the_year"
-      }
-    },
-    {
-      "auto": {
-        "column_name": "day_of_the_month"
-      }
-    },
-    {
-      "auto": {
-        "column_name": "day_of_week"
-      }
-    },
-    {
-      "auto": {
         "column_name": "device_category"
       }
     },

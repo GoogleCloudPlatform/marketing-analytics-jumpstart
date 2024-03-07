@@ -575,7 +575,6 @@ vertex_ai:
           exclude_features:
             - processed_timestamp
             - data_split
-            - feature_date
             - user_pseudo_id
             - user_id
         pipeline_parameters_substitutions: null
@@ -734,7 +733,7 @@ vertex_ai:
           custom_transformations: "pipelines/transformations-customer-ltv.json"
           train_budget_milli_node_hours: 1000 # 1 hour
           max_selected_features: 20 
-          apply_feature_selection_tuning: true
+          apply_feature_selection_tuning: false
           run_evaluation: true
           run_distillation: false
           prediction_type: "regression"
@@ -768,7 +767,7 @@ vertex_ai:
         exclude_features:
           - processed_timestamp
           - data_split
-          - feature_date
+          #- feature_date
           - user_pseudo_id
           - user_id
         pipeline_parameters_substitutions: null 

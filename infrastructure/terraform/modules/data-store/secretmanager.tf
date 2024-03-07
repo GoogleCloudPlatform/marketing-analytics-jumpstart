@@ -41,7 +41,8 @@ resource "google_secret_manager_secret" "github-secret" {
   project   = data.google_project.data_processing.project_id
 
   replication {
-    automatic = true
+    #automatic = true
+    auto {}
   }
 
   depends_on = [
