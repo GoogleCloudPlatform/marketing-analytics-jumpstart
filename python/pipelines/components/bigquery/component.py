@@ -907,7 +907,7 @@ def bq_union_predictions_tables(
         CREATE OR REPLACE TEMP TABLE non_purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            GREATEST(0.0, COALESCE(A.max_daily_revenue / A.average_daily_purchasers, 0.0) * A.avg_user_conversion_rate) AS clv_prediction,
+            0.0 AS clv_prediction,
             B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A
@@ -921,7 +921,7 @@ def bq_union_predictions_tables(
         CREATE OR REPLACE TEMP TABLE purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            GREATEST(COALESCE(A.max_daily_revenue / A.average_daily_purchasers, 0.0) * A.avg_user_conversion_rate, B.{predictions_column_regression}) AS clv_prediction,
+            COALESCE(B.{predictions_column_regression}, 0.0) AS clv_prediction,
             B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A

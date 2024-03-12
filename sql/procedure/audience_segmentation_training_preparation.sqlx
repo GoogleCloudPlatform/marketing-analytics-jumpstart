@@ -213,8 +213,8 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   feature_date,
   user_pseudo_id,
   user_id,
-  day_of_the_month,
-  day_of_week,
+  --day_of_the_month,
+  --day_of_week,
   device_category,
   device_mobile_model_name,
   device_os_version,
@@ -248,10 +248,10 @@ SELECT DISTINCT * FROM DataForTargetTable
 WHERE data_split IS NOT NULL;
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_training_15` AS(
-  SELECT 
+  SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
-  LAST_VALUE(data_split) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC),
-  --feature_date,
+  data_split,
+  feature_date,
   user_pseudo_id,
   LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_id,
   --LAST_VALUE(day_of_the_month) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS day_of_the_month,
@@ -279,8 +279,8 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_traini
   LAST_VALUE(add_to_carts_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_1_7_day,
   LAST_VALUE(add_to_carts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_8_14_day,
   LAST_VALUE(checkouts_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_1_7_day,
-  LAST_VALUE(checkouts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_1_7_day,
-  LAST_VALUE(ltv_revenue_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_1_7_day,
+  LAST_VALUE(checkouts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_8_14_day,
+  LAST_VALUE(ltv_revenue_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_1_7_day,
   LAST_VALUE(ltv_revenue_past_7_15_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_7_15_day
   FROM `{{project_id}}.{{dataset}}.audience_segmentation_training_full_dataset`
 );
@@ -326,7 +326,7 @@ OPTIONS(
   labels=[("org_unit", "development")]
 ) AS 
 
-SELECT
+SELECT DISTINCT
   processed_timestamp,
   data_split,
   --feature_date,
@@ -395,8 +395,10 @@ FROM (
   checkouts_past_8_14_day,
   ltv_revenue_past_1_7_day,
   ltv_revenue_past_7_15_day,
-    ROW_NUMBER() OVER (PARTITION BY data_split ORDER BY RAND()) AS rn
+  ROW_NUMBER() OVER (PARTITION BY data_split ORDER BY RAND()) AS rn,
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM
-    `{{project_id}}.{{dataset}}.audience_segmentation_training_15` )
+    `{{project_id}}.{{dataset}}.audience_segmentation_training_15`)
 WHERE
+  user_row_order = 1 AND
   rn <= {{samples_per_split}};

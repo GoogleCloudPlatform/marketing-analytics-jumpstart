@@ -503,7 +503,7 @@ vertex_ai:
         exclude_features:
           - processed_timestamp
           - data_split
-          - feature_date
+          #- feature_date
           - user_pseudo_id
           - user_id
           - will_purchase
@@ -560,7 +560,7 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
-          km_num_clusters: 14
+          km_num_clusters: 10
           km_init_method: "KMEANS++"
           km_distance_type: "EUCLIDEAN"
           km_standardize_features: "TRUE"
@@ -670,6 +670,7 @@ vertex_ai:
           location: "${cloud_region}"
           root_dir: "gs://${project_id}-pipelines/propensity-clv-training"
           transformations: "gs://${project_id}-pipelines/propensity-clv-training/transformations_config_{timestamp}.json"
+          custom_transformations: "pipelines/transformations-purchase-propensity-cltv.json"
           train_budget_milli_node_hours: 1000 # 1 hour
           max_selected_features: 20
           apply_feature_selection_tuning: true
@@ -706,7 +707,7 @@ vertex_ai:
         exclude_features:
           - processed_timestamp
           - data_split
-          - feature_date
+          #- feature_date
           - user_pseudo_id
           - user_id
           - will_purchase
@@ -733,7 +734,7 @@ vertex_ai:
           custom_transformations: "pipelines/transformations-customer-ltv.json"
           train_budget_milli_node_hours: 1000 # 1 hour
           max_selected_features: 20 
-          apply_feature_selection_tuning: false
+          apply_feature_selection_tuning: true
           run_evaluation: true
           run_distillation: false
           prediction_type: "regression"
