@@ -407,6 +407,7 @@ def bq_flatten_tabular_binary_prediction_table(
             {predictions_column}.scores[SAFE_OFFSET(index_z)] AS score_zero,
             {predictions_column}.scores[SAFE_OFFSET(index_one)] AS score_one,
             GREATEST({predictions_column}.scores[SAFE_OFFSET(index_z)], {predictions_column}.scores[SAFE_OFFSET(index_one)]) AS greatest_score,
+            LEAST({predictions_column}.scores[SAFE_OFFSET(index_z)], {predictions_column}.scores[SAFE_OFFSET(index_one)]) AS least_score,
             *
             FROM prediction_indexes
         );
@@ -419,9 +420,9 @@ def bq_flatten_tabular_binary_prediction_table(
                 ELSE 'false' 
                 END AS {destination_table.metadata["predictions_column"]},
                 CASE
-                WHEN a.score_zero > {threashold} THEN a.score_zero
-                WHEN a.score_one > {threashold} THEN a.score_one
-                ELSE a.score_zero 
+                WHEN a.score_zero > {threashold} THEN a.least_score
+                WHEN a.score_one > {threashold} THEN a.greatest_score
+                ELSE a.least_score 
                 END as prediction_prob,
                 b.* 
             FROM prediction_greatest_scores as a
