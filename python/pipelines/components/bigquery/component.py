@@ -407,6 +407,7 @@ def bq_flatten_tabular_binary_prediction_table(
             {predictions_column}.scores[SAFE_OFFSET(index_z)] AS score_zero,
             {predictions_column}.scores[SAFE_OFFSET(index_one)] AS score_one,
             GREATEST({predictions_column}.scores[SAFE_OFFSET(index_z)], {predictions_column}.scores[SAFE_OFFSET(index_one)]) AS greatest_score,
+            LEAST({predictions_column}.scores[SAFE_OFFSET(index_z)], {predictions_column}.scores[SAFE_OFFSET(index_one)]) AS least_score,
             *
             FROM prediction_indexes
         );
@@ -419,9 +420,9 @@ def bq_flatten_tabular_binary_prediction_table(
                 ELSE 'false' 
                 END AS {destination_table.metadata["predictions_column"]},
                 CASE
-                WHEN a.score_zero > {threashold} THEN a.score_zero
-                WHEN a.score_one > {threashold} THEN a.score_one
-                ELSE a.score_zero 
+                WHEN a.score_zero > {threashold} THEN a.least_score
+                WHEN a.score_one > {threashold} THEN a.greatest_score
+                ELSE a.least_score 
                 END as prediction_prob,
                 b.* 
             FROM prediction_greatest_scores as a
@@ -907,7 +908,7 @@ def bq_union_predictions_tables(
         CREATE OR REPLACE TEMP TABLE non_purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            GREATEST(0.0, COALESCE(A.max_daily_revenue / A.average_daily_purchasers, 0.0) * A.avg_user_conversion_rate) AS clv_prediction,
+            0.0 AS clv_prediction,
             B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A
@@ -921,7 +922,7 @@ def bq_union_predictions_tables(
         CREATE OR REPLACE TEMP TABLE purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            GREATEST(COALESCE(A.max_daily_revenue / A.average_daily_purchasers, 0.0) * A.avg_user_conversion_rate, B.{predictions_column_regression}) AS clv_prediction,
+            COALESCE(B.{predictions_column_regression}, 0.0) AS clv_prediction,
             B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A

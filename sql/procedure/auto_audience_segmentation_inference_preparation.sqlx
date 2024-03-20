@@ -33,6 +33,6 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation
     labels=[("org_unit", "development")]
   )
 AS
-SELECT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`;
+SELECT DISTINCT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`;
 
 DROP TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`;
