@@ -1,439 +1,331 @@
 DECLARE
+  project_id,
+  table_pattern,
+  clv_dataset,
+  purchase_propensity_dataset,
+  audience_segmentation_dataset,
+  auto_audience_segmentation_dataset,
   clv_table,
-  prediction_date,
   purchase_propensity_table,
-  audience_segmentation_table STRING;
+  audience_segmentation_table,
+  auto_audience_segmentation_table,
+  first_join_common_selections,
+  first_query_str,
+  clv_selections,
+  purchase_selections,
+  first_join_selections,
+  second_join_common_selections,
+  audience_segmentation_selections,
+  seccond_query_str,
+  third_join_common_selections,
+  second_join_selections,
+  auto_audience_segmentation_selections,
+  third_query_str STRING;
+DECLARE
+  clv_columns,
+  clv_special_columns,
+  purchase_propensity_columns,
+  purchase_propensity_special_columns,
+  audience_segmentation_columns,
+  audience_segmentation_special_columns,
+  auto_audience_segmentation_columns,
+  first_join_common_columns,
+  clv_select_columns,
+  purchase_propensity_select_columns,
+  first_join_columns,
+  second_join_common_columns,
+  first_join_select_columns,
+  audience_segmentation_select_columns,
+  second_join_columns,
+  auto_audience_segmentation_select_columns,
+  auto_audience_segmentation_special_columns,
+  third_join_common_columns,
+  second_join_select_columns ARRAY<STRING>;
 SET
-  clv_table = (
-  SELECT
-    CONCAT(dataset_id,'.',table_id)
-  FROM
-    `{{project_id}}.{{customer_lifetime_value_dataset}}.__TABLES__`
-  WHERE
-    table_id LIKE 'predictions_%_view'
-  ORDER BY
-    last_modified_time DESC
-  LIMIT
-    1 );
+  project_id = '{{project_id}}';
+CREATE OR REPLACE PROCEDURE
+  {{dataset_id}}.get_columns_for_table(table_name STRING,
+    data_set STRING,
+    OUT table_columns ARRAY<STRING>)
+BEGIN
+DECLARE
+  table_name_only STRING;
 SET
-  prediction_date = ( REGEXP_EXTRACT(clv_table, r'predictions_(.*)T') );
-SET
-  purchase_propensity_table = (
-  SELECT
-    CONCAT(dataset_id,'.',table_id)
-  FROM
-    `{{project_id}}.{{purchase_propensity_dataset}}.__TABLES__`
-  WHERE
-    table_id LIKE CONCAT('predictions_', prediction_date, '%_view')
-  ORDER BY
-    last_modified_time DESC
-  LIMIT
-    1 );
-SET
-  audience_segmentation_table = (
-  SELECT
-    CONCAT(dataset_id,'.',table_id)
-  FROM
-    `{{project_id}}.{{audience_segmentation_dataset}}.__TABLES__`
-  WHERE
-    table_id LIKE 'pred_%_view'
-    AND TIMESTAMP_MILLIS(creation_time) BETWEEN TIMESTAMP(REPLACE (prediction_date, '_', '-'))
-    AND TIMESTAMP_ADD(TIMESTAMP(REPLACE (prediction_date, '_', '-')), INTERVAL 1 DAY)
-  ORDER BY
-    last_modified_time DESC
-  LIMIT
-    1 );
-IF
-  ( clv_table IS NOT NULL
-    AND clv_table <> '' )
-  AND ( purchase_propensity_table IS NOT NULL
-    AND purchase_propensity_table <> '' )
-  AND ( audience_segmentation_table IS NOT NULL
-    AND audience_segmentation_table <> '' ) THEN
+  table_name_only = ( REGEXP_EXTRACT(table_name, r'.*\.(.*)') );
 EXECUTE IMMEDIATE
   FORMAT("""
-CREATE TEMPORARY TABLE temp1  AS
+SELECT ARRAY_AGG(column_name)
+  FROM `%s.`.INFORMATION_SCHEMA.COLUMNS
+  WHERE table_name = '%s'
+""", data_set, table_name_only) INTO table_columns;
+END
+  ;
+CREATE OR REPLACE PROCEDURE
+  {{dataset_id}}.get_latest_table_by_pattern(dataset_name STRING,
+    table_pattern STRING,
+    OUT table_name STRING)
+BEGIN
+EXECUTE IMMEDIATE
+  FORMAT("""
+CREATE OR REPLACE TEMPORARY TABLE temp_table  AS
 SELECT
-a.prediction as ltv,
+    CONCAT(dataset_id,'.',table_id) AS full_table_name
+  FROM
+    `%s.__TABLES__`
+  WHERE
+    table_id LIKE '%s'
+  ORDER BY
+    last_modified_time DESC
+  LIMIT
+    1;
+    """, dataset_name, table_pattern);
+SET
+  table_name = (
+  SELECT
+    full_table_name
+  FROM
+    temp_table );
+END
+  ;
+CREATE TEMP FUNCTION
+  array_diff(src_array ARRAY<STRING>,
+    rm_array ARRAY<STRING>)
+  RETURNS ARRAY<STRING> AS ((
+    SELECT
+      ARRAY(
+      SELECT
+        DISTINCT element
+      FROM
+        UNNEST(src_array) AS element EXCEPT DISTINCT
+      SELECT
+        element
+      FROM
+        UNNEST(rm_array) AS element ) ));
+CREATE TEMP FUNCTION
+  array_common(arr_one ARRAY<STRING>,
+    arr_two ARRAY<STRING>) AS ((
+    SELECT
+      ARRAY(
+      SELECT
+        element
+      FROM
+        UNNEST(arr_one) AS element
+      WHERE
+        element IN UNNEST(arr_two) ) ));
+CREATE TEMP FUNCTION
+  create_common_columns_select(common_columns ARRAY<STRING>,
+    f_alias STRING,
+    s_alias STRING)
+  RETURNS STRING AS ((
+    SELECT
+      ARRAY_TO_STRING((
+        SELECT
+          ARRAY(
+          SELECT
+            CONCAT('COALESCE(',f_alias, '.', element, ',', s_alias,'.', element,') AS ', element)
+          FROM
+            UNNEST(common_columns) AS element) ), ',') ));
+CREATE TEMP FUNCTION
+  create_columns_select(COLUMNS ARRAY<STRING>,
+    t_alias STRING)
+  RETURNS STRING AS ((
+    SELECT
+      ARRAY_TO_STRING((
+        SELECT
+          ARRAY(
+          SELECT
+            CONCAT(t_alias, '.', element)
+          FROM
+            UNNEST(COLUMNS) AS element) ), ',') ));
+SET
+  table_pattern = 'predictions_%_view';
+SET
+  clv_dataset = CONCAT(project_id, '.{{customer_lifetime_value_dataset}}');
+SET
+  purchase_propensity_dataset = CONCAT(project_id, '.{{purchase_propensity_dataset}}');
+SET
+  audience_segmentation_dataset = CONCAT(project_id, '.{{audience_segmentation_dataset}}');
+SET
+  auto_audience_segmentation_dataset = CONCAT(project_id, '.{{auto_audience_segmentation_dataset}}');
+CALL
+  {{dataset_id}}.get_latest_table_by_pattern(clv_dataset,
+    table_pattern,
+    clv_table);
+CALL
+  {{dataset_id}}.get_latest_table_by_pattern(purchase_propensity_dataset,
+    table_pattern,
+    purchase_propensity_table);
+CALL
+  {{dataset_id}}.get_latest_table_by_pattern(audience_segmentation_dataset,
+    'pred_%_view',
+    audience_segmentation_table);
+CALL
+  {{dataset_id}}.get_latest_table_by_pattern(auto_audience_segmentation_dataset,
+    'predictions_%',
+    auto_audience_segmentation_table);
+CALL
+  {{dataset_id}}.get_columns_for_table(clv_table,
+    clv_dataset,
+    clv_columns);
+CALL
+  {{dataset_id}}.get_columns_for_table(purchase_propensity_table,
+    purchase_propensity_dataset,
+    purchase_propensity_columns);
+CALL
+  {{dataset_id}}.get_columns_for_table(audience_segmentation_table,
+    audience_segmentation_dataset,
+    audience_segmentation_columns);
+CALL
+  {{dataset_id}}.get_columns_for_table(auto_audience_segmentation_table,
+    auto_audience_segmentation_dataset,
+    auto_audience_segmentation_columns);
+SET
+  clv_special_columns = ['prediction',
+  'processed_timestamp',
+  'feature_date',
+  'user_pseudo_id'];
+SET
+  purchase_propensity_special_columns = ['prediction',
+  'prediction_prob',
+  'processed_timestamp',
+  'feature_date',
+  'user_pseudo_id'];
+SET
+  audience_segmentation_special_columns = ['NEAREST_CENTROIDS_DISTANCE',
+  'prediction',
+  'processed_timestamp',
+  'feature_date',
+  'user_pseudo_id'];
+SET
+  auto_audience_segmentation_special_columns = ['user_id',
+  'feature_timestamp',
+  'prediction'];
+SET
+  clv_select_columns = array_diff(clv_columns,
+    clv_special_columns);
+SET
+  first_join_common_columns = array_common(clv_select_columns,
+    purchase_propensity_columns);
+SET
+  clv_select_columns = array_diff(clv_select_columns,
+    first_join_common_columns);
+SET
+  purchase_propensity_select_columns = array_diff(purchase_propensity_columns,
+    purchase_propensity_special_columns);
+SET
+  purchase_propensity_select_columns = array_diff(purchase_propensity_select_columns,
+    first_join_common_columns);
+SET
+  first_join_common_selections = create_common_columns_select(first_join_common_columns,
+    'a',
+    'b');
+SET
+  clv_selections = create_columns_select(clv_select_columns,
+    'a');
+SET
+  purchase_selections = create_columns_select(purchase_propensity_select_columns,
+    'b');
+SET
+  first_query_str = FORMAT("""
+CREATE TEMPORARY TABLE temp1 AS
+SELECT
+a.prediction AS ltv,
 a.user_pseudo_id,
-a.processed_timestamp,
-a.feature_date as ltv_feature_date,
+a.processed_timestamp AS ltv_processed_timestamp,
+a.feature_date AS ltv_feature_date,
 NTILE(10) OVER (ORDER BY a.prediction DESC) AS ltv_decile,
---coalesce(a.month_of_the_year,b.month_of_the_year) as month_of_the_year,
---coalesce(a.week_of_the_year,b.week_of_the_year) as week_of_the_year,
---coalesce(a.day_of_week,b.day_of_week) as day_of_week,
---coalesce(a.day_of_the_month,b.day_of_the_month) as day_of_the_month,
-coalesce(a.device_category,b.device_category) as device_category,
-coalesce(a.device_mobile_brand_name,b.device_mobile_brand_name) as device_mobile_brand_name,
-coalesce(a.device_mobile_model_name,b.device_mobile_model_name) as device_mobile_model_name,
-coalesce(a.device_os,b.device_os) as device_os,
-coalesce(a.device_os_version,b.device_os_version) as device_os_version,
-coalesce(a.device_language,b.device_language) as device_language,
-coalesce(a.device_web_browser,b.device_web_browser) as device_web_browser,
-coalesce(a.device_web_browser_version,b.device_web_browser_version) as device_web_browser_version,
-coalesce(a.geo_sub_continent,b.geo_sub_continent) as geo_sub_continent,
-coalesce(a.geo_country,b.geo_country) as geo_country,
-coalesce(a.geo_region,b.geo_region) as geo_region,
-coalesce(a.geo_city,b.geo_city) as geo_city,
-coalesce(a.geo_metro,b.geo_metro) as geo_metro,
-coalesce(a.last_traffic_source_medium,b.last_traffic_source_medium) as last_traffic_source_medium,
-coalesce(a.last_traffic_source_name,b.last_traffic_source_name) as last_traffic_source_name,
-coalesce(a.last_traffic_source_source,b.last_traffic_source_source) as last_traffic_source_source,
-coalesce(a.first_traffic_source_medium,b.first_traffic_source_medium) as first_traffic_source_medium,
-coalesce(a.first_traffic_source_name,b.first_traffic_source_name) as first_traffic_source_name,
-coalesce(a.first_traffic_source_source,b.first_traffic_source_source) as first_traffic_source_source,
-coalesce(a.has_signed_in_with_user_id,b.has_signed_in_with_user_id) as has_signed_in_with_user_id,
-a.active_users_past_1_30_day, 
-a.active_users_past_30_60_day,
-a.active_users_past_60_90_day,
-a.active_users_past_90_120_day,
-a.active_users_past_120_150_day,
-a.active_users_past_150_180_day,
-a.purchases_past_1_30_day,
-a.purchases_past_30_60_day,
-a.purchases_past_60_90_day,
-a.purchases_past_90_120_day,
-a.purchases_past_120_150_day,
-a.purchases_past_150_180_day,
-a.visits_past_1_30_day,
-a.visits_past_30_60_day,
-a.visits_past_60_90_day,
-a.visits_past_90_120_day,
-a.visits_past_120_150_day,
-a.visits_past_150_180_day,
-a.view_items_past_1_30_day,
-a.view_items_past_30_60_day,
-a.view_items_past_60_90_day,
-a.view_items_past_90_120_day,
-a.view_items_past_120_150_day,
-a.view_items_past_150_180_day,
-a.add_to_carts_past_1_30_day,
-a.add_to_carts_past_30_60_day,
-a.add_to_carts_past_60_90_day,
-a.add_to_carts_past_90_120_day,
-a.add_to_carts_past_120_150_day,
-a.add_to_carts_past_150_180_day,
-a.checkouts_past_1_30_day,
-a.checkouts_past_30_60_day,
-a.checkouts_past_60_90_day,
-a.checkouts_past_90_120_day,
-a.checkouts_past_120_150_day,
-a.checkouts_past_150_180_day,
-b.prediction as likely_to_purchase,
-b.prediction_prob as propensity_score,
-b.processed_timestamp as propensity_processed_timestamp,
-b.feature_date as propensity_feature_date,
+b.prediction AS likely_to_purchase,
+b.prediction_prob AS propensity_score,
+b.processed_timestamp AS propensity_processed_timestamp,
+b.feature_date AS propensity_feature_date,
 NTILE(10) OVER (ORDER BY b.prediction_prob DESC) AS p_p_decile,
-b.user_ltv_revenue,
---b.engagement_rate,
---b.engaged_sessions_per_user,
---b.session_conversion_rate,
---b.bounces,
---b.bounce_rate_per_user,
---b.sessions_per_user,
---b.avg_views_per_session,
---b.sum_engagement_time_seconds,
---b.avg_engagement_time_seconds,
---b.new_visits,
---b.returning_visits,
---b.add_to_carts,
---b.cart_to_view_rate,
---b.checkouts,
---b.ecommerce_purchases,
---b.ecommerce_quantity,
---b.ecommerce_revenue,
---b.item_revenue,
---b.item_quantity,
---b.item_view_events,
---b.items_clicked_in_promotion,
---b.items_clicked_in_list,
---b.items_checked_out,
---b.items_added_to_cart,
---b.item_list_view_events,
---b.purchase_revenue,
---b.purchase_to_view_rate,
---b.transactions_per_purchaser,
---b.user_conversion_rate,
---b.how_many_purchased_before,
---b.has_abandoned_cart,
-b.active_users_past_1_day,
-b.active_users_past_2_day,
-b.active_users_past_3_day,
-b.active_users_past_4_day,
-b.active_users_past_5_day,
-b.active_users_past_6_day,
-b.active_users_past_7_day,
-b.active_users_past_8_14_day,
-b.active_users_past_15_30_day,
-b.purchases_past_1_day,
-b.purchases_past_2_day,
-b.purchases_past_3_day,
-b.purchases_past_4_day,
-b.purchases_past_5_day,
-b.purchases_past_6_day,
-b.purchases_past_7_day,
-b.purchases_past_8_14_day,
-b.purchases_past_15_30_day,
-b.visits_past_1_day,
-b.visits_past_2_day,
-b.visits_past_3_day,
-b.visits_past_4_day,
-b.visits_past_5_day,
-b.visits_past_6_day,
-b.visits_past_7_day,
-b.visits_past_8_14_day,
-b.visits_past_15_30_day,
-b.view_items_past_1_day,
-b.view_items_past_2_day,
-b.view_items_past_3_day,
-b.view_items_past_4_day,
-b.view_items_past_5_day,
-b.view_items_past_6_day,
-b.view_items_past_7_day,
-b.view_items_past_8_14_day,
-b.view_items_past_15_30_day,
-b.add_to_carts_past_1_day,
-b.add_to_carts_past_2_day,
-b.add_to_carts_past_3_day,
-b.add_to_carts_past_4_day,
-b.add_to_carts_past_5_day,
-b.add_to_carts_past_6_day,
-b.add_to_carts_past_7_day,
-b.add_to_carts_past_8_14_day,
-b.add_to_carts_past_15_30_day,
-b.checkouts_past_1_day,
-b.checkouts_past_2_day,
-b.checkouts_past_3_day,
-b.checkouts_past_4_day,
-b.checkouts_past_5_day,
-b.checkouts_past_6_day,
-b.checkouts_past_7_day,
-b.checkouts_past_8_14_day,
-b.checkouts_past_15_30_day
---b.purchasers_users,
---b.average_daily_purchasers,
---b.active_users,
---b.DAU,
---b.MAU,
---b.WAU,
---b.dau_per_mau,
---b.dau_per_wau,
---b.wau_per_mau,
---b.users_engagement_duration_seconds,
---b.average_engagement_time,
---b.average_engagement_time_per_session,
---b.average_sessions_per_user,
---b.ARPPU,
---b.ARPU,
---b.average_daily_revenue,
---b.max_daily_revenue,
---b.min_daily_revenue,
---b.new_users,
---b.returning_users,
---b.first_time_purchasers,
---b.first_time_purchaser_conversion,
---b.first_time_purchasers_per_new_user,
---b.avg_user_conversion_rate,
---b.avg_session_conversion_rate,
+%s,
+%s,
+%s
 FROM
-  `%s` as a 
-full outer join `%s` as b
+  `%s` AS a
+full outer join `%s` AS b
 on a.user_pseudo_id=b.user_pseudo_id;
-""", clv_table, purchase_propensity_table);
+""", first_join_common_selections, clv_selections, purchase_selections, clv_table, purchase_propensity_table);
 EXECUTE IMMEDIATE
-  FORMAT("""
-CREATE OR REPLACE TABLE `{{project_id}}.{{dataset_id}}.{{table_id}}` AS
+  first_query_str;
+SET
+  first_join_columns = ARRAY_CONCAT(['ltv', 'user_pseudo_id', 'ltv_processed_timestamp', 'ltv_feature_date', 'ltv_decile', 'likely_to_purchase', 'propensity_score', 'propensity_processed_timestamp', 'propensity_feature_date', 'p_p_decile'], first_join_common_columns, clv_select_columns, purchase_propensity_select_columns);
+SET
+  audience_segmentation_select_columns = array_diff(audience_segmentation_columns,
+    audience_segmentation_special_columns);
+SET
+  second_join_common_columns = array_common(first_join_columns,
+    audience_segmentation_select_columns);
+SET
+  first_join_select_columns = array_diff(first_join_columns,
+    second_join_common_columns);
+SET
+  audience_segmentation_select_columns = array_diff(audience_segmentation_select_columns,
+    second_join_common_columns);
+SET
+  second_join_common_selections = create_common_columns_select(second_join_common_columns,
+    'c',
+    'd');
+SET
+  first_join_selections = create_columns_select(first_join_select_columns,
+    'c');
+SET
+  audience_segmentation_selections = create_columns_select(audience_segmentation_select_columns,
+    'd');
+SET
+  seccond_query_str = FORMAT("""
+CREATE OR REPLACE TEMPORARY TABLE temp2 AS
 SELECT
-  c.user_pseudo_id,
-  c.ltv,
-  c.ltv_decile,
-  c.processed_timestamp as ltv_processed_timestamp,
-  c.ltv_feature_date,
-  --c.month_of_the_year,
-  --c.week_of_the_year,
-  --coalesce(c.day_of_week,d.day_of_week) as day_of_week,
-  --coalesce(c.day_of_the_month,d.day_of_the_month) as day_of_the_month,
-  coalesce(c.device_category,d.device_category )as device_category,
-  c.device_mobile_brand_name,
-  coalesce(c.device_mobile_model_name,d.device_mobile_model_name) as device_mobile_model_name,
-  c.device_os,
-  c.device_os_version,
-  c.device_language,
-  c.device_web_browser,
-  c.device_web_browser_version,
-  c.geo_sub_continent,
-  coalesce(c.geo_country,d.geo_country) as geo_country,
-  coalesce(c.geo_region,d.geo_region) as geo_region,
-  coalesce(c.geo_city,d.geo_city) as geo_city,
-  c.geo_metro,
-  coalesce(c.last_traffic_source_medium,d.last_traffic_source_medium) as last_traffic_source_medium,
-  coalesce(c.last_traffic_source_name,d.last_traffic_source_name) as last_traffic_source_name,
-  coalesce(c.last_traffic_source_source,d.last_traffic_source_source) as last_traffic_source_source,
-  coalesce(c.first_traffic_source_medium,d.first_traffic_source_medium) as first_traffic_source_medium,
-  coalesce(c.first_traffic_source_name,d.first_traffic_source_name) as first_traffic_source_name,
-  coalesce(c.first_traffic_source_source,d.first_traffic_source_source) as first_traffic_source_source,
-  c.has_signed_in_with_user_id,
-  c.active_users_past_1_30_day,
-  c.active_users_past_30_60_day,
-  c.active_users_past_60_90_day,
-  c.active_users_past_90_120_day,
-  c.active_users_past_120_150_day,
-  c.active_users_past_150_180_day,
-  c.purchases_past_1_30_day,
-  c.purchases_past_30_60_day,
-  c.purchases_past_60_90_day,
-  c.purchases_past_90_120_day,
-  c.purchases_past_120_150_day,
-  c.purchases_past_150_180_day,
-  c.visits_past_1_30_day,
-  c.visits_past_30_60_day,
-  c.visits_past_60_90_day,
-  c.visits_past_90_120_day,
-  c.visits_past_120_150_day,
-  c.visits_past_150_180_day,
-  c.view_items_past_1_30_day,
-  c.view_items_past_30_60_day,
-  c.view_items_past_60_90_day,
-  c.view_items_past_90_120_day,
-  c.view_items_past_120_150_day,
-  c.view_items_past_150_180_day,
-  c.add_to_carts_past_1_30_day,
-  c.add_to_carts_past_30_60_day,
-  c.add_to_carts_past_60_90_day,
-  c.add_to_carts_past_90_120_day,
-  c.add_to_carts_past_120_150_day,
-  c.add_to_carts_past_150_180_day,
-  c.checkouts_past_1_30_day,
-  c.checkouts_past_30_60_day,
-  c.checkouts_past_60_90_day,
-  c.checkouts_past_90_120_day,
-  c.checkouts_past_120_150_day,
-  c.checkouts_past_150_180_day,
-  c.likely_to_purchase,
-  c.propensity_score,
-  c.p_p_decile,
-  c.propensity_processed_timestamp,
-  c.propensity_feature_date,
-  c.user_ltv_revenue,
-  --c.engagement_rate,
-  --c.engaged_sessions_per_user,
-  --c.session_conversion_rate,
-  --c.bounces,
-  --c.bounce_rate_per_user,
-  --c.sessions_per_user,
-  --c.avg_views_per_session,
-  --c.sum_engagement_time_seconds,
-  --c.avg_engagement_time_seconds,
-  --c.new_visits,
-  --c.returning_visits,
-  --c.add_to_carts,
-  --c.cart_to_view_rate,
-  --c.checkouts,
-  --c.ecommerce_purchases,
-  --c.ecommerce_quantity,
-  --c.ecommerce_revenue,
-  --c.item_revenue,
-  --c.item_quantity,
-  --c.item_view_events,
-  --c.purchase_revenue,
-  --c.purchase_to_view_rate,
-  --c.transactions_per_purchaser,
-  --c.user_conversion_rate,
-  --c.how_many_purchased_before,
-  --c.has_abandoned_cart,
-  c.active_users_past_1_day,
-  c.active_users_past_2_day,
-  c.active_users_past_3_day,
-  c.active_users_past_4_day,
-  c.active_users_past_5_day,
-  c.active_users_past_6_day,
-  c.active_users_past_7_day,
-  coalesce(d.active_users_past_8_14_day,c.active_users_past_8_14_day) as active_users_past_8_14_day,
-  c.active_users_past_15_30_day,
-  c.purchases_past_1_day,
-  c.purchases_past_2_day,
-  c.purchases_past_3_day,
-  c.purchases_past_4_day,
-  c.purchases_past_5_day,
-  c.purchases_past_6_day,
-  c.purchases_past_7_day,
-  coalesce(d.purchases_past_8_14_day, c.purchases_past_8_14_day) as purchases_past_8_14_day ,
-  c.purchases_past_15_30_day,
-  c.visits_past_1_day,
-  c.visits_past_2_day,
-  c.visits_past_3_day,
-  c.visits_past_4_day,
-  c.visits_past_5_day,
-  c.visits_past_6_day,
-  c.visits_past_7_day,
-  coalesce(d.visits_past_8_14_day, c.visits_past_8_14_day) visits_past_8_14_day,
-  c.visits_past_15_30_day,
-  c.view_items_past_1_day,
-  c.view_items_past_2_day,
-  c.view_items_past_3_day,
-  c.view_items_past_4_day,
-  c.view_items_past_5_day,
-  c.view_items_past_6_day,
-  c.view_items_past_7_day,
-  coalesce(d.view_items_past_8_14_day, c.view_items_past_8_14_day) as view_items_past_8_14_day,
-  c.view_items_past_15_30_day,
-  c.add_to_carts_past_1_day,
-  c.add_to_carts_past_2_day,
-  c.add_to_carts_past_3_day,
-  c.add_to_carts_past_4_day,
-  c.add_to_carts_past_5_day,
-  c.add_to_carts_past_6_day,
-  c.add_to_carts_past_7_day,
-  coalesce(d.add_to_carts_past_8_14_day,c.add_to_carts_past_8_14_day) as add_to_carts_past_8_14_day,
-  c.add_to_carts_past_15_30_day,
-  c.checkouts_past_1_day,
-  c.checkouts_past_2_day,
-  c.checkouts_past_3_day,
-  c.checkouts_past_4_day,
-  c.checkouts_past_5_day,
-  c.checkouts_past_6_day,
-  c.checkouts_past_7_day,
-  coalesce(d.checkouts_past_8_14_day, c.checkouts_past_8_14_day) as checkouts_past_8_14_day,
-  c.checkouts_past_15_30_day,
-  --c.purchasers_users,
-  --c.average_daily_purchasers,
-  --c.active_users,
-  --c.DAU,
-  --c.MAU,
-  --c.WAU,
-  --c.dau_per_mau,
-  --c.dau_per_wau,
-  --c.wau_per_mau,
-  --c.users_engagement_duration_seconds,
-  --c.average_engagement_time,
-  --c.average_engagement_time_per_session,
-  --c.average_sessions_per_user,
-  --c.ARPPU,
-  --c.ARPU,
-  --c.average_daily_revenue,
-  --c.max_daily_revenue,
-  --c.min_daily_revenue,
-  --c.new_users,
-  --c.returning_users,
-  --c.first_time_purchasers,
-  --c.first_time_purchaser_conversion,
-  --c.first_time_purchasers_per_new_user,
-  --c.avg_user_conversion_rate,
-  --c.avg_session_conversion_rate,
-  d.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].CENTROID_ID AS Segment_ID,
-  d.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].DISTANCE,
-  d.processed_timestamp as segment_processed_timestamp,
-  d.feature_date as segment_feature_date,
-  d.active_users_past_1_7_day,
-  d.purchases_past_1_7_day,
-  d.visits_past_1_7_day,
-  d.view_items_past_1_7_day,
-  d.add_to_carts_past_1_7_day,
-  d.checkouts_past_1_7_day,
-  d.ltv_revenue_past_1_7_day,
-  d.ltv_revenue_past_7_15_day
-  FROM temp1 as c
-  full outer join `%s` as d
-  on c.user_pseudo_id=d.user_pseudo_id;
-""", audience_segmentation_table);
-END IF;
+%s,
+%s,
+d.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].CENTROID_ID AS Segment_ID,
+d.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].DISTANCE AS Segment_Distance,
+d.processed_timestamp as segment_processed_timestamp,
+d.feature_date as segment_feature_date,
+%s
+FROM
+  temp1 AS c
+full outer join `%s` AS d
+on c.user_pseudo_id=d.user_pseudo_id;
+""", first_join_selections, second_join_common_selections, audience_segmentation_selections, audience_segmentation_table);
+EXECUTE IMMEDIATE
+  seccond_query_str;
+SET
+  second_join_columns = ARRAY_CONCAT(first_join_select_columns, second_join_common_columns, ['Segment_ID', 'Segment_Distance', 'segment_processed_timestamp', 'segment_feature_date'], audience_segmentation_select_columns);
+SET
+  auto_audience_segmentation_select_columns = array_diff(auto_audience_segmentation_columns,
+    auto_audience_segmentation_special_columns);
+SET
+  third_join_common_columns = array_common(second_join_columns,
+    auto_audience_segmentation_select_columns);
+SET
+  second_join_select_columns = array_diff(second_join_columns,
+    third_join_common_columns);
+SET
+  auto_audience_segmentation_select_columns = array_diff(auto_audience_segmentation_select_columns,
+    third_join_common_columns);
+SET
+  third_join_common_selections = create_common_columns_select(third_join_common_columns,
+    'e',
+    'f');
+SET
+  second_join_selections = create_columns_select(second_join_select_columns,
+    'e');
+SET
+  auto_audience_segmentation_selections = create_columns_select(auto_audience_segmentation_select_columns,
+    'f');
+SET
+  third_query_str = FORMAT("""
+CREATE OR REPLACE TABLE `%s.{{dataset_id}}.{{table_id}}` AS
+SELECT
+%s,
+f.feature_timestamp AS auto_segment_processed_timestamp,
+f.prediction AS Auto_Segment_ID,
+%s
+FROM temp2 AS e
+full outer join `%s` AS f
+ON e.user_pseudo_id=f.user_id;
+""", project_id, second_join_selections, auto_audience_segmentation_selections, auto_audience_segmentation_table);
+EXECUTE IMMEDIATE
+  third_query_str;
