@@ -275,9 +275,18 @@ resource "google_storage_bucket_object" "cltv_query_template_file" {
   bucket = module.pipeline_bucket.name
 }
 
+data "template_file" "purchase_propensity_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.purchase_propensity_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
+}
+
 resource "google_storage_bucket_object" "purchase_propensity_query_template_file" {
   name   = "${local.configuration_folder}/${local.purchase_propensity_query_template_file}"
-  source = "${local.sql_dir}/${local.purchase_propensity_query_template_file}"
+  content = data.template_file.purchase_propensity_query_template_file.rendered
   bucket = module.pipeline_bucket.name
 }
 

@@ -223,7 +223,7 @@ def load_activation_type_configuration(args):
   activation_config = grand_config[args.activation_type]
   configuration = {
     'activation_event_name': activation_config['activation_event_name'],
-    'source_query_template': Environment(loader=BaseLoader).from_string(gcs_read_file(args.project, activation_config['source_query_template']).replace('\n', '')),
+    'source_query_template': Environment(loader=BaseLoader).from_string(gcs_read_file(args.project, activation_config['source_query_template']).replace('\n', ' ')),
     'measurement_protocol_payload_template': gcs_read_file(args.project, activation_config['measurement_protocol_payload_template'])
   }
   return configuration

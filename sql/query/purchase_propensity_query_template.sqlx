@@ -1,9 +1,0 @@
-SELECT
-    prediction AS p_p_prediction,
-    NTILE(10) OVER (ORDER BY prediction_prob) AS p_p_decile,
-    COALESCE(user_id, user_pseudo_id) AS client_id,
-    EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
-    FROM `{{source_table}}`
-    WHERE prediction = 'true'
-    ORDER BY prediction_prob DESC
-    LIMIT 10000

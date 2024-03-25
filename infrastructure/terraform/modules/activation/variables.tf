@@ -69,3 +69,13 @@ variable "poetry_installed" {
   description = "Construct to specify dependency to poetry installed"
   type        = string
 }
+
+variable "mds_project_id" {
+  type        = string
+  description = "MDS Project ID"
+}
+
+variable "mds_dataset_suffix" {
+  type        = string
+  description = "dataset suffix for MDS"
+}
