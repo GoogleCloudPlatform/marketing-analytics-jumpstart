@@ -279,7 +279,7 @@ data "template_file" "purchase_propensity_query_template_file" {
   template = file("${local.template_dir}/activation_query/${local.purchase_propensity_query_template_file}")
 
   vars = {
-    mds_project_id     = var.var.mds_project_id
+    mds_project_id     = var.mds_project_id
     mds_dataset_suffix = var.mds_dataset_suffix
   }
 }
