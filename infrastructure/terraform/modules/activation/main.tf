@@ -16,7 +16,6 @@ locals {
   app_prefix                                     = "activation"
   source_root_dir                                = "../.."
   poetry_run_alias                               = "${var.poetry_cmd} run"
-  sql_dir                                        = "${local.source_root_dir}/sql/query"
   template_dir                                   = "${local.source_root_dir}/templates"
   pipeline_source_dir                            = "${local.source_root_dir}/python/activation"
   trigger_function_dir                           = "${local.source_root_dir}/python/function"
@@ -52,9 +51,6 @@ locals {
     "${local.activation_application_dir}/pipeline_test.py",
   ]
   activation_application_content_hash = sha512(join("", [for f in local.activation_application_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
-
-  audience_segmentation_activation_query_file              = "${local.source_root_dir}/sql/query/audience_segmentation_query_template.sqlx"
-  audience_segmentation_activation_query_file_content_hash = filesha512(local.audience_segmentation_activation_query_file)
 }
 
 data "google_project" "activation_project" {
@@ -139,7 +135,6 @@ resource "null_resource" "create_custom_events" {
 resource "null_resource" "create_custom_dimensions" {
   triggers = {
     services_enabled_project = module.project_services.project_id
-    source_contents_hash     = local.audience_segmentation_activation_query_file_content_hash
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
     #source_activation_application_python_hash = local.activation_application_content_hash
   }
