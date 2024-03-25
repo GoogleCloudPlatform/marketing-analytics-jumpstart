@@ -151,6 +151,7 @@ class TransformToPayload(beam.DoFn):
   def __init__(self, template_str, event_name):
     self.template_str = template_str
     self.date_format = "%Y-%m-%d"
+    self.date_time_format = "%Y-%m-%d %H:%M:%S.%f %Z"
     self.event_name = event_name
 
   def setup(self):
@@ -181,8 +182,8 @@ class TransformToPayload(beam.DoFn):
     
 
   def date_to_micro(self, date_str):
-    try:  # try if date_str is in ISO timestamp format
-      return int(datetime.datetime.fromisoformat(date_str).timestamp() * 1E6)
+    try:  # try if date_str with date time format
+      return int(datetime.datetime.strptime(date_str, self.date_time_format).timestamp() * 1E6)
 
     except Exception as e:
       return int(datetime.datetime.strptime(date_str, self.date_format).timestamp() * 1E6)
