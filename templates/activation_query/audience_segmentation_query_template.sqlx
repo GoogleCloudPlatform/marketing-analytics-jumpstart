@@ -1,6 +1,5 @@
 SELECT
-  a.prediction AS p_p_prediction,
-  NTILE(10) OVER (ORDER BY a.prediction_prob DESC) AS p_p_decile,
+  a.prediction AS a_s_prediction,
   COALESCE(b.user_id, b.user_pseudo_id) AS client_id,
   TIMESTAMP_ADD(b.event_timestamp, INTERVAL 1 MICROSECOND) AS inference_date
 FROM
@@ -9,3 +8,4 @@ FROM
 WHERE
   COALESCE(a.user_id, "") = COALESCE(b.user_id, "")
   AND a.user_pseudo_id = b.user_pseudo_id
+  AND a.prediction IS NOT NULL

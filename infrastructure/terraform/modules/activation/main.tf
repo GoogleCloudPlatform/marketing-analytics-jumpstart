@@ -257,22 +257,49 @@ resource "google_storage_bucket_object" "measurement_protocol_payload_template_f
   bucket = module.pipeline_bucket.name
 }
 
+data "template_file" "audience_segmentation_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.audience_segmentation_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
+}
+
 resource "google_storage_bucket_object" "audience_segmentation_query_template_file" {
-  name   = "${local.configuration_folder}/${local.audience_segmentation_query_template_file}"
-  source = "${local.sql_dir}/${local.audience_segmentation_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.audience_segmentation_query_template_file}"
+  content = data.template_file.audience_segmentation_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "auto_audience_segmentation_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.auto_audience_segmentation_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 resource "google_storage_bucket_object" "auto_audience_segmentation_query_template_file" {
-  name   = "${local.configuration_folder}/${local.auto_audience_segmentation_query_template_file}"
-  source = "${local.sql_dir}/${local.auto_audience_segmentation_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.auto_audience_segmentation_query_template_file}"
+  content = data.template_file.auto_audience_segmentation_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "cltv_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.cltv_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 resource "google_storage_bucket_object" "cltv_query_template_file" {
-  name   = "${local.configuration_folder}/${local.cltv_query_template_file}"
-  source = "${local.sql_dir}/${local.cltv_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.cltv_query_template_file}"
+  content = data.template_file.cltv_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
 }
 
 data "template_file" "purchase_propensity_query_template_file" {
@@ -285,9 +312,9 @@ data "template_file" "purchase_propensity_query_template_file" {
 }
 
 resource "google_storage_bucket_object" "purchase_propensity_query_template_file" {
-  name   = "${local.configuration_folder}/${local.purchase_propensity_query_template_file}"
+  name    = "${local.configuration_folder}/${local.purchase_propensity_query_template_file}"
   content = data.template_file.purchase_propensity_query_template_file.rendered
-  bucket = module.pipeline_bucket.name
+  bucket  = module.pipeline_bucket.name
 }
 
 data "template_file" "activation_type_configuration" {

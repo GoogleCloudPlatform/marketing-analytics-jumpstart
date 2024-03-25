@@ -120,6 +120,7 @@ def create_custom_dimensions(configuration: map):
   create_custom_dimensions_for('Audience Segmentation', ['a_s_prediction'], existing_dimensions, configuration)
   create_custom_dimensions_for('Purchase Propensity', ['p_p_prediction', 'p_p_decile'], existing_dimensions, configuration)
   create_custom_dimensions_for('CLTV', ['cltv_decile'], existing_dimensions, configuration)
+  create_custom_dimensions_for('Behaviour Based Segmentation', ['a_a_s_prediction'], existing_dimensions, configuration)
 
 
 def create_custom_dimensions_for(use_case: str, fields: List[str], existing_dimensions: List[str], configuration: map):
