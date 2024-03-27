@@ -1,6 +1,7 @@
 DECLARE
   project_id,
   table_pattern,
+  clv_table_pattern,
   clv_dataset,
   purchase_propensity_dataset,
   audience_segmentation_dataset,
@@ -137,8 +138,12 @@ CREATE TEMP FUNCTION
             CONCAT(t_alias, '.', element)
           FROM
             UNNEST(COLUMNS) AS element) ), ',') ));
+
+
 SET
   table_pattern = 'predictions_%_view';
+SET
+  clv_table_pattern = 'predictions_%_view_final';
 SET
   clv_dataset = CONCAT(project_id, '.{{customer_lifetime_value_dataset}}');
 SET
@@ -149,7 +154,7 @@ SET
   auto_audience_segmentation_dataset = CONCAT(project_id, '.{{auto_audience_segmentation_dataset}}');
 CALL
   {{dataset_id}}.get_latest_table_by_pattern(clv_dataset,
-    table_pattern,
+    clv_table_pattern,
     clv_table);
 CALL
   {{dataset_id}}.get_latest_table_by_pattern(purchase_propensity_dataset,
@@ -179,6 +184,7 @@ CALL
   {{dataset_id}}.get_columns_for_table(auto_audience_segmentation_table,
     auto_audience_segmentation_dataset,
     auto_audience_segmentation_columns);
+
 SET
   clv_special_columns = ['prediction',
   'processed_timestamp',
@@ -249,6 +255,7 @@ on a.user_pseudo_id=b.user_pseudo_id;
 """, first_join_common_selections, clv_selections, purchase_selections, clv_table, purchase_propensity_table);
 EXECUTE IMMEDIATE
   first_query_str;
+
 SET
   first_join_columns = ARRAY_CONCAT(['ltv', 'user_pseudo_id', 'ltv_processed_timestamp', 'ltv_feature_date', 'ltv_decile', 'likely_to_purchase', 'propensity_score', 'propensity_processed_timestamp', 'propensity_feature_date', 'p_p_decile'], first_join_common_columns, clv_select_columns, purchase_propensity_select_columns);
 SET
@@ -291,6 +298,7 @@ on c.user_pseudo_id=d.user_pseudo_id;
 """, first_join_selections, second_join_common_selections, audience_segmentation_selections, audience_segmentation_table);
 EXECUTE IMMEDIATE
   seccond_query_str;
+
 SET
   second_join_columns = ARRAY_CONCAT(first_join_select_columns, second_join_common_columns, ['Segment_ID', 'Segment_Distance', 'segment_processed_timestamp', 'segment_feature_date'], audience_segmentation_select_columns);
 SET

@@ -292,7 +292,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp, 
   data_split,
-  --feature_date,
+  feature_date,
   user_pseudo_id,
   LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_id,
   --LAST_VALUE(month_of_the_year) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS month_of_the_year,
@@ -357,14 +357,14 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   LAST_VALUE(checkouts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_150_180_day,
   LAST_VALUE(pltv_revenue_30_days) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS pltv_revenue_30_days
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
-  WHERE pltv_revenue_30_days >= 1.0
+  WHERE pltv_revenue_30_days > 0.0
 );
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_90` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
   data_split,
-  --feature_date,
+  feature_date,
   user_pseudo_id,
   LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_id,
   --LAST_VALUE(month_of_the_year) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS month_of_the_year,
@@ -429,14 +429,14 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   LAST_VALUE(checkouts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_150_180_day,
   LAST_VALUE(pltv_revenue_90_days) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS pltv_revenue_90_days
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
-  WHERE pltv_revenue_90_days >= 1.0
+  WHERE pltv_revenue_90_days > 0.0
 );
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_180` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
   data_split,
-  --feature_date,
+  feature_date,
   user_pseudo_id,
   LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_id,
   --LAST_VALUE(month_of_the_year) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS month_of_the_year,
@@ -501,16 +501,14 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   LAST_VALUE(checkouts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_150_180_day,
   LAST_VALUE(pltv_revenue_180_days ) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS pltv_revenue_180_days
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
-  WHERE pltv_revenue_180_days >= 10.0
+  WHERE pltv_revenue_180_days > 0.0
 );
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30`
-(data_split,
+(processed_timestamp,
+  data_split,
   user_pseudo_id,
-  --month_of_the_year,
-  --week_of_the_year,
-  --day_of_the_month,
-  --day_of_week,
+  user_id,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -575,12 +573,16 @@ OPTIONS(
   labels=[("org_unit", "development")]
 ) AS 
 SELECT DISTINCT
+ * EXCEPT(feature_date, row_order_peruser_persplit) 
+FROM (
+SELECT DISTINCT
+  processed_timestamp, 
   data_split,
+  feature_date,
   user_pseudo_id,
-  --month_of_the_year,
-  --week_of_the_year,
-  --day_of_the_month,
-  --day_of_week,
+  user_id,
+  #Now, I want to skip rows per user, per split every 30 days.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date ASC) AS row_order_peruser_persplit,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -638,17 +640,87 @@ SELECT DISTINCT
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
   pltv_revenue_30_days
-  FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_30`;
+FROM(
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_30_day,
+  active_users_past_30_60_day,
+  active_users_past_60_90_day,
+  active_users_past_90_120_day,
+  active_users_past_120_150_day,
+  active_users_past_150_180_day,
+  purchases_past_1_30_day,
+  purchases_past_30_60_day,
+  purchases_past_60_90_day,
+  purchases_past_90_120_day,
+  purchases_past_120_150_day,
+  purchases_past_150_180_day,
+  visits_past_1_30_day,
+  visits_past_30_60_day,
+  visits_past_60_90_day,
+  visits_past_90_120_day,
+  visits_past_120_150_day,
+  visits_past_150_180_day,
+  view_items_past_1_30_day,
+  view_items_past_30_60_day,
+  view_items_past_60_90_day,
+  view_items_past_90_120_day,
+  view_items_past_120_150_day,
+  view_items_past_150_180_day,
+  add_to_carts_past_1_30_day,
+  add_to_carts_past_30_60_day,
+  add_to_carts_past_60_90_day,
+  add_to_carts_past_90_120_day,
+  add_to_carts_past_120_150_day,
+  add_to_carts_past_150_180_day,
+  checkouts_past_1_30_day,
+  checkouts_past_30_60_day,
+  checkouts_past_60_90_day,
+  checkouts_past_90_120_day,
+  checkouts_past_120_150_day,
+  checkouts_past_150_180_day,
+  pltv_revenue_30_days,
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
+  FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_30`
+)
+WHERE
+  row_order_peruser_perday_persplit = 1
+)
+WHERE
+  #Skipping windows of 30 days, which is the future window size.
+  MOD(row_order_peruser_persplit-1, 30) = 0;
 
 
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_90`
-(data_split,
+(processed_timestamp, 
+  data_split,
   user_pseudo_id,
-  --month_of_the_year,
-  --week_of_the_year,
-  --day_of_the_month,
-  --day_of_week,
+  user_id,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -713,12 +785,16 @@ OPTIONS(
   labels=[("org_unit", "development")]
 ) AS 
 SELECT DISTINCT
+ * EXCEPT(feature_date, row_order_peruser_persplit) 
+FROM (
+SELECT DISTINCT
+  processed_timestamp, 
   data_split,
+  feature_date,
   user_pseudo_id,
-  --month_of_the_year,
-  --week_of_the_year,
-  --day_of_the_month,
-  --day_of_week,
+  user_id,
+  #Now, I want to skip rows per user, per split every 15 days.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date ASC) AS row_order_peruser_persplit,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -776,16 +852,87 @@ SELECT DISTINCT
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
   pltv_revenue_90_days
-  FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_90`;
+FROM(
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_30_day,
+  active_users_past_30_60_day,
+  active_users_past_60_90_day,
+  active_users_past_90_120_day,
+  active_users_past_120_150_day,
+  active_users_past_150_180_day,
+  purchases_past_1_30_day,
+  purchases_past_30_60_day,
+  purchases_past_60_90_day,
+  purchases_past_90_120_day,
+  purchases_past_120_150_day,
+  purchases_past_150_180_day,
+  visits_past_1_30_day,
+  visits_past_30_60_day,
+  visits_past_60_90_day,
+  visits_past_90_120_day,
+  visits_past_120_150_day,
+  visits_past_150_180_day,
+  view_items_past_1_30_day,
+  view_items_past_30_60_day,
+  view_items_past_60_90_day,
+  view_items_past_90_120_day,
+  view_items_past_120_150_day,
+  view_items_past_150_180_day,
+  add_to_carts_past_1_30_day,
+  add_to_carts_past_30_60_day,
+  add_to_carts_past_60_90_day,
+  add_to_carts_past_90_120_day,
+  add_to_carts_past_120_150_day,
+  add_to_carts_past_150_180_day,
+  checkouts_past_1_30_day,
+  checkouts_past_30_60_day,
+  checkouts_past_60_90_day,
+  checkouts_past_90_120_day,
+  checkouts_past_120_150_day,
+  checkouts_past_150_180_day,
+  pltv_revenue_90_days,
+  # Number of rows per user, per day, per split. Only one row per user, per day, per slip.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
+  FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_90`
+)
+WHERE
+  row_order_peruser_perday_persplit = 1
+)
+WHERE
+  #Skipping windows of 90 days, which is the future window size.
+  MOD(row_order_peruser_persplit-1, 90) = 0;
 
 
   CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_180`
-(data_split,
+(processed_timestamp, 
+  data_split,
   user_pseudo_id,
-  --month_of_the_year,
-  --week_of_the_year,
-  --day_of_the_month,
-  --day_of_week,
+  user_id,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -848,14 +995,18 @@ OPTIONS(
   friendly_name="v_customer_lifetime_value_training_180_180",
   description="View Purchase Propensity Training dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
-) AS 
+) AS
 SELECT DISTINCT
+ * EXCEPT(feature_date, row_order_peruser_persplit) 
+FROM ( 
+SELECT DISTINCT
+  processed_timestamp, 
   data_split,
+  feature_date,
   user_pseudo_id,
-  --month_of_the_year,
-  --week_of_the_year,
-  --day_of_the_month,
-  --day_of_week,
+  user_id,
+  #Now, I want to skip rows per user, per split every 15 days.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date ASC) AS row_order_peruser_persplit,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -913,9 +1064,283 @@ SELECT DISTINCT
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
   pltv_revenue_180_days
-  FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_180`;
+FROM(
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_30_day,
+  active_users_past_30_60_day,
+  active_users_past_60_90_day,
+  active_users_past_90_120_day,
+  active_users_past_120_150_day,
+  active_users_past_150_180_day,
+  purchases_past_1_30_day,
+  purchases_past_30_60_day,
+  purchases_past_60_90_day,
+  purchases_past_90_120_day,
+  purchases_past_120_150_day,
+  purchases_past_150_180_day,
+  visits_past_1_30_day,
+  visits_past_30_60_day,
+  visits_past_60_90_day,
+  visits_past_90_120_day,
+  visits_past_120_150_day,
+  visits_past_150_180_day,
+  view_items_past_1_30_day,
+  view_items_past_30_60_day,
+  view_items_past_60_90_day,
+  view_items_past_90_120_day,
+  view_items_past_120_150_day,
+  view_items_past_150_180_day,
+  add_to_carts_past_1_30_day,
+  add_to_carts_past_30_60_day,
+  add_to_carts_past_60_90_day,
+  add_to_carts_past_90_120_day,
+  add_to_carts_past_120_150_day,
+  add_to_carts_past_150_180_day,
+  checkouts_past_1_30_day,
+  checkouts_past_30_60_day,
+  checkouts_past_60_90_day,
+  checkouts_past_90_120_day,
+  checkouts_past_120_150_day,
+  checkouts_past_150_180_day,
+  pltv_revenue_180_days,
+  # Number of rows per user, per day, per split. Only one row per user, per day, per slip.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
+  FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_180`
+)
+WHERE
+  row_order_peruser_perday_persplit = 1
+)
+WHERE
+  #Skipping windows of 30 days, which is the future window size.
+  MOD(row_order_peruser_persplit-1, 30) = 0;
 
 
+
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30_last_window`
+(processed_timestamp,
+  data_split,
+  user_pseudo_id,
+  user_id,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_30_day,
+  active_users_past_30_60_day,
+  active_users_past_60_90_day,
+  active_users_past_90_120_day,
+  active_users_past_120_150_day,
+  active_users_past_150_180_day,
+  purchases_past_1_30_day,
+  purchases_past_30_60_day,
+  purchases_past_60_90_day,
+  purchases_past_90_120_day,
+  purchases_past_120_150_day,
+  purchases_past_150_180_day,
+  visits_past_1_30_day,
+  visits_past_30_60_day,
+  visits_past_60_90_day,
+  visits_past_90_120_day,
+  visits_past_120_150_day,
+  visits_past_150_180_day,
+  view_items_past_1_30_day,
+  view_items_past_30_60_day,
+  view_items_past_60_90_day,
+  view_items_past_90_120_day,
+  view_items_past_120_150_day,
+  view_items_past_150_180_day,
+  add_to_carts_past_1_30_day,
+  add_to_carts_past_30_60_day,
+  add_to_carts_past_60_90_day,
+  add_to_carts_past_90_120_day,
+  add_to_carts_past_120_150_day,
+  add_to_carts_past_150_180_day,
+  checkouts_past_1_30_day,
+  checkouts_past_30_60_day,
+  checkouts_past_60_90_day,
+  checkouts_past_90_120_day,
+  checkouts_past_120_150_day,
+  checkouts_past_150_180_day,
+  pltv_revenue_30_days)
+OPTIONS(
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  friendly_name="v_customer_lifetime_value_training_180_30",
+  description="View Purchase Propensity Training dataset using 15 days back to predict 15 days ahead. View expires after 48h and should run daily.",
+  labels=[("org_unit", "development")]
+) AS 
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  --feature_date,
+  user_pseudo_id,
+  user_id,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_30_day,
+  active_users_past_30_60_day,
+  active_users_past_60_90_day,
+  active_users_past_90_120_day,
+  active_users_past_120_150_day,
+  active_users_past_150_180_day,
+  purchases_past_1_30_day,
+  purchases_past_30_60_day,
+  purchases_past_60_90_day,
+  purchases_past_90_120_day,
+  purchases_past_120_150_day,
+  purchases_past_150_180_day,
+  visits_past_1_30_day,
+  visits_past_30_60_day,
+  visits_past_60_90_day,
+  visits_past_90_120_day,
+  visits_past_120_150_day,
+  visits_past_150_180_day,
+  view_items_past_1_30_day,
+  view_items_past_30_60_day,
+  view_items_past_60_90_day,
+  view_items_past_90_120_day,
+  view_items_past_120_150_day,
+  view_items_past_150_180_day,
+  add_to_carts_past_1_30_day,
+  add_to_carts_past_30_60_day,
+  add_to_carts_past_60_90_day,
+  add_to_carts_past_90_120_day,
+  add_to_carts_past_120_150_day,
+  add_to_carts_past_150_180_day,
+  checkouts_past_1_30_day,
+  checkouts_past_30_60_day,
+  checkouts_past_60_90_day,
+  checkouts_past_90_120_day,
+  checkouts_past_120_150_day,
+  checkouts_past_150_180_day,
+  pltv_revenue_30_days
+FROM(
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_30_day,
+  active_users_past_30_60_day,
+  active_users_past_60_90_day,
+  active_users_past_90_120_day,
+  active_users_past_120_150_day,
+  active_users_past_150_180_day,
+  purchases_past_1_30_day,
+  purchases_past_30_60_day,
+  purchases_past_60_90_day,
+  purchases_past_90_120_day,
+  purchases_past_120_150_day,
+  purchases_past_150_180_day,
+  visits_past_1_30_day,
+  visits_past_30_60_day,
+  visits_past_60_90_day,
+  visits_past_90_120_day,
+  visits_past_120_150_day,
+  visits_past_150_180_day,
+  view_items_past_1_30_day,
+  view_items_past_30_60_day,
+  view_items_past_60_90_day,
+  view_items_past_90_120_day,
+  view_items_past_120_150_day,
+  view_items_past_150_180_day,
+  add_to_carts_past_1_30_day,
+  add_to_carts_past_30_60_day,
+  add_to_carts_past_60_90_day,
+  add_to_carts_past_90_120_day,
+  add_to_carts_past_120_150_day,
+  add_to_carts_past_150_180_day,
+  checkouts_past_1_30_day,
+  checkouts_past_30_60_day,
+  checkouts_past_60_90_day,
+  checkouts_past_90_120_day,
+  checkouts_past_120_150_day,
+  checkouts_past_150_180_day,
+  pltv_revenue_30_days,
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
+  FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_30`
+)
+WHERE
+  user_row_order = 1;
 
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30_balanced`
@@ -1077,5 +1502,5 @@ FROM (
     `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30`)
 )
 WHERE
-    rn <= 10000)
+    rn <= 1000)
 ;

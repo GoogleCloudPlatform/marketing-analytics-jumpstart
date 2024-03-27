@@ -278,6 +278,7 @@ def prediction_binary_classification_regression_pl(
         predictions_table_regression=clv_flatten_predictions.outputs['destination_table'],
         table_propensity_bq_unique_key=purchase_bq_unique_key,
         table_regression_bq_unique_key=clv_bq_unique_key,
+        threashold=threashold
     ).set_display_name('union_predictions')
 
     bq_stored_procedure_exec(

@@ -76,6 +76,8 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
    ```shell
    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+
+   export GOOGLE_APPLICATION_CREDENTIALS=[LOCATION_WHERE YOUR_KEY_FILE_IS_STORED]/application_default_credentials.json
    ```
 
     **Note:** You will receive an error message informing the Cloud Resource Manager API has not been used/enabled for your project, similar to the following: 

@@ -821,7 +821,7 @@ def bq_union_predictions_tables(
     table_propensity_bq_unique_key: str,
     table_regression_bq_unique_key: str,
     destination_table: Output[Dataset],
-    threashold: float = 0.5
+    threashold: float
 ):
     from google.cloud import bigquery
     import logging
@@ -896,11 +896,7 @@ def bq_union_predictions_tables(
                 WHEN a.score_one > {threashold} THEN 'true'
                 ELSE 'false' 
                 END AS {predictions_column_regression},
-                CASE
-                WHEN a.score_zero > {threashold} THEN a.score_zero
-                WHEN a.score_one > {threashold} THEN a.score_one
-                ELSE a.score_zero 
-                END AS prediction_prob,
+                a.score_one AS prediction_prob,
                 a.*
             FROM prediction_greatest_scores AS a
         );
@@ -915,7 +911,7 @@ def bq_union_predictions_tables(
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
-            A.prediction = "false" AND A.prediction_prob > {threashold}
+            A.prediction_prob <= {threashold}
             AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key} 
         );
 
@@ -929,7 +925,7 @@ def bq_union_predictions_tables(
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
-            A.prediction = "true" AND A.prediction_prob > {threashold}
+            A.prediction_prob > {threashold}
             AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key}
         );
 
