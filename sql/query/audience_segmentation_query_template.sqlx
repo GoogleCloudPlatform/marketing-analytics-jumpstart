@@ -1,8 +1,0 @@
-SELECT 
-    prediction,
-    COALESCE(user_id, user_pseudo_id) AS client_id,
-    EXTRACT(DATE FROM processed_timestamp AT TIME ZONE 'UTC') AS inference_date,
-    FROM `{{source_table}}`
-    WHERE prediction IS NOT NULL
-    LIMIT 10000
-    

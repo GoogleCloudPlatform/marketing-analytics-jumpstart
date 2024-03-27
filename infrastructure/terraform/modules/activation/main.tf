@@ -16,7 +16,6 @@ locals {
   app_prefix                                     = "activation"
   source_root_dir                                = "../.."
   poetry_run_alias                               = "${var.poetry_cmd} run"
-  sql_dir                                        = "${local.source_root_dir}/sql/query"
   template_dir                                   = "${local.source_root_dir}/templates"
   pipeline_source_dir                            = "${local.source_root_dir}/python/activation"
   trigger_function_dir                           = "${local.source_root_dir}/python/function"
@@ -52,9 +51,6 @@ locals {
     "${local.activation_application_dir}/pipeline_test.py",
   ]
   activation_application_content_hash = sha512(join("", [for f in local.activation_application_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
-
-  audience_segmentation_activation_query_file              = "${local.source_root_dir}/sql/query/audience_segmentation_query_template.sqlx"
-  audience_segmentation_activation_query_file_content_hash = filesha512(local.audience_segmentation_activation_query_file)
 }
 
 data "google_project" "activation_project" {
@@ -139,7 +135,6 @@ resource "null_resource" "create_custom_events" {
 resource "null_resource" "create_custom_dimensions" {
   triggers = {
     services_enabled_project = module.project_services.project_id
-    source_contents_hash     = local.audience_segmentation_activation_query_file_content_hash
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
     #source_activation_application_python_hash = local.activation_application_content_hash
   }
@@ -257,28 +252,64 @@ resource "google_storage_bucket_object" "measurement_protocol_payload_template_f
   bucket = module.pipeline_bucket.name
 }
 
+data "template_file" "audience_segmentation_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.audience_segmentation_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
+}
+
 resource "google_storage_bucket_object" "audience_segmentation_query_template_file" {
-  name   = "${local.configuration_folder}/${local.audience_segmentation_query_template_file}"
-  source = "${local.sql_dir}/${local.audience_segmentation_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.audience_segmentation_query_template_file}"
+  content = data.template_file.audience_segmentation_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "auto_audience_segmentation_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.auto_audience_segmentation_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 resource "google_storage_bucket_object" "auto_audience_segmentation_query_template_file" {
-  name   = "${local.configuration_folder}/${local.auto_audience_segmentation_query_template_file}"
-  source = "${local.sql_dir}/${local.auto_audience_segmentation_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.auto_audience_segmentation_query_template_file}"
+  content = data.template_file.auto_audience_segmentation_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "cltv_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.cltv_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 resource "google_storage_bucket_object" "cltv_query_template_file" {
-  name   = "${local.configuration_folder}/${local.cltv_query_template_file}"
-  source = "${local.sql_dir}/${local.cltv_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.cltv_query_template_file}"
+  content = data.template_file.cltv_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "purchase_propensity_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.purchase_propensity_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 resource "google_storage_bucket_object" "purchase_propensity_query_template_file" {
-  name   = "${local.configuration_folder}/${local.purchase_propensity_query_template_file}"
-  source = "${local.sql_dir}/${local.purchase_propensity_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.purchase_propensity_query_template_file}"
+  content = data.template_file.purchase_propensity_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
 }
 
 data "template_file" "activation_type_configuration" {
@@ -308,6 +339,10 @@ module "activation_pipeline_container" {
 
   create_cmd_body  = "builds submit --project=${var.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
   destroy_cmd_body = "artifacts docker images delete --project=${var.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
+
+  create_cmd_triggers = {
+    source_contents_hash = local.activation_application_content_hash
+  }
 }
 
 module "activation_pipeline_template" {
@@ -318,6 +353,10 @@ module "activation_pipeline_template" {
   platform         = "linux"
   create_cmd_body  = "dataflow flex-template build --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
   destroy_cmd_body = "storage rm --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\""
+
+  create_cmd_triggers = {
+    source_contents_hash = local.activation_application_content_hash
+  }
 
   module_depends_on = [
     module.activation_pipeline_container.wait

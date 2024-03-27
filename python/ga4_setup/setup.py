@@ -16,6 +16,7 @@
 import json
 from google.analytics import admin_v1alpha
 from google.analytics.admin import AnalyticsAdminServiceClient
+from typing import List
 
 
 def get_data_stream(property_id: str, stream_id: str, transport: str = None):
@@ -79,29 +80,6 @@ def create_custom_events(configuration: map):
       create_custom_event(configuration, event_name)
 
 
-def load_custom_dimensions(query_file: str):
-  reserved_words = ['select', 'coalesce', 'extract', 'from', 'where', 'and', 'order', 'limit']
-  ret_fields = []
-  with open(query_file, "r") as f:
-    lines = f.readlines()
-  for line in lines:
-    line = line.lower().lstrip()
-    for word in reserved_words:
-      if line.startswith(word):
-        break
-    else:
-      fields = line.split(',')
-      column_rename_key_word = ' as '
-      for field in fields:
-        field = field.strip()
-        if column_rename_key_word in field:
-          field_split = field.split(column_rename_key_word)
-          field = field_split[1]
-        if field:
-          ret_fields.append(field)
-  return ret_fields
-
-
 def load_existing_ga4_custom_events(configuration: map):
   response = load_existing_ga4_custom_event_objs(configuration)
   existing_event_rules = []
@@ -139,9 +117,13 @@ def create_custom_event(configuration: map, event_name: str):
 
 def create_custom_dimensions(configuration: map):
   existing_dimensions = load_existing_ga4_custom_dimensions(configuration)
-  fields = load_custom_dimensions(
-    'sql/query/audience_segmentation_query_template.sqlx')
-  use_case = 'Audience Segmentation'
+  create_custom_dimensions_for('Audience Segmentation', ['a_s_prediction'], existing_dimensions, configuration)
+  create_custom_dimensions_for('Purchase Propensity', ['p_p_prediction', 'p_p_decile'], existing_dimensions, configuration)
+  create_custom_dimensions_for('CLTV', ['cltv_decile'], existing_dimensions, configuration)
+  create_custom_dimensions_for('Behaviour Based Segmentation', ['a_a_s_prediction'], existing_dimensions, configuration)
+
+
+def create_custom_dimensions_for(use_case: str, fields: List[str], existing_dimensions: List[str], configuration: map):
   for field in fields:
     display_name = f'MAJ {use_case} {field}'
     if not display_name in existing_dimensions:

@@ -349,6 +349,8 @@ module "activation" {
   # The poetry_installed is the ID of the null_resource poetry_install
   # This is used to ensure that the poetry command is run before the activation module is created.
   poetry_installed          = null_resource.poetry_install.id
+  mds_project_id            = var.data_project_id
+  mds_dataset_suffix        = local.mds_dataset_suffix
 }
 
 
