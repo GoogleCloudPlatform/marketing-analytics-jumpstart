@@ -80,6 +80,7 @@ def aggregated_value_based_bidding_feature_engineering_pipeline(
     project_id: str,
     location: Optional[str],
     query_aggregated_value_based_bidding_training_preparation: str,
+    query_aggregated_value_based_bidding_explanation_preparation: str,
     timeout: Optional[float] = 3600.0
 ):
     # Training data preparation
@@ -88,6 +89,13 @@ def aggregated_value_based_bidding_feature_engineering_pipeline(
         location=location,
         query=query_aggregated_value_based_bidding_training_preparation,
         timeout=timeout).set_display_name('aggregated_value_based_bidding_training_preparation')
+    
+    # Explanation data preparation
+    explanation_table_preparation = sp(
+        project=project_id,
+        location=location,
+        query=query_aggregated_value_based_bidding_explanation_preparation,
+        timeout=timeout).set_display_name('aggregated_value_based_bidding_explanation_preparation')
 
 
 @dsl.pipeline()

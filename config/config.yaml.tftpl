@@ -155,8 +155,16 @@ vertex_ai:
 
     # This pipeline contains the configuration parameters for the feature creation pipeline for the auto audience segmentation model.
     # This block defines the pipeline parameters that are going to be used for three tasks: compilation, upload and scheduling.
-    # The python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
-    # The python function that `schedules`` the pipeline is defined in `python/pipelines/scheduler.py`.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
     feature-creation-auto-audience-segmentation:
       execution:
         # The `name` parameter is the name of the pipeline that will appear in the Vertex AI pipeline UI.
@@ -216,8 +224,16 @@ vertex_ai:
     
     # This pipeline contains the configuration parameters for the feature creation pipeline for the audience segmentation model.
     # This block defines the pipeline parameters that are going to be used for three tasks: compilation, upload and scheduling.
-    # The python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
-    # The python function that `schedules`` the pipeline is defined in `python/pipelines/scheduler.py`.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
     feature-creation-audience-segmentation:
       execution:
         # The `name` parameter is the name of the pipeline that will appear in the Vertex AI pipeline UI.
@@ -276,6 +292,16 @@ vertex_ai:
           audience_segmentation_training_preparation_procedure_name: "${project_id}.audience_segmentation.invoke_audience_segmentation_training_preparation"
 
     # This pipeline contains the configuration parameters for the feature creation pipeline for the purchase propensity model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
     feature-creation-purchase-propensity: 
       execution:
         name: "feature-creation-purchase-propensity"
@@ -317,6 +343,16 @@ vertex_ai:
           purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
 
     # This pipeline contains the configuration parameters for the feature creation pipeline for the customer lifetime value model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
     feature-creation-customer-ltv:
       execution:
         name: "feature-creation-customer-ltv"
@@ -354,6 +390,17 @@ vertex_ai:
           customer_lifetime_value_inference_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_inference_preparation"
           customer_lifetime_value_training_preparation_procedure_name: "${project_id}.customer_lifetime_value.invoke_customer_lifetime_value_training_preparation"
 
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the aggregated value based bidding model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
     feature-creation-aggregated-value-based-bidding:
       execution:
         name: "feature-creation-aggregated-value-based-bidding"
@@ -371,9 +418,12 @@ vertex_ai:
           location: "${location}"
           query_aggregated_value_based_bidding_training_preparation: "
             CALL `{aggregated_value_based_bidding_training_preparation_procedure_name}`();"
+          query_aggregated_value_based_bidding_explanation_preparation: "
+            CALL `{aggregated_value_based_bidding_explanation_preparation_procedure_name}`();"
           timeout: 3600
         pipeline_parameters_substitutions:
           aggregated_value_based_bidding_training_preparation_procedure_name: "${project_id}.aggregated_vbb.invoke_aggregated_value_based_bidding_training_preparation"
+          aggregated_value_based_bidding_explanation_preparation_procedure_name: "${project_id}.aggregated_vbb.invoke_aggregated_value_based_bidding_explanation_preparation"
     
     # This pipeline contains the configuration parameters for the value based bidding training and inference pipelines.
     value_based_bidding:
@@ -797,7 +847,7 @@ vertex_ai:
           purchase_model_metric_name: "logLoss"
           purchase_model_metric_threshold: 0.9
           number_of_purchase_models_considered: 1
-          threashold: 0.02
+          threashold: 0.01
           positive_label: "1"
           clv_model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           clv_model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
@@ -1002,6 +1052,10 @@ bigquery:
       project_id: "${project_id}"
       dataset: "aggregated_vbb"
       stored_procedure: "aggregated_value_based_bidding_training_preparation"
+    invoke_aggregated_value_based_bidding_explanation_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      stored_procedure: "aggregated_value_based_bidding_explanation_preparation"
     invoke_purchase_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -1222,6 +1276,22 @@ bigquery:
       mds_dataset: "${mds_dataset}"
       view_name: "aggregated_value_based_bidding_training_full_dataset"
       expiration_duration_hours: 168
+      datetime_column: "Dt"
+      eval_start_date: "2024-01-01"
+      eval_end_date: "2024-03-31"
+    aggregated_value_based_bidding_explanation_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      name: "aggregated_value_based_bidding_explanation_preparation"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      volume_table_name: "aggregated_value_based_bidding_volume"
+      corr_table_name: "aggregated_value_based_bidding_correlation"
+      daily_volume_view_name: "aggregated_value_based_bidding_volume_daily"
+      weekly_volume_view_name: "aggregated_value_based_bidding_volume_weekly"
+      datetime_column: "Dt"
+      start_date: "'2024-01-01'"
+      end_date: "NULL"
     audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"

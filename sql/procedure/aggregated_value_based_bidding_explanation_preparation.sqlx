@@ -1,0 +1,126 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+DECLARE explain_start_date DATE DEFAULT NULL;
+DECLARE explain_end_date DATE DEFAULT NULL;
+DECLARE start_date DATE DEFAULT NULL;
+DECLARE end_date DATE DEFAULT NULL;
+DECLARE max_date DATE;
+DECLARE min_date DATE;
+
+SET max_date = (SELECT MAX(Dt) FROM `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`); 
+SET min_date = (SELECT MIN(Dt) FROM `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`); 
+SET explain_start_date = min_date;
+SET explain_end_date = max_date;
+SET start_date = PARSE_DATE("%Y-%m-%d", {{start_date}});
+SET end_date = PARSE_DATE("%Y-%m-%d", {{end_date}});
+
+IF start_date IS NULL OR start_date < min_date  OR start_date > max_date OR start_date > end_date THEN
+    SET explain_start_date =  min_date;
+ELSE
+    SET explain_start_date =  start_date;
+END IF;
+
+IF end_date IS NULL OR end_date < min_date  OR end_date > max_date OR end_date < start_date THEN
+    SET explain_end_date =  max_date;
+ELSE
+    SET explain_end_date =  end_date;
+END IF;
+
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{volume_table_name}}`
+AS
+SELECT DISTINCT
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
+;
+
+
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{daily_volume_view_name}}`
+AS
+SELECT DISTINCT
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
+;
+
+
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{weekly_volume_view_name}}`
+AS
+SELECT DISTINCT
+  CAST(week_of_the_year AS INT64)+1 AS Week_Of_Year,
+  SUM(First_Visits) OVER(PARTITION BY week_of_the_year) AS First_Visits,
+  SUM(Visit_Product_Page) OVER(PARTITION BY week_of_the_year) AS Visit_Product_Page,
+  SUM(View_Product_Details) OVER(PARTITION BY week_of_the_year) AS View_Product_Details,
+  SUM(Add_Product_to_Cart) OVER(PARTITION BY week_of_the_year) AS Add_Product_to_Cart,
+  SUM(View_Cart) OVER(PARTITION BY week_of_the_year) AS View_Cart,
+  SUM(Begin_Checkout) OVER(PARTITION BY week_of_the_year) AS Begin_Checkout,
+  SUM(Added_Shipping_Info) OVER(PARTITION BY week_of_the_year) AS Added_Shipping_Info,
+  SUM(Added_Payment_Info) OVER(PARTITION BY week_of_the_year) AS Added_Payment_Info,
+  SUM(Purchase_Product) OVER(PARTITION BY week_of_the_year) AS Purchase_Product 
+FROM(
+SELECT DISTINCT
+  Dt,
+  LAST_VALUE(format_date('%U',Dt)) OVER(PARTITION BY Dt ORDER BY Dt ASC) AS week_of_the_year,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
+)
+;
+
+
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{corr_table_name}}`
+AS
+SELECT DISTINCT
+  CORR(Purchase_Product, First_Visits) as First_Visits_corr_Purchase_Product,
+  CORR(Purchase_Product, Visit_Product_Page) as Visit_Product_Page_corr_Purchase_Product,
+  CORR(Purchase_Product, View_Product_Details) as View_Product_Details_corr_Purchase_Product,
+  CORR(Purchase_Product, Add_Product_to_Cart) as Add_Product_to_Cart_corr_Purchase_Product,
+  CORR(Purchase_Product, View_Cart) as View_Cart_corr_Purchase_Product,
+  CORR(Purchase_Product, Begin_Checkout) as Begin_Checkout_corr_Purchase_Product,
+  CORR(Purchase_Product, Added_Shipping_Info) as Added_Shipping_Info_corr_Purchase_Product,
+  CORR(Purchase_Product, Added_Payment_Info) as Added_Payment_Info_corr_Purchase_Product
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
+;

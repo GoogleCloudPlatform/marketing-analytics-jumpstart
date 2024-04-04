@@ -43,7 +43,24 @@ resource "google_bigquery_routine" "aggregated_value_based_bidding_training_prep
   routine_type = "PROCEDURE"
   language = "SQL"
   definition_body = data.local_file.aggregated_value_based_bidding_training_preparation_file.content
-  description = "Procedure that prepares features for Aggregated VBB model training. User-per-day granularity level features."
+  description = "Procedure that prepares features for Aggregated VBB model training."
+}
+
+
+# Terraform data source for the procedure. The file contains the procedure definition.
+data "local_file" "aggregated_value_based_bidding_explanation_preparation_file" {
+  filename = "${local.sql_dir}/procedure/aggregated_value_based_bidding_explanation_preparation.sql"
+}
+
+# Terraform procedure resource. This resource will create a BigQuery procedure in the dataset specified.
+resource "google_bigquery_routine" "aggregated_value_based_bidding_explanation_preparation" {
+  project = var.project_id
+  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  routine_id = "aggregated_value_based_bidding_explanation_preparation"
+  routine_type = "PROCEDURE"
+  language = "SQL"
+  definition_body = data.local_file.aggregated_value_based_bidding_explanation_preparation_file.content
+  description = "Procedure that prepares features for Aggregated VBB model explanation."
 }
 
 
@@ -748,7 +765,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_session_event_aggregate
 }
 
 /*
- *Including the Inference and Training routines
+ *Including the Inference, Training and Explanation routines
  */
 
 
@@ -848,10 +865,12 @@ resource "google_bigquery_routine" "invoke_audience_segmentation_training_prepar
   definition_body = data.local_file.invoke_audience_segmentation_training_preparation_file.content
 }
 
+# Terraform data source for invoking the bigquery stored procedure
 data "local_file" "invoke_aggregated_value_based_bidding_training_preparation_file" {
   filename = "${local.sql_dir}/query/invoke_aggregated_value_based_bidding_training_preparation.sql"
 }
 
+# Terraform resource for invoking the bigquery stored procedure
 resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_training_preparation" {
   project = var.project_id
   dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
@@ -859,6 +878,21 @@ resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_traini
   routine_type = "PROCEDURE"
   language = "SQL"
   definition_body = data.local_file.invoke_aggregated_value_based_bidding_training_preparation_file.content
+}
+
+# Terraform data source for invoking the bigquery stored procedure
+data "local_file" "invoke_aggregated_value_based_bidding_explanation_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_aggregated_value_based_bidding_explanation_preparation.sql"
+}
+
+# Terraform resource for invoking the bigquery stored procedure
+resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_explanation_preparation" {
+  project = var.project_id
+  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  routine_id = "invoke_aggregated_value_based_bidding_explanation_preparation"
+  routine_type = "PROCEDURE"
+  language = "SQL"
+  definition_body = data.local_file.invoke_aggregated_value_based_bidding_explanation_preparation_file.content
 }
 
 /*
