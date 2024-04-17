@@ -17,7 +17,9 @@ import kfp as kfp
 import kfp.dsl as dsl
 from pipelines.components.bigquery.component import bq_stored_procedure_exec as sp
 from pipelines.components.bigquery.component import (
-    bq_dynamic_query_exec_output, bq_dynamic_stored_procedure_exec_output)
+    bq_dynamic_query_exec_output, 
+    bq_dynamic_stored_procedure_exec_output_full_dataset_preparation,
+    bq_auto_audience_segmentation_training_preparation)
 
 
 @dsl.pipeline()
@@ -31,6 +33,7 @@ def auto_audience_segmentation_feature_engineering_pipeline(
     date_start: str,
     date_end: str,
     stored_procedure_name: str,
+    full_dataset_table: str,
     training_table: str,
     reg_expression: str,
     query_auto_audience_segmentation_inference_preparation: str,
@@ -38,7 +41,7 @@ def auto_audience_segmentation_feature_engineering_pipeline(
     perc_keep: int = 35,
     timeout: Optional[float] = 3600.0
 ):
-    # Training data preparation
+    # Feature data preparation
     feature_table_preparation = bq_dynamic_query_exec_output(
         location=location,
         project_id=project_id,
@@ -52,27 +55,37 @@ def auto_audience_segmentation_feature_engineering_pipeline(
         reg_expression=reg_expression
     )
 
-    training_table_preparation = bq_dynamic_stored_procedure_exec_output(
+    full_dataset_table_preparation = bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
         location=location,
         project_id=project_id,
         dataset=dataset,
         mds_project_id=mds_project_id,
         mds_dataset=mds_dataset,
         dynamic_table_input=feature_table_preparation.outputs['destination_table'],
+        stored_procedure_name=stored_procedure_name,
+        full_dataset_table=full_dataset_table,
+        reg_expression=reg_expression
+    ).after(*[feature_table_preparation])
+
+    # Training data preparation
+    auto_audience_segmentation_training_prep = bq_auto_audience_segmentation_training_preparation(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        full_dataset_table_input=full_dataset_table_preparation.outputs['full_dataset_table_output'],
         date_start=date_start,
         date_end=date_end,
         lookback_days=lookback_days,
         stored_procedure_name=stored_procedure_name,
-        training_table=training_table,
-        reg_expression=reg_expression
-    ).after(*[feature_table_preparation])
+        training_table=training_table
+    ).after(*[full_dataset_table_preparation]).set_display_name('auto_audience_segmentation_training_preparation')
     
     # Inference data preparation
     auto_audience_segmentation_inf_prep = sp(
         project=project_id,
         location=location,
         query=query_auto_audience_segmentation_inference_preparation,
-        timeout=timeout).set_display_name('auto_audience_segmentation_inference_preparation')
+        timeout=timeout).after(*[full_dataset_table_preparation]).set_display_name('auto_audience_segmentation_inference_preparation')
 
 
 @dsl.pipeline()

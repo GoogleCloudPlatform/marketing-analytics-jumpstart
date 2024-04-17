@@ -13,10 +13,15 @@
   -- limitations under the License.
   -- Setting procedure to lookback from the day before `inference_date`
 
-DECLARE lookback_days INT64 DEFAULT 15;
-SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
+DECLARE inference_start_date DATE DEFAULT NULL;
+DECLARE inference_end_date DATE DEFAULT NULL;
+DECLARE lookback_days INT64 DEFAULT NULL;
 
-CALL `{{project_id}}.{{dataset}}.create_auto_audience_segmentation_dataset`(inference_date, inference_date, lookback_days);
+SET lookback_days = {{lookback_days}};
+SET inference_end_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
+SET inference_start_date = DATE_SUB(inference_end_date, INTERVAL lookback_days DAY);
+
+CALL `{{project_id}}.{{dataset}}.auto_audience_segmentation_training_preparation`(inference_start_date, inference_end_date, lookback_days);
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`
 AS
@@ -25,7 +30,6 @@ SELECT
 FROM
   `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`;
 
--- CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
   OPTIONS(
     friendly_name="v_auto_audience_segmentation_inference_15",

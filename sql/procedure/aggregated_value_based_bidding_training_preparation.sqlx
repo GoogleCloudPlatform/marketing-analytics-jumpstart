@@ -19,6 +19,9 @@
 # of the feature importance, there is no problem in applying this strategy.
 # Validation and test subsets are not replicated.
 
+
+-- The view schema should match with the `transformations-value-based-bidding.json` file.
+-- Taking into consideration the excluded_features as listed in the `config.yaml` file.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.{{view_name}}`
 (data_split,
     Dt,

@@ -308,6 +308,8 @@ def explanation_tabular_workflow_regression_pl(
     model_metric_threshold: float,
     number_of_models_considered: int,
     bigquery_destination_prefix: str,
+    aggregated_predictions_dataset_location: str,
+    query_aggregate_last_day_predictions: str
 ):
     #TODO: Implement the explanation pipeline for the value based bidding model
     value_based_bidding_model = elect_best_tabular_model(
@@ -332,3 +334,10 @@ def explanation_tabular_workflow_regression_pl(
         model_explanation=value_based_bidding_model_explanation.outputs['model_explanation'],
         destination_table=bigquery_destination_prefix,
     ).set_display_name('write_vbb_model_explanation')
+
+    bq_stored_procedure_exec(
+        project=project,
+        location=aggregated_predictions_dataset_location,
+        query=query_aggregate_last_day_predictions,
+        query_parameters=[]
+    ).set_display_name('aggregate_predictions').after(value_based_bidding_flatten_explanation)

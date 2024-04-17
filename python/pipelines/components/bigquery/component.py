@@ -681,32 +681,25 @@ def bq_dynamic_query_exec_output(
     # Prepare component output
     destination_table.metadata["table_id"] = f"{project_id}.{dataset}.{create_table}"
     destination_table.metadata["features"] = list(query_df.feature.tolist())
-    
+
 
 @component(base_image=base_image)
-def bq_dynamic_stored_procedure_exec_output(
+def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
     project_id: str,
     location: str,
     dataset: str,
     mds_project_id: str,
     mds_dataset: str,
     dynamic_table_input: Input[Dataset],
-    training_table_output: Output[Dataset],
-    date_start: str,
-    date_end: str,
-    lookback_days: int,
+    full_dataset_table_output: Output[Dataset],
     reg_expression: str,
     stored_procedure_name: str,
-    training_table: str,
+    full_dataset_table: str,
     timeout: Optional[float] = 1800
 ) -> None:
 
     from google.cloud import bigquery
     import logging
-    import numpy as np
-    import pandas as pd
-    import jinja2
-    import re
 
     # Construct a BigQuery client object.
     client = bigquery.Client(
@@ -714,70 +707,97 @@ def bq_dynamic_stored_procedure_exec_output(
         location=location
     )
 
-    def _clean_column_values(f):
-        if f == '/' or f == '' or f is None: return 'homepage'
-        if f.startswith('/'): f = f[1:]
-        if f.endswith('/'): f = f[:-1]
-        return re.sub('[^0-9a-zA-Z]+', '_', f)
-    
-    template = jinja2.Template("""
-        CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{stored_procedure_name}}`(
-        DATE_START DATE, 
-        DATE_END DATE, 
-        LOOKBACK_DAYS INT64
-        )
-        BEGIN
+    def _create_auto_audience_segmentation_full_dataset_preparation_procedure(
+            project_id, 
+            location, 
+            dataset, 
+            mds_project_id, 
+            mds_dataset, 
+            dynamic_table_input, 
+            reg_expression, 
+            stored_procedure_name, 
+            full_dataset_table
+            ) -> None:
+        
+        import logging
+        import numpy as np
+        import pandas as pd
+        import jinja2
+        import re
 
-            DECLARE RE_PAGE_PATH STRING DEFAULT "{{reg_expression|e}}";
-            
-            CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{training_table}}`
-            AS
-            WITH 
-                visitor_pool AS (
-                    SELECT
-                    user_pseudo_id,
-                    MAX(event_timestamp) as feature_timestamp,
-                    DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
-                    FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-                    WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
-                    GROUP BY 1
+        def _clean_column_values(f):
+            if f == '/' or f == '' or f is None: return 'homepage'
+            if f.startswith('/'): f = f[1:]
+            if f.endswith('/'): f = f[:-1]
+            return re.sub('[^0-9a-zA-Z]+', '_', f)
+        
+        template = jinja2.Template("""
+            CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{stored_procedure_name}}`(
+            DATE_START DATE, 
+            DATE_END DATE, 
+            LOOKBACK_DAYS INT64
             )
-
-            SELECT
-                user_id,
-                feature_timestamp,
-                {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
-                {% endfor %}
-            FROM (
+            BEGIN
+                DECLARE RE_PAGE_PATH STRING DEFAULT "{{reg_expression|e}}";
+                CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{full_dataset_table}}`
+                AS
+                WITH 
+                    visitor_pool AS (
+                        SELECT
+                        user_pseudo_id,
+                        MAX(event_timestamp) as feature_timestamp,
+                        DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
+                        FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+                        WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
+                        GROUP BY 1
+                )
                 SELECT
-                    vp.feature_timestamp,
-                    ga.user_pseudo_id as user_id,
-                    page_location as page_path
-                FROM `{{mds_project_id}}.{{mds_dataset}}.event` as ga
-                INNER JOIN visitor_pool as vp
-                    ON vp.user_pseudo_id = ga.user_pseudo_id
-                        AND DATE(ga.event_timestamp) >= vp.date_lookback
-                WHERE
-                    event_name = 'page_view'
-                    AND DATE(ga.event_timestamp) BETWEEN DATE_START - LOOKBACK_DAYS AND DATE_END
-            )
-            GROUP BY 1, 2;
-        END
-    """)
-    template.globals.update({'clean_column_values': _clean_column_values})
+                    user_id,
+                    feature_timestamp,
+                    {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
+                    {% endfor %}
+                FROM (
+                    SELECT
+                        vp.feature_timestamp,
+                        ga.user_pseudo_id as user_id,
+                        page_location as page_path
+                    FROM `{{mds_project_id}}.{{mds_dataset}}.event` as ga
+                    INNER JOIN visitor_pool as vp
+                        ON vp.user_pseudo_id = ga.user_pseudo_id
+                            AND DATE(ga.event_timestamp) >= vp.date_lookback
+                    WHERE
+                        event_name = 'page_view'
+                        AND DATE(ga.event_timestamp) BETWEEN DATE_START AND DATE_END
+                )
+                GROUP BY 1, 2;
+            END
+        """)
+        template.globals.update({'clean_column_values': _clean_column_values})
 
-    sql = template.render(
-        project_id=project_id,
-        dataset=dataset,
-        stored_procedure_name = stored_procedure_name,
-        training_table=training_table,
-        mds_project_id=mds_project_id,
-        mds_dataset=mds_dataset,
-        reg_expression=reg_expression,
-        features= dynamic_table_input.metadata['features'] if isinstance(dynamic_table_input.metadata['features'], List) else list(dynamic_table_input.metadata['features'])
-    )
+        sql = template.render(
+            project_id=project_id,
+            dataset=dataset,
+            stored_procedure_name = stored_procedure_name,
+            full_dataset_table=full_dataset_table,
+            mds_project_id=mds_project_id,
+            mds_dataset=mds_dataset,
+            reg_expression=reg_expression,
+            features= dynamic_table_input.metadata['features'] if isinstance(dynamic_table_input.metadata['features'], List) else list(dynamic_table_input.metadata['features'])
+        )
 
-    logging.info(f"{sql}")
+        logging.info(f"{sql}")
+
+        return sql
+    
+    sql = _create_auto_audience_segmentation_full_dataset_preparation_procedure(project_id, 
+                                                                                location, 
+                                                                                dataset, 
+                                                                                mds_project_id, 
+                                                                                mds_dataset, 
+                                                                                dynamic_table_input, 
+                                                                                reg_expression, 
+                                                                                stored_procedure_name, 
+                                                                                full_dataset_table)
 
     # Run the BQ query
     query_job = client.query(
@@ -788,6 +808,38 @@ def bq_dynamic_stored_procedure_exec_output(
 
     for row in results:
         logging.info("row info: {}".format(row))
+    
+    # Prepare component output
+    full_dataset_table_output.metadata["table_id"] = f"{project_id}.{dataset}.{full_dataset_table}"
+    full_dataset_table_output.metadata["stored_procedure_name"] = f"{project_id}.{dataset}.{stored_procedure_name}"
+
+
+@component(base_image=base_image)
+def bq_auto_audience_segmentation_training_preparation(
+    project_id: str,
+    location: str,
+    dataset: str,
+    full_dataset_table_input: Input[Dataset],
+    training_table_output: Output[Dataset],
+    date_start: str,
+    date_end: str,
+    lookback_days: int,
+    stored_procedure_name: str,
+    training_table: str,
+    timeout: Optional[float] = 1800
+) -> None:
+    
+    from google.cloud import bigquery
+    import logging
+    import numpy as np
+    import pandas as pd
+    import jinja2
+
+    # Construct a BigQuery client object.
+    client = bigquery.Client(
+        project=project_id,
+        location=location
+    )
     
     query_job = client.query(
         query=f"CALL `{project_id}.{dataset}.{stored_procedure_name}`(@DATE_START, @DATE_END, @LOOKBACK_DAYS);",
@@ -807,8 +859,6 @@ def bq_dynamic_stored_procedure_exec_output(
     # Prepare component output
     training_table_output.metadata["table_id"] = f"{project_id}.{dataset}.{training_table}"
     training_table_output.metadata["stored_procedure_name"] = f"{project_id}.{dataset}.{stored_procedure_name}"
-
-
 
 
 ##TODO: improve code

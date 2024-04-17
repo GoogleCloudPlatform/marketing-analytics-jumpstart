@@ -174,6 +174,7 @@ vertex_ai:
         # The `experiment_name` is the name of the experiment that will appear in the Vertex AI Experiments UI.
         experiment_name: "feature-creation-auto-audience-segmentation"
         # The `type` defines whether the pipeline is going to be a `tabular-workflows` or a `custom` pipeline.
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
         type: "custom"
         # The `schedule` defines the schedule values of the pipeline.
         # This solution uses the Vertex AI Pipeline Scheduler.
@@ -194,6 +195,8 @@ vertex_ai:
         # Make sure you review the python function the defines the pipeline.
         # The pipeline definition function can be found in `python/pipelines/feature_engineering_pipelines.py` 
         # or other files ending with `python/pipelines/*_pipeline.py`.
+        # Auto Audience Segmentation involved the dynamic identification of the most visited pages in the website by using the regular expression `reg_expression` and frequency percentual `perc_keep`.
+        # This process takes into consideration a date interval defined by the parameters `date_start` and `date_end`.
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -201,12 +204,17 @@ vertex_ai:
           feature_table: "page_path_cumulative_traffic"
           mds_project_id: "${mds_project_id}"
           mds_dataset: "${mds_dataset}"
+          # Chnage these parameters if you training features to include another date interval.
           date_start: "2023-01-01"
-          date_end: "2023-12-31"
+          date_end: "2024-04-01"
           stored_procedure_name: "auto_audience_segmentation_training_preparation"
+          full_dataset_table: "auto_audience_segmentation_full_dataset"
           training_table: "auto_audience_segmentation_training_full_dataset"
+          # Change the regular expression to match the URL of your website to be categorized.
           reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)$"
+          # Increase the percentual `perc_keep` to include more pages in your segmentation, decrease to exclude pages in your segmentation
           perc_keep: 35
+          # By default, during inference, it will look back on 15 days. Change if desired.
           lookback_days: 15
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
@@ -243,6 +251,7 @@ vertex_ai:
         # The `experiment_name` is the name of the experiment that will appear in the Vertex AI Experiments UI.
         experiment_name: "feature-creation-audience-segmentation"
         # The `type` defines whether the pipeline is going to be a `tabular-workflows` or a `custom` pipeline.
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
         type: "custom"
         # The `schedule` defines the schedule values of the pipeline.
         # This solution uses the Vertex AI Pipeline Scheduler.
@@ -307,9 +316,12 @@ vertex_ai:
         name: "feature-creation-purchase-propensity"
         job_id_prefix: "feature-creation-purchase-propensity-"
         experiment_name: "feature-creation-purchase-propensity"
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 1 * * *"
+          # Define the maximum number of concurrent pipeline runs.
+          # The default value is 1.
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -317,18 +329,25 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
+          # The query_purchase_propensity_label defines the procedure that will be used to invoke the creation of the purchase propensity label feature table.
           query_purchase_propensity_label: "
             CALL `{purchase_propensity_label_procedure_name}`();"
+          # The query_user_dimensions defines the procedure that will be used to invoke the creation of the user dimensions feature table.
           query_user_dimensions: "
             CALL `{user_dimensions_procedure_name}`();"
+          # The query_user_rolling_window_metrics defines the procedure that will be used to invoke the creation of the user rolling window metrics feature table.
           query_user_rolling_window_metrics: "
             CALL `{user_rolling_window_metrics_procedure_name}`();"
+          # The query_user_scoped_metrics defines the procedure that will be used to invoke the creation of the user scoped metrics feature table.
           query_user_scoped_metrics: "
             CALL `{user_scoped_metrics_procedure_name}`();"
+          # The query_user_session_event_aggregated_metrics defines the procedure that will be used to invoke the creation of the user session and events aggregated metrics feature table.
           query_user_session_event_aggregated_metrics: "
             CALL `{user_session_event_aggregated_metrics_procedure_name}`();"
+          # The query_purchase_propensity_inference_preparation define the procedure that will be used to invoke the creation of the purchase propensity inference preparation table.
           query_purchase_propensity_inference_preparation: "
             CALL `{purchase_propensity_inference_preparation_procedure_name}`();"
+          # The query_purchase_propensity_training_preparation define the procedure that will be used to invoke the creation of the purchase propensity training preparation table.
           query_purchase_propensity_training_preparation: "
             CALL `{purchase_propensity_training_preparation_procedure_name}`();"
           timeout: 3600.0
@@ -358,9 +377,12 @@ vertex_ai:
         name: "feature-creation-customer-ltv"
         job_id_prefix: "feature-creation-customer-ltv-"
         experiment_name: "feature-creation-customer-ltv"
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 1 * * *"
+          # Define the maximum number of concurrent pipeline runs.
+          # The default value is 1.
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -368,16 +390,22 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
+          # The query_customer_lifetime_value_label defines the procedure that will be used to invoke the creation of the customer lifetime value label feature table.
           query_customer_lifetime_value_label: "
             CALL `{customer_lifetime_value_label_procedure_name}`();"
+          # The query_user_lifetime_dimensions defines the procedure that will be used to invoke the creation of the user lifetime dimensions feature table.
           query_user_lifetime_dimensions: "
             CALL `{user_lifetime_dimensions_procedure_name}`();"
+          # The query_user_rolling_window_lifetime_metrics defines the procedure that will be used to invoke the creation of the user rolling window lifetime metrics feature table.
           query_user_rolling_window_lifetime_metrics: "
             CALL `{user_rolling_window_lifetime_metrics_procedure_name}`();"
+          # The query_user_scoped_lifetime_metrics defines the procedure that will be used to invoke the creation of the user scoped lifetime metrics feature table.
           query_user_scoped_lifetime_metrics: "
             CALL `{user_scoped_lifetime_metrics_procedure_name}`();"
+          # The query_customer_lifetime_value_inference_preparation defines the procedure that will be used to invoke the creation of the customer lifetime value inference preparation table.
           query_customer_lifetime_value_inference_preparation: "
             CALL `{customer_lifetime_value_inference_preparation_procedure_name}`();"
+          # The query_customer_lifetime_value_training_preparation defines the procedure that will be used to invoke the creation of the customer lifetime value training preparation table.
           query_customer_lifetime_value_training_preparation: "
             CALL `{customer_lifetime_value_training_preparation_procedure_name}`();"
           timeout: 3600.0
@@ -406,9 +434,13 @@ vertex_ai:
         name: "feature-creation-aggregated-value-based-bidding"
         job_id_prefix: "feature-creation-aggregated-value-based-bidding-"
         experiment_name: "feature-creation-aggregated-value-based-bidding"
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
         type: "custom"
         schedule:
+          # The cron string is
           cron: "TZ=America/New_York 0 1 * * *"
+          # Define the maximum concurrent run count of the pipeline.
+          # The default value is 1.
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
@@ -416,8 +448,10 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
+          # The query_aggregated_value_based_bidding_training_preparation defines the procedure that will be used to invoke the creation of the aggregated value based bidding training preparation table.
           query_aggregated_value_based_bidding_training_preparation: "
             CALL `{aggregated_value_based_bidding_training_preparation_procedure_name}`();"
+          # The query_aggregated_value_based_bidding_explanation_preparation defines the procedure that will be used to invoke the creation of the aggregated value based bidding explanation preparation table.
           query_aggregated_value_based_bidding_explanation_preparation: "
             CALL `{aggregated_value_based_bidding_explanation_preparation_procedure_name}`();"
           timeout: 3600
@@ -426,11 +460,23 @@ vertex_ai:
           aggregated_value_based_bidding_explanation_preparation_procedure_name: "${project_id}.aggregated_vbb.invoke_aggregated_value_based_bidding_explanation_preparation"
     
     # This pipeline contains the configuration parameters for the value based bidding training and inference pipelines.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
     value_based_bidding:
       training:
         name: "value-based-bidding-training-pl"
         job_id_prefix: "value-based-bidding-training-pl-"
         experiment_name: "value-based-bidding-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "tabular-workflows"
         schedule:
           # define the schedule for the pipeline
@@ -438,7 +484,8 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED 
+          state: ACTIVE # possible states ACTIVE or PAUSED
+        # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
@@ -447,7 +494,13 @@ vertex_ai:
           train_budget_milli_node_hours: 1000 # 1 hour
           run_evaluation: true
           run_distillation: false
+          # Use `prediction_type` to "regression" for training models that predict a numerical value.  For classification models, use "classification" and you will
+          # also get the probability likelihood for that class.
           prediction_type: "regression"
+          # The optimization objectives may change depending on the `prediction_type`.
+          # For binary classification, use "maximize-au-roc", "minimize-log-loss", "maximize-au-prc", "maximize-precision-at-recall" or "maximize-recall-at-precision". 
+          # For multi class classification, use "minimize-log-loss". 
+          # For regression, use "minimize-rmse", "minimize-mae", or "minimize-rmsle".
           optimization_objective: "minimize-mae" #minimize-rmse
           target_column: "Purchase_Product"
           predefined_split_key: "data_split"
@@ -455,7 +508,9 @@ vertex_ai:
           training_fraction: null
           validation_fraction: null
           test_fraction: null
-          # data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_vbb_training""
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
           data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_value_based_bidding_training_full_dataset"
           data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
@@ -464,11 +519,14 @@ vertex_ai:
           weight_column: null
           additional_experiments: null
           export_additional_model_without_custom_ops: false
+          # Override the study spec parameters in case you want to restrict hyperparameter search space. Including `model_type`.
+          # In this case, for Value Based Bidding, we're looking for a perfect fit using a tree based model.
           study_spec_parameters_override:
             - parameter_id: "model_type"
               categorical_value_spec:
                 values: 
                   - boosted_trees
+        # Features to be excluded from the training dataset.
         exclude_features:
           - Purchase_Product
           - Dt
@@ -478,6 +536,8 @@ vertex_ai:
         name: "value-based-bidding-explanation-pl"
         job_id_prefix: "value-based-bidding-explanation-pl-"
         experiment_name: "value-based-bidding-explanation"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 5 * * *"
@@ -491,17 +551,34 @@ vertex_ai:
           data_location: "${location}"
           model_display_name: "value-based-bidding-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
+          # The `model_metric_threshold` parameter defines what is the maximum acceptable value for the `model_metric_name` so that the model can be selected.
+          # If the actual models metrics values are higher than this limit, no models will be selected and the pipeline is going to fail.
           model_metric_threshold: 400
           number_of_models_considered: 1
           bigquery_destination_prefix: "${project_id}.aggregated_vbb.vbb_weights"
+          # These are parameter to inovoke the aggregations of all daily predictions into a single table.
+          aggregated_predictions_dataset_location: "${location}"
+          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
         pipeline_parameters_substitutions: null
 
     # This pipeline contains the configuration parameters for the propensity training and inference pipelines for the purchase propensity model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
     propensity:
       training:
         name: "propensity-training-pl"
         job_id_prefix: "propensity-training-pl-"
         experiment_name: "propensity-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "tabular-workflows"
         schedule:
           cron: "TZ=America/New_York 0 8 * * SAT"
@@ -509,18 +586,27 @@ vertex_ai:
           start_time: null
           end_time: null
           state: ACTIVE # possible states ACTIVE or PAUSED
+        # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
           root_dir: "gs://${project_id}-pipelines/propensity-training"
           transformations: "gs://${project_id}-pipelines/propensity-training/transformations_config_{timestamp}.json"
+          # These are specific data types transformations that will be applied to the dataset.
           custom_transformations: "pipelines/transformations-purchase-propensity.json"
           train_budget_milli_node_hours: 100 # 1000 = 1 hour 
+          # Set these to apply feature selection tuning.
           max_selected_features: 20
           apply_feature_selection_tuning: true
           run_evaluation: true
           run_distillation: false
+          # Use `prediction_type` to "regression" for training models that predict a numerical value.  For classification models, use "classification" and you will
+          # also get the probability likelihood for that class.
           prediction_type: "classification"
+          # The optimization objectives may change depending on the `prediction_type`.
+          # For binary classification, use "maximize-au-roc", "minimize-log-loss", "maximize-au-prc", "maximize-precision-at-recall" or "maximize-recall-at-precision". 
+          # For multi class classification, use "minimize-log-loss". 
+          # For regression, use "minimize-rmse", "minimize-mae", or "minimize-rmsle".
           optimization_objective: "maximize-au-roc" # maximize-precision-at-recall, maximize-au-prc, maximize-au-roc, minimize-log-loss, maximize-recall-at-precision
           #Don't use when parameter `optimization_objective` is not `maximize-precision-at-recall` or `maximize-recall-at-precision`
           #optimization_objective_recall_value: 0.72
@@ -531,8 +617,9 @@ vertex_ai:
           training_fraction: null
           validation_fraction: null
           test_fraction: null
-          # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_7"
-          # data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_15_15"
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
@@ -541,7 +628,9 @@ vertex_ai:
           weight_column: null
           additional_experiments: null
           export_additional_model_without_custom_ops: false
-          #Don't use when parameter `apply_feature_selection_tuning` is `true`
+          # Override the study spec parameters in case you want to restrict hyperparameter search space. Including `model_type`.
+          # In this case, for Value Based Bidding, we're looking for a perfect fit using a tree based model.
+          # Don't use when parameter `apply_feature_selection_tuning` is `true`
           #study_spec_parameters_override:
           #  - parameter_id: "model_type"
           #    categorical_value_spec:
@@ -553,6 +642,7 @@ vertex_ai:
           #      min_value: 0.5
           #      max_value: 1.0
           #    scale_type: UNIT_LINEAR_SCALE
+        # Features to be excluded from the training dataset.
         exclude_features:
           - processed_timestamp
           - data_split
@@ -565,6 +655,8 @@ vertex_ai:
         name: "propensity-prediction-pl"
         job_id_prefix: "propensity-prediction-pl-"
         experiment_name: "propensity-prediction"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 5 * * *"
@@ -578,8 +670,11 @@ vertex_ai:
           job_name_prefix: "propensity-prediction-pl-"
           model_display_name: "propensity-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "logLoss"
+          # The `model_metric_threshold` parameter defines what is the maximum acceptable value for the `model_metric_name` so that the model can be selected.
+          # If the actual models metrics values are higher than this limit, no models will be selected and the pipeline is going to fail.
           model_metric_threshold: 0.9
           number_of_models_considered: 1
+          # This is the prediction dataset table or view.
           bigquery_source: "${project_id}.purchase_propensity.v_purchase_propensity_inference_30_15"
           bigquery_destination_prefix: "${project_id}.purchase_propensity"
           bq_unique_key: "user_pseudo_id"
@@ -589,20 +684,36 @@ vertex_ai:
           accelerator_count: 0
           accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
           generate_explanation: false
+          # This is the probability value that will tell the condition to slit into the two classes.
+          # For probabilities higher than `threashold`, set postive label to 1, otherwise 0.
           threashold: 0.5
           positive_label: "1"
+          # These are parameters to invoke the aggregations of all daily predictions into a single table.
           aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
+          # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "purchase-propensity-30-15"  # purchase-propensity-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
         pipeline_parameters_substitutions: null
     
     # This pipeline contains the configuration parameters for the segmentation training and inference pipelines for the audience segmentation model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
     segmentation:
       training:
         name: "segmentation-training-pl"
         job_id_prefix: "segmentation-training-pl-"
         experiment_name: "segmentation-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 12 * * SAT"
@@ -610,10 +721,16 @@ vertex_ai:
           start_time: null
           end_time: null
           state: ACTIVE # possible states ACTIVE or PAUSED
+        # These are pipeline parameters that will be passed to the pipeline to be compiled
+        # For Demographics Segmentation model, we use the BQML KMeans clustering algorithm.
+        # Check the official documentation for better understanding the algorithm 
+        # (https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-create-kmeans).
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
+          # The `km_num_clusters` parameter defines the number of clusters to be used during training.
           km_num_clusters: 10
+          # The `km_init_method` parameter defines the BQML initialization method to be used
           km_init_method: "KMEANS++"
           km_distance_type: "EUCLIDEAN"
           km_standardize_features: "TRUE"
@@ -624,7 +741,11 @@ vertex_ai:
           model_dataset_id: "${project_id}.audience_segmentation" # to also include project.dataset
           model_name_bq_prefix: "audience_segmentation_model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           vertex_model_name: "audience_segmentation_model"
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
           training_data_bq_table: "${project_id}.audience_segmentation.v_audience_segmentation_training_15"
+          # Features to be excluded from the training dataset.
           exclude_features:
             - processed_timestamp
             - data_split
@@ -635,6 +756,8 @@ vertex_ai:
         name: "segmentation-prediction-pl"
         job_id_prefix: "segmentation-prediction-pl-"
         experiment_name: "segmentation-prediction"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 7 * * *"
@@ -648,17 +771,34 @@ vertex_ai:
           model_dataset_id: "${project_id}.audience_segmentation" # to also include project.dataset
           model_name_bq_prefix: "audience_segmentation_model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
           model_metric_name: "davies_bouldin_index" # one of davies_bouldin_index ,  mean_squared_distance
+          # This is the model metric value that will tell us if the model has good quality or not.
+          # Lower index values indicate a better clustering result. The index is improved (lowered) by increased separation between clusters and decreased variation within clusters.
+          # Check official documentation for better understanding 
+          # (https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-evaluate#mlevaluate_output)
           model_metric_threshold: 10 
           number_of_models_considered: 2
+          # This is the prediction dataset table or view.
           bigquery_source: "${project_id}.audience_segmentation.v_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
+          # These are parameters to invoke the aggregations of all daily predictions into a single table.
           aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
+          # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "audience-segmentation-15" # audience-segmentation-15
         pipeline_parameters_substitutions: null
 
     # This pipeline contains the configuration parameters for the auto audience segmentation inference pipelines for the audience segmentation model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
     auto_segmentation:
       training:
         name: "auto-segmentation-training-pl"
@@ -700,12 +840,24 @@ vertex_ai:
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
           #bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.pred_auto_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"
+          aggregated_predictions_dataset_location: "${location}"
+          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "auto-audience-segmentation-15"
         pipeline_parameters_substitutions: null
 
     # This pipeline contains the configuration parameters for the purchase propensity model training pipelines used as part of the customer lifetime value (clv) inference pipeline.
     # The CLV training and inference pipeline requires a purchase propensity model training and a ltv regression model training. 
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
     propensity_clv:
       training:
         name: "propensity-clv-training-pl"
@@ -769,6 +921,16 @@ vertex_ai:
         pipeline_parameters_substitutions: null
     
     # This pipeline contains the configuration parameters for the customer lifetime value training and inference pipelines for the customer lifetime value model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
     clv:
       training:
         name: "clv-training-pl"
@@ -1052,10 +1214,6 @@ bigquery:
       project_id: "${project_id}"
       dataset: "aggregated_vbb"
       stored_procedure: "aggregated_value_based_bidding_training_preparation"
-    invoke_aggregated_value_based_bidding_explanation_preparation:
-      project_id: "${project_id}"
-      dataset: "aggregated_vbb"
-      stored_procedure: "aggregated_value_based_bidding_explanation_preparation"
     invoke_purchase_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -1086,6 +1244,31 @@ bigquery:
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}" 
+    invoke_auto_audience_segmentation_training_preparation:
+      project_id: "${project_id}"
+      dataset: "auto_audience_segmentation"
+      stored_procedure: "auto_audience_segmentation_training_preparation"
+      lookback_days: 15
+    invoke_purchase_propensity_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "purchase_propensity"
+      stored_procedure: "purchase_propensity_inference_preparation"
+    invoke_customer_lifetime_value_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "customer_lifetime_value"
+      stored_procedure: "customer_lifetime_value_inference_preparation"
+    invoke_audience_segmentation_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "audience_segmentation"
+      stored_procedure: "audience_segmentation_inference_preparation"
+    invoke_auto_audience_segmentation_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "auto_audience_segmentation"
+      stored_procedure: "auto_audience_segmentation_inference_preparation"
+    invoke_aggregated_value_based_bidding_explanation_preparation:
+      project_id: "${project_id}"
+      dataset: "aggregated_vbb"
+      stored_procedure: "aggregated_value_based_bidding_explanation_preparation"
     invoke_backfill_user_lifetime_dimensions:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
@@ -1250,23 +1433,7 @@ bigquery:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_metrics"
-      interval_end_date: 180 
-    invoke_purchase_propensity_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "purchase_propensity"
-      stored_procedure: "purchase_propensity_inference_preparation"
-    invoke_customer_lifetime_value_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "customer_lifetime_value"
-      stored_procedure: "customer_lifetime_value_inference_preparation"
-    invoke_audience_segmentation_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "audience_segmentation"
-      stored_procedure: "audience_segmentation_inference_preparation"
-    invoke_auto_audience_segmentation_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "auto_audience_segmentation"
-      stored_procedure: "auto_audience_segmentation_inference_preparation"
+      interval_end_date: 180
   procedure:
     aggregated_value_based_bidding_training_preparation:
       project_id: "${project_id}"
@@ -1439,6 +1606,7 @@ bigquery:
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
       insert_table: "auto_audience_segmentation_inference_preparation"
+      lookback_days: 15
       expiration_duration_hours: 12
       mds_dataset: "${mds_dataset}"
     aggregate_predictions_procedure:
