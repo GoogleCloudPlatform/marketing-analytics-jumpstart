@@ -27,17 +27,18 @@ def auto_audience_segmentation_feature_engineering_pipeline(
     project_id: str,
     location: Optional[str],
     dataset: str,
+    date_start: str,
+    date_end: str,
     feature_table: str,
     mds_project_id: str,
     mds_dataset: str,
-    date_start: str,
-    date_end: str,
     stored_procedure_name: str,
     full_dataset_table: str,
-    training_table: str,
+    #training_table: str,
+    #inference_table: str,
     reg_expression: str,
     query_auto_audience_segmentation_inference_preparation: str,
-    lookback_days: int = 15,
+    query_auto_audience_segmentation_training_preparation: str,
     perc_keep: int = 35,
     timeout: Optional[float] = 3600.0
 ):
@@ -68,17 +69,23 @@ def auto_audience_segmentation_feature_engineering_pipeline(
     ).after(*[feature_table_preparation])
 
     # Training data preparation
-    auto_audience_segmentation_training_prep = bq_auto_audience_segmentation_training_preparation(
+    #auto_audience_segmentation_training_prep = bq_auto_audience_segmentation_training_preparation(
+    #    location=location,
+    #    project_id=project_id,
+    #    dataset=dataset,
+    #    full_dataset_table_input=full_dataset_table_preparation.outputs['full_dataset_table_output'],
+    #    date_start=date_start,
+    #    date_end=date_end,
+    #    lookback_days=lookback_days,
+    #    stored_procedure_name=stored_procedure_name,
+    #    training_table=training_table
+    #).after(*[full_dataset_table_preparation]).set_display_name('auto_audience_segmentation_training_preparation')
+    auto_audience_segmentation_inf_prep = sp(
+        project=project_id,
         location=location,
-        project_id=project_id,
-        dataset=dataset,
-        full_dataset_table_input=full_dataset_table_preparation.outputs['full_dataset_table_output'],
-        date_start=date_start,
-        date_end=date_end,
-        lookback_days=lookback_days,
-        stored_procedure_name=stored_procedure_name,
-        training_table=training_table
-    ).after(*[full_dataset_table_preparation]).set_display_name('auto_audience_segmentation_training_preparation')
+        query=query_auto_audience_segmentation_training_preparation,
+        timeout=timeout).after(*[full_dataset_table_preparation]).set_display_name('auto_audience_segmentation_training_preparation')
+
     
     # Inference data preparation
     auto_audience_segmentation_inf_prep = sp(

@@ -11,30 +11,21 @@
   -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   -- See the License for the specific language governing permissions and
   -- limitations under the License.
-  -- Setting procedure to lookback from the day before `inference_date`
 
-DECLARE inference_start_date DATE DEFAULT NULL;
-DECLARE inference_end_date DATE DEFAULT NULL;
-DECLARE lookback_days INT64 DEFAULT NULL;
+CALL `{{project_id}}.{{dataset}}.auto_audience_segmentation_dataset_preparation`(DATE_START, DATE_END, LOOKBACK_DAYS);
 
-SET lookback_days = {{lookback_days}};
-SET inference_end_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
-SET inference_start_date = DATE_SUB(inference_end_date, INTERVAL lookback_days DAY);
-
-CALL `{{project_id}}.{{dataset}}.auto_audience_segmentation_dataset_preparation`(inference_start_date, inference_end_date, lookback_days);
-
-CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_training_15`
 AS
 SELECT
   *
 FROM
   `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`;
 
-CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_training_15`
   OPTIONS(
     friendly_name="v_auto_audience_segmentation_inference_15",
     description="View Auto Audience Segmentation dataset using 15 days lookback.",
     labels=[("org_unit", "development")]
   )
 AS
-SELECT DISTINCT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`;
+SELECT DISTINCT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_training_15`;

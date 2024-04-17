@@ -118,6 +118,35 @@ resource "google_bigquery_routine" "audience_segmentation_training_preparation" 
   }
 }
 
+data "local_file" "auto_audience_segmentation_training_preparation_file" {
+  filename = "${local.sql_dir}/procedure/auto_audience_segmentation_training_preparation.sql"
+}
+
+resource "google_bigquery_routine" "auto_audience_segmentation_training_preparation" {
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  routine_id      = "auto_audience_segmentation_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.auto_audience_segmentation_training_preparation_file.content
+  description     = "Procedure that prepares features for Auto Audience Segmentation model training. User-per-day granularity level features. Run this procedure every time before Auto Audience Segmentation model train."
+  arguments {
+    name      = "DATE_START"
+    mode      = "IN"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "DATE_END"
+    mode      = "IN"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "LOOKBACK_DAYS"
+    mode      = "IN"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+}
+
 
 data "local_file" "customer_lifetime_value_inference_preparation_file" {
   filename = "${local.sql_dir}/procedure/customer_lifetime_value_inference_preparation.sql"
@@ -821,6 +850,19 @@ resource "google_bigquery_routine" "invoke_auto_audience_segmentation_inference_
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_auto_audience_segmentation_inference_preparation_file.content
+}
+
+data "local_file" "invoke_auto_audience_segmentation_training_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_auto_audience_segmentation_training_preparation.sql"
+}
+
+resource "google_bigquery_routine" "invoke_auto_audience_segmentation_training_preparation" {
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  routine_id      = "invoke_auto_audience_segmentation_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_auto_audience_segmentation_training_preparation_file.content
 }
 
 

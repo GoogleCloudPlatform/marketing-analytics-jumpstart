@@ -18,6 +18,6 @@ DECLARE LOOKBACK_DAYS INT64 DEFAULT NULL;
 
 SET DATE_END = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY);
 SET DATE_START = DATE '2023-01-01';
-SET lookback_days = {{lookback_days}};
+SET LOOKBACK_DAYS = {{lookback_days}};
 
 CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(DATE_START, DATE_END, LOOKBACK_DAYS);

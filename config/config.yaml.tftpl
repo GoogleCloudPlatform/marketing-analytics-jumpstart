@@ -202,22 +202,22 @@ vertex_ai:
           location: "${location}"
           dataset: "auto_audience_segmentation"
           feature_table: "page_path_cumulative_traffic"
-          mds_project_id: "${mds_project_id}"
-          mds_dataset: "${mds_dataset}"
-          # Chnage these parameters if you training features to include another date interval.
           date_start: "2023-01-01"
           date_end: "2024-04-01"
-          stored_procedure_name: "auto_audience_segmentation_training_preparation"
+          mds_project_id: "${mds_project_id}"
+          mds_dataset: "${mds_dataset}"
+          stored_procedure_name: "auto_audience_segmentation_dataset_preparation"
           full_dataset_table: "auto_audience_segmentation_full_dataset"
-          training_table: "auto_audience_segmentation_training_full_dataset"
+          #training_table: "auto_audience_segmentation_training_15"
+          #inference_table: "auto_audience_segmentation_inference_15"
           # Change the regular expression to match the URL of your website to be categorized.
           reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)$"
           # Increase the percentual `perc_keep` to include more pages in your segmentation, decrease to exclude pages in your segmentation
           perc_keep: 35
-          # By default, during inference, it will look back on 15 days. Change if desired.
-          lookback_days: 15
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
+          query_auto_audience_segmentation_training_preparation: "
+            CALL `{auto_audience_segmentation_training_preparation_procedure_name}`();"
           # The `timeout` parameter defines the timeout of the pipeline in seconds.
           # The default value is 3600 seconds (1 hour).
           timeout: 3600.0
@@ -785,7 +785,7 @@ vertex_ai:
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
-          pubsub_activation_type: "audience-segmentation-15" # audience-segmentation-15
+          pubsub_activation_type: "audience-segmentation-15"
         pipeline_parameters_substitutions: null
 
     # This pipeline contains the configuration parameters for the auto audience segmentation inference pipelines for the audience segmentation model.
@@ -826,6 +826,8 @@ vertex_ai:
         name: "auto-segmentation-prediction-pl"
         job_id_prefix: "auto-segmentation-prediction-pl-"
         experiment_name: "auto-segmentation-prediction"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 7 * * *"
@@ -838,10 +840,11 @@ vertex_ai:
           location: "${cloud_region}"
           model_name: "interest-cluster-model"
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
-          #bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.pred_auto_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"
+          # These are parameters to invoke the aggregations of all daily predictions into a single table.
           aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
+          # These are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "auto-audience-segmentation-15"
         pipeline_parameters_substitutions: null
@@ -858,11 +861,15 @@ vertex_ai:
     ## 9. Run terraform apply
     ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
     ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
+    # This Propensity model will be used during the LTV prediction pipeline, the objective is to only predict revenue for the users who are more likely to purchase.
+    # There is no need to have a specific prediction pipeline, since this model will be used in the prediction pipeline for the LTV.
     propensity_clv:
       training:
         name: "propensity-clv-training-pl"
         job_id_prefix: "propensity-clv-training-pl-"
         experiment_name: "propensity-clv-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "tabular-workflows"
         schedule:
           cron: "TZ=America/New_York 0 16 * * SAT"
@@ -870,19 +877,28 @@ vertex_ai:
           start_time: null
           end_time: null
           state: ACTIVE # possible states ACTIVE or PAUSED
+          # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
           root_dir: "gs://${project_id}-pipelines/propensity-clv-training"
           transformations: "gs://${project_id}-pipelines/propensity-clv-training/transformations_config_{timestamp}.json"
+          # These are specific data types transformations that will be applied to the dataset.
           custom_transformations: "pipelines/transformations-purchase-propensity-cltv.json"
           train_budget_milli_node_hours: 1000 # 1 hour
+          # Set these to apply feature selection tuning.
           max_selected_features: 20
           apply_feature_selection_tuning: true
           run_evaluation: true
           run_distillation: false
+          # Use `prediction_type` to "regression" for training models that predict a numerical value.  For classification models, use "classification" and you will
+          # also get the probability likelihood for that class.
           prediction_type: "classification"
-          optimization_objective: "maximize-au-roc" # maximize-precision-at-recall, maximize-au-prc, maximize-au-roc, minimize-log-loss, maximize-recall-at-precision
+          # The optimization objectives may change depending on the `prediction_type`.
+          # For binary classification, use "maximize-au-roc", "minimize-log-loss", "maximize-au-prc", "maximize-precision-at-recall" or "maximize-recall-at-precision". 
+          # For multi class classification, use "minimize-log-loss". 
+          # For regression, use "minimize-rmse", "minimize-mae", or "minimize-rmsle".
+          optimization_objective: "maximize-au-roc"
           #optimization_objective_recall_value: 0.72
           #optimization_objective_precision_value: 0.72
           target_column: "will_purchase"
@@ -891,6 +907,9 @@ vertex_ai:
           training_fraction: null
           validation_fraction: null
           test_fraction: null
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_30_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
@@ -899,6 +918,7 @@ vertex_ai:
           weight_column: null
           additional_experiments: null
           export_additional_model_without_custom_ops: false
+          # Override the study spec parameters in case you want to restrict hyperparameter search space. Including `model_type`.
           #Don't use when parameter `apply_feature_selection_tuning` is `true`
           #study_spec_parameters_override:
           #  - parameter_id: "model_type"
@@ -911,6 +931,7 @@ vertex_ai:
           #      min_value: 0.5
           #      max_value: 1.0
           #    scale_type: UNIT_LINEAR_SCALE
+        # Features to be excluded from the training dataset.
         exclude_features:
           - processed_timestamp
           - data_split
@@ -932,10 +953,17 @@ vertex_ai:
     ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
     ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
     clv:
+      # The Customer LTV value is by nature a regression model problem. However the challenge is that conversion rates in ecommerce scenarios are very low.
+      # Typically, we see conversions rates around 1-5%, making it extremely hard for a regression model to predict it right.
+      # The strategy adopted was to train a regression model with only customers features for those who bought, and use a propensity model
+      # over the same look back and forward windows to predict whether the user is going to purchase or not.
+      # If the user is not going to purchase then the LTV is zero(0), otherwise the LTV value is the one predicted by the regression model.
       training:
         name: "clv-training-pl"
         job_id_prefix: "clv-training-pl-"
         experiment_name: "clv-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "tabular-workflows"
         schedule:
           cron: "TZ=America/New_York 0 20 * * SAT"
@@ -943,6 +971,7 @@ vertex_ai:
           start_time: null
           end_time: null
           state: ACTIVE # possible states ACTIVE or PAUSED
+        # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
@@ -950,10 +979,13 @@ vertex_ai:
           transformations: "gs://${project_id}-pipelines/clv-training/transformations_config_{timestamp}.json"
           custom_transformations: "pipelines/transformations-customer-ltv.json"
           train_budget_milli_node_hours: 1000 # 1 hour
+          # Set these to apply feature selection tuning.
           max_selected_features: 20 
           apply_feature_selection_tuning: true
           run_evaluation: true
           run_distillation: false
+          # Use `prediction_type` to "regression" for training models that predict a numerical value.  For classification models, use "classification" and you will
+          # also get the probability likelihood for that class.
           prediction_type: "regression"
           target_column: "pltv_revenue_30_days"
           predefined_split_key: "data_split"
@@ -961,7 +993,14 @@ vertex_ai:
           validation_fraction: null
           test_fraction: null
           data_source_csv_filenames: null
+          # The optimization objectives may change depending on the `prediction_type`.
+          # For binary classification, use "maximize-au-roc", "minimize-log-loss", "maximize-au-prc", "maximize-precision-at-recall" or "maximize-recall-at-precision". 
+          # For multi class classification, use "minimize-log-loss". 
+          # For regression, use "minimize-rmse", "minimize-mae", or "minimize-rmsle".
           optimization_objective: minimize-mae # minimize-mae | minimize-rmse | minimize-rmsle
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
           data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/customer_lifetime_value_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
@@ -970,6 +1009,7 @@ vertex_ai:
           weight_column: null
           additional_experiments: null
           export_additional_model_without_custom_ops: false
+          # Override the study spec parameters in case you want to restrict hyperparameter search space. Including `model_type`.
           #Don't use when parameter `apply_feature_selection_tuning` is `true`
           #study_spec_parameters_override:
           #  - parameter_id: "model_type"
@@ -982,6 +1022,7 @@ vertex_ai:
           #      min_value: 0.5
           #      max_value: 1.0
           #    scale_type: UNIT_LINEAR_SCALE
+        # Features to be excluded from the training dataset.
         exclude_features:
           - processed_timestamp
           - data_split
@@ -993,6 +1034,8 @@ vertex_ai:
         name: "clv-prediction-pl"
         job_id_prefix: "clv-prediction-pl-"
         experiment_name: "clv-prediction"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 6 * * *"
@@ -1000,23 +1043,33 @@ vertex_ai:
           start_time: null
           end_time: null
           state: ACTIVE # possible states ACTIVE or PAUSED
+        # These are the pipeline parameters to be used in this convoluted prediction pipeline that takes predictions from LTV model and purchase propensity model.
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${cloud_region}"
           purchase_job_name_prefix: "propensity-prediction-pl-"
           clv_job_name_prefix: "clv-prediction-pl-"
           purchase_model_display_name: "propensity-clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          # The `purchase_model_metric_threshold` parameter defines what is the maximum acceptable value for the `purchase_model_metric_name` so that the model can be selected.
+          # If the actual models metrics values are higher than this limit, no models will be selected and the pipeline is going to fail.
           purchase_model_metric_name: "logLoss"
           purchase_model_metric_threshold: 0.9
           number_of_purchase_models_considered: 1
+          # This is the probability value that will tell the condition to slit into the two classes, purchasers and non-purchasers.
+          # For probabilities higher than `threashold`, sets the LTV prediction pipeline to use the regression model predictions as the customer LTV value gain.
+          # Probabilities lower than `threashold` sets the LTV prediction pipeline to use 0.0 as the customer LTV value gain.  
           threashold: 0.01
           positive_label: "1"
           clv_model_display_name: "clv-training-pl-model" # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+          # The `purchase_model_metric_threshold` parameter defines what is the maximum acceptable value for the `purchase_model_metric_name` so that the model can be selected.
+          # If the actual models metrics values are higher than this limit, no models will be selected and the pipeline is going to fail.
           clv_model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
           clv_model_metric_threshold: 400
           number_of_clv_models_considered: 1
+          # This is the prediction dataset table or view for the purchase model.
           purchase_bigquery_source: "${project_id}.purchase_propensity.v_purchase_propensity_inference_30_30"
           purchase_bigquery_destination_prefix: "${project_id}.customer_lifetime_value"
+          # This is the prediction dataset table or view for the CLV model.
           clv_bigquery_source: "${project_id}.customer_lifetime_value.v_customer_lifetime_value_inference_180_30"
           clv_bigquery_destination_prefix: "${project_id}.customer_lifetime_value"
           purchase_bq_unique_key: "user_pseudo_id"
@@ -1027,8 +1080,10 @@ vertex_ai:
           accelerator_count: 0
           accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
           generate_explanation: false
+          # These are parameters to invoke the aggregations of all daily predictions into a single table.
           aggregated_predictions_dataset_location: "${location}"
           query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
+          # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "cltv-180-30" # cltv-180-180 | cltv-180-90 | cltv-180-30
         pipeline_parameters_substitutions: null
@@ -1038,6 +1093,7 @@ bigquery:
   project_id: "${project_id}"
   region: "${location}"
   dataset:
+    # Dataset for the feature engineering tables and procedures.
     feature_store:
       project_id: "${project_id}"
       name: "feature_store"
@@ -1049,6 +1105,7 @@ bigquery:
       max_time_travel_hours: 168 
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    # Dataset for the purchase propensity use case.
     purchase_propensity:
       name: "purchase_propensity"
       location: "${location}"
@@ -1060,6 +1117,7 @@ bigquery:
       max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    # Dataset for the customer lifetime value use case.
     customer_lifetime_value:
       project_id: "${project_id}"
       name: "customer_lifetime_value"
@@ -1071,6 +1129,7 @@ bigquery:
       max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    # Dataset for the demographic based audience segmentation use case.
     audience_segmentation:
       project_id: "${project_id}"
       name: "audience_segmentation"
@@ -1082,6 +1141,7 @@ bigquery:
       max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    # Dataset for the auto audience segmentation (Interests Based Audience Segmentation) use case.
     auto_audience_segmentation:
       project_id: "${project_id}"
       name: "auto_audience_segmentation"
@@ -1093,6 +1153,7 @@ bigquery:
       max_time_travel_hours: 48
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    # Dataset for the aggregated Value Based Bidding (VBB) use case.
     aggregated_vbb:
       project_id: "${project_id}"
       name: "aggregated_vbb"
@@ -1104,6 +1165,7 @@ bigquery:
       max_time_travel_hours: 48
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    # Dataset for the aggregated predictions tables and procedures.
     aggregated_predictions:
       project_id: "${project_id}"
       name: "aggregated_predictions"
@@ -1111,54 +1173,63 @@ bigquery:
       description: "Dataset with aggregated prediction results from multiple use cases"
       friendly_name: "Aggregated Predictions Dataset"
   table:
+    # Table containing the feature engineered dataset that will be used for the Audience Segmentation prediction pipeline.
     audience_segmentation_inference_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
       table_name: "audience_segmentation_inference_preparation"
       location: "${location}"
       table_description: "Audience Segmentation Inference Preparation table to be used for Model Prediction"
+    # Table containing the feature engineered dataset that will be used for the Customer Lifetime Value prediction pipeline.
     customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
       table_name: "customer_lifetime_value_inference_preparation"
       location: "${location}"
       table_description: "Customer Lifetime Value Inference Preparation table to be used for Model Prediction"
+    # Table containing the feature engineered labels that will be used for the Customer Lifetime Value training pipeline.
     customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
       table_name: "customer_lifetime_value_label"
       location: "${location}"
-      table_description: "Customer Lifetime Value Inference Preparation table to be used for Model Prediction"
+      table_description: "Customer Lifetime Value Label table to be used for Model Traning"
+    # Table containing the feature engineered dataset that will be used for the Purchase Propensity prediction pipeline.
     purchase_propensity_inference_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
       table_name: "purchase_propensity_inference_preparation"
       location: "${location}"
       table_description: "Purchase Propensity Inference Preparation table to be used for Model Prediction"
+    # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
     purchase_propensity_label:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "purchase_propensity_label"
       location: "${location}"
       table_description: "Purchase Propensity Label table to be used for Model Prediction"
+    # Table containing the feature engineered dimensions that will be used for the Purchase Propensity training and inference pipeline.
     user_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_dimensions"
       location: "${location}"
-      table_description: "User Dimensions table as part of the Feature Store"
+      table_description: "User Dimensions table as part of the Feature Store for the Purchase Propensity use case"
+    # Table containing the feature engineered dimensions that will be used for the Customer Lifetime Value training and inference pipeline.
     user_lifetime_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_lifetime_dimensions"
       location: "${location}"
-      table_description: "User Lifetime Dimensions table as part of the Feature Store"
+      table_description: "User Lifetime Dimensions table as part of the Feature Store for the Customer Lifetime Value use case"
+    # Table containing the feature engineered lookback rolling window metrics that will be used for the Audience Segmentation training and inference pipeline.
     user_lookback_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_lookback_metrics"
       location: "${location}"
       table_description: "User Lookback Metrics table as part of the Feature Store"
+    # Table containing the feature engineered 
     user_rolling_window_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1606,6 +1677,16 @@ bigquery:
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
       insert_table: "auto_audience_segmentation_inference_preparation"
+      lookback_days: 15
+      expiration_duration_hours: 12
+      mds_dataset: "${mds_dataset}"
+    auto_audience_segmentation_training_preparation:
+      project_id: "${project_id}"
+      dataset: "auto_audience_segmentation"
+      name: "auto_audience_segmentation_training_preparation"
+      feature_store_project_id: "${project_id}"
+      feature_store_dataset: "feature_store"
+      insert_table: "auto_audience_segmentation_training_preparation"
       lookback_days: 15
       expiration_duration_hours: 12
       mds_dataset: "${mds_dataset}"
