@@ -816,7 +816,7 @@ vertex_ai:
           project_id: "${project_id}"
           dataset: "auto_audience_segmentation"
           model_name: "interest-cluster-model"
-          training_table: "auto_audience_segmentation_training_full_dataset"
+          training_table: "auto_audience_segmentation_training_15"
           p_wiggle: 10
           min_num_clusters: 3
           bucket_name: "${project_id}-custom-models"
@@ -1229,43 +1229,49 @@ bigquery:
       table_name: "user_lookback_metrics"
       location: "${location}"
       table_description: "User Lookback Metrics table as part of the Feature Store"
-    # Table containing the feature engineered 
+    # Table containing the feature engineered rolling window metrics that will be used for the Customer Lifetime Value training and inference pipeline.
     user_rolling_window_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_rolling_window_lifetime_metrics"
       location: "${location}"
-      table_description: "User Rolling Window Lifetime Metrics table as part of the Feature Store" 
+      table_description: "User Rolling Window Lifetime Metrics table as part of the Feature Store for the Customer Lifetime Value use case" 
+    # Table containing the featured engineered rolling window metrics that will be used for the Purchase Propensity training and inference pipeline.
     user_rolling_window_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_rolling_window_metrics"
       location: "${location}"
-      table_description: "User Rolling Window Metrics table as part of the Feature Store"
+      table_description: "User Rolling Window Metrics table as part of the Feature Store for Purchase Propensity use case"
+    # Table containing the feature engineered all users metrics that will be used for the Customer Lifetime Value training and inference pipeline.
     user_scoped_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_scoped_lifetime_metrics"
       location: "${location}"
-      table_description: "User Scoped Lifetime Metrics table as part of the Feature Store"
+      table_description: "User Scoped Lifetime Metrics table as part of the Feature Store for the Customer Lifetime Value use case"
+    # Table containing the feature engineered all users metrics that will be used for the Purchase Propensity training and inference pipeline.
     user_scoped_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_scoped_metrics"
       location: "${location}"
-      table_description: "User Scoped Metrics table as part of the Feature Store"
+      table_description: "User Scoped Metrics table as part of the Feature Store for the Purchase Propensity use case"
+    # Table containing the feature engineered all users metrics that will be used for the Audience Segmentation training and inference pipeline.
     user_scoped_segmentation_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_scoped_segmentation_metrics"
       location: "${location}"
-      table_description: "User Scoped Segmentation Metrics table as part of the Feature Store" 
+      table_description: "User Scoped Segmentation Metrics table as part of the Feature Store for Audience Segmentation use case" 
+    # Table containing the feature engineered user dimensions that will be used for the Audience Segmentation training and inference pipeline.
     user_segmentation_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "user_segmentation_dimensions"
       location: "${location}"
-      table_description: "User Segmentation Dimensions table as part of the Feature Store"
+      table_description: "User Segmentation Dimensions table as part of the Feature Store for Audience Segmentation use case"
+    # Table containing the feature engineered user aggregated sessions and events metrics that will be used for the Purchase Propensity training and inference pipeline
     user_session_event_aggregated_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"

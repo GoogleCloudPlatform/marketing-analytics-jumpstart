@@ -18,7 +18,7 @@ DECLARE inference_end_date DATE DEFAULT NULL;
 DECLARE lookback_days INT64 DEFAULT NULL;
 
 SET lookback_days = {{lookback_days}};
-SET inference_end_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
+SET inference_end_date = inference_date;
 SET inference_start_date = DATE_SUB(inference_end_date, INTERVAL lookback_days DAY);
 
 CALL `{{project_id}}.{{dataset}}.auto_audience_segmentation_dataset_preparation`(inference_start_date, inference_end_date, lookback_days);

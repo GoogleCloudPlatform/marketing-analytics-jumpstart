@@ -28,10 +28,6 @@ from pipelines.components.bigquery.component import bq_flatten_tabular_binary_pr
 
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
 
-# elect_best_tabular_model = components.load_component_from_file(
-#    os.path.join(os.path.dirname(__file__),'components/vertex/component_metadata/elect_best_tabular_model.yaml')
-#  )
-
 
 # Function containing a KFP definition for a Prediction pipeline that uses a Tabular Workflow Model.
 # This is for Binary Classification model.
