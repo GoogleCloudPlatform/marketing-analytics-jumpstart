@@ -1279,239 +1279,406 @@ bigquery:
       location: "${location}"
       table_description: "User Session Event Aggregated Metrics table as part of the Feature Store" 
   query:
+    # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     audience_segmentation_query_template:
       none: none
+    # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     auto_audience_segmentation_query_template:
       none: none
+    # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     purchase_propensity_query_template:
       none: none
+    # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     cltv_query_template:
       none: none
+    # This is a stored procedure that CALLs the Aggregated Value Based Bidding Training Preparation stored procedure.
     invoke_aggregated_value_based_bidding_training_preparation:
       project_id: "${project_id}"
       dataset: "aggregated_vbb"
       stored_procedure: "aggregated_value_based_bidding_training_preparation"
+    # This is a stored procedure that CALLs the Purchase Propensity Training Preparation stored procedure.
     invoke_purchase_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
       stored_procedure: "purchase_propensity_training_preparation"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 15
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 30
+      # `training_split_end_number` must be smaller then `validation_split_end_number`.
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = TRAIN (Between 1 and `training_split_end_number`)
       train_split_end_number: 5
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = VALIDATE (Between `training_split_end_number` and `validation_split_end_number`)
+      # The rest of the rows will belong to the `data_split` = TEST (Between `validation_split_end_number` and 10)
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is a stored procedure that CALLs the Audience Segmentation Training Preparation stored procedure.
     invoke_audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
       stored_procedure: "audience_segmentation_training_preparation"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 1
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 15
+      # `training_split_end_number` must be smaller then `validation_split_end_number`.
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = TRAIN (Between 1 and `training_split_end_number`)
       train_split_end_number: 5
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = VALIDATE (Between `training_split_end_number` and `validation_split_end_number`)
+      # The rest of the rows will belong to the `data_split` = TEST (Between `validation_split_end_number` and 10)
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is a stored procedure that CALLs the Customer Lifetime Value Training Preparation stored procedure.
     invoke_customer_lifetime_value_training_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
       stored_procedure: "customer_lifetime_value_training_preparation"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 180
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 180
+      # `training_split_end_number` must be smaller then `validation_split_end_number`.
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = TRAIN (Between 1 and `training_split_end_number`)
       train_split_end_number: 5
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = VALIDATE (Between `training_split_end_number` and `validation_split_end_number`)
+      # The rest of the rows will belong to the `data_split` = TEST (Between `validation_split_end_number` and 10)
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}" 
+    # This is a stored procedure that CALLs the Auto Audience Segmentation Training Preparation stored procedure.
     invoke_auto_audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "auto_audience_segmentation"
       stored_procedure: "auto_audience_segmentation_training_preparation"
+      # The `lookback_days` parameter is the number of days to look back for training data.
       lookback_days: 15
+    # This is a stored procedure that CALLs the Purchase Propensity Training Inference Preparation stored procedure.
     invoke_purchase_propensity_inference_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
       stored_procedure: "purchase_propensity_inference_preparation"
+    # This is a stored procedure that CALLs the Customer Lifetime Value Inference Preparation stored procedure.
     invoke_customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
       stored_procedure: "customer_lifetime_value_inference_preparation"
+    # This is a stored procedure that CALLs the Audience Segmentation Inference Preparation stored procedure.
     invoke_audience_segmentation_inference_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
       stored_procedure: "audience_segmentation_inference_preparation"
+    # This is a stored procedure that CALLs the Auto Audience Segmentation Inference Preparation stored procedure.
     invoke_auto_audience_segmentation_inference_preparation:
       project_id: "${project_id}"
       dataset: "auto_audience_segmentation"
       stored_procedure: "auto_audience_segmentation_inference_preparation"
+    # This is a stored procedure that CALLs the Aggregated Value Based Bidding Explanation Preparation stored procedure.
     invoke_aggregated_value_based_bidding_explanation_preparation:
       project_id: "${project_id}"
       dataset: "aggregated_vbb"
       stored_procedure: "aggregated_value_based_bidding_explanation_preparation"
+    # This is a stored procedure that CALLs the User Lifetime Dimensions Backfill stored procedure.
     invoke_backfill_user_lifetime_dimensions:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_lifetime_dimensions"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 180
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 180
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Scoped Lifetime Metrics Backfill stored procedure.
     invoke_backfill_user_scoped_lifetime_metrics:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}" 
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_scoped_lifetime_metrics"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 180
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 180
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Session Event Aggregated Metrics Backfill stored procedure.
     invoke_backfill_user_session_event_aggregated_metrics:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}" 
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_session_event_aggregated_metrics"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 15
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 30
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 30
+    # This is a stored procedure that CALLs the Customer Lifetime Value Label Backfill stored procedure.
     invoke_backfill_customer_lifetime_value_label:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "customer_lifetime_value_label"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 180
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 180
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Lookback Metrics Backfill stored procedure.
     invoke_backfill_user_lookback_metrics:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_lookback_metrics"
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 15
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 15
+    # This is a stored procedure that CALLs the User Rolling Window Lifetime Metrics Backfill stored procedure.
     invoke_backfill_user_rolling_window_lifetime_metrics:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_rolling_window_lifetime_metrics"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 180
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 180
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
-    invoke_backfill_user_scoped_segmentation_metrics:
-      mds_project_id: "${mds_project_id}"
-      mds_dataset: "${mds_dataset}"
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      insert_table: "user_scoped_segmentation_metrics"
-      interval_min_date: 15
-      interval_end_date: 15 
-    invoke_backfill_user_segmentation_dimensions:
-      mds_project_id: "${mds_project_id}"
-      mds_dataset: "${mds_dataset}"
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      insert_table: "user_segmentation_dimensions"
-      interval_min_date: 15
-      interval_end_date: 15
+    # This is a stored procedure that CALLs the Purchase Propensity Label Backfill stored procedure.
     invoke_backfill_purchase_propensity_label:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "purchase_propensity_label"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 15
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 30
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 30
+    # This is a stored procedure that CALLs the User Dimensions Backfill stored procedure.
     invoke_backfill_user_dimensions:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_dimensions"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 15
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 30
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 30
+    # This is a stored procedure that CALLs the User Rolling Window Metrics Backfill stored procedure.
     invoke_backfill_user_rolling_window_metrics:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}" 
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_rolling_window_metrics"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 15
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 30
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 30
+    # This is a stored procedure that CALLs the User Scoped Metrics Backfill stored procedure.
     invoke_backfill_user_scoped_metrics:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       insert_table: "user_scoped_metrics"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
       interval_max_date: 15
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
       interval_min_date: 30
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 30 
+    # This is a stored procedure that CALLs the User Scoped Segmentation Metrics Backfill stored procedure.
+    invoke_backfill_user_scoped_segmentation_metrics:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_scoped_segmentation_metrics"
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
+      interval_min_date: 15
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_end_date: 15 
+    # This is a stored procedure that CALLs the User Segmentation Dimensions Backfill stored procedure.
+    invoke_backfill_user_segmentation_dimensions:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_segmentation_dimensions"
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
+      interval_min_date: 15
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_end_date: 15
+    # This is a stored procedure that CALLs the User Lifetime Value Label stored procedure.
     invoke_customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "customer_lifetime_value_label"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_input_date: 180
+    # This is a stored procedure that CALLs the Purchase Propensity Label stored procedure.
     invoke_purchase_propensity_label:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "purchase_propensity_label"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_input_date: 15
+    # This is a stored procedure that CALLs the User Dimensions stored procedure.
     invoke_user_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_dimensions"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Lifetime Dimensions stored procedure.
     invoke_user_lifetime_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_lifetime_dimensions"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180 
+    # This is a stored procedure that CALLs the User Scoped Lifetime Metrics stored procedure.
     invoke_user_scoped_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_lifetime_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180 
+    # This is a stored procedure that CALLs the User Session Event Aggregated Metrics stored procedure.
     invoke_user_session_event_aggregated_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_session_event_aggregated_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Lookback Metrics stored procedure.
     invoke_user_lookback_metrics: 
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_lookback_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Rolling Window Lifetime Metrics stored procedure.
     invoke_user_rolling_window_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_rolling_window_lifetime_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Scoped Segmentation Metrics stored procedure.
     invoke_user_scoped_segmentation_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_segmentation_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Segmentation Dimensions stored procedure.
     invoke_user_segmentation_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_segmentation_dimensions"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Rolling Window Metrics stored procedure.
     invoke_user_rolling_window_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_rolling_window_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Scoped Metrics stored procedure.
     invoke_user_scoped_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "user_scoped_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
       interval_end_date: 180
+  # This section sets the parameters for the features, training and inference procedures that insert data into tables and views to be used for
+  # training and prediction.
+  # There is no strict recommendation on the right parameters that will maximize the models performance, however here are some back of the envelope numbers.
+  #      Purchase Propensity model: 1 month-2 years for dates interval. From Xk - 10M users.
+  #      Customer LTV model: 6 months-2 years for dates interval. From Xk - 10M users.
+  #      Audience Segmentation / Auto Audience Segmentation models: 1 month-1 year for dates interval. From XXX - 10M users.
+  #      Aggregated VBB model: 1000 days - 2000 days 
+  #         Note: For Aggregated VBB, it's common to duplicate rows to that training dataset size reaches at least 1k rows for AutoML to train a model.
+  #               If that is your case, this is not a problem since typically duplicated rows has a similar effect as of training the model for more epochs.
   procedure:
+    # This is the stored procedure that collects the features and prepare the examples rows to train a model.
+    # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
+    # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
+    # you will provide at maximum a couple of millions of rows.
+    # Note: For the Aggregated Value Based Bidding use case, you usually need less than 10000 rows returned qhen querying the view.
     aggregated_value_based_bidding_training_preparation:
       project_id: "${project_id}"
       dataset: "aggregated_vbb"
@@ -1520,22 +1687,34 @@ bigquery:
       mds_dataset: "${mds_dataset}"
       view_name: "aggregated_value_based_bidding_training_full_dataset"
       expiration_duration_hours: 168
+      # This is the datetime column name.
       datetime_column: "Dt"
+      # Change the `eval_start_date` and `eval_end_date` in case you need your model to be validated in another interval of time.
+      # The explanation metrics will be generated based on this subset.
       eval_start_date: "2024-01-01"
       eval_end_date: "2024-03-31"
+    # This is the stored procedure that collects the features and prepare the examples rows to explain the features importances.
+    # This procedure also prepares a few tables for reporting.
     aggregated_value_based_bidding_explanation_preparation:
       project_id: "${project_id}"
       dataset: "aggregated_vbb"
       name: "aggregated_value_based_bidding_explanation_preparation"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+      # These are tables to be created to be used in the Looker Studio Report.
       volume_table_name: "aggregated_value_based_bidding_volume"
       corr_table_name: "aggregated_value_based_bidding_correlation"
       daily_volume_view_name: "aggregated_value_based_bidding_volume_daily"
       weekly_volume_view_name: "aggregated_value_based_bidding_volume_weekly"
+      # This is the datetime column name.
       datetime_column: "Dt"
+      # These are the `start_date` and `end_date` for which we're using the generate the tables above for Reporting.
       start_date: "'2024-01-01'"
       end_date: "NULL"
+    # This is the stored procedure that collects the features and prepare the examples rows to train a model.
+    # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
+    # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
+    # you will provide at maximum a couple of millions of rows.
     audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
@@ -1546,7 +1725,11 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168 
+      # This parameter helps you set a maximum number of samples per split.
       samples_per_split: 100000
+    # This is the stored procedure that calculates the label column for the Customer Lifetime Value use case.
+    # The label represents the lifetime value revenue gain over a period of time.
+    # Typically, looking at a period of 30 days in the future.
     customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1554,6 +1737,10 @@ bigquery:
       insert_table: "customer_lifetime_value_label"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that collects the features and prepare the examples rows to train a model.
+    # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
+    # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
+    # you will provide at maximum a couple of millions of rows.
     customer_lifetime_value_training_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
@@ -1564,6 +1751,9 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168
+    # This is the stored procedure that calculates the label column for the Purchase Propensity use case.
+    # The label represents wether a user will make a purchase over a period of time.
+    # Typically, looking at a period of 15 to 30 days in the future.
     purchase_propensity_label:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1571,6 +1761,10 @@ bigquery:
       insert_table: "purchase_propensity_label"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that collects the features and prepare the examples rows to train a model.
+    # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
+    # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
+    # you will provide at maximum a couple of millions of rows.
     purchase_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -1581,6 +1775,7 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168
+    # 
     user_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1651,6 +1846,7 @@ bigquery:
       insert_table: "user_session_event_aggregated_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     purchase_propensity_inference_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -1659,6 +1855,7 @@ bigquery:
       feature_store_dataset: "feature_store"
       insert_table: "purchase_propensity_inference_preparation"
       expiration_duration_hours: 168
+    # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
       dataset: "customer_lifetime_value"
@@ -1667,6 +1864,7 @@ bigquery:
       feature_store_dataset: "feature_store"
       insert_table: "customer_lifetime_value_inference_preparation"
       expiration_duration_hours: 168
+    # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     audience_segmentation_inference_preparation:
       project_id: "${project_id}"
       dataset: "audience_segmentation"
@@ -1676,6 +1874,7 @@ bigquery:
       insert_table: "audience_segmentation_inference_preparation"
       expiration_duration_hours: 168
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     auto_audience_segmentation_inference_preparation:
       project_id: "${project_id}"
       dataset: "auto_audience_segmentation"
@@ -1686,6 +1885,10 @@ bigquery:
       lookback_days: 15
       expiration_duration_hours: 12
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that collects the features and prepare the examples rows to train a model.
+    # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
+    # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
+    # you will provide at maximum a couple of millions of rows.
     auto_audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "auto_audience_segmentation"
@@ -1696,6 +1899,8 @@ bigquery:
       lookback_days: 15
       expiration_duration_hours: 12
       mds_dataset: "${mds_dataset}"
+    # This procedure aggregates all the daily predictions generates into a consumable table grouped for each user.
+    # This table is used for multiple Looker Studio dashboards reports. 
     aggregate_predictions_procedure:
       project_id: "${project_id}"
       dataset_id: "aggregated_predictions"
