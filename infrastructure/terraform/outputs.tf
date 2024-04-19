@@ -19,5 +19,5 @@ output "tf_state_project_id" {
 
 output "lookerstudio_create_dashboard_url" {
   description = "URL for creating Looker Studio dashboard from template"
-  value       = module.monitoring.lookerstudio_create_dashboard_url
+  value       = var.deploy_monitoring ? module.monitoring[0].lookerstudio_create_dashboard_url : ""
 }

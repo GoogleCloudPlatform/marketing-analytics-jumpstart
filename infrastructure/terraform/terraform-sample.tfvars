@@ -23,6 +23,7 @@ create_prod_environment    = true
 deploy_activation    = true
 deploy_feature_store = true
 deploy_pipelines     = true
+deploy_monitoring    = true
 
 ####################  DATA VARIABLES  #################################
 

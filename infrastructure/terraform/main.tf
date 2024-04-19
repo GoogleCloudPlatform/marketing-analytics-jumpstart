@@ -361,6 +361,7 @@ module "activation" {
 # The monitoring resources are created in the `data_project_id` project.
 module "monitoring" {
   source                   = "./modules/monitor"
+  count                    = var.deploy_monitoring ? 1 : 0
   project_id               = var.data_project_id
   location                 = var.google_default_region
   mds_project_id           = var.data_project_id
