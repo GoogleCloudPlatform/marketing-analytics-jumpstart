@@ -24,6 +24,7 @@ create_prod_environment    = true
 deploy_activation    = true
 deploy_feature_store = true
 deploy_pipelines     = true
+deploy_monitoring    = true
 
 ####################  DATA VARIABLES  #################################
 
@@ -38,6 +39,10 @@ source_ads_export_data = [
 ####################  FEATEURE STORE VARIABLES  #################################
 
 feature_store_project_id = "${MAJ_FEATURE_STORE_PROJECT_ID}"
+
+####################     ML MODEL VARIABLES    #################################
+
+website_url = "${MAJ_WEBSITE_URL}"
 
 ####################  ACTIVATION VARIABLES  #################################
 
