@@ -18,12 +18,19 @@ locals {
 
   adsDataVariable = jsonencode(var.source_ads_export_data)
 }
+
+# This resources creates a workflow that runs the Dataform incremental pipeline.
 resource "google_workflows_workflow" "dataform-incremental-workflow" {
   project         = var.project_id
   name            = "dataform-${var.environment}-incremental"
   region          = var.region
   description     = "Dataform incremental workflow for ${var.environment} environment"
   service_account = google_service_account.workflow-dataform.email
+  # The source code includes the following steps:
+  # Init: This step initializes the workflow by assigning the value of the dataform_repository_id variable to the repository variable.
+  # Create Compilation Result: This step creates a compilation result for the Dataform repository. The compilation result includes the git commit hash and the code compilation configuration.
+  # Create Workflow Invocation: This step creates a workflow invocation for the compilation result. The workflow invocation includes the compilation result and the invocation configuration. The invocation configuration specifies the tags that will be used to filter the Dataform files that are included in the workflow.
+  # Complete: This step completes the workflow by returning the name of the workflow invocation.
   source_contents = <<-EOF
 main:
   steps:

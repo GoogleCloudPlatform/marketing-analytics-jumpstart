@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This is a module that activates APIs services in the Cloud Project.
 # https://registry.terraform.io/modules/terraform-google-modules/project-factory/google/latest/submodules/project_services
 module "data-processing-project-services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"

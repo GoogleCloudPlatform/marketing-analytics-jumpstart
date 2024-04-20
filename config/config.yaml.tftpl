@@ -1730,6 +1730,7 @@ bigquery:
     # This is the stored procedure that calculates the label column for the Customer Lifetime Value use case.
     # The label represents the lifetime value revenue gain over a period of time.
     # Typically, looking at a period of 30 days in the future.
+    # The granularity level is per user per day.
     customer_lifetime_value_label:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1754,6 +1755,7 @@ bigquery:
     # This is the stored procedure that calculates the label column for the Purchase Propensity use case.
     # The label represents wether a user will make a purchase over a period of time.
     # Typically, looking at a period of 15 to 30 days in the future.
+    # The granularity level is per user per day.
     purchase_propensity_label:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1775,7 +1777,9 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168
-    # 
+    # This is the stored procedure that UPSERTs new user dimensions rows daily. 
+    # The granularity level is per user per day.
+    # These dimensions are used for the Purchase Propensity use case.
     user_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1783,6 +1787,9 @@ bigquery:
       insert_table: "user_dimensions"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new user dimensions rows daily. 
+    # The granularity level is per user per day.
+    # These dimensions are used for the Customer Lifetime Value use case.
     user_lifetime_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1790,6 +1797,9 @@ bigquery:
       insert_table: "user_lifetime_dimensions"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new look back rolling windows metrics rows daily.
+    # The granularity level is per user per day.
+    # These metrics are used for the Audience Segmentation use case.
     user_lookback_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1797,6 +1807,9 @@ bigquery:
       insert_table: "user_lookback_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTS new look back rolling windows metrics rows daily.
+    # The granularity level is per user per day.
+    # These metrics are used for the Customer Lifetime Value use case.
     user_rolling_window_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1804,6 +1817,9 @@ bigquery:
       insert_table: "user_rolling_window_lifetime_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new look back rolling windows metrics rows daily.
+    # The granularity level is per user per day.
+    # These metrics are used for the Purchase Propensity use case.
     user_rolling_window_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1811,6 +1827,9 @@ bigquery:
       insert_table: "user_rolling_window_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new aggregated users metrics rows daily.
+    # The granularity level is per day, whereas the calculations take into consideration all users.
+    # These metrics are used for the Customer Lifetime Value use case.
     user_scoped_lifetime_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1818,6 +1837,9 @@ bigquery:
       insert_table: "user_scoped_lifetime_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new aggregated users metrics rows daily.
+    # The granularity level is per day, whereas the calculations take into consideration all users.
+    # These metrics are used for the Purchase Propensity use case.
     user_scoped_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1825,6 +1847,9 @@ bigquery:
       insert_table: "user_scoped_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new aggregated users metrics rows daily.
+    # The granularity level is per day, whereas the calculations take into consideration all users.
+    # These metrics are used for the Audience Segmentation use case.
     user_scoped_segmentation_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1832,6 +1857,9 @@ bigquery:
       insert_table: "user_scoped_segmentation_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new user dimensions rows daily. 
+    # The granularity level is per user per day.
+    # These dimensions are used for the Audience Segmentation use case.
     user_segmentation_dimensions:
       project_id: "${project_id}"
       dataset: "feature_store"
@@ -1839,6 +1867,9 @@ bigquery:
       insert_table: "user_segmentation_dimensions"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new aggregated sessions and events metrics rows daily. 
+    # The granularity level is per user per day.
+    # These metrics are used for the Purchase Propensity use case.
     user_session_event_aggregated_metrics:
       project_id: "${project_id}"
       dataset: "feature_store"

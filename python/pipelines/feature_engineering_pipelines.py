@@ -129,13 +129,6 @@ def audience_segmentation_feature_engineering_pipeline(
         sp(
             project=project_id,
             location=location,
-            query=query_user_scoped_segmentation_metrics,
-            timeout=timeout).set_display_name('user_scoped_segmentation_metrics')
-    )
-    phase_1.append(
-        sp(
-            project=project_id,
-            location=location,
             query=query_user_segmentation_dimensions,
             timeout=timeout).set_display_name('user_segmentation_dimensions')
     )
@@ -188,13 +181,6 @@ def purchase_propensity_feature_engineering_pipeline(
             location=location,
             query=query_user_rolling_window_metrics,
             timeout=timeout).set_display_name('user_rolling_window_metrics')
-    )
-    phase_1.append(
-        sp(
-            project=project_id,
-            location=location,
-            query=query_user_scoped_metrics,
-            timeout=timeout).set_display_name('user_scoped_metrics')
     )
     phase_1.append(
         sp(

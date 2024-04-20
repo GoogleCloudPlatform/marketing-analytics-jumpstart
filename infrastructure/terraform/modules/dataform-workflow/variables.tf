@@ -28,7 +28,8 @@ variable "environment" {
 
 variable "daily_schedule" {
   type    = string
-  default = "2 5 * * *"
+  # This schedule executes every days, each 2 hours between 5AM and 11PM.
+  default = "0 5-23/2 * * *" #"2 5 * * *"
 }
 
 variable "dataform_repository_id" {
