@@ -97,9 +97,6 @@ CREATE OR REPLACE TEMP TABLE training_preparation_uwm as (
     MAX(UWM.checkouts_past_90_120_day) OVER(user_rolling_window) AS checkouts_past_90_120_day,
     MAX(UWM.checkouts_past_120_150_day) OVER(user_rolling_window) AS checkouts_past_120_150_day,
     MAX(UWM.checkouts_past_150_180_day) OVER(user_rolling_window) AS checkouts_past_150_180_day,
-    --MAX(UWM.ltv_revenue_past_1_30_day) OVER(user_rolling_window) AS ltv_revenue_past_1_30_day,
-    --MAX(UWM.ltv_revenue_past_30_90_day) OVER(user_rolling_window) AS ltv_revenue_past_30_90_day,
-    --MAX(UWM.ltv_revenue_past_90_180_day) OVER(user_rolling_window) AS ltv_revenue_past_90_180_day,
 FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` UWM
 WHERE
@@ -130,10 +127,6 @@ CREATE OR REPLACE TEMP TABLE training_preparation as (
     UD.user_pseudo_id,
     UD.user_id,
     UD.feature_date,
-    --UD.month_of_the_year,
-    --UD.week_of_the_year,
-    --UD.day_of_the_month,
-    --UD.day_of_week,
     UD.device_category,
     UD.device_mobile_brand_name,
     UD.device_mobile_model_name,

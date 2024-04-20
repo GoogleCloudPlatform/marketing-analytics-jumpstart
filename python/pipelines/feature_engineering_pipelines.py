@@ -182,13 +182,6 @@ def purchase_propensity_feature_engineering_pipeline(
             query=query_user_rolling_window_metrics,
             timeout=timeout).set_display_name('user_rolling_window_metrics')
     )
-    phase_1.append(
-        sp(
-            project=project_id,
-            location=location,
-            query=query_user_session_event_aggregated_metrics,
-            timeout=timeout).set_display_name('user_session_event_aggregated_metrics')
-    )
     # Training data preparation
     purchase_propensity_train_prep = sp(
         project=project_id,
@@ -237,13 +230,6 @@ def customer_lifetime_value_feature_engineering_pipeline(
             location=location,
             query=query_user_rolling_window_lifetime_metrics,
             timeout=timeout).set_display_name('user_rolling_window_lifetime_metrics')
-    )
-    phase_1.append(
-        sp(
-            project=project_id,
-            location=location,
-            query=query_user_scoped_lifetime_metrics,
-            timeout=timeout).set_display_name('user_scoped_lifetime_metrics')
     )
     # Training data preparation
     customer_lifetime_value_train_prep = sp(
