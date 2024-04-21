@@ -77,8 +77,6 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    ```shell
    gcloud auth login
    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
-
-   export GOOGLE_APPLICATION_CREDENTIALS=[LOCATION_WHERE YOUR_KEY_FILE_IS_STORED]/application_default_credentials.json
    ```
 
     **Note:** You will receive an error message informing the Cloud Resource Manager API has not been used/enabled for your project, similar to the following: 
@@ -194,15 +192,24 @@ Because a Cloud Shell session is ephemeral, your Cloud Shell session could termi
 
  **Note:** The prerequisites for running this script are that you have set all the variable values in the TF variables file `$TERRAFORM_RUN_DIR}/terraform.tfvars` and have applied the terraform configuration once before.
 
-To configure a new terminal session run following commands:
+Follow the authentication workflow, since your credentials expires daily:
+
+   ```bash
+   # Authenticate your user to Google Cloud
+   gcloud auth login
+   # Authenticate your application default login to Google Cloud with the right scopes for Terraform to run
+   gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+   ```
+
+To resume working on a new terminal session run the following commands:
 
   ```bash
+  # Change directory to the source code root directory
   SOURCE_ROOT="${HOME}/marketing-analytics-jumpstart"
   cd ${SOURCE_ROOT}
-  . scripts/session-resume.sh
+  # Resume the terminal session using values stored on Terraform outputs
+  ./scripts/session-resume.sh
   ```
-
-Follow the authentication workflow, if prompted.
 
 ## Resources created
 
