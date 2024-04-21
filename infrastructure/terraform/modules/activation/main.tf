@@ -16,7 +16,6 @@ locals {
   app_prefix                                     = "activation"
   source_root_dir                                = "../.."
   poetry_run_alias                               = "${var.poetry_cmd} run"
-  sql_dir                                        = "${local.source_root_dir}/sql/query"
   template_dir                                   = "${local.source_root_dir}/templates"
   pipeline_source_dir                            = "${local.source_root_dir}/python/activation"
   trigger_function_dir                           = "${local.source_root_dir}/python/function"
@@ -154,6 +153,8 @@ resource "null_resource" "create_custom_dimensions" {
   triggers = {
     services_enabled_project = module.project_services.project_id
     source_contents_hash     = local.audience_segmentation_activation_query_file_content_hash
+    #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
+    #source_activation_application_python_hash = local.activation_application_content_hash
   }
   provisioner "local-exec" {
     command     = <<-EOT
@@ -280,31 +281,67 @@ resource "google_storage_bucket_object" "measurement_protocol_payload_template_f
 }
 
 # This resource creates a bucket object using as content the audience_segmentation_query_template_file file.
+data "template_file" "audience_segmentation_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.audience_segmentation_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
+}
+
 resource "google_storage_bucket_object" "audience_segmentation_query_template_file" {
-  name   = "${local.configuration_folder}/${local.audience_segmentation_query_template_file}"
-  source = "${local.sql_dir}/${local.audience_segmentation_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.audience_segmentation_query_template_file}"
+  content = data.template_file.audience_segmentation_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "auto_audience_segmentation_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.auto_audience_segmentation_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 # This resource creates a bucket object using as content the auto_audience_segmentation_query_template_file file.
 resource "google_storage_bucket_object" "auto_audience_segmentation_query_template_file" {
-  name   = "${local.configuration_folder}/${local.auto_audience_segmentation_query_template_file}"
-  source = "${local.sql_dir}/${local.auto_audience_segmentation_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.auto_audience_segmentation_query_template_file}"
+  content = data.template_file.auto_audience_segmentation_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "cltv_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.cltv_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 # This resource creates a bucket object using as content the cltv_query_template_file file.
 resource "google_storage_bucket_object" "cltv_query_template_file" {
-  name   = "${local.configuration_folder}/${local.cltv_query_template_file}"
-  source = "${local.sql_dir}/${local.cltv_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.cltv_query_template_file}"
+  content = data.template_file.cltv_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+data "template_file" "purchase_propensity_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.purchase_propensity_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
 }
 
 # This resource creates a bucket object using as content the purchase_propensity_query_template_file file.
 resource "google_storage_bucket_object" "purchase_propensity_query_template_file" {
-  name   = "${local.configuration_folder}/${local.purchase_propensity_query_template_file}"
-  source = "${local.sql_dir}/${local.purchase_propensity_query_template_file}"
-  bucket = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/${local.purchase_propensity_query_template_file}"
+  content = data.template_file.purchase_propensity_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
 }
 
 # This data resources creates a data resource that renders a template file and stores the rendered content in a variable.
@@ -338,6 +375,10 @@ module "activation_pipeline_container" {
 
   create_cmd_body  = "builds submit --project=${var.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
   destroy_cmd_body = "artifacts docker images delete --project=${var.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
+
+  create_cmd_triggers = {
+    source_contents_hash = local.activation_application_content_hash
+  }
 }
 
 # This module executes a gcloud command to build a dataflow flex template and uploads it to Dataflow
@@ -349,6 +390,10 @@ module "activation_pipeline_template" {
   platform         = "linux"
   create_cmd_body  = "dataflow flex-template build --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
   destroy_cmd_body = "storage rm --project=${var.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\""
+
+  create_cmd_triggers = {
+    source_contents_hash = local.activation_application_content_hash
+  }
 
   module_depends_on = [
     module.activation_pipeline_container.wait

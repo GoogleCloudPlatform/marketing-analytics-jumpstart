@@ -151,6 +151,7 @@ class TransformToPayload(beam.DoFn):
   def __init__(self, template_str, event_name):
     self.template_str = template_str
     self.date_format = "%Y-%m-%d"
+    self.date_time_format = "%Y-%m-%d %H:%M:%S.%f %Z"
     self.event_name = event_name
 
   def setup(self):
@@ -170,7 +171,6 @@ class TransformToPayload(beam.DoFn):
       event_timestamp=self.date_to_micro(element["inference_date"]),
       event_name=self.event_name,
       user_properties=self.generate_user_properties(element),
-      event_parameters=self.generate_event_parameters(element),
     )
     result = {}
     try:
@@ -182,8 +182,8 @@ class TransformToPayload(beam.DoFn):
     
 
   def date_to_micro(self, date_str):
-    try:  # try if date_str is in ISO timestamp format
-      return int(datetime.datetime.fromisoformat(date_str).timestamp() * 1E6)
+    try:  # try if date_str with date time format
+      return int(datetime.datetime.strptime(date_str, self.date_time_format).timestamp() * 1E6)
 
     except Exception as e:
       return int(datetime.datetime.strptime(date_str, self.date_format).timestamp() * 1E6)
@@ -202,7 +202,7 @@ class TransformToPayload(beam.DoFn):
     user_properties_obj =  {}
     for k, v in element_copy.items():
       if v:
-        user_properties_obj[k] = {'value': v}
+        user_properties_obj[k] = {'value': str(v)}
     return json.dumps(user_properties_obj, cls=DecimalEncoder)
   
   def generate_event_parameters(self, element):
@@ -224,7 +224,7 @@ def load_activation_type_configuration(args):
   activation_config = grand_config[args.activation_type]
   configuration = {
     'activation_event_name': activation_config['activation_event_name'],
-    'source_query_template': Environment(loader=BaseLoader).from_string(gcs_read_file(args.project, activation_config['source_query_template']).replace('\n', '')),
+    'source_query_template': Environment(loader=BaseLoader).from_string(gcs_read_file(args.project, activation_config['source_query_template']).replace('\n', ' ')),
     'measurement_protocol_payload_template': gcs_read_file(args.project, activation_config['measurement_protocol_payload_template'])
   }
   return configuration

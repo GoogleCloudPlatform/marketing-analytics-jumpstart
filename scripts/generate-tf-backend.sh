@@ -47,8 +47,10 @@ section_open  "Check and set the TF_STATE_BUCKET variable"
     set_environment_variable_if_not_set "TF_STATE_BUCKET" "${TF_STATE_PROJECT}-terraform-state"
 section_close
 
-section_open "Enable the Cloud Resource Manager API with"
+section_open "Enable the Cloud Resource Manager, Service Usage and IAM APIs"
     gcloud services enable cloudresourcemanager.googleapis.com
+    gcloud services enable serviceusage.googleapis.com
+    gcloud services enable iam.googleapis.com
 section_close
 
 section_open "Creating a new Google Cloud Storage bucket to store the Terraform state in ${TF_STATE_PROJECT} project, bucket: ${TF_STATE_BUCKET}"

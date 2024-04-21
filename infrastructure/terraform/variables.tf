@@ -201,6 +201,12 @@ variable "deploy_pipelines" {
   default     = false
 }
 
+variable "deploy_monitoring" {
+  description = "Toggler for monitoring module"
+  type        = bool
+  default     = false
+}
+
 variable "mds_dataset_prefix" {
   description = "Marketing data store dataset prefix"
   type        = string

@@ -33,6 +33,7 @@ set_environment_variable_from_input_if_not_set "MAJ_ADS_EXPORT_DATASET" "dataset
 set_environment_variable_from_input_if_not_set "MAJ_ADS_EXPORT_TABLE_SUFFIX" "customer id starting with _" "Google Ads customer ID"
 set_environment_variable_from_input_or_default_if_not_set "MAJ_FEATURE_STORE_PROJECT_ID" "${MAJ_DEFAULT_PROJECT_ID}" "project_id" "feature store"
 set_environment_variable_from_input_or_default_if_not_set "MAJ_ACTIVATION_PROJECT_ID" "${MAJ_FEATURE_STORE_PROJECT_ID}" "project_id" "activation"
+set_environment_variable_from_input_if_not_set "MAJ_WEBSITE_URL" "website url" "The website being tracked"
 set_environment_variable_from_input_if_not_set "MAJ_GA4_PROPERTY_ID" "property id" "Google Analytics 4"
 set_environment_variable_from_input_if_not_set "MAJ_GA4_STREAM_ID" "stream id" "Google Analytics 4 user activity data stream"
 set_environment_variable_from_input_if_not_set "MAJ_DATAFORM_REPO_OWNER_EMAIL" "owner email" "forked MAJ dataform repository"

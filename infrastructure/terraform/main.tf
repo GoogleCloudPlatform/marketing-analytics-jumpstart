@@ -349,6 +349,8 @@ module "activation" {
   # The poetry_installed is the ID of the null_resource poetry_install
   # This is used to ensure that the poetry command is run before the activation module is created.
   poetry_installed          = null_resource.poetry_install.id
+  mds_project_id            = var.data_project_id
+  mds_dataset_suffix        = local.mds_dataset_suffix
 }
 
 
@@ -359,6 +361,7 @@ module "activation" {
 # The monitoring resources are created in the `data_project_id` project.
 module "monitoring" {
   source                   = "./modules/monitor"
+  count                    = var.deploy_monitoring ? 1 : 0
   project_id               = var.data_project_id
   location                 = var.google_default_region
   mds_project_id           = var.data_project_id
