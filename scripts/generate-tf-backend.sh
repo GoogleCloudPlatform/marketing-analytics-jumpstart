@@ -53,6 +53,10 @@ section_open "Enable the Cloud Resource Manager, Service Usage and IAM APIs"
     gcloud services enable iam.googleapis.com
 section_close
 
+section_open "Install poetry libraries in the virtual environment for Terraform"
+    poetry install
+section_close
+
 section_open "Creating a new Google Cloud Storage bucket to store the Terraform state in ${TF_STATE_PROJECT} project, bucket: ${TF_STATE_BUCKET}"
     if gsutil ls -b gs://"${TF_STATE_BUCKET}" >/dev/null 2>&1; then
         printf "The ${TF_STATE_BUCKET} Google Cloud Storage bucket already exists. \n"
