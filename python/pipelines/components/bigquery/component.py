@@ -32,6 +32,7 @@ if os.path.exists(config_file_path):
     base_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['base_image_name']}:{vertex_components_params['base_image_tag']}"
 
 
+# This component makes it possible to invoke a BigQuery Stored Procedure
 @component(base_image=base_image)
 def bq_stored_procedure_exec(
     project: str,
@@ -39,7 +40,16 @@ def bq_stored_procedure_exec(
     query: str,
     query_parameters: Optional[list] = [],
     timeout: Optional[float] = 1800
-) -> None:
+) -> None:    
+    """Executes a BigQuery stored procedure.
+
+    Args:
+        project: The project containing the stored procedure.
+        location: The location of the stored procedure.
+        query: The query to execute.
+        query_parameters: The query parameters to pass to the stored procedure.
+        timeout: The timeout for the query, in seconds.
+    """
 
     from google.cloud import bigquery
     import logging
@@ -65,9 +75,9 @@ def bq_stored_procedure_exec(
         job_config=job_config)
 
     query_job.result(timeout=timeout)
-    # TODO: return created table
+    
 
-
+# This component creates and train a BQML KMEANS model
 @component(base_image=base_image)
 def bq_clustering_exec(
     model: Output[Artifact],
@@ -80,7 +90,6 @@ def bq_clustering_exec(
     exclude_features: list,
     km_num_clusters: int = 4,
     km_init_method: str = "KMEANS++",
-    # km_init_col: str = "",
     km_distance_type: str = "EUCLIDEAN",
     km_standardize_features: str = "TRUE",
     km_max_interations: int = 20,
@@ -88,6 +97,27 @@ def bq_clustering_exec(
     km_min_rel_progress: float = 0.01,
     km_warm_start: str = "FALSE"
 ) -> None:
+
+    """Creates and trains a BigQuery ML KMEANS model.
+
+    Args:
+        model: Output artifact for the trained model.
+        project_id: The project containing the model.
+        location: The location of the model.
+        model_dataset_id: The dataset ID of the model.
+        model_name_bq_prefix: The prefix of the model name.
+        vertex_model_name: The name of the model in Vertex AI.
+        training_data_bq_table: The BigQuery table containing the training data.
+        exclude_features: A list of features to exclude from the model.
+        km_num_clusters: The number of clusters to create.
+        km_init_method: The initialization method to use.
+        km_distance_type: The distance type to use.
+        km_standardize_features: Whether to standardize the features.
+        km_max_interations: The maximum number of iterations to run.
+        km_early_stop: Whether to use early stopping.
+        km_min_rel_progress: The minimum relative progress to stop early.
+        km_warm_start: Whether to use warm start.
+    """
 
     from google.cloud import bigquery
     import logging
@@ -144,6 +174,7 @@ def bq_clustering_exec(
     # SELECT * FROM ML.TRAINING_INFO(MODEL `<project-id>.<datasets>.audience_segmentation_model`)
 
 
+# This component submits a BQML Model Evaluate and logs into Metrics
 @component(base_image=base_image)
 def bq_evaluate(
     model: Input[Artifact],
@@ -151,6 +182,15 @@ def bq_evaluate(
     location: str,
     metrics: Output[Metrics]
 ):
+    
+    """Submits a BigQuery ML Model Evaluate and logs the results into Metrics.
+
+    Args:
+        model: Input artifact for the trained model.
+        project: The project containing the model.
+        location: The location of the model.
+        metrics: Output artifact for the evaluation metrics.
+    """
 
     from google.cloud import bigquery
     import json, google.auth, logging
@@ -175,14 +215,6 @@ def bq_evaluate(
     for i in r:
         for k,v in i.items():
             metrics.log_metric(k, v)
-    """
-    r = query_job.result().to_dataframe()
-
-    logging.info(r)
-    for row in r[0]:
-        for idx, f in enumerate(row):
-            metrics.log_metric(eval.metadata["schema"]["fields"][idx]["name"], f["v"])
-    """
     
     
 ## NOT USED
@@ -207,6 +239,20 @@ def bq_select_best_kmeans_model(
         number_of_models_considered: int,
         metrics_logger: Output[Metrics],
         elected_model: Output[Artifact]) -> None:
+    
+    """Selects the best KMeans model from a set of models based on a given metric.
+
+    Args:
+        project_id: The project ID of the models.
+        location: The location of the models.
+        dataset_id: The dataset ID of the models.
+        model_prefix: The prefix of the model IDs.
+        metric_name: The name of the metric to use for comparison.
+        metric_threshold: The minimum value of the metric that is acceptable.
+        number_of_models_considered: The number of models to consider.
+        metrics_logger: The output artifact to log the metrics of the selected model.
+        elected_model: The output artifact to store the metadata of the selected model.
+    """
 
     from google.cloud import bigquery
     import logging
@@ -315,6 +361,17 @@ def bq_clustering_predictions(
     destination_table: Output[Dataset]
 ) -> None:
 
+    """Generates predictions for a BigQuery ML KMeans model.
+
+    Args:
+        model: Input artifact for the trained model.
+        project_id: The project ID of the model.
+        location: The location of the model.
+        bigquery_source: The BigQuery table containing the data to predict.
+        bigquery_destination_prefix: The prefix of the destination table name.
+        destination_table: Output artifact for the predictions.
+    """
+
     from datetime import datetime
     from google.cloud import bigquery
     import logging
@@ -358,6 +415,19 @@ def bq_flatten_tabular_binary_prediction_table(
     threashold: float = 0.5,
     positive_label: str = 'true'
 ):
+    
+    """Flattens a BigQuery table containing binary prediction results from a tabular model.
+
+    Args:
+        destination_table: Output artifact for the flattened table.
+        project_id: The project ID of the predictions table.
+        location: The location of the predictions table.
+        source_table: The BigQuery table containing the data to predict.
+        predictions_table: Input artifact for the predictions table.
+        bq_unique_key: The unique key column in the source table.
+        threashold: The threshold for determining the predicted class.
+        positive_label: The label to assign to predictions above the threshold.
+    """
 
     from google.cloud import bigquery
     import logging
@@ -407,6 +477,7 @@ def bq_flatten_tabular_binary_prediction_table(
             {predictions_column}.scores[SAFE_OFFSET(index_z)] AS score_zero,
             {predictions_column}.scores[SAFE_OFFSET(index_one)] AS score_one,
             GREATEST({predictions_column}.scores[SAFE_OFFSET(index_z)], {predictions_column}.scores[SAFE_OFFSET(index_one)]) AS greatest_score,
+            LEAST({predictions_column}.scores[SAFE_OFFSET(index_z)], {predictions_column}.scores[SAFE_OFFSET(index_one)]) AS least_score,
             *
             FROM prediction_indexes
         );
@@ -419,9 +490,9 @@ def bq_flatten_tabular_binary_prediction_table(
                 ELSE 'false' 
                 END AS {destination_table.metadata["predictions_column"]},
                 CASE
-                WHEN a.score_zero > {threashold} THEN a.score_zero
-                WHEN a.score_one > {threashold} THEN a.score_one
-                ELSE a.score_zero 
+                WHEN a.score_zero > {threashold} THEN a.least_score
+                WHEN a.score_one > {threashold} THEN a.greatest_score
+                ELSE a.least_score 
                 END as prediction_prob,
                 b.* 
             FROM prediction_greatest_scores as a
@@ -460,6 +531,17 @@ def bq_flatten_tabular_regression_table(
     bq_unique_key: str,
     destination_table: Output[Dataset]
 ):
+    
+    """Flattens a BigQuery table containing regression prediction results from a tabular model.
+
+    Args:
+        project_id: The project ID of the predictions table.
+        location: The location of the predictions table.
+        source_table: The BigQuery table containing the data to predict.
+        predictions_table: Input artifact for the predictions table.
+        bq_unique_key: The unique key column in the source table.
+        destination_table: Output artifact for the flattened table.
+    """
 
     from google.cloud import bigquery
     import logging
@@ -531,6 +613,14 @@ def bq_flatten_kmeans_prediction_table(
     source_table: Input[Dataset],
     destination_table: Output[Dataset]
 ):
+    """Flattens a BigQuery table containing KMeans prediction results.
+
+    Args:
+        project_id: The project ID of the predictions table.
+        location: The location of the predictions table.
+        source_table: Input artifact for the predictions table.
+        destination_table: Output artifact for the flattened table.
+    """
 
     from google.cloud import bigquery
     import logging
@@ -603,6 +693,22 @@ def bq_dynamic_query_exec_output(
     perc_keep: int = 35,
 ) -> None:
     
+    """Executes a dynamic BigQuery query and stores the results in a BigQuery table.
+
+    Args:
+        location: The location of the BigQuery dataset.
+        project_id: The project ID of the BigQuery dataset.
+        dataset: The dataset ID of the BigQuery dataset.
+        create_table: The name of the BigQuery table to create.
+        mds_project_id: The project ID of the Marketing Data Store dataset.
+        mds_dataset: The dataset ID of the Marketing Data Store dataset.
+        date_start: The start date of the query.
+        date_end: The end date of the query.
+        reg_expression: The regular expression to use to extract features from the page_path column.
+        destination_table: Output artifact for the BigQuery table.
+        perc_keep: The percentage of features to keep in the output table.
+    """
+    
     from google.cloud import bigquery
     import logging
     import numpy as np
@@ -635,7 +741,7 @@ def bq_dynamic_query_exec_output(
                 FROM `{{mds_project_id}}.{{mds_dataset}}.event`
                 WHERE
                     event_name = 'page_view'
-                    AND DATE(event_timestamp) BETWEEN '{{date_start}}' AND '{{date_end}}'
+                    --AND DATE(event_timestamp) BETWEEN '{{date_start}}' AND '{{date_end}}'
             )
             GROUP BY 1
         )
@@ -680,32 +786,43 @@ def bq_dynamic_query_exec_output(
     # Prepare component output
     destination_table.metadata["table_id"] = f"{project_id}.{dataset}.{create_table}"
     destination_table.metadata["features"] = list(query_df.feature.tolist())
-    
+
+
+
 
 @component(base_image=base_image)
-def bq_dynamic_stored_procedure_exec_output(
+def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
     project_id: str,
     location: str,
     dataset: str,
     mds_project_id: str,
     mds_dataset: str,
     dynamic_table_input: Input[Dataset],
-    training_table_output: Output[Dataset],
-    date_start: str,
-    date_end: str,
-    lookback_days: int,
+    full_dataset_table_output: Output[Dataset],
     reg_expression: str,
     stored_procedure_name: str,
-    training_table: str,
+    full_dataset_table: str,
     timeout: Optional[float] = 1800
 ) -> None:
+    
+    """Executes a dynamic BigQuery stored procedure to create a full dataset preparation table.
+
+    Args:
+        project_id: The project ID of the BigQuery dataset.
+        location: The location of the BigQuery dataset.
+        dataset: The dataset ID of the BigQuery dataset.
+        mds_project_id: The project ID of the Marketing Data Store dataset.
+        mds_dataset: The dataset ID of the Marketing Data Store dataset.
+        dynamic_table_input: Input artifact for the dynamic table.
+        full_dataset_table_output: Output artifact for the full dataset preparation table.
+        reg_expression: The regular expression to use to extract features from the page_path column.
+        stored_procedure_name: The name of the stored procedure to execute.
+        full_dataset_table: The name of the full dataset preparation table to create.
+        timeout: The timeout for the query, in seconds.
+    """
 
     from google.cloud import bigquery
     import logging
-    import numpy as np
-    import pandas as pd
-    import jinja2
-    import re
 
     # Construct a BigQuery client object.
     client = bigquery.Client(
@@ -713,70 +830,97 @@ def bq_dynamic_stored_procedure_exec_output(
         location=location
     )
 
-    def _clean_column_values(f):
-        if f == '/' or f == '' or f is None: return 'homepage'
-        if f.startswith('/'): f = f[1:]
-        if f.endswith('/'): f = f[:-1]
-        return re.sub('[^0-9a-zA-Z]+', '_', f)
-    
-    template = jinja2.Template("""
-        CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{stored_procedure_name}}`(
-        DATE_START DATE, 
-        DATE_END DATE, 
-        LOOKBACK_DAYS INT64
-        )
-        BEGIN
+    def _create_auto_audience_segmentation_full_dataset_preparation_procedure(
+            project_id, 
+            location, 
+            dataset, 
+            mds_project_id, 
+            mds_dataset, 
+            dynamic_table_input, 
+            reg_expression, 
+            stored_procedure_name, 
+            full_dataset_table
+            ) -> None:
+        
+        import logging
+        import numpy as np
+        import pandas as pd
+        import jinja2
+        import re
 
-            DECLARE RE_PAGE_PATH STRING DEFAULT "{{reg_expression|e}}";
-            
-            CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{training_table}}`
-            AS
-            WITH 
-                visitor_pool AS (
-                    SELECT
-                    user_pseudo_id,
-                    MAX(event_timestamp) as feature_timestamp,
-                    DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
-                    FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-                    WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
-                    GROUP BY 1
+        def _clean_column_values(f):
+            if f == '/' or f == '' or f is None: return 'homepage'
+            if f.startswith('/'): f = f[1:]
+            if f.endswith('/'): f = f[:-1]
+            return re.sub('[^0-9a-zA-Z]+', '_', f)
+        
+        template = jinja2.Template("""
+            CREATE OR REPLACE PROCEDURE `{{project_id}}.{{dataset}}.{{stored_procedure_name}}`(
+            DATE_START DATE, 
+            DATE_END DATE, 
+            LOOKBACK_DAYS INT64
             )
-
-            SELECT
-                user_id,
-                feature_timestamp,
-                {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
-                {% endfor %}
-            FROM (
+            BEGIN
+                DECLARE RE_PAGE_PATH STRING DEFAULT "{{reg_expression|e}}";
+                CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{full_dataset_table}}`
+                AS
+                WITH 
+                    visitor_pool AS (
+                        SELECT
+                        user_pseudo_id,
+                        MAX(event_timestamp) as feature_timestamp,
+                        DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
+                        FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+                        WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
+                        GROUP BY 1
+                )
                 SELECT
-                    vp.feature_timestamp,
-                    ga.user_pseudo_id as user_id,
-                    page_location as page_path
-                FROM `{{mds_project_id}}.{{mds_dataset}}.event` as ga
-                INNER JOIN visitor_pool as vp
-                    ON vp.user_pseudo_id = ga.user_pseudo_id
-                        AND DATE(ga.event_timestamp) >= vp.date_lookback
-                WHERE
-                    event_name = 'page_view'
-                    AND DATE(ga.event_timestamp) BETWEEN DATE_START - LOOKBACK_DAYS AND DATE_END
-            )
-            GROUP BY 1, 2;
-        END
-    """)
-    template.globals.update({'clean_column_values': _clean_column_values})
+                    user_id,
+                    feature_timestamp,
+                    {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
+                    {% endfor %}
+                FROM (
+                    SELECT
+                        vp.feature_timestamp,
+                        ga.user_pseudo_id as user_id,
+                        page_location as page_path
+                    FROM `{{mds_project_id}}.{{mds_dataset}}.event` as ga
+                    INNER JOIN visitor_pool as vp
+                        ON vp.user_pseudo_id = ga.user_pseudo_id
+                            AND DATE(ga.event_timestamp) >= vp.date_lookback
+                    WHERE
+                        event_name = 'page_view'
+                        AND DATE(ga.event_timestamp) BETWEEN DATE_START AND DATE_END
+                )
+                GROUP BY 1, 2;
+            END
+        """)
+        template.globals.update({'clean_column_values': _clean_column_values})
 
-    sql = template.render(
-        project_id=project_id,
-        dataset=dataset,
-        stored_procedure_name = stored_procedure_name,
-        training_table=training_table,
-        mds_project_id=mds_project_id,
-        mds_dataset=mds_dataset,
-        reg_expression=reg_expression,
-        features= dynamic_table_input.metadata['features'] if isinstance(dynamic_table_input.metadata['features'], List) else list(dynamic_table_input.metadata['features'])
-    )
+        sql = template.render(
+            project_id=project_id,
+            dataset=dataset,
+            stored_procedure_name = stored_procedure_name,
+            full_dataset_table=full_dataset_table,
+            mds_project_id=mds_project_id,
+            mds_dataset=mds_dataset,
+            reg_expression=reg_expression,
+            features= dynamic_table_input.metadata['features'] if isinstance(dynamic_table_input.metadata['features'], List) else list(dynamic_table_input.metadata['features'])
+        )
 
-    logging.info(f"{sql}")
+        logging.info(f"{sql}")
+
+        return sql
+    
+    sql = _create_auto_audience_segmentation_full_dataset_preparation_procedure(project_id, 
+                                                                                location, 
+                                                                                dataset, 
+                                                                                mds_project_id, 
+                                                                                mds_dataset, 
+                                                                                dynamic_table_input, 
+                                                                                reg_expression, 
+                                                                                stored_procedure_name, 
+                                                                                full_dataset_table)
 
     # Run the BQ query
     query_job = client.query(
@@ -788,24 +932,9 @@ def bq_dynamic_stored_procedure_exec_output(
     for row in results:
         logging.info("row info: {}".format(row))
     
-    query_job = client.query(
-        query=f"CALL `{project_id}.{dataset}.{stored_procedure_name}`(@DATE_START, @DATE_END, @LOOKBACK_DAYS);",
-        job_config=bigquery.QueryJobConfig(
-            query_parameters=[
-                bigquery.ScalarQueryParameter("DATE_START", "DATE", date_start),
-                bigquery.ScalarQueryParameter("DATE_END", "DATE", date_end),
-                bigquery.ScalarQueryParameter("LOOKBACK_DAYS", "INTEGER", lookback_days)
-            ]
-        )
-    )
-    results = query_job.result()
-
-    for row in results:
-        logging.info("row info: {}".format(row))
-    
     # Prepare component output
-    training_table_output.metadata["table_id"] = f"{project_id}.{dataset}.{training_table}"
-    training_table_output.metadata["stored_procedure_name"] = f"{project_id}.{dataset}.{stored_procedure_name}"
+    full_dataset_table_output.metadata["table_id"] = f"{project_id}.{dataset}.{full_dataset_table}"
+    full_dataset_table_output.metadata["stored_procedure_name"] = f"{project_id}.{dataset}.{stored_procedure_name}"
 
 
 
@@ -820,8 +949,22 @@ def bq_union_predictions_tables(
     table_propensity_bq_unique_key: str,
     table_regression_bq_unique_key: str,
     destination_table: Output[Dataset],
-    threashold: float = 0.5
+    threashold: float
 ):
+    
+    """Unions the predictions from two BigQuery tables into a single table.
+
+    Args:
+        project_id: The project ID of the BigQuery dataset.
+        location: The location of the BigQuery dataset.
+        predictions_table_propensity: Input artifact for the propensity predictions table.
+        predictions_table_regression: Input artifact for the regression predictions table.
+        table_propensity_bq_unique_key: The unique key column in the propensity predictions table.
+        table_regression_bq_unique_key: The unique key column in the regression predictions table.
+        destination_table: Output artifact for the unioned predictions table.
+        threashold: The threshold for determining the predicted class for the propensity predictions.
+    """
+
     from google.cloud import bigquery
     import logging
 
@@ -895,11 +1038,7 @@ def bq_union_predictions_tables(
                 WHEN a.score_one > {threashold} THEN 'true'
                 ELSE 'false' 
                 END AS {predictions_column_regression},
-                CASE
-                WHEN a.score_zero > {threashold} THEN a.score_zero
-                WHEN a.score_one > {threashold} THEN a.score_one
-                ELSE a.score_zero 
-                END AS prediction_prob,
+                a.score_one AS prediction_prob,
                 a.*
             FROM prediction_greatest_scores AS a
         );
@@ -907,28 +1046,28 @@ def bq_union_predictions_tables(
         CREATE OR REPLACE TEMP TABLE non_purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            GREATEST(0.0, COALESCE(A.max_daily_revenue / A.average_daily_purchasers, 0.0) * A.avg_user_conversion_rate) AS clv_prediction,
+            0.0 AS clv_prediction,
             B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
-            A.prediction = "false" AND A.prediction_prob > {threashold}
+            A.prediction_prob <= {threashold}
             AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key} 
         );
 
         CREATE OR REPLACE TEMP TABLE purchasers_prediction AS (
         SELECT
             B.{table_regression_bq_unique_key},
-            GREATEST(COALESCE(A.max_daily_revenue / A.average_daily_purchasers, 0.0) * A.avg_user_conversion_rate, B.{predictions_column_regression}) AS clv_prediction,
+            COALESCE(B.{predictions_column_regression}, 0.0) AS clv_prediction,
             B.* EXCEPT({table_regression_bq_unique_key}, {predictions_column_regression})
         FROM
             flattened_prediction A
         INNER JOIN
             `{predictions_table_regression.metadata['table_id']}` B
         ON
-            A.prediction = "true" AND A.prediction_prob > {threashold}
+            A.prediction_prob > {threashold}
             AND A.{table_propensity_bq_unique_key} = B.{table_regression_bq_unique_key}
         );
 
@@ -966,6 +1105,8 @@ def bq_union_predictions_tables(
     for row in results:
         logging.info("row info: {}".format(row))
 
+
+
 # This component writes Tabular Workflows feature importance values to a BigQuery table
 @component(base_image=base_image)
 def write_tabular_model_explanation_to_bigquery(
@@ -975,9 +1116,16 @@ def write_tabular_model_explanation_to_bigquery(
     destination_table: str,
     model_explanation: Input[Dataset],
 ):
+    """Writess tabular model explanation values to a BigQuery table.
+
+    Args:
+        project: project ID or project number of the Cloud project you want to use.
+        location: location of the BigQuery tables and datasets
+        data_location: location of the BigQuery tables and datasets
+        destination_table: table to be written to
+        model_explanation: Input artifact to be provided for extracting the model explanation values.
     """
-    Writes the tabular model explanation to BigQuery.
-    """
+
     import logging
     from google.cloud import bigquery
     from google.cloud.exceptions import NotFound

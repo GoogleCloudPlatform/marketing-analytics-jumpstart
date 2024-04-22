@@ -28,6 +28,7 @@ locals {
   dataform_sa = "service-${data.google_project.data_processing.number}@gcp-sa-dataform.iam.gserviceaccount.com"
 }
 
+# Wait for the dataform service account to be created
 resource "null_resource" "wait_for_dataform_sa_creation" {
   provisioner "local-exec" {
     command = <<-EOT
@@ -51,6 +52,8 @@ resource "null_resource" "wait_for_dataform_sa_creation" {
     google_dataform_repository.marketing-analytics
   ]
 }
+
+# This resource sets the Dataform service account IAM member roles
 resource "google_project_iam_member" "dataform-serviceaccount" {
   depends_on = [null_resource.wait_for_dataform_sa_creation]
   for_each = toset([

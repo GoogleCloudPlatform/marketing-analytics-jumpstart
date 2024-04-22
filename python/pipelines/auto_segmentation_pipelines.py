@@ -19,7 +19,7 @@ import kfp.dsl as dsl
 from pipelines.components.bigquery.component import (
     bq_select_best_kmeans_model, bq_clustering_predictions, 
     bq_flatten_kmeans_prediction_table, bq_evaluate,
-    bq_clustering_exec)
+    bq_clustering_exec, bq_stored_procedure_exec)
 
 from pipelines.components.vertex.component import (
     get_latest_model,
@@ -41,7 +41,9 @@ from google_cloud_pipeline_components.v1.model import ModelUploadOp
 from google_cloud_pipeline_components.types import artifact_types
 
 
-
+# This is the Vertex AI Pipeline definition for Auto Audience Segmentation Traning pipelines.
+# This pipeline will be compiled, uploaded and scheduled by a terraform resource in the folder `infrastructure/terraform/modules/pipelines/pipelines.tf`.
+# To change these parameters, check the appropriate section in the `config.yaml.tftpl` file.
 @dsl.pipeline()
 def training_pl(
     project_id: str,
@@ -84,7 +86,9 @@ def training_pl(
 
 
 
-
+# This is the Vertex AI Pipeline definition for Auto Audience Segmentation Prediction pipelines.
+# This pipeline will be compiled, uploaded and scheduled by a terraform resource in the folder `infrastructure/terraform/modules/pipelines/pipelines.tf`.
+# To change these parameters, check the appropriate section in the `config.yaml.tftpl` file.
 @dsl.pipeline()
 def prediction_pl(
     project_id: str,
@@ -92,16 +96,19 @@ def prediction_pl(
     model_name: str,
     bigquery_source: str,
     bigquery_destination_prefix: str,
-
     pubsub_activation_topic: str,
-    pubsub_activation_type: str
+    pubsub_activation_type: str,
+    aggregated_predictions_dataset_location: str,
+    query_aggregate_last_day_predictions: str
 ):
+    # Get the latest model named `model_name`
     model_op = get_latest_model(
         project=project_id,
         location=location,
         display_name=model_name
     )
 
+    # Submit a vertex ai job to run batch prediction using the `bigquery_source` as prediction dataset.
     prediction_op = batch_prediction(
         job_name_prefix='vaip-batch',
         bigquery_source=f"{bigquery_source}",
@@ -111,10 +118,19 @@ def prediction_pl(
         # dst_table_expiration_hours=24*7
     ).after(model_op)
 
+    # Sends a pubsub activation message that will trigger the Activation Dataflow job.
     send_pubsub_activation_msg(
         project=project_id,
         topic_name=pubsub_activation_topic,
         activation_type=pubsub_activation_type,
         predictions_table=prediction_op.outputs['destination_table'],
-    )
+    ).set_display_name('send_pubsub_activation_msg').after(prediction_op)
+
+    # Invokes the BQ stored procedure that collects all predictions tables and aggregates into a single table.
+    bq_stored_procedure_exec(
+        project=project_id,
+        location=aggregated_predictions_dataset_location,
+        query=query_aggregate_last_day_predictions,
+        query_parameters=[]
+    ).set_display_name('aggregate_predictions').after(prediction_op)
 

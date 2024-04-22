@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This resource reads the contents of a local YAML file specified by the filename attribute 
+# and stores it in a variable named config_vars.content. The YAML file is expected to contain configuration settings for the Terraform module.
 data "local_file" "config_vars" {
   filename = var.config_file_path
 }
 
+# The locals block is used to define local variables that can be used within the Terraform module.
 locals {
+  # This variable stores the parsed contents of the YAML configuration file.
   config_vars                              = yamldecode(data.local_file.config_vars.content)
   cloud_build_vars                         = local.config_vars.cloud_build
   artifact_registry_vars                   = local.config_vars.artifact_registry

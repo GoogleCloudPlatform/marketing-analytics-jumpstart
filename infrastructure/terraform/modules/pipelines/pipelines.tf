@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This resource creates a service account to run the Vertex AI pipelines
 resource "google_service_account" "service_account" {
   project      = local.pipeline_vars.project_id
   account_id   = local.pipeline_vars.service_account_id
   display_name = local.pipeline_vars.service_account_id
   description  = "sa to run pipelines"
 }
+
 # TODO - Add Principal to vertex-pipelines-sa resourse: new principals: 65903025497@cloudbuuild.gserviceaccount.com - role: service account user
 # review this issue: https://github.com/hashicorp/terraform-provider-google/issues/10903
 # TODO - SERVICE ACCOUNT NEEDS ACCESS TO DATASETS
-#resource "google_project_iam_binding" "project" {
+
+# This resource binds the service account to the required roles
 resource "google_project_iam_member" "pipelines_sa_roles" {
   project = local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.service_account.email}"
@@ -40,6 +43,7 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
   role = each.key
 }
 
+# This resource binds the service account to the required roles in the mds project
 resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
   project = var.mds_project_id
   member  = "serviceAccount:${google_service_account.service_account.email}"
@@ -50,13 +54,15 @@ resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
   role = each.key
 }
 
-
+# This resource creates a service account to run the dataflow jobs
 resource "google_service_account" "dataflow_worker_service_account" {
   project      = local.pipeline_vars.project_id
   account_id   = local.dataflow_vars.worker_service_account_id
   display_name = local.dataflow_vars.worker_service_account_id
   description  = "sa to run dataflow jobs"
 }
+
+# This resource binds the service account to the required roles
 resource "google_project_iam_member" "dataflow_worker_sa_roles" {
   project = local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.dataflow_worker_service_account.email}"
@@ -70,6 +76,7 @@ resource "google_project_iam_member" "dataflow_worker_sa_roles" {
   role = each.key
 }
 
+# This resource binds the service account to the required roles
 # Allow pipelines SA service account use dataflow worker SA
 resource "google_service_account_iam_member" "dataflow_sa_iam" {
   service_account_id = "projects/${local.pipeline_vars.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
@@ -77,33 +84,49 @@ resource "google_service_account_iam_member" "dataflow_sa_iam" {
   member             = "serviceAccount:${google_service_account.service_account.email}"
 }
 
-
+# This resource creates a Cloud Storage Bucket for the pipeline artifacts
 resource "google_storage_bucket" "pipelines_bucket" {
   project                     = local.pipeline_vars.project_id
   name                        = local.pipeline_vars.bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
   uniform_bucket_level_access = true
+  # The force_destroy attribute specifies whether the bucket should be forcibly destroyed 
+  # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
   force_destroy               = false
+
+  # The lifecycle block allows you to configure the lifecycle of the bucket. 
+  # In this case, the ignore_changes attribute is set to all, which means that Terraform 
+  # will ignore any changes to the bucket's lifecycle configuration. The prevent_destroy attribute is set to false, which means that the bucket can be destroyed.
   lifecycle {
     ignore_changes  = all
     prevent_destroy = false ##true
   }
 }
 
+# This resource creates a Cloud Storage Bucket for the model assets
 resource "google_storage_bucket" "custom_model_bucket" {
   project                     = local.pipeline_vars.project_id
   name                        = local.pipeline_vars.model_bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
   uniform_bucket_level_access = true
+  # The force_destroy attribute specifies whether the bucket should be forcibly destroyed 
+  # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
   force_destroy               = false
+
+  # The lifecycle block allows you to configure the lifecycle of the bucket. 
+  # In this case, the ignore_changes attribute is set to all, which means that Terraform 
+  # will ignore any changes to the bucket's lifecycle configuration. The prevent_destroy attribute is set to false, which means that the bucket can be destroyed.
   lifecycle {
     ignore_changes  = all
     prevent_destroy = false ##true
   }
 }
 
+# The locals block defines a local variable named vertex_pipelines_available_locations that contains a list of 
+# all the available regions for Vertex AI Pipelines. 
+# This variable is used to validate the value of the location attribute of the google_artifact_registry_repository resource.
 locals {
   vertex_pipelines_available_locations = [
     "asia-east1",
@@ -142,12 +165,18 @@ locals {
   ]
 }
 
+# This resource creates an Artifact Registry repository for the pipeline artifacts
 resource "google_artifact_registry_repository" "pipelines-repo" {
   project       = module.project_services.project_id
   location      = local.artifact_registry_vars.pipelines_repo.region
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
+  # The format is kubeflow pipelines YAML files.
   format        = "KFP"
+
+  # The lifecycle block of the google_artifact_registry_repository resource defines a precondition that 
+  # checks if the specified region is included in the vertex_pipelines_available_locations list. 
+  # If the condition is not met, an error message is displayed and the Terraform configuration will fail.
   lifecycle {
     precondition {
       condition     = contains(local.vertex_pipelines_available_locations, local.artifact_registry_vars.pipelines_repo.region)
@@ -156,34 +185,15 @@ resource "google_artifact_registry_repository" "pipelines-repo" {
   }
 }
 
-
+# This resource creates an Artifact Registry repository for the pipeline docker images
 resource "google_artifact_registry_repository" "pipelines_docker_repo" {
   project       = module.project_services.project_id
   location      = local.artifact_registry_vars.pipelines_docker_repo.region
   repository_id = local.artifact_registry_vars.pipelines_docker_repo.name
   description   = "DOCKER images Repository"
+  # The format is Docker images.
   format        = "DOCKER"
 }
-
-
-#resource "google_cloudbuild_trigger" "cloud-build-trigger" {
-#  //Source section
-#  location = local.cloud_build_vars.region
-#  github {
-#    owner = local.cloud_build_vars.github.owner
-#    name  = local.cloud_build_vars.github.repo_name
-#    //Events section  
-#    push {
-#      branch = local.cloud_build_vars.github.trigger_branch
-#    }
-#  }
-#  //Configuration section
-#  filename = local.cloud_build_vars.build_file
-#
-#  substitutions = {
-#    _CONFIG_YAML = var.config_file_path
-#  }
-#}
 
 locals {
   base_component_image_dir = "${local.source_root_dir}/python/base_component_image"
@@ -193,6 +203,8 @@ locals {
     "${local.base_component_image_dir}/pyproject.toml",
     "${local.base_component_image_dir}/ma_components/vertex.py",
   ]
+  # This is the content of the hash of all the files related to the base component image used to run each
+  # Vertex AI Pipeline step.
   component_image_content_hash = sha512(join("", [for f in local.component_image_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
 
   pipelines_dir = "${local.source_root_dir}/python/pipelines"
@@ -210,9 +222,12 @@ locals {
     "${local.pipelines_dir}/tabular_pipelines.py",
     "${local.pipelines_dir}/uploader.py",
   ]
+  # This is the content of the hash of all the files related to the pipelines definitions used to run each
+  # Vertex AI Pipeline.
   pipelines_content_hash = sha512(join("", [for f in local.pipelines_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
 }
 
+# This resource is used to build and push the base component image that will be used to run each Vertex AI Pipeline step.
 resource "null_resource" "build_push_pipelines_components_image" {
   triggers = {
     working_dir             = "${local.source_root_dir}/python"
@@ -222,13 +237,19 @@ resource "null_resource" "build_push_pipelines_components_image" {
     poetry_installed        = var.poetry_installed
   }
 
+  # The provisioner block specifies the command that will be executed to build and push the base component image.
+  # This command will execute the build-push function in the base_component_image module, which will build and push the base component image to the specified Docker repository.
   provisioner "local-exec" {
     command     = "${var.poetry_run_alias} python -m base_component_image.build-push -c ${local.config_file_path_relative_python_run_dir}"
     working_dir = self.triggers.working_dir
   }
 }
 
+#######
 ## Feature Engineering Pipelines
+#######
+
+# This resource is used to compile and upload the Vertex AI pipeline for feature engineering - auto audience segmentation use case
 resource "null_resource" "compile_feature_engineering_auto_audience_segmentation_pipeline" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -239,6 +260,9 @@ resource "null_resource" "compile_feature_engineering_auto_audience_segmentation
     upstream_resource_dependency = null_resource.build_push_pipelines_components_image.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution -o fe_auto_audience_segmentation.yaml
@@ -249,6 +273,7 @@ resource "null_resource" "compile_feature_engineering_auto_audience_segmentation
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for feature engineering - aggregated value based bidding use case
 resource "null_resource" "compile_feature_engineering_aggregated_value_based_bidding_pipeline" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -259,6 +284,9 @@ resource "null_resource" "compile_feature_engineering_aggregated_value_based_bid
     upstream_resource_dependency = null_resource.build_push_pipelines_components_image.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-aggregated-value-based-bidding.execution -o fe_agg_vbb.yaml
@@ -269,6 +297,7 @@ resource "null_resource" "compile_feature_engineering_aggregated_value_based_bid
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for feature engineering - audience segmentation use case
 resource "null_resource" "compile_feature_engineering_audience_segmentation_pipeline" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -279,6 +308,9 @@ resource "null_resource" "compile_feature_engineering_audience_segmentation_pipe
     upstream_resource_dependency = null_resource.compile_feature_engineering_auto_audience_segmentation_pipeline.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-audience-segmentation.execution -o fe_audience_segmentation.yaml
@@ -289,6 +321,7 @@ resource "null_resource" "compile_feature_engineering_audience_segmentation_pipe
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for feature engineering - purchase propensity use case
 resource "null_resource" "compile_feature_engineering_purchase_propensity_pipeline" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -299,6 +332,9 @@ resource "null_resource" "compile_feature_engineering_purchase_propensity_pipeli
     upstream_resource_dependency = null_resource.compile_feature_engineering_audience_segmentation_pipeline.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-purchase-propensity.execution -o fe_purchase_propensity.yaml
@@ -309,6 +345,7 @@ resource "null_resource" "compile_feature_engineering_purchase_propensity_pipeli
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for feature engineering - customer lifetime value use case
 resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pipeline" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -319,6 +356,9 @@ resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pi
     upstream_resource_dependency = null_resource.compile_feature_engineering_purchase_propensity_pipeline.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-customer-ltv.execution -o fe_customer_ltv.yaml
@@ -329,7 +369,11 @@ resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pi
   }
 }
 
+###
 ## Training and Inference Pipelines
+###
+
+# This resource is used to compile and upload the Vertex AI pipeline for training the propensity model - purchase propensity use case
 resource "null_resource" "compile_propensity_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -337,6 +381,9 @@ resource "null_resource" "compile_propensity_training_pipelines" {
     upstream_resource_dependency = null_resource.compile_feature_engineering_customer_lifetime_value_pipeline.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
@@ -347,6 +394,7 @@ resource "null_resource" "compile_propensity_training_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for prediction using the propensity model - purchase propensity use case
 resource "null_resource" "compile_propensity_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -354,6 +402,9 @@ resource "null_resource" "compile_propensity_prediction_pipelines" {
     upstream_resource_dependency = null_resource.compile_propensity_training_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
@@ -364,6 +415,7 @@ resource "null_resource" "compile_propensity_prediction_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for training the Propensity model - Customer lifetime value use case
 resource "null_resource" "compile_propensity_clv_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -371,6 +423,9 @@ resource "null_resource" "compile_propensity_clv_training_pipelines" {
     upstream_resource_dependency = null_resource.compile_propensity_prediction_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity_clv.training -o propensity_clv_training.yaml
@@ -381,6 +436,7 @@ resource "null_resource" "compile_propensity_clv_training_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for training the CLTV model - Customer lifetime value use case
 resource "null_resource" "compile_clv_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -388,6 +444,9 @@ resource "null_resource" "compile_clv_training_pipelines" {
     upstream_resource_dependency = null_resource.compile_propensity_clv_training_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.training -o clv_training.yaml
@@ -398,6 +457,7 @@ resource "null_resource" "compile_clv_training_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for prediction using the CLTV model - Customer lifetime value use case
 resource "null_resource" "compile_clv_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -405,6 +465,9 @@ resource "null_resource" "compile_clv_prediction_pipelines" {
     upstream_resource_dependency = null_resource.compile_clv_training_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
@@ -415,6 +478,7 @@ resource "null_resource" "compile_clv_prediction_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for training the segmentation model - Audience segmentation use case
 resource "null_resource" "compile_segmentation_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -422,6 +486,9 @@ resource "null_resource" "compile_segmentation_training_pipelines" {
     upstream_resource_dependency = null_resource.compile_clv_prediction_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
@@ -432,6 +499,7 @@ resource "null_resource" "compile_segmentation_training_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for prediction using the Audience Segmentation model - Audience segmentation use case
 resource "null_resource" "compile_segmentation_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -439,6 +507,9 @@ resource "null_resource" "compile_segmentation_prediction_pipelines" {
     upstream_resource_dependency = null_resource.compile_segmentation_training_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
@@ -449,6 +520,7 @@ resource "null_resource" "compile_segmentation_prediction_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for training the Auto Audience Segmentation model - Auto audience segmentation use case
 resource "null_resource" "compile_auto_segmentation_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -456,6 +528,9 @@ resource "null_resource" "compile_auto_segmentation_training_pipelines" {
     upstream_resource_dependency = null_resource.compile_segmentation_prediction_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.training -o auto_segmentation_training.yaml
@@ -466,6 +541,7 @@ resource "null_resource" "compile_auto_segmentation_training_pipelines" {
   }
 }
 
+# This resource is used to compile and upload the Vertex AI pipeline for prediction using the CLTV model - Customer lifetime value use case
 resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -473,6 +549,9 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
     upstream_resource_dependency = null_resource.compile_auto_segmentation_training_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.prediction -o auto_segmentation_prediction.yaml
@@ -483,7 +562,7 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
   }
 }
 
-# Compilation for the value based bidding training pipeline
+# This resource is used to compile and upload the Vertex AI pipeline for training the Aggregated Values Based Bidding model - Aggregated Value Based Bidding use case
 resource "null_resource" "compile_value_based_bidding_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -491,6 +570,9 @@ resource "null_resource" "compile_value_based_bidding_training_pipelines" {
     upstream_resource_dependency = null_resource.compile_auto_segmentation_prediction_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.training -o vbb_training.yaml
@@ -501,7 +583,7 @@ resource "null_resource" "compile_value_based_bidding_training_pipelines" {
   }
 }
 
-# Compilation for the value based bidding explanation pipeline
+# This resource is used to compile and upload the Vertex AI pipeline for explaining features using the Aggregated Value Based Bidding model - Aggregated Value Based Bidding use case
 resource "null_resource" "compile_value_based_bidding_explanation_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
@@ -509,6 +591,9 @@ resource "null_resource" "compile_value_based_bidding_explanation_pipelines" {
     upstream_resource_dependency = null_resource.compile_value_based_bidding_training_pipelines.id
   }
 
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
     ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.explanation -o vbb_explanation.yaml

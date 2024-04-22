@@ -12,10 +12,33 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+DECLARE custom_start_date DATE DEFAULT NULL;
+DECLARE custom_end_date DATE DEFAULT NULL;
 DECLARE max_date DATE;
 DECLARE min_date DATE;
+
+# custom_start_date: The start date of the data to be used for training.
+# custom_end_date: The end date of the data to be used for training.
+SET custom_start_date = PARSE_DATE("%Y-%m-%d", {{custom_start_date}});
+SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
+
+# max_date: The maximum date of the data that is available for training.
+# min_date: The minimum date of the data that is available for training.
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+
+# The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
+# If either parameter is not valid, the procedure sets the corresponding date to the maximum or
+# minimum date of the available data.
+IF (custom_start_date IS NOT NULL OR custom_start_date >= min_date OR custom_start_date <= max_date) 
+   AND custom_start_date < custom_end_date THEN
+  SET min_date = custom_start_date;
+END IF;
+
+IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_date >= min_date) 
+   AND custom_end_date > custom_start_date THEN
+  SET max_date = custom_end_date;
+END IF;
 
 CREATE OR REPLACE TEMP TABLE training_preparation_ud as (
   SELECT DISTINCT
@@ -83,53 +106,12 @@ WINDOW
   user_lookback_metrics_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
-CREATE OR REPLACE TEMP TABLE training_preparation_um as (
-  SELECT DISTINCT
-    UM.feature_date,
-    MAX(UM.purchasers_users) OVER(user_scoped_segmentation_metrics_window) AS purchasers_users,
-    MAX(UM.average_daily_purchasers) OVER(user_scoped_segmentation_metrics_window) AS average_daily_purchasers,
-    MAX(UM.active_users) OVER(user_scoped_segmentation_metrics_window) AS active_users,
-    MAX(UM.DAU) OVER(user_scoped_segmentation_metrics_window) AS DAU,
-    MAX(UM.MAU) OVER(user_scoped_segmentation_metrics_window) AS MAU,
-    MAX(UM.WAU) OVER(user_scoped_segmentation_metrics_window) AS WAU,
-    MAX(UM.dau_per_mau) OVER(user_scoped_segmentation_metrics_window) AS dau_per_mau,
-    MAX(UM.dau_per_wau) OVER(user_scoped_segmentation_metrics_window) AS dau_per_wau,
-    MAX(UM.wau_per_mau) OVER(user_scoped_segmentation_metrics_window) AS wau_per_mau,
-    MAX(UM.users_engagement_duration_seconds) OVER(user_scoped_segmentation_metrics_window) AS users_engagement_duration_seconds,
-    MAX(UM.average_engagement_time) OVER(user_scoped_segmentation_metrics_window) AS average_engagement_time,
-    MAX(UM.average_engagement_time_per_session) OVER(user_scoped_segmentation_metrics_window) AS average_engagement_time_per_session,
-    MAX(UM.average_sessions_per_user) OVER(user_scoped_segmentation_metrics_window) AS average_sessions_per_user,
-    MAX(UM.ARPPU) OVER(user_scoped_segmentation_metrics_window) AS ARPPU,
-    MAX(UM.ARPU) OVER(user_scoped_segmentation_metrics_window) AS ARPU,
-    MAX(UM.average_daily_revenue) OVER(user_scoped_segmentation_metrics_window) AS average_daily_revenue,
-    MAX(UM.max_daily_revenue) OVER(user_scoped_segmentation_metrics_window) AS max_daily_revenue,
-    MAX(UM.min_daily_revenue) OVER(user_scoped_segmentation_metrics_window) AS min_daily_revenue,
-    MAX(UM.new_users) OVER(user_scoped_segmentation_metrics_window) AS new_users,
-    MAX(UM.returning_users) OVER(user_scoped_segmentation_metrics_window) AS returning_users,
-    MAX(UM.first_time_purchasers) OVER(user_scoped_segmentation_metrics_window) AS first_time_purchasers,
-    MAX(UM.first_time_purchaser_conversion) OVER(user_scoped_segmentation_metrics_window) AS first_time_purchaser_conversion,
-    MAX(UM.first_time_purchasers_per_new_user) OVER(user_scoped_segmentation_metrics_window) AS first_time_purchasers_per_new_user,
-    MAX(UM.avg_user_conversion_rate) OVER(user_scoped_segmentation_metrics_window) AS avg_user_conversion_rate,
-    MAX(UM.avg_session_conversion_rate) OVER(user_scoped_segmentation_metrics_window) AS avg_session_conversion_rate
-FROM
-  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` UM
-WHERE
-  -- Define the training+validation subset interval
-  UM.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
-WINDOW
-  user_scoped_segmentation_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
-);
-
 
 CREATE OR REPLACE TEMP TABLE training_preparation as (
   SELECT DISTINCT
     UD.user_pseudo_id,
     UD.user_id,
     UD.feature_date,
-    UD.month_of_the_year,
-    UD.week_of_the_year,
-    UD.day_of_the_month,
-    UD.day_of_week,
     UD.device_category,
     UD.device_mobile_brand_name,
     UD.device_mobile_model_name,
@@ -163,32 +145,7 @@ CREATE OR REPLACE TEMP TABLE training_preparation as (
     UWM.checkouts_past_1_7_day,
     UWM.checkouts_past_8_14_day,
     UWM.ltv_revenue_past_1_7_day,
-    UWM.ltv_revenue_past_7_15_day,
-    UM.purchasers_users,
-    UM.average_daily_purchasers,
-    UM.active_users,
-    UM.DAU,
-    UM.MAU,
-    UM.WAU,
-    UM.dau_per_mau,
-    UM.dau_per_wau,
-    UM.wau_per_mau,
-    UM.users_engagement_duration_seconds,
-    UM.average_engagement_time,
-    UM.average_engagement_time_per_session,
-    UM.average_sessions_per_user,
-    UM.ARPPU,
-    UM.ARPU,
-    UM.average_daily_revenue,
-    UM.max_daily_revenue,
-    UM.min_daily_revenue,
-    UM.new_users,
-    UM.returning_users,
-    UM.first_time_purchasers,
-    UM.first_time_purchaser_conversion,
-    UM.first_time_purchasers_per_new_user,
-    UM.avg_user_conversion_rate,
-    UM.avg_session_conversion_rate
+    UWM.ltv_revenue_past_7_15_day
 FROM
   training_preparation_ud UD
 INNER JOIN
@@ -196,10 +153,6 @@ INNER JOIN
 ON
   UWM.user_pseudo_id = UD.user_pseudo_id
   AND UWM.feature_date = UD.feature_date
-INNER JOIN
-  training_preparation_um UM
-ON
-  UM.feature_date = UD.feature_date
 );
 
 
@@ -213,8 +166,6 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   feature_date,
   user_pseudo_id,
   user_id,
-  day_of_the_month,
-  day_of_week,
   device_category,
   device_mobile_model_name,
   device_os_version,
@@ -248,51 +199,46 @@ SELECT DISTINCT * FROM DataForTargetTable
 WHERE data_split IS NOT NULL;
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_training_15` AS(
-  SELECT 
+  SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
   data_split,
   feature_date,
   user_pseudo_id,
-  user_id,
-  day_of_the_month,
-  day_of_week,
-  device_category,
-  device_mobile_model_name,
-  device_os_version,
-  geo_country,
-  geo_region,
-  geo_city,
-  last_traffic_source_medium,
-  last_traffic_source_name,
-  last_traffic_source_source,
-  first_traffic_source_medium,
-  first_traffic_source_name,
-  first_traffic_source_source,
-  active_users_past_1_7_day,
-  active_users_past_8_14_day,
-  purchases_past_1_7_day,
-  purchases_past_8_14_day,
-  visits_past_1_7_day,
-  visits_past_8_14_day,
-  view_items_past_1_7_day,
-  view_items_past_8_14_day,
-  add_to_carts_past_1_7_day,
-  add_to_carts_past_8_14_day,
-  checkouts_past_1_7_day,
-  checkouts_past_8_14_day,
-  ltv_revenue_past_1_7_day,
-  ltv_revenue_past_7_15_day
+  LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_id,
+  LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_category,
+  LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_mobile_model_name,
+  LAST_VALUE(device_os_version) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_os_version,
+  LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_country,
+  LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_region,
+  LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_city,
+  LAST_VALUE(last_traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_medium,
+  LAST_VALUE(last_traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_name,
+  LAST_VALUE(last_traffic_source_source) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_source,
+  LAST_VALUE(first_traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_medium,
+  LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_name,
+  LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_source,
+  LAST_VALUE(active_users_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_1_7_day,
+  LAST_VALUE(active_users_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_8_14_day,
+  LAST_VALUE(purchases_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_1_7_day,
+  LAST_VALUE(purchases_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_8_14_day,
+  LAST_VALUE(visits_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_1_7_day,
+  LAST_VALUE(visits_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_8_14_day,
+  LAST_VALUE(view_items_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_1_7_day,
+  LAST_VALUE(view_items_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_8_14_day,
+  LAST_VALUE(add_to_carts_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_1_7_day,
+  LAST_VALUE(add_to_carts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_8_14_day,
+  LAST_VALUE(checkouts_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_1_7_day,
+  LAST_VALUE(checkouts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_8_14_day,
+  LAST_VALUE(ltv_revenue_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_1_7_day,
+  LAST_VALUE(ltv_revenue_past_7_15_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_7_15_day
   FROM `{{project_id}}.{{dataset}}.audience_segmentation_training_full_dataset`
 );
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_audience_segmentation_training_15`
 (processed_timestamp,
   data_split,
-  feature_date,
   user_pseudo_id,
   user_id,
-  day_of_the_month,
-  day_of_week,
   device_category,
   device_mobile_model_name,
   device_os_version,
@@ -326,14 +272,11 @@ OPTIONS(
   labels=[("org_unit", "development")]
 ) AS 
 
-SELECT
+SELECT DISTINCT
   processed_timestamp,
   data_split,
-  feature_date,
   user_pseudo_id,
   user_id,
-  day_of_the_month,
-  day_of_week,
   device_category,
   device_mobile_model_name,
   device_os_version,
@@ -364,11 +307,8 @@ FROM (
   SELECT DISTINCT
   processed_timestamp,
   data_split,
-  feature_date,
   user_pseudo_id,
   user_id,
-  day_of_the_month,
-  day_of_week,
   device_category,
   device_mobile_model_name,
   device_os_version,
@@ -395,8 +335,10 @@ FROM (
   checkouts_past_8_14_day,
   ltv_revenue_past_1_7_day,
   ltv_revenue_past_7_15_day,
-    ROW_NUMBER() OVER (PARTITION BY data_split ORDER BY RAND()) AS rn
+  ROW_NUMBER() OVER (PARTITION BY data_split ORDER BY RAND()) AS rn,
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM
-    `{{project_id}}.{{dataset}}.audience_segmentation_training_15` )
+    `{{project_id}}.{{dataset}}.audience_segmentation_training_15`)
 WHERE
+  user_row_order = 1 AND
   rn <= {{samples_per_split}};

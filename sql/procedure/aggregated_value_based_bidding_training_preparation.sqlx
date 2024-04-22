@@ -12,6 +12,16 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+
+# During training, due to the lack of enough training samples
+# Training subset is replicated 3 times. This is equivalent to training for more epochs.
+# Since we intend to overfit the ML model to get an accurate representation 
+# of the feature importance, there is no problem in applying this strategy.
+# Validation and test subsets are not replicated.
+
+
+-- The view schema should match with the `transformations-value-based-bidding.json` file.
+-- Taking into consideration the excluded_features as listed in the `config.yaml` file.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.{{view_name}}`
 (data_split,
     Dt,
@@ -31,21 +41,79 @@ OPTIONS(
     description="View for aggregated value based bidding training dataset. View expires after 7d and should run daily.",
     labels=[("org_unit", "development")]
 ) AS
-
 SELECT
   "TRAIN" AS data_split,
-  *
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+UNION ALL
+SELECT
+  "TRAIN" AS data_split,
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+UNION ALL
+SELECT
+  "TRAIN" AS data_split,
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
 UNION ALL
 SELECT
   "VALIDATE" AS data_split,
-  *
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+WHERE {{datetime_column}} BETWEEN '{{eval_start_date}}' AND '{{eval_end_date}}'
 UNION ALL
 SELECT
   "TEST" AS data_split,
-  *
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
 FROM
-  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`;
+  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+WHERE {{datetime_column}} BETWEEN '{{eval_start_date}}' AND '{{eval_end_date}}';

@@ -28,10 +28,6 @@ from pipelines.components.bigquery.component import bq_flatten_tabular_binary_pr
 
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
 
-# elect_best_tabular_model = components.load_component_from_file(
-#    os.path.join(os.path.dirname(__file__),'components/vertex/component_metadata/elect_best_tabular_model.yaml')
-#  )
-
 
 # Function containing a KFP definition for a Prediction pipeline that uses a Tabular Workflow Model.
 # This is for Binary Classification model.
@@ -278,6 +274,7 @@ def prediction_binary_classification_regression_pl(
         predictions_table_regression=clv_flatten_predictions.outputs['destination_table'],
         table_propensity_bq_unique_key=purchase_bq_unique_key,
         table_regression_bq_unique_key=clv_bq_unique_key,
+        threashold=threashold
     ).set_display_name('union_predictions')
 
     bq_stored_procedure_exec(
@@ -307,6 +304,8 @@ def explanation_tabular_workflow_regression_pl(
     model_metric_threshold: float,
     number_of_models_considered: int,
     bigquery_destination_prefix: str,
+    aggregated_predictions_dataset_location: str,
+    query_aggregate_last_day_predictions: str
 ):
     #TODO: Implement the explanation pipeline for the value based bidding model
     value_based_bidding_model = elect_best_tabular_model(
@@ -331,3 +330,10 @@ def explanation_tabular_workflow_regression_pl(
         model_explanation=value_based_bidding_model_explanation.outputs['model_explanation'],
         destination_table=bigquery_destination_prefix,
     ).set_display_name('write_vbb_model_explanation')
+
+    bq_stored_procedure_exec(
+        project=project,
+        location=aggregated_predictions_dataset_location,
+        query=query_aggregate_last_day_predictions,
+        query_parameters=[]
+    ).set_display_name('aggregate_predictions').after(value_based_bidding_flatten_explanation)

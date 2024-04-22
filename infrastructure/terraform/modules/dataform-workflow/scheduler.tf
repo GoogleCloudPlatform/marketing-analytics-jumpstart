@@ -12,15 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This creates a Cloud Scheduler job that triggers the Dataform incremental workflow on a daily schedule. 
 resource "google_cloud_scheduler_job" "daily-dataform-increments" {
   project          = var.project_id
   name             = "daily-dataform-${var.environment}"
   description      = "Daily Dataform ${var.environment} environment incremental update"
+  # The schedule attribute specifies the schedule for the job. In this case, the job is scheduled to run daily at the specified times.
   schedule         = var.daily_schedule
   time_zone        = "America/New_York"
+  # The attempt_deadline attribute specifies the maximum amount of time that the job will attempt to run before failing.
+  # In this case, the job will attempt to run for a maximum of 5 minutes before failing.
   attempt_deadline = "320s"
   paused           = false
 
+  # The http_target attribute specifies the HTTP target for the job. In this case, the job is configured to send an HTTP POST request to the Cloud Workflows Executions API to trigger the Dataform incremental workflow.
   http_target {
     http_method = "POST"
     uri         = "https://workflowexecutions.googleapis.com/v1/projects/${var.project_id}/locations/${var.region}/workflows/${google_workflows_workflow.dataform-incremental-workflow.name}/executions"

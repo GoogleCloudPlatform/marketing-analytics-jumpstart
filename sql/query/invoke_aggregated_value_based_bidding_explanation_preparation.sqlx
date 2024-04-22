@@ -1,0 +1,1 @@
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`();

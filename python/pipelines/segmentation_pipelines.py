@@ -35,6 +35,9 @@ from kfp.components.importer_node import importer
 from pipelines.components.bigquery.component import (
     bq_clustering_exec)
 
+# This is the Vertex AI Pipeline definition for Audience Segmentation Traning pipelines.
+# This pipeline will be compiled, uploaded and scheduled by a terraform resource in the folder `infrastructure/terraform/modules/pipelines/pipelines.tf`.
+# To change these parameters, check the appropriate section in the `config.yaml.tftpl` file.
 @dsl.pipeline()
 def training_pl(
     project_id: str,
@@ -60,6 +63,7 @@ def training_pl(
 
 ):
 
+    # Train BQML clustering model and uploads to Vertex AI Model Registry
     bq_model = bq_clustering_exec(
         project_id= project_id,
         location= location,
@@ -79,6 +83,7 @@ def training_pl(
         km_warm_start= km_warm_start
     )
     
+    # Evaluate the BQ model
     evaluateModel = bq_evaluate(
         project=project_id, 
         location=location, 
@@ -86,6 +91,9 @@ def training_pl(
     
 
 
+# This is the Vertex AI Pipeline definition for Audience Segmentation Prediction pipelines.
+# This pipeline will be compiled, uploaded and scheduled by a terraform resource in the folder `infrastructure/terraform/modules/pipelines/pipelines.tf`.
+# To change these parameters, check the appropriate section in the `config.yaml.tftpl` file.
 @dsl.pipeline()
 def prediction_pl(
     project_id: str,
@@ -103,6 +111,7 @@ def prediction_pl(
     pubsub_activation_type: str,
 ):
 
+    # Get the best candidate model according to the parameters.
     purchase_propensity_label = bq_select_best_kmeans_model(
         project_id=project_id,
         location=location,
@@ -113,6 +122,7 @@ def prediction_pl(
         number_of_models_considered= number_of_models_considered,
     ).set_display_name('elect_latest_model')
 
+    # Submits a BigQuery job to generate the predictions using the `bigquery_source` and prediction dataset.
     predictions_op = bq_clustering_predictions(
         model = purchase_propensity_label.outputs['elected_model'],
         project_id = project_id,
@@ -120,13 +130,22 @@ def prediction_pl(
         bigquery_source = bigquery_source,
         bigquery_destination_prefix= bigquery_destination_prefix)
 
-
+    # Flattens the prediction table
     flatten_predictions = bq_flatten_kmeans_prediction_table(
         project_id=project_id,
         location=location,
         source_table=predictions_op.outputs['destination_table']
     )
 
+    # Sends a pubsub activation message that will trigger the Activation Dataflow job.
+    send_pubsub_activation_msg(
+        project=project_id,
+        topic_name=pubsub_activation_topic,
+        activation_type=pubsub_activation_type,
+        predictions_table=flatten_predictions.outputs['destination_table'],
+    ).set_display_name('send_pubsub_activation_msg').after(flatten_predictions)
+
+    # Invokes the BQ stored procedure that collects all predictions tables and aggregates into a single table.
     bq_stored_procedure_exec(
         project=project_id,
         location=aggregated_predictions_dataset_location,
@@ -134,11 +153,4 @@ def prediction_pl(
         query_parameters=[]
 
     ).set_display_name('aggregate_predictions').after(flatten_predictions)
-
-    send_pubsub_activation_msg(
-        project=project_id,
-        topic_name=pubsub_activation_topic,
-        activation_type=pubsub_activation_type,
-        predictions_table=flatten_predictions.outputs['destination_table'],
-    )
 
