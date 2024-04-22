@@ -40,6 +40,7 @@ IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_dat
   SET max_date = custom_end_date;
 END IF;
 
+# This is a temp table consolidating user_dimensions over the dates intervals.
 CREATE OR REPLACE TEMP TABLE training_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
@@ -75,6 +76,7 @@ WINDOW
   user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
+# This is a temp table consolidating user rolling metrics over the dates intervals.
 CREATE OR REPLACE TEMP TABLE training_preparation_uwm as (
   SELECT DISTINCT
     UWM.user_pseudo_id,
@@ -142,6 +144,7 @@ WINDOW
   user_rolling_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
+# This is a temp table consolidating user labels over the dates intervals.
 CREATE OR REPLACE TEMP TABLE training_preparation_label as (
   SELECT DISTINCT
   LABEL.user_pseudo_id,
@@ -170,6 +173,7 @@ WINDOW
   purchase_propensity_label_window AS (PARTITION BY LABEL.user_pseudo_id, LABEL.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
+# This is a temp table consolidating all features and labels over the dates intervals.
 CREATE OR REPLACE TEMP TABLE training_preparation as (
   SELECT DISTINCT
     UD.user_pseudo_id,
@@ -279,6 +283,7 @@ ON
   AND LABEL.feature_date = UD.feature_date
 );
 
+# This is a temp table split the rows in each different data_split (TRAIN, VALIDATE, TEST) split
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   SELECT DISTINCT
   CASE 
@@ -386,6 +391,7 @@ SELECT DISTINCT * FROM DataForTargetTable
 WHERE data_split IS NOT NULL;
 
 
+# This is a table preparing rows for purchase propensity modelling looking back 30 days and looking ahead 30 days.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training_30_30` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp, 
@@ -488,6 +494,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training
 );
 
 
+# This is a table preparing rows for purchase propensity modelling looking back 30 days and looking ahead 15 days.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training_30_15` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp, 
@@ -588,6 +595,8 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_full_dataset`
 );
 
+
+# This is a table preparing rows for purchase propensity modelling looking back 15 days and looking ahead 15 days.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training_15_15` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
@@ -682,6 +691,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_full_dataset`
 );
 
+# This is a table preparing rows for purchase propensity modelling looking back 15 days and looking ahead 7 days.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training_15_7` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
@@ -769,6 +779,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_training
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_full_dataset`
 );
 
+# This is a view preparing rows for purchase propensity modelling looking back 15 days and looking ahead 15 days.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_15_15`
 (processed_timestamp,
   data_split,
@@ -1008,7 +1019,7 @@ WHERE
   user_row_order = 1;
 
 
-
+# This is a view preparing rows for purchase propensity modelling looking back 15 days and looking ahead 7 days.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_15_7`
 (
   processed_timestamp,
@@ -1250,7 +1261,8 @@ WHERE
   user_row_order = 1;
 
 
-  CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15`
+# This is a view preparing rows for purchase propensity modelling looking back 30 days and looking ahead 15 days.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15`
 (processed_timestamp, 
   data_split,
   user_pseudo_id,
@@ -1518,6 +1530,9 @@ WHERE
   #Skipping windows of 15 days, which is the future window size.
   MOD(row_order_peruser_persplit-1, 15) = 0;
 
+
+# This is a view preparing rows for purchase propensity modelling looking back 30 days and looking ahead 15 days.
+# This specifically filter rows which are most recent for each user.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_last_window`
 (processed_timestamp, 
   data_split,
@@ -1775,7 +1790,8 @@ SELECT DISTINCT
 WHERE
   user_row_order = 1;
 
-
+# This is a view preparing rows for purchase propensity modelling looking back 30 days and looking ahead 15 days.
+# This is to be used in case recently no purchases are registered, and you don't have a way to train the classification model.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_rare_sales`
 (processed_timestamp, 
   data_split,
@@ -1966,8 +1982,9 @@ SELECT DISTINCT
     )
 ;
 
-
-  CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_balanced`
+# This is a view preparing rows for purchase propensity modelling looking back 30 days and looking ahead 15 days.
+# This balances out the dataset, in case you need the purchase propensity model to split customer in two classes: future purchases and non-purchases.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_balanced`
 (processed_timestamp, 
   data_split,
   user_pseudo_id,
@@ -2150,6 +2167,7 @@ OPTIONS(
     WHERE
       will_purchase = 1) 
 ;
+
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_30`
 (processed_timestamp, 
@@ -2861,3 +2879,194 @@ SELECT DISTINCT
 )
 WHERE
   user_row_order = 1;
+
+
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_30_rare_sales`
+(processed_timestamp, 
+  data_split,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_day,
+  active_users_past_2_day,
+  active_users_past_3_day,
+  active_users_past_4_day,
+  active_users_past_5_day,
+  active_users_past_6_day,
+  active_users_past_7_day,
+  active_users_past_8_14_day,
+  active_users_past_15_30_day,
+  purchases_past_1_day,
+  purchases_past_2_day,
+  purchases_past_3_day,
+  purchases_past_4_day,
+  purchases_past_5_day,
+  purchases_past_6_day,
+  purchases_past_7_day,
+  purchases_past_8_14_day,
+  purchases_past_15_30_day,
+  visits_past_1_day,
+  visits_past_2_day,
+  visits_past_3_day,
+  visits_past_4_day,
+  visits_past_5_day,
+  visits_past_6_day,
+  visits_past_7_day,
+  visits_past_8_14_day,
+  visits_past_15_30_day,
+  view_items_past_1_day,
+  view_items_past_2_day,
+  view_items_past_3_day,
+  view_items_past_4_day,
+  view_items_past_5_day,
+  view_items_past_6_day,
+  view_items_past_7_day,
+  view_items_past_8_14_day,
+  view_items_past_15_30_day,
+  add_to_carts_past_1_day,
+  add_to_carts_past_2_day,
+  add_to_carts_past_3_day,
+  add_to_carts_past_4_day,
+  add_to_carts_past_5_day,
+  add_to_carts_past_6_day,
+  add_to_carts_past_7_day,
+  add_to_carts_past_8_14_day,
+  add_to_carts_past_15_30_day,
+  checkouts_past_1_day,
+  checkouts_past_2_day,
+  checkouts_past_3_day,
+  checkouts_past_4_day,
+  checkouts_past_5_day,
+  checkouts_past_6_day,
+  checkouts_past_7_day,
+  checkouts_past_8_14_day,
+  checkouts_past_15_30_day,
+  will_purchase)
+OPTIONS(
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  friendly_name="v_purchase_propensity_training_30_30_rare_sales",
+  description="View Purchase Propensity Training dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
+  labels=[("org_unit", "development")]
+) AS 
+SELECT DISTINCT
+    processed_timestamp, 
+    data_split,
+    user_pseudo_id,
+    user_id,
+    user_ltv_revenue,
+    device_category,
+    device_mobile_brand_name,
+    device_mobile_model_name,
+    device_os,
+    device_os_version,
+    device_language,
+    device_web_browser,
+    device_web_browser_version,
+    geo_sub_continent,
+    geo_country,
+    geo_region,
+    geo_city,
+    geo_metro,
+    last_traffic_source_medium,
+    last_traffic_source_name,
+    last_traffic_source_source,
+    first_traffic_source_medium,
+    first_traffic_source_name,
+    first_traffic_source_source,
+    has_signed_in_with_user_id,
+    active_users_past_1_day,
+    active_users_past_2_day,
+    active_users_past_3_day,
+    active_users_past_4_day,
+    active_users_past_5_day,
+    active_users_past_6_day,
+    active_users_past_7_day,
+    active_users_past_8_14_day,
+    active_users_past_15_30_day,
+    purchases_past_1_day,
+    purchases_past_2_day,
+    purchases_past_3_day,
+    purchases_past_4_day,
+    purchases_past_5_day,
+    purchases_past_6_day,
+    purchases_past_7_day,
+    purchases_past_8_14_day,
+    purchases_past_15_30_day,
+    visits_past_1_day,
+    visits_past_2_day,
+    visits_past_3_day,
+    visits_past_4_day,
+    visits_past_5_day,
+    visits_past_6_day,
+    visits_past_7_day,
+    visits_past_8_14_day,
+    visits_past_15_30_day,
+    view_items_past_1_day,
+    view_items_past_2_day,
+    view_items_past_3_day,
+    view_items_past_4_day,
+    view_items_past_5_day,
+    view_items_past_6_day,
+    view_items_past_7_day,
+    view_items_past_8_14_day,
+    view_items_past_15_30_day,
+    add_to_carts_past_1_day,
+    add_to_carts_past_2_day,
+    add_to_carts_past_3_day,
+    add_to_carts_past_4_day,
+    add_to_carts_past_5_day,
+    add_to_carts_past_6_day,
+    add_to_carts_past_7_day,
+    add_to_carts_past_8_14_day,
+    add_to_carts_past_15_30_day,
+    checkouts_past_1_day,
+    checkouts_past_2_day,
+    checkouts_past_3_day,
+    checkouts_past_4_day,
+    checkouts_past_5_day,
+    checkouts_past_6_day,
+    checkouts_past_7_day,
+    checkouts_past_8_14_day,
+    checkouts_past_15_30_day,
+    will_purchase
+  FROM
+  (SELECT DISTINCT
+  *
+  FROM `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_30_last_window`
+    )
+  UNION ALL
+  (
+  SELECT DISTINCT
+   * EXCEPT(user_row_order, feature_date)
+  FROM(
+  SELECT DISTINCT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
+    FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_30`
+    WHERE will_purchase = 1
+  )
+  WHERE
+    user_row_order = 1
+  LIMIT 100
+    )
+;
