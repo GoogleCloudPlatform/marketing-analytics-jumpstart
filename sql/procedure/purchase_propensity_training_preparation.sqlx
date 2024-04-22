@@ -12,11 +12,33 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+DECLARE custom_start_date DATE DEFAULT NULL;
+DECLARE custom_end_date DATE DEFAULT NULL;
 DECLARE max_date DATE;
 DECLARE min_date DATE;
 
+# custom_start_date: The start date of the data to be used for training.
+# custom_end_date: The end date of the data to be used for training.
+SET custom_start_date = PARSE_DATE("%Y-%m-%d", {{custom_start_date}});
+SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
+
+# max_date: The maximum date of the data that is available for training.
+# min_date: The minimum date of the data that is available for training.
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+
+# The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
+# If either parameter is not valid, the procedure sets the corresponding date to the maximum or
+# minimum date of the available data.
+IF (custom_start_date IS NOT NULL OR custom_start_date >= min_date OR custom_start_date <= max_date) 
+   AND custom_start_date < custom_end_date THEN
+  SET min_date = custom_start_date;
+END IF;
+
+IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_date >= min_date) 
+   AND custom_end_date > custom_start_date THEN
+  SET max_date = custom_end_date;
+END IF;
 
 CREATE OR REPLACE TEMP TABLE training_preparation_ud as (
   SELECT DISTINCT
@@ -1746,11 +1768,204 @@ SELECT DISTINCT
   checkouts_past_8_14_day,
   checkouts_past_15_30_day,
   will_purchase,
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
+  #ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_15`
 )
 WHERE
   user_row_order = 1;
+
+
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_rare_sales`
+(processed_timestamp, 
+  data_split,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_os_version,
+  device_language,
+  device_web_browser,
+  device_web_browser_version,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,
+  active_users_past_1_day,
+  active_users_past_2_day,
+  active_users_past_3_day,
+  active_users_past_4_day,
+  active_users_past_5_day,
+  active_users_past_6_day,
+  active_users_past_7_day,
+  active_users_past_8_14_day,
+  active_users_past_15_30_day,
+  purchases_past_1_day,
+  purchases_past_2_day,
+  purchases_past_3_day,
+  purchases_past_4_day,
+  purchases_past_5_day,
+  purchases_past_6_day,
+  purchases_past_7_day,
+  purchases_past_8_14_day,
+  purchases_past_15_30_day,
+  visits_past_1_day,
+  visits_past_2_day,
+  visits_past_3_day,
+  visits_past_4_day,
+  visits_past_5_day,
+  visits_past_6_day,
+  visits_past_7_day,
+  visits_past_8_14_day,
+  visits_past_15_30_day,
+  view_items_past_1_day,
+  view_items_past_2_day,
+  view_items_past_3_day,
+  view_items_past_4_day,
+  view_items_past_5_day,
+  view_items_past_6_day,
+  view_items_past_7_day,
+  view_items_past_8_14_day,
+  view_items_past_15_30_day,
+  add_to_carts_past_1_day,
+  add_to_carts_past_2_day,
+  add_to_carts_past_3_day,
+  add_to_carts_past_4_day,
+  add_to_carts_past_5_day,
+  add_to_carts_past_6_day,
+  add_to_carts_past_7_day,
+  add_to_carts_past_8_14_day,
+  add_to_carts_past_15_30_day,
+  checkouts_past_1_day,
+  checkouts_past_2_day,
+  checkouts_past_3_day,
+  checkouts_past_4_day,
+  checkouts_past_5_day,
+  checkouts_past_6_day,
+  checkouts_past_7_day,
+  checkouts_past_8_14_day,
+  checkouts_past_15_30_day,
+  will_purchase)
+OPTIONS(
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  friendly_name="v_purchase_propensity_training_30_15_rare_sales",
+  description="View Purchase Propensity Training dataset using 30 days back to predict 15 days ahead. View expires after 48h and should run daily.",
+  labels=[("org_unit", "development")]
+) AS 
+SELECT DISTINCT
+    processed_timestamp, 
+    data_split,
+    user_pseudo_id,
+    user_id,
+    user_ltv_revenue,
+    device_category,
+    device_mobile_brand_name,
+    device_mobile_model_name,
+    device_os,
+    device_os_version,
+    device_language,
+    device_web_browser,
+    device_web_browser_version,
+    geo_sub_continent,
+    geo_country,
+    geo_region,
+    geo_city,
+    geo_metro,
+    last_traffic_source_medium,
+    last_traffic_source_name,
+    last_traffic_source_source,
+    first_traffic_source_medium,
+    first_traffic_source_name,
+    first_traffic_source_source,
+    has_signed_in_with_user_id,
+    active_users_past_1_day,
+    active_users_past_2_day,
+    active_users_past_3_day,
+    active_users_past_4_day,
+    active_users_past_5_day,
+    active_users_past_6_day,
+    active_users_past_7_day,
+    active_users_past_8_14_day,
+    active_users_past_15_30_day,
+    purchases_past_1_day,
+    purchases_past_2_day,
+    purchases_past_3_day,
+    purchases_past_4_day,
+    purchases_past_5_day,
+    purchases_past_6_day,
+    purchases_past_7_day,
+    purchases_past_8_14_day,
+    purchases_past_15_30_day,
+    visits_past_1_day,
+    visits_past_2_day,
+    visits_past_3_day,
+    visits_past_4_day,
+    visits_past_5_day,
+    visits_past_6_day,
+    visits_past_7_day,
+    visits_past_8_14_day,
+    visits_past_15_30_day,
+    view_items_past_1_day,
+    view_items_past_2_day,
+    view_items_past_3_day,
+    view_items_past_4_day,
+    view_items_past_5_day,
+    view_items_past_6_day,
+    view_items_past_7_day,
+    view_items_past_8_14_day,
+    view_items_past_15_30_day,
+    add_to_carts_past_1_day,
+    add_to_carts_past_2_day,
+    add_to_carts_past_3_day,
+    add_to_carts_past_4_day,
+    add_to_carts_past_5_day,
+    add_to_carts_past_6_day,
+    add_to_carts_past_7_day,
+    add_to_carts_past_8_14_day,
+    add_to_carts_past_15_30_day,
+    checkouts_past_1_day,
+    checkouts_past_2_day,
+    checkouts_past_3_day,
+    checkouts_past_4_day,
+    checkouts_past_5_day,
+    checkouts_past_6_day,
+    checkouts_past_7_day,
+    checkouts_past_8_14_day,
+    checkouts_past_15_30_day,
+    will_purchase
+  FROM
+  (SELECT DISTINCT
+  *
+  FROM `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_last_window`
+    )
+  UNION ALL
+  (
+  SELECT DISTINCT
+   * EXCEPT(user_row_order, feature_date)
+  FROM(
+  SELECT DISTINCT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
+    FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_15`
+    WHERE will_purchase = 1
+  )
+  WHERE
+    user_row_order = 1
+  LIMIT 100
+    )
+;
+
 
   CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_balanced`
 (processed_timestamp, 
@@ -2640,7 +2855,8 @@ SELECT DISTINCT
   checkouts_past_8_14_day,
   checkouts_past_15_30_day,
   will_purchase,
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
+  #ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_30`
 )
 WHERE

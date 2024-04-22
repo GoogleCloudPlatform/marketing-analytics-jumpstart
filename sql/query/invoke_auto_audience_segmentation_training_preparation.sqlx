@@ -16,8 +16,8 @@ DECLARE DATE_START DATE DEFAULT NULL;
 DECLARE DATE_END DATE DEFAULT NULL;
 DECLARE LOOKBACK_DAYS INT64 DEFAULT NULL;
 
-SET DATE_END = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY);
-SET DATE_START = DATE '2023-01-01';
+SET DATE_END = (SELECT DATE_SUB(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET DATE_START = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET LOOKBACK_DAYS = {{lookback_days}};
 
 CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(DATE_START, DATE_END, LOOKBACK_DAYS);

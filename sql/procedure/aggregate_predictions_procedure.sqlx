@@ -1,11 +1,34 @@
+  -- Copyright 2023 Google LLC
+  --
+  -- Licensed under the Apache License, Version 2.0 (the "License");
+  -- you may not use this file except in compliance with the License.
+  -- You may obtain a copy of the License at
+  --
+  --     http://www.apache.org/licenses/LICENSE-2.0
+  --
+  -- Unless required by applicable law or agreed to in writing, software
+  -- distributed under the License is distributed on an "AS IS" BASIS,
+  -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  -- See the License for the specific language governing permissions and
+  -- limitations under the License.
+  -- Setting procedure to lookback from the day before `inference_date`
+
+# This procedure aggregates predictions from multiple BigQuery tables into a single table.
+# It can be breakdown in 6 steps:
+# 1. Declare Variables: The code declares several variables that will be used throughout the procedure.
+# 2. Define Helper Functions: The code defines several helper functions that will be used in the procedure
+# 3. Set Variable Values: The code sets the values of the declared variables using the helper functions and other expressions.
+# 4. Create Temporary Tables: The code creates several temporary tables that will be used to store intermediate results.
+# 5. Execute Queries: The code executes several SQL queries to aggregate the predictions from the different BigQuery tables.
+# 6. Create Final Table: The code creates a final BigQuery table that contains the aggregated predictions.
 DECLARE
   project_id,
-  table_pattern,
-  clv_table_pattern,
-  clv_dataset,
-  purchase_propensity_dataset,
-  audience_segmentation_dataset,
-  auto_audience_segmentation_dataset,
+  table_pattern, #  A pattern used to identify the BigQuery tables that contain the predictions.
+  clv_table_pattern, # A pattern used to identify the BigQuery table that contains the customer lifetime value (CLV) predictions.
+  clv_dataset, # The dataset ID of the dataset that contains the CLV predictions table.
+  purchase_propensity_dataset, # The dataset ID of the dataset that contains the purchase propensity predictions table.
+  audience_segmentation_dataset, # The dataset ID of the dataset that contains the audience segmentation predictions table.
+  auto_audience_segmentation_dataset, # The dataset ID of the dataset that contains the auto audience segmentation predictions table.
   clv_table,
   purchase_propensity_table,
   audience_segmentation_table,
@@ -44,6 +67,7 @@ DECLARE
   second_join_select_columns ARRAY<STRING>;
 SET
   project_id = '{{project_id}}';
+# A procedure that retrieves the column names for a specified BigQuery table.
 CREATE OR REPLACE PROCEDURE
   {{dataset_id}}.get_columns_for_table(table_name STRING,
     data_set STRING,
@@ -61,6 +85,7 @@ SELECT ARRAY_AGG(column_name)
 """, data_set, table_name_only) INTO table_columns;
 END
   ;
+# A procedure that retrieves the name of the latest BigQuery table that matches a specified pattern.
 CREATE OR REPLACE PROCEDURE
   {{dataset_id}}.get_latest_table_by_pattern(dataset_name STRING,
     table_pattern STRING,
@@ -88,6 +113,7 @@ SET
     temp_table );
 END
   ;
+#  A function that returns the difference between two arrays.
 CREATE TEMP FUNCTION
   array_diff(src_array ARRAY<STRING>,
     rm_array ARRAY<STRING>)
@@ -102,6 +128,7 @@ CREATE TEMP FUNCTION
         element
       FROM
         UNNEST(rm_array) AS element ) ));
+# A function that returns the common elements between two arrays.
 CREATE TEMP FUNCTION
   array_common(arr_one ARRAY<STRING>,
     arr_two ARRAY<STRING>) AS ((
@@ -113,6 +140,7 @@ CREATE TEMP FUNCTION
         UNNEST(arr_one) AS element
       WHERE
         element IN UNNEST(arr_two) ) ));
+# A function that creates a SQL expression for selecting common columns from two tables.
 CREATE TEMP FUNCTION
   create_common_columns_select(common_columns ARRAY<STRING>,
     f_alias STRING,
@@ -126,6 +154,7 @@ CREATE TEMP FUNCTION
             CONCAT('COALESCE(',f_alias, '.', element, ',', s_alias,'.', element,') AS ', element)
           FROM
             UNNEST(common_columns) AS element) ), ',') ));
+# A function that creates a SQL expression for selecting columns from a single table.
 CREATE TEMP FUNCTION
   create_columns_select(COLUMNS ARRAY<STRING>,
     t_alias STRING)

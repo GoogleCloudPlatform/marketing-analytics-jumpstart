@@ -211,6 +211,7 @@ vertex_ai:
           #training_table: "auto_audience_segmentation_training_15"
           #inference_table: "auto_audience_segmentation_inference_15"
           # Change the regular expression to match the URL of your website to be categorized.
+          #reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)(?:/)$"
           reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)$"
           # Increase the percentual `perc_keep` to include more pages in your segmentation, decrease to exclude pages in your segmentation
           perc_keep: 35
@@ -1357,6 +1358,8 @@ bigquery:
     invoke_auto_audience_segmentation_training_preparation:
       project_id: "${project_id}"
       dataset: "auto_audience_segmentation"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
       stored_procedure: "auto_audience_segmentation_training_preparation"
       # The `lookback_days` parameter is the number of days to look back for training data.
       lookback_days: 15
@@ -1727,6 +1730,8 @@ bigquery:
       expiration_duration_hours: 168 
       # This parameter helps you set a maximum number of samples per split.
       samples_per_split: 100000
+      custom_start_date: "'2023-01-01'"
+      custom_end_date: "NULL"
     # This is the stored procedure that calculates the label column for the Customer Lifetime Value use case.
     # The label represents the lifetime value revenue gain over a period of time.
     # Typically, looking at a period of 30 days in the future.
@@ -1752,6 +1757,8 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168
+      custom_start_date: "'2023-01-01'"
+      custom_end_date: "NULL"
     # This is the stored procedure that calculates the label column for the Purchase Propensity use case.
     # The label represents wether a user will make a purchase over a period of time.
     # Typically, looking at a period of 15 to 30 days in the future.
@@ -1777,6 +1784,8 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168
+      custom_start_date: "'2023-01-01'"
+      custom_end_date: "NULL"
     # This is the stored procedure that UPSERTs new user dimensions rows daily. 
     # The granularity level is per user per day.
     # These dimensions are used for the Purchase Propensity use case.
