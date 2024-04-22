@@ -57,11 +57,6 @@ locals {
   # This is calculating a hash number on the files contents to keep track of changes and trigger redeployment of resources 
   # in case any of these files contents changes.
   activation_application_content_hash = sha512(join("", [for f in local.activation_application_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
-
-  audience_segmentation_activation_query_file              = "${local.source_root_dir}/sql/query/audience_segmentation_query_template.sql"
-  # This is calculating a hash number on the file content to keep track of changes and trigger redeployment of resources 
-  # in case the file content changes.
-  audience_segmentation_activation_query_file_content_hash = filesha512(local.audience_segmentation_activation_query_file)
 }
 
 data "google_project" "activation_project" {
@@ -152,7 +147,6 @@ resource "null_resource" "create_custom_events" {
 resource "null_resource" "create_custom_dimensions" {
   triggers = {
     services_enabled_project = module.project_services.project_id
-    source_contents_hash     = local.audience_segmentation_activation_query_file_content_hash
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
     #source_activation_application_python_hash = local.activation_application_content_hash
   }
