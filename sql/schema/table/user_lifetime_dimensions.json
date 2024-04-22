@@ -20,26 +20,6 @@
     "description": "feature column description"
   },
   {
-    "name": "month_of_the_year",
-    "type": "STRING",
-    "description": "feature column description"
-  },
-  {
-    "name": "week_of_the_year",
-    "type": "STRING",
-    "description": "feature column description"
-  },
-  {
-    "name": "day_of_the_month",
-    "type": "STRING",
-    "description": "feature column description"
-  },
-  {
-    "name": "day_of_week",
-    "type": "STRING",
-    "description": "feature column description"
-  },
-  {
     "name": "user_ltv_revenue",
     "type": "FLOAT",
     "description": "feature column description"

@@ -20,22 +20,6 @@
     "type": "STRING"
   },
   {
-    "name": "month_of_the_year",
-    "type": "STRING"
-  },
-  {
-    "name": "week_of_the_year",
-    "type": "STRING"
-  },
-  {
-    "name": "day_of_the_month",
-    "type": "STRING"
-  },
-  {
-    "name": "day_of_week",
-    "type": "STRING"
-  },
-  {
     "name": "user_ltv_revenue",
     "type": "FLOAT"
   },

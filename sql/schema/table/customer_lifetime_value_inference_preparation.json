@@ -15,26 +15,6 @@
       "description": "user_pseudo_id"
     },
     {
-      "name": "month_of_the_year",
-      "type": "STRING",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "week_of_the_year",
-      "type": "STRING",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "day_of_the_month",
-      "type": "STRING",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "day_of_week",
-      "type": "STRING",
-      "description": "user_pseudo_id"
-    },
-    {
       "name": "device_category",
       "type": "STRING",
       "description": "user_pseudo_id"

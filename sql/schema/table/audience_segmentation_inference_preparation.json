@@ -15,26 +15,6 @@
       "description": "feature description"
     },
     {
-      "name": "month_of_the_year",
-      "type": "STRING",
-      "description": "feature description"
-    },
-    {
-      "name": "week_of_the_year",
-      "type": "STRING",
-      "description": "feature description"
-    },
-    {
-      "name": "day_of_the_month",
-      "type": "STRING",
-      "description": "feature description"
-    },
-    {
-      "name": "day_of_week",
-      "type": "STRING",
-      "description": "feature description"
-    },
-    {
       "name": "device_category",
       "type": "STRING",
       "description": "feature description"
