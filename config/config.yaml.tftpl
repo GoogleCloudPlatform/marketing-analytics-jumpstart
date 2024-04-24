@@ -189,7 +189,7 @@ vertex_ai:
           end_time: null
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.
@@ -267,7 +267,7 @@ vertex_ai:
           end_time: null
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.
@@ -326,7 +326,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -387,7 +387,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -445,7 +445,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -485,7 +485,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -545,7 +545,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
@@ -586,7 +586,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -664,7 +664,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${cloud_region}"
@@ -721,7 +721,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be compiled
         # For Demographics Segmentation model, we use the BQML KMeans clustering algorithm.
         # Check the official documentation for better understanding the algorithm 
@@ -765,7 +765,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -811,7 +811,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           location: "${cloud_region}"
           project_id: "${project_id}"
@@ -835,7 +835,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${cloud_region}"
@@ -877,7 +877,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
           # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -971,7 +971,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -1043,7 +1043,7 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: PAUSED # possible states ACTIVE or PAUSED
         # These are the pipeline parameters to be used in this convoluted prediction pipeline that takes predictions from LTV model and purchase propensity model.
         pipeline_parameters:
           project_id: "${project_id}"
@@ -1889,6 +1889,7 @@ bigquery:
     # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     purchase_propensity_inference_preparation:
       project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       dataset: "purchase_propensity"
       name: "purchase_propensity_inference_preparation"
       feature_store_project_id: "${project_id}" 
