@@ -182,6 +182,10 @@ To manually start the data flow you must perform the following tasks:
 
     Now, to deploy the ML pipelines component again, revert your changes on the TF variables file `${TERRAFORM_RUN_DIR}/terraform.tfvars` and apply the terraform configuration by running the commad above again.
 
+    **Note:** The training pipelines use schemas defined by a `custom_transformations` parameter in your `config.yaml` or by the training table/view schema itself.
+              So at first, during the first deployment i.e. `tf apply`, because the views are not created yet, we assume a fixed schema in case no `custom_transformations` parameter is provided.
+              Then, you need to redeploy to make sure that since all the table views exist now, redeploy the pipelines to make sure you fetch the right schema to be provided to the training pipelines.
+
 ### Resume terminal session
 
 Because a Cloud Shell session is ephemeral, your Cloud Shell session could terminate for various reasons. When a terminal session ends all the session variables and user authentication are lost. You can run the `session-resume.sh` script to configure a new terminal session with the necessary environmental variables and authentication credentials to continue with the terraform deployment.

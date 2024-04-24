@@ -1521,7 +1521,7 @@ SELECT DISTINCT
   will_purchase,
   # Number of rows per user, per day, per split. Only one row per user, per day, per slip.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
-  FROM `marketing-data-engine-demo.purchase_propensity.purchase_propensity_training_30_15`
+  FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_15`
 )
 WHERE
   row_order_peruser_perday_persplit = 1
@@ -2428,7 +2428,7 @@ SELECT DISTINCT
   will_purchase,
   # Number of rows per user, per day, per split. Only one row per user, per day, per slip.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
-  FROM `marketing-data-engine-demo.purchase_propensity.purchase_propensity_training_30_30`
+  FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_30`
 )
 WHERE
   row_order_peruser_perday_persplit = 1
