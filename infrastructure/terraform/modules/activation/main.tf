@@ -221,7 +221,7 @@ data "external" "ga4_measurement_properties" {
 # This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
 module "secret_manager" {
   source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "~> 0.1"
+  version    = "~> 0.2"
   project_id = module.project_services.project_id
   secrets = [
     {
