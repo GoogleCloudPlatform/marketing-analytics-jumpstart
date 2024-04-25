@@ -55,7 +55,7 @@ data "local_file" "aggregated_value_based_bidding_training_preparation_file" {
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "aggregated_value_based_bidding_training_preparation" {
   project = var.project_id
-  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
   routine_id = "aggregated_value_based_bidding_training_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
@@ -79,7 +79,7 @@ data "local_file" "aggregated_value_based_bidding_explanation_preparation_file" 
 # is in the correct format and contains the necessary features for explanation.
 resource "google_bigquery_routine" "aggregated_value_based_bidding_explanation_preparation" {
   project = var.project_id
-  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
   routine_id = "aggregated_value_based_bidding_explanation_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
@@ -1039,7 +1039,7 @@ data "local_file" "invoke_aggregated_value_based_bidding_training_preparation_fi
 # Terraform resource for invoking the bigquery stored procedure
 resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_training_preparation" {
   project = var.project_id
-  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
   routine_id = "invoke_aggregated_value_based_bidding_training_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
@@ -1054,7 +1054,7 @@ data "local_file" "invoke_aggregated_value_based_bidding_explanation_preparation
 # Terraform resource for invoking the bigquery stored procedure
 resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_explanation_preparation" {
   project = var.project_id
-  dataset_id = google_bigquery_dataset.aggregated_vbb.dataset_id
+  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
   routine_id = "invoke_aggregated_value_based_bidding_explanation_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
