@@ -1,0 +1,34 @@
+[
+  {
+    "name": "First_Visits_corr_Purchase_Product",
+    "type": "FLOAT"
+  },
+  {
+    "name": "Visit_Product_Page_corr_Purchase_Product",
+    "type": "FLOAT"
+  },
+  {
+    "name": "View_Product_Details_corr_Purchase_Product",
+    "type": "FLOAT"
+  },
+  {
+    "name": "Add_Product_to_Cart_corr_Purchase_Product",
+    "type": "FLOAT"
+  },
+  {
+    "name": "View_Cart_corr_Purchase_Product",
+    "type": "FLOAT"
+  },
+  {
+    "name": "Begin_Checkout_corr_Purchase_Product",
+    "type": "FLOAT"
+  },
+  {
+    "name": "Added_Shipping_Info_corr_Purchase_Product",
+    "type": "FLOAT"
+  },
+  {
+    "name": "Added_Payment_Info_corr_Purchase_Product",
+    "type": "FLOAT"
+  }
+]

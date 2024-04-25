@@ -142,30 +142,47 @@ resource "google_bigquery_dataset" "auto_audience_segmentation" {
   }
 }
 
+locals {
+  aggregated_vbb_tables = [
+    "vbb_weights",
+    "aggregated_value_based_bidding_correlation",
+    "aggregated_value_based_bidding_volume_daily",
+    "aggregated_value_based_bidding_volume_weekly"
+  ]
+}
+
 # This resource creates a BigQuery dataset called `aggregated_vbb`.
-resource "google_bigquery_dataset" "aggregated_vbb" {
-  dataset_id                 = local.config_bigquery.dataset.aggregated_vbb.name
-  friendly_name              = local.config_bigquery.dataset.aggregated_vbb.friendly_name
-  project                    = local.aggregated_vbb_project_id
-  description                = local.config_bigquery.dataset.aggregated_vbb.description
-  location                   = local.config_bigquery.dataset.aggregated_vbb.location
-  # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
-  # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.auto_audience_segmentation.max_time_travel_hours configuration.
-  max_time_travel_hours      = local.config_bigquery.dataset.aggregated_vbb.max_time_travel_hours
+module "aggregated_vbb" {
+  source  = "terraform-google-modules/bigquery/google"
+  version = "~> 5.4"
+
+  dataset_id   = local.config_bigquery.dataset.aggregated_vbb.name
+  dataset_name = local.config_bigquery.dataset.aggregated_vbb.friendly_name
+  description  = local.config_bigquery.dataset.aggregated_vbb.description
+  project_id   = local.aggregated_vbb_project_id
+  location     = local.config_bigquery.dataset.aggregated_vbb.location
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
   delete_contents_on_destroy = false
 
-  labels = {
+  dataset_labels = {
     version = "prod"
   }
 
-  # The lifecycle block allows you to configure the lifecycle of the dataset. 
-  # In this case, the ignore_changes attribute is set to all, which means that 
-  # Terraform will ignore any changes to the dataset and will not attempt to update the dataset.
-  lifecycle {
-    ignore_changes = all
-  }
+  tables = [for table_id in local.aggregated_vbb_tables :
+  {
+    table_id           = table_id
+    schema             = file("../../sql/schema/table/${table_id}.json")
+    # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
+    # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.auto_audience_segmentation.max_time_travel_hours configuration.
+    max_time_travel_hours = local.config_bigquery.dataset.aggregated_vbb.max_time_travel_hours
+    deletion_protection = true
+    time_partitioning  = null,
+    range_partitioning = null,
+    expiration_time    = null,
+    clustering         = [],
+    labels             = {},
+  }]
 }
 
 # This module creates a BigQuery dataset called `aggregated_predictions` and a table called "latest".
