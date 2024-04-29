@@ -152,6 +152,25 @@ locals {
 }
 
 # This resource creates a BigQuery dataset called `aggregated_vbb`.
+# For existing users that has pulled this change will result in that 
+# terraform try to created the `aggregated_vbb` dataset along with 
+# the underlying tables. terraform apply will result in an error saying 
+# it failed to create resources that are already exist. To resolve you 
+# need to import the the existing dataset and tables to terraform using 
+# the following commands:
+# > `terraform import module.feature_store[0].module.aggregated_vbb.google_bigquery_dataset.main 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb'`
+#
+# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["vbb_weights"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/vbb_weights`
+#
+# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_volume_weekly"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_volume_weekly'`
+#
+# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_correlation"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_correlation'`
+#
+# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_volume_daily"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_volume_daily'`
+#
+# You also need to remove the information of the existing aggregated_vbb 
+# dataset from the terraform state by running following command:
+# > `terraform state rm 'module.feature_store[0].google_bigquery_dataset.aggregated_vbb'`
 module "aggregated_vbb" {
   source  = "terraform-google-modules/bigquery/google"
   version = "~> 5.4"
