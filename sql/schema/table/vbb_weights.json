@@ -1,0 +1,26 @@
+[
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "model_id",
+    "type": "STRING"
+  },
+  {
+    "name": "model_name",
+    "type": "STRING"
+  },
+  {
+    "name": "model_version",
+    "type": "STRING"
+  },
+  {
+    "name": "feature_names",
+    "type": "STRING"
+  },
+  {
+    "name": "values",
+    "type": "FLOAT"
+  }
+]

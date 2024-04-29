@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Week_Of_Year",
+    "type": "INTEGER"
+  },
+  {
+    "name": "First_Visits",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Visit_Product_Page",
+    "type": "INTEGER"
+  },
+  {
+    "name": "View_Product_Details",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Add_Product_to_Cart",
+    "type": "INTEGER"
+  },
+  {
+    "name": "View_Cart",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Begin_Checkout",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Added_Shipping_Info",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Added_Payment_Info",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Purchase_Product",
+    "type": "INTEGER"
+  }
+]
