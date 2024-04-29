@@ -51,6 +51,10 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
     MAX(UD.has_signed_in_with_user_id) OVER(user_segmentation_dimensions_window) AS has_signed_in_with_user_id
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` UD
+  INNER JOIN
+  `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
+  ON
+  UD.user_pseudo_id = LEU.user_pseudo_id
   WHERE
     -- Define the training+validation subset interval
     UD.feature_date = inference_date
@@ -79,52 +83,16 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
     MAX(UWM.ltv_revenue_past_7_15_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_7_15_day
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` UWM
+  INNER JOIN
+  `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
+  ON
+  UD.user_pseudo_id = LEU.user_pseudo_id
   WHERE
     -- Define the training+validation subset interval
     UWM.feature_date = inference_date
     AND UWM.processed_timestamp = lastest_processed_time_uwm
   WINDOW
     user_lookback_metrics_window AS (PARTITION BY UWM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
-);
-
-
-
-CREATE OR REPLACE TEMP TABLE inference_preparation_um AS (
-  SELECT DISTINCT
-    UM.feature_date,
-    MAX(UM.purchasers_users) OVER(user_scoped_segmentation_metrics_window) AS purchasers_users,
-    MAX(UM.average_daily_purchasers) OVER(user_scoped_segmentation_metrics_window) AS average_daily_purchasers,
-    MAX(UM.active_users) OVER(user_scoped_segmentation_metrics_window) AS active_users,
-    MAX(UM.DAU) OVER(user_scoped_segmentation_metrics_window) AS DAU,
-    MAX(UM.MAU) OVER(user_scoped_segmentation_metrics_window) AS MAU,
-    MAX(UM.WAU) OVER(user_scoped_segmentation_metrics_window) AS WAU,
-    MAX(UM.dau_per_mau) OVER(user_scoped_segmentation_metrics_window) AS dau_per_mau,
-    MAX(UM.dau_per_wau) OVER(user_scoped_segmentation_metrics_window) AS dau_per_wau,
-    MAX(UM.wau_per_mau) OVER(user_scoped_segmentation_metrics_window) AS wau_per_mau,
-    MAX(UM.users_engagement_duration_seconds) OVER(user_scoped_segmentation_metrics_window) AS users_engagement_duration_seconds,
-    MAX(UM.average_engagement_time) OVER(user_scoped_segmentation_metrics_window) AS average_engagement_time,
-    MAX(UM.average_engagement_time_per_session) OVER(user_scoped_segmentation_metrics_window) AS average_engagement_time_per_session,
-    MAX(UM.average_sessions_per_user) OVER(user_scoped_segmentation_metrics_window) AS average_sessions_per_user,
-    MAX(UM.ARPPU) OVER(user_scoped_segmentation_metrics_window) AS ARPPU,
-    MAX(UM.ARPU) OVER(user_scoped_segmentation_metrics_window) AS ARPU,
-    MAX(UM.average_daily_revenue) OVER(user_scoped_segmentation_metrics_window) AS average_daily_revenue,
-    MAX(UM.max_daily_revenue) OVER(user_scoped_segmentation_metrics_window) AS max_daily_revenue,
-    MAX(UM.min_daily_revenue) OVER(user_scoped_segmentation_metrics_window) AS min_daily_revenue,
-    MAX(UM.new_users) OVER(user_scoped_segmentation_metrics_window) AS new_users,
-    MAX(UM.returning_users) OVER(user_scoped_segmentation_metrics_window) AS returning_users,
-    MAX(UM.first_time_purchasers) OVER(user_scoped_segmentation_metrics_window) AS first_time_purchasers,
-    MAX(UM.first_time_purchaser_conversion) OVER(user_scoped_segmentation_metrics_window) AS first_time_purchaser_conversion,
-    MAX(UM.first_time_purchasers_per_new_user) OVER(user_scoped_segmentation_metrics_window) AS first_time_purchasers_per_new_user,
-    MAX(UM.avg_user_conversion_rate) OVER(user_scoped_segmentation_metrics_window) AS avg_user_conversion_rate,
-    MAX(UM.avg_session_conversion_rate) OVER(user_scoped_segmentation_metrics_window) AS avg_session_conversion_rate
-  FROM
-    `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` UM
-  WHERE
-    -- Define the training+validation subset interval
-    UM.feature_date = inference_date 
-    AND UM.processed_timestamp = lastest_processed_time_um
-  WINDOW 
-    user_scoped_segmentation_metrics_window AS (PARTITION BY UM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 
@@ -166,32 +134,7 @@ CREATE OR REPLACE TEMP TABLE inference_preparation AS (
     UWM.checkouts_past_1_7_day,
     UWM.checkouts_past_8_14_day,
     UWM.ltv_revenue_past_1_7_day,
-    UWM.ltv_revenue_past_7_15_day,
-    UM.purchasers_users,
-    UM.average_daily_purchasers,
-    UM.active_users,
-    UM.DAU,
-    UM.MAU,
-    UM.WAU,
-    UM.dau_per_mau,
-    UM.dau_per_wau,
-    UM.wau_per_mau,
-    UM.users_engagement_duration_seconds,
-    UM.average_engagement_time,
-    UM.average_engagement_time_per_session,
-    UM.average_sessions_per_user,
-    UM.ARPPU,
-    UM.ARPU,
-    UM.average_daily_revenue,
-    UM.max_daily_revenue,
-    UM.min_daily_revenue,
-    UM.new_users,
-    UM.returning_users,
-    UM.first_time_purchasers,
-    UM.first_time_purchaser_conversion,
-    UM.first_time_purchasers_per_new_user,
-    UM.avg_user_conversion_rate,
-    UM.avg_session_conversion_rate
+    UWM.ltv_revenue_past_7_15_day
   FROM
     inference_preparation_ud UD
   INNER JOIN

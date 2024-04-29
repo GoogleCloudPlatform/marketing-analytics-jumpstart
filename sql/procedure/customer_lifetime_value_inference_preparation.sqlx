@@ -50,6 +50,10 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
     MAX(UD.has_signed_in_with_user_id) OVER(user_lifetime_dimensions_window) AS has_signed_in_with_user_id
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` UD
+  INNER JOIN
+  `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
+  ON
+  UD.user_pseudo_id = LEU.user_pseudo_id
   WHERE
     -- Define the training+validation subset interval
     UD.feature_date = inference_date
@@ -100,6 +104,10 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm as (
     MAX(UWM.checkouts_past_150_180_day) OVER(user_lifetime_rolling_window) AS checkouts_past_150_180_day
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` UWM
+  INNER JOIN
+  `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
+  ON
+  UD.user_pseudo_id = LEU.user_pseudo_id
   WHERE
     -- Define the training+validation subset interval
     UWM.feature_date = inference_date    
