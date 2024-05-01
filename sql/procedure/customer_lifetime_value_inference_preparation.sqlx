@@ -107,7 +107,7 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm as (
   INNER JOIN
   `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
   ON
-  UD.user_pseudo_id = LEU.user_pseudo_id
+  UWM.user_pseudo_id = LEU.user_pseudo_id
   WHERE
     -- Define the training+validation subset interval
     UWM.feature_date = inference_date    

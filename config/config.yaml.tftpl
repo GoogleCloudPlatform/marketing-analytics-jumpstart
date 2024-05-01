@@ -1899,6 +1899,7 @@ bigquery:
     # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       dataset: "customer_lifetime_value"
       name: "customer_lifetime_value_inference_preparation"
       feature_store_project_id: "${project_id}"
@@ -1908,16 +1909,17 @@ bigquery:
     # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     audience_segmentation_inference_preparation:
       project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       dataset: "audience_segmentation"
       name: "audience_segmentation_inference_preparation"
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
       insert_table: "audience_segmentation_inference_preparation"
       expiration_duration_hours: 168
-      mds_dataset: "${mds_dataset}"
     # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     auto_audience_segmentation_inference_preparation:
       project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       dataset: "auto_audience_segmentation"
       name: "auto_audience_segmentation_inference_preparation"
       feature_store_project_id: "${project_id}"
@@ -1925,13 +1927,13 @@ bigquery:
       insert_table: "auto_audience_segmentation_inference_preparation"
       lookback_days: 15
       expiration_duration_hours: 12
-      mds_dataset: "${mds_dataset}"
     # This is the stored procedure that collects the features and prepare the examples rows to train a model.
     # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
     # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
     # you will provide at maximum a couple of millions of rows.
     auto_audience_segmentation_training_preparation:
       project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
       dataset: "auto_audience_segmentation"
       name: "auto_audience_segmentation_training_preparation"
       feature_store_project_id: "${project_id}"
@@ -1939,7 +1941,6 @@ bigquery:
       insert_table: "auto_audience_segmentation_training_preparation"
       lookback_days: 15
       expiration_duration_hours: 12
-      mds_dataset: "${mds_dataset}"
     # This procedure aggregates all the daily predictions generates into a consumable table grouped for each user.
     # This table is used for multiple Looker Studio dashboards reports. 
     aggregate_predictions_procedure:

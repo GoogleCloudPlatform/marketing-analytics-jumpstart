@@ -86,7 +86,7 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
   INNER JOIN
   `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
   ON
-  UD.user_pseudo_id = LEU.user_pseudo_id
+  UWM.user_pseudo_id = LEU.user_pseudo_id
   WHERE
     -- Define the training+validation subset interval
     UWM.feature_date = inference_date
@@ -142,10 +142,6 @@ CREATE OR REPLACE TEMP TABLE inference_preparation AS (
   ON
     UWM.user_pseudo_id = UD.user_pseudo_id
     AND UWM.feature_date = UD.feature_date
-  INNER JOIN
-    inference_preparation_um UM
-  ON
-    UM.feature_date = UD.feature_date
 );
 
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
@@ -187,32 +183,8 @@ INSERT INTO
     checkouts_past_1_7_day,
     checkouts_past_8_14_day,
     ltv_revenue_past_1_7_day,
-    ltv_revenue_past_7_15_day,
-    purchasers_users,
-    average_daily_purchasers,
-    active_users,
-    DAU,
-    MAU,
-    WAU,
-    dau_per_mau,
-    dau_per_wau,
-    wau_per_mau,
-    users_engagement_duration_seconds,
-    average_engagement_time,
-    average_engagement_time_per_session,
-    average_sessions_per_user,
-    ARPPU,
-    ARPU,
-    average_daily_revenue,
-    max_daily_revenue,
-    min_daily_revenue,
-    new_users,
-    returning_users,
-    first_time_purchasers,
-    first_time_purchaser_conversion,
-    first_time_purchasers_per_new_user,
-    avg_user_conversion_rate,
-    avg_session_conversion_rate )
+    ltv_revenue_past_7_15_day 
+)
 SELECT
   DISTINCT feature_date,
   user_pseudo_id,
@@ -250,32 +222,7 @@ SELECT
   checkouts_past_1_7_day,
   checkouts_past_8_14_day,
   ltv_revenue_past_1_7_day,
-  ltv_revenue_past_7_15_day,
-  purchasers_users,
-  average_daily_purchasers,
-  active_users,
-  DAU,
-  MAU,
-  WAU,
-  dau_per_mau,
-  dau_per_wau,
-  wau_per_mau,
-  users_engagement_duration_seconds,
-  average_engagement_time,
-  average_engagement_time_per_session,
-  average_sessions_per_user,
-  ARPPU,
-  ARPU,
-  average_daily_revenue,
-  max_daily_revenue,
-  min_daily_revenue,
-  new_users,
-  returning_users,
-  first_time_purchasers,
-  first_time_purchaser_conversion,
-  first_time_purchasers_per_new_user,
-  avg_user_conversion_rate,
-  avg_session_conversion_rate
+  ltv_revenue_past_7_15_day
 FROM
   inference_preparation;
 
