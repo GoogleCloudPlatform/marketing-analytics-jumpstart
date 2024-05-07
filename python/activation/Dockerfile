@@ -26,5 +26,4 @@ ENV FLEX_TEMPLATE_PYTHON_REQUIREMENTS_FILE="${WORKDIR}/requirements.txt"
 ENV FLEX_TEMPLATE_PYTHON_PY_FILE="${WORKDIR}/main.py"
 
 # Install apache-beam and other dependencies to launch the pipeline
-RUN pip install apache-beam[gcp]
-RUN pip install -U -r ./requirements.txt
+RUN pip install -U -r ./requirements.txt && pip check
