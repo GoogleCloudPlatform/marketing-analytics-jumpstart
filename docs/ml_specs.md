@@ -20,6 +20,13 @@ The out-of-box ML driven use cases requires the following events to existing in 
 ## Machine Learning Feature Reference
 
 ### Purchase Propensity Features
+Target field:
+| Target field | Source Field from GA4 Event |
+| -------- | -------- |
+| will_purchase | A binary value (1 if any purchase event occurred, 0 otherwise) for each user in the predicting time window|
+
+Features:
+
 | Feature | Source Field from GA4 Event |
 | -------- | -------- |
 | active_users_past_1_day | Aggregate metric derived from a sliding window over the previous X days, representing a binary value (1 if any events occurred, 0 otherwise) for each user. |
@@ -99,6 +106,13 @@ The out-of-box ML driven use cases requires the following events to existing in 
 | visits_past_8_14_day | 〃 |
 
 ### Customer Lifetime Value Features
+Target field:
+| Target field | Source Field from GA4 Event |
+| -------- | -------- |
+| pltv_revenue_x_days | Aggregated value of all the purchase value for each user in the predicting time window|
+
+Features:
+
 | Feature | Source Field from GA4 Event |
 | -------- | -------- |
 | active_users_past_1_30_day | Aggregate metric derived from a sliding window over the previous X days, representing a binary value (1 if any events occurred, 0 otherwise) for each user. |

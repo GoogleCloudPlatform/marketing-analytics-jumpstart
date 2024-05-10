@@ -1,7 +1,7 @@
 SELECT 
   NTILE(10) OVER (ORDER BY a.prediction DESC) AS cltv_decile,
   COALESCE(b.user_id, b.user_pseudo_id) AS client_id,
-  TIMESTAMP_ADD(b.event_timestamp, INTERVAL 1 MICROSECOND) AS inference_date
+  CASE WHEN EXTRACT(MICROSECOND FROM b.event_timestamp) = 1 THEN b.event_timestamp ELSE TIMESTAMP_SUB(b.event_timestamp, INTERVAL 1 MICROSECOND) END AS inference_date
 FROM
   `${mds_project_id}.marketing_ga4_v1_${mds_dataset_suffix}.latest_event_per_user_last_72_hours` b,
   `{{source_table}}` a
