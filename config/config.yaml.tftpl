@@ -515,6 +515,14 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_value_based_bidding_training_full_dataset"
           data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          transform_dataflow_max_num_workers: 10
+          stats_and_example_gen_dataflow_max_num_workers: 10
+          evaluation_dataflow_starting_num_workers: 5
+          evaluation_dataflow_max_num_workers: 10
+          distill_batch_predict_max_replica_count: 10
+          distill_batch_predict_starting_replica_count: 10
+          evaluation_batch_predict_max_replica_count: 10
+          evaluation_batch_predict_starting_replica_count: 10
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -557,9 +565,6 @@ vertex_ai:
           model_metric_threshold: 400
           number_of_models_considered: 1
           bigquery_destination_prefix: "${project_id}.aggregated_vbb.vbb_weights"
-          # These are parameter to inovoke the aggregations of all daily predictions into a single table.
-          aggregated_predictions_dataset_location: "${location}"
-          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
         pipeline_parameters_substitutions: null
 
     # This pipeline contains the configuration parameters for the propensity training and inference pipelines for the purchase propensity model.
@@ -624,6 +629,14 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          transform_dataflow_max_num_workers: 10
+          stats_and_example_gen_dataflow_max_num_workers: 10
+          evaluation_dataflow_starting_num_workers: 5
+          evaluation_dataflow_max_num_workers: 10
+          distill_batch_predict_max_replica_count: 10
+          distill_batch_predict_starting_replica_count: 10
+          evaluation_batch_predict_max_replica_count: 10
+          evaluation_batch_predict_starting_replica_count: 10
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -689,9 +702,6 @@ vertex_ai:
           # For probabilities higher than `threashold`, set postive label to 1, otherwise 0.
           threashold: 0.5
           positive_label: "1"
-          # These are parameters to invoke the aggregations of all daily predictions into a single table.
-          aggregated_predictions_dataset_location: "${location}"
-          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "purchase-propensity-30-15"  # purchase-propensity-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
@@ -781,9 +791,6 @@ vertex_ai:
           # This is the prediction dataset table or view.
           bigquery_source: "${project_id}.audience_segmentation.v_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
-          # These are parameters to invoke the aggregations of all daily predictions into a single table.
-          aggregated_predictions_dataset_location: "${location}"
-          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "audience-segmentation-15"
@@ -842,9 +849,6 @@ vertex_ai:
           model_name: "interest-cluster-model"
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"
-          # These are parameters to invoke the aggregations of all daily predictions into a single table.
-          aggregated_predictions_dataset_location: "${location}"
-          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           # These are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "auto-audience-segmentation-15"
@@ -914,6 +918,14 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_30_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          transform_dataflow_max_num_workers: 10
+          stats_and_example_gen_dataflow_max_num_workers: 10
+          evaluation_dataflow_starting_num_workers: 5
+          evaluation_dataflow_max_num_workers: 10
+          distill_batch_predict_max_replica_count: 10
+          distill_batch_predict_starting_replica_count: 10
+          evaluation_batch_predict_max_replica_count: 10
+          evaluation_batch_predict_starting_replica_count: 10
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -1005,6 +1017,14 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/customer_lifetime_value_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          transform_dataflow_max_num_workers: 10
+          stats_and_example_gen_dataflow_max_num_workers: 10
+          evaluation_dataflow_starting_num_workers: 5
+          evaluation_dataflow_max_num_workers: 10
+          distill_batch_predict_max_replica_count: 10
+          distill_batch_predict_starting_replica_count: 10
+          evaluation_batch_predict_max_replica_count: 10
+          evaluation_batch_predict_starting_replica_count: 10
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -1081,13 +1101,68 @@ vertex_ai:
           accelerator_count: 0
           accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
           generate_explanation: false
-          # These are parameters to invoke the aggregations of all daily predictions into a single table.
-          aggregated_predictions_dataset_location: "${location}"
-          query_aggregate_last_day_predictions: "CALL `${project_id}.aggregated_predictions.aggregate_last_day_predictions`();"
           # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "cltv-180-30" # cltv-180-180 | cltv-180-90 | cltv-180-30
         pipeline_parameters_substitutions: null
+    
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the audience segmentation model.
+    # This block defines the pipeline parameters that are going to be used for three tasks: compilation, upload and scheduling.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
+    reporting_preparation:
+      execution:
+        # The `name` parameter is the name of the pipeline that will appear in the Vertex AI pipeline UI.
+        name: "reporting-preparation"
+        # The `job_id_prefix` is the prefix of the Vertex AI Custom Job that will be used at the execution of each individual component step.
+        job_id_prefix: "reporting-preparation-"
+        # The `experiment_name` is the name of the experiment that will appear in the Vertex AI Experiments UI.
+        experiment_name: "reporting-preparation"
+        # The `type` defines whether the pipeline is going to be a `tabular-workflows` or a `custom` pipeline.
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
+        type: "custom"
+        # The `schedule` defines the schedule values of the pipeline.
+        # This solution uses the Vertex AI Pipeline Scheduler.
+        # More information can be found at https://cloud.google.com/vertex-ai/docs/pipelines/scheduler.
+        schedule:
+          # The `cron` is the cron schedule. Make sure you review the TZ=America/New_York timezone.
+          # More information can be found at https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules.
+          cron: "TZ=America/New_York 0 8 * * *"
+          # The `max_concurrent_run_count` defines the maximum number of concurrent pipeline runs.
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
+          state: PAUSED # possible states ACTIVE or PAUSED
+        # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
+        # Those values may difer depending on the pipeline type and the pipeline steps being used.
+        # Make sure you review the python function the defines the pipeline.
+        # The pipeline definition function can be found in `python/pipelines/feature_engineering_pipelines.py` 
+        # or other files ending with `python/pipelines/*_pipeline.py`.
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_aggregate_last_day_predictions: "
+            CALL `{aggregate_last_day_predictions_procedure_name}`();"
+          # The `timeout` parameter defines the timeout of the pipeline in seconds.
+          # The default value is 3600 seconds (1 hour).
+          timeout: 3600.0
+        # The `pipeline_parameters_substitutions` defines the substitutions that are going to be applied to the pipeline parameters before compilation.
+        # Check the parameter values above to see if they are used. 
+        # They typically follow this format {parameter_subsititution_key}.
+        # To apply a substitution, make sure you define the pair: {parameter_subsititution_key}: {parameter_subsititution_value}.
+        pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
+          aggregate_last_day_predictions_procedure_name: "${project_id}.aggregated_predictions.aggregate_last_day_predictions"
+          date_timezone: "UTC" # used when input_date is None and need to get current date.
 
 # This block contains configuration parameters for the BigQuery Datasets, Tables, Queries and Stored Procedures.
 bigquery:

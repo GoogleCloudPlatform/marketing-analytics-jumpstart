@@ -244,7 +244,9 @@ module "pipeline_bucket" {
   project_id    = var.project_id
   name          = "${local.app_prefix}-app-${var.project_id}"
   location      = var.location
-  force_destroy = true
+  # When deleting a bucket, this boolean option will delete all contained objects. 
+  # If false, Terraform will fail to delete buckets which contain objects.
+  force_destroy = false
 
   lifecycle_rules = [{
     action = {
