@@ -105,10 +105,8 @@ def prediction_pl(
     number_of_models_considered: int,
     bigquery_source: str,
     bigquery_destination_prefix: str,
-    aggregated_predictions_dataset_location: str,
-    query_aggregate_last_day_predictions: str,
     pubsub_activation_topic: str,
-    pubsub_activation_type: str,
+    pubsub_activation_type: str
 ):
 
     # Get the best candidate model according to the parameters.
@@ -144,13 +142,4 @@ def prediction_pl(
         activation_type=pubsub_activation_type,
         predictions_table=flatten_predictions.outputs['destination_table'],
     ).set_display_name('send_pubsub_activation_msg').after(flatten_predictions)
-
-    # Invokes the BQ stored procedure that collects all predictions tables and aggregates into a single table.
-    bq_stored_procedure_exec(
-        project=project_id,
-        location=aggregated_predictions_dataset_location,
-        query=query_aggregate_last_day_predictions,
-        query_parameters=[]
-
-    ).set_display_name('aggregate_predictions').after(flatten_predictions)
 

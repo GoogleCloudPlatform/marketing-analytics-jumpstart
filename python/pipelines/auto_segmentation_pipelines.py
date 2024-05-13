@@ -97,9 +97,7 @@ def prediction_pl(
     bigquery_source: str,
     bigquery_destination_prefix: str,
     pubsub_activation_topic: str,
-    pubsub_activation_type: str,
-    aggregated_predictions_dataset_location: str,
-    query_aggregate_last_day_predictions: str
+    pubsub_activation_type: str
 ):
     # Get the latest model named `model_name`
     model_op = get_latest_model(
@@ -125,12 +123,4 @@ def prediction_pl(
         activation_type=pubsub_activation_type,
         predictions_table=prediction_op.outputs['destination_table'],
     ).set_display_name('send_pubsub_activation_msg').after(prediction_op)
-
-    # Invokes the BQ stored procedure that collects all predictions tables and aggregates into a single table.
-    bq_stored_procedure_exec(
-        project=project_id,
-        location=aggregated_predictions_dataset_location,
-        query=query_aggregate_last_day_predictions,
-        query_parameters=[]
-    ).set_display_name('aggregate_predictions').after(prediction_op)
 

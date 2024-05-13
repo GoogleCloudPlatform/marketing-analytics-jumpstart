@@ -158,15 +158,15 @@ locals {
 # it failed to create resources that are already exist. To resolve you 
 # need to import the the existing dataset and tables to terraform using 
 # the following commands:
-# > `terraform import module.feature_store[0].module.aggregated_vbb.google_bigquery_dataset.main 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb'`
+# > `terraform -chdir="${TERRAFORM_RUN_DIR}" import module.feature_store[0].module.aggregated_vbb.google_bigquery_dataset.main 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb'`
 #
-# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["vbb_weights"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/vbb_weights`
+# > `terraform -chdir="${TERRAFORM_RUN_DIR}" import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["vbb_weights"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/vbb_weights'`
 #
-# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_volume_weekly"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_volume_weekly'`
+# > `terraform -chdir="${TERRAFORM_RUN_DIR}" import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_volume_weekly"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_volume_weekly'`
 #
-# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_correlation"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_correlation'`
+# > `terraform -chdir="${TERRAFORM_RUN_DIR}" import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_correlation"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_correlation'`
 #
-# > `terraform import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_volume_daily"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_volume_daily'`
+# > `terraform -chdir="${TERRAFORM_RUN_DIR}" import 'module.feature_store[0].module.aggregated_vbb.google_bigquery_table.main["aggregated_value_based_bidding_volume_daily"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/aggregated_vbb/tables/aggregated_value_based_bidding_volume_daily'`
 #
 # You also need to remove the information of the existing aggregated_vbb 
 # dataset from the terraform state by running following command:
@@ -182,7 +182,7 @@ module "aggregated_vbb" {
   location     = local.config_bigquery.dataset.aggregated_vbb.location
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
-  delete_contents_on_destroy = false
+  delete_contents_on_destroy = true
 
   dataset_labels = {
     version = "prod"
@@ -195,7 +195,7 @@ module "aggregated_vbb" {
     # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
     # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.auto_audience_segmentation.max_time_travel_hours configuration.
     max_time_travel_hours = local.config_bigquery.dataset.aggregated_vbb.max_time_travel_hours
-    deletion_protection = true
+    deletion_protection = false
     time_partitioning  = null,
     range_partitioning = null,
     expiration_time    = null,

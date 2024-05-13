@@ -603,3 +603,24 @@ resource "null_resource" "compile_value_based_bidding_explanation_pipelines" {
     working_dir = self.triggers.working_dir
   }
 }
+
+# This resource is used to compile and upload the Vertex AI pipeline for preparing data for the reports
+resource "null_resource" "compile_reporting_preparation_aggregate_predictions_pipelines" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_value_based_bidding_explanation_pipelines.id
+  }
+
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.reporting_preparation.execution -o reporting_preparation.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f reporting_preparation.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.reporting_preparation.execution
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}

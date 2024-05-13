@@ -38,7 +38,8 @@ pipelines_list = {
     'vertex_ai.pipelines.clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_regression_pl",
     'vertex_ai.pipelines.value_based_bidding.training': None, # tabular workflows pipelines is precompiled
-    'vertex_ai.pipelines.value_based_bidding.explanation': "pipelines.tabular_pipelines.explanation_tabular_workflow_regression_pl"
+    'vertex_ai.pipelines.value_based_bidding.explanation': "pipelines.tabular_pipelines.explanation_tabular_workflow_regression_pl",
+    'vertex_ai.pipelines.reporting_preparation.execution': "pipelines.feature_engineering_pipelines.reporting_preparation_pl",
 } # key should match pipeline names as in the `config.yaml.tftpl` files for automatic compilation
                 
 if __name__ == "__main__":

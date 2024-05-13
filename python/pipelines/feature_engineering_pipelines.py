@@ -245,4 +245,17 @@ def customer_lifetime_value_feature_engineering_pipeline(
         timeout=timeout).set_display_name('customer_lifetime_value_inference_preparation').after(*phase_1)
 
 
-   
+@dsl.pipeline()
+def reporting_preparation_pl(
+    project_id: str,
+    location: Optional[str],
+    query_aggregate_last_day_predictions: str,
+    timeout: Optional[float] = 3600.0
+):
+    # Reporting Preparation
+    aggregate_predictions = sp(
+        project=project_id,
+        location=location,
+        query=query_aggregate_last_day_predictions,
+        query_parameters=[]
+    ).set_display_name('aggregate_predictions')
