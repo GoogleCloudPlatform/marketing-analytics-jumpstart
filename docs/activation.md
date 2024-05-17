@@ -79,3 +79,6 @@ To monitor and troubleshoot specific activation runs, use the [Dataflow Cloud co
 * **Check Run Status:** View the overall status of each activation run, including whether it is currently running, succeeded, or failed.
 * **Inspect Step Details:** Drill down into individual steps within the activation processing pipeline to see their progress and identify any errors.
 * **Access Logs:** View detailed logs for each activation run to pinpoint the exact cause of any issues and troubleshoot them effectively.
+
+## Analyze Prediction Results
+Learn how to leverage the MAJ dashboard to gain a[ comprehensive understanding of your prediction results](prediction_result_analysis.md).
