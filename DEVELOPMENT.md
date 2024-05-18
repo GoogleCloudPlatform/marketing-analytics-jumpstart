@@ -1,6 +1,9 @@
 # Marketing Analytics Jumpstart
-
 Marketing Analytics Jumpstart consists of an easy, extensible and automated implementation of an end-to-end solution that enables Marketing Technology teams to store, transform, enrich with 1PD and analyze marketing data, and programmatically send predictive events to Google Analytics 4 to support conversion optimization and remarketing campaigns.
+
+## Developer pre-requisites
+Use Visual Studio Code to develop the solution. Install Gemini Code Assistant, Docker, Github, Hashicopr Terraform, Jinja extensions.
+You should have Python 3, Poetry, Terraform, Git and Docker installed in your developer terminal environment.
 
 ## Preparing development environment
 
@@ -37,7 +40,6 @@ poetry run pytest -c pyproject.toml
 ```
 
 ## Customizing the solution
-
 The solution is customizable using a set of configurations defined in the config file in YAML format located in the `config/` folder, the terraform files located in the `infrastructure/terraform/` folder, the Python files located in the `python/` folder, the SQL files located in the `sql/` folder, and the template files located in the `templates/` folder.
 
 Here's a brief breakdown of the contents of each folder:
@@ -69,7 +71,6 @@ Here's a brief breakdown of the contents of each folder:
 ## Out-of-the-box configuration parameters provided by the solution
 
 ### Overall configuration parameters
-
 The `config.yaml.tftpl` file is a YAML file that contains all the configuration parameters for the Marketing Analytics Jumpstart solution. A YAML file is a map or a list, and it follows a hierarchy depending on the indentation, and how you define your key values. Maps allow you to associate key-value pairs. This configuration file is organized in section blocks mappings.
 | Key | Description |
 | ---------- | ---------- |
@@ -95,15 +96,12 @@ The `bigquery` section contains configuration parameters for the BigQuery datase
 - `procedure`: Contains key-values pairs for all the configuration parameters of the procedures deployed in BigQuery, such as start and end dates.
 
 ### Modules configuration parameters
-
 The `terraform.tfvars` file is a terraform variables definition file created during the installation process that lets you define custom Terraform variables that will overwrite the defaults. Here are few examples of changes you can make:
 Change the `project_id` to store the Terraform Remote backend state; change the data staging `project_id`; change the data processing `project_id`; the `website_url` for the customer digital store; the feature store and activation `project_id`; the source GA4 and GAds export projects and datasets; and a few more variables.
 The Terraform definition files for the modules `feature-store` and `pipelines` contains all the terraform resources and data that reads local files to deploy the SQL code to BigQuery. In the `bigquery-procedures.tf`, you can configure which stored procedures are being deployed, in which datasets, using which `local_file` code in which project. In the `bigquery-datasets.tf`, you can configure which datasets are being deployed, their names, locations and whether the contents of the dataset will be deleted when you ask to run a terraform destroy command. In the `bigquery-tables.tf`, you can configure which tables are being deployed, their names, their datasets and schema.
 
 ### Feature Store configuration parameters
-
 The SQL files in the folder `sql/procedure/` and `sql/query/` contains `.sqlx` JINJA templates files containing SQL code that are hydrated from the configuration parameters defined in the `config.yaml` file, more specifically from the sections sql.query and sql.procedure.
 
 ## Activation Application configuration parameters
-
 The files in the folder `templates/activation_query/` contains `.sqlx` JINJA template files containing BigQuery SQL code the retrieves the model predictions produced in the prediction tables for each use case. You can configure the columns and the filter conditions to send user-level prediction events only a subset of users.

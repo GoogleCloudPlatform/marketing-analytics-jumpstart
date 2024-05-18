@@ -43,39 +43,12 @@ The machine pipelines were designed taking the following modelling principles:
 Target field:
 | Target field | Source Field from GA4 Event |
 | -------- | -------- |
-| will_purchase | A binary value (1 if any purchase event occurred, 0 otherwise) for each user in the predicting time window|
+| will_purchase | A binary value (1 if any `purchase` event occurred, 0 otherwise) for each user in the predicting time window|
 
 Features:
 
 | Feature | Source Field from GA4 Event |
 | -------- | -------- |
-| active_users_past_1_day | Aggregate metric derived from a sliding window over the previous 1st day, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_15_30_day | Aggregate metric derived from a sliding window over the interval of the past 15 to 30 days, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_2_day | Aggregate metric derived from a sliding window over the previous 2nd day, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_3_day | Aggregate metric derived from a sliding window over the previous 3rd day, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_4_day | Aggregate metric derived from a sliding window over the previous 4th day, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_5_day | Aggregate metric derived from a sliding window over the previous 5th day, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_6_day | Aggregate metric derived from a sliding window over the previous 6th day, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_7_day | Aggregate metric derived from a sliding window over the previous 7th day, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| active_users_past_8_14_day | Aggregate metric derived from a sliding window over the interval of the past 8 to 14 days, representing a SUM of active sessions (n if sessions were long enough to be considered an active session, 0 otherwise) for each user. |
-| add_to_carts_past_1_day | Aggregate metric derived from a sliding window over the previous X days, representing a binary value (1 if any `add_to_cart` events occurred, 0 otherwise) for each user. |
-| add_to_carts_past_15_30_day | 〃 |
-| add_to_carts_past_2_day | 〃 |
-| add_to_carts_past_3_day | 〃 |
-| add_to_carts_past_4_day | 〃 |
-| add_to_carts_past_5_day | 〃 |
-| add_to_carts_past_6_day | 〃 |
-| add_to_carts_past_7_day | 〃 |
-| add_to_carts_past_8_14_day | 〃 |
-| checkouts_past_1_day | Aggregate metric derived from a sliding window over the previous X days, summerized to the number of `begin_checkout` events occurred for each user. |
-| checkouts_past_15_30_day | 〃 |
-| checkouts_past_2_day | 〃 |
-| checkouts_past_3_day | 〃 |
-| checkouts_past_4_day | 〃 |
-| checkouts_past_5_day | 〃 |
-| checkouts_past_6_day | 〃 |
-| checkouts_past_7_day | 〃 |
-| checkouts_past_8_14_day | 〃 |
 | device_category | [GA4 event - device record](https://support.google.com/analytics/answer/7029846?hl=en#zippy=%2Cdevice) |
 | device_language | 〃 |
 | device_mobile_brand_name | 〃 |
@@ -92,10 +65,38 @@ Features:
 | geo_metro | 〃 |
 | geo_region | 〃 |
 | geo_sub_continent | 〃 |
-| has_signed_in_with_user_id | When the `user_id` field is set on events aggregated over each user |
+| has_signed_in_with_user_id | Boolean representing the `user_id` field is set on events aggregated over each user |
 | last_traffic_source_medium | [GA4 event - traffic_source record](https://support.google.com/analytics/answer/7029846#zippy=%2Ctraffic-source) |
 | last_traffic_source_name | 〃 |
 | last_traffic_source_source | 〃 |
+| user_ltv_revenue | SUM of `ecommerce.purchase_revenue_in_usd` over a period of X days for each user |
+| active_users_past_1_day | Aggregate metric derived from a sliding window over the previous 1st day, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_15_30_day | Aggregate metric derived from a sliding window over the interval of the past 15 to 30 days, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_2_day | Aggregate metric derived from a sliding window over the previous 2nd day, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_3_day | Aggregate metric derived from a sliding window over the previous 3rd day, representing a SUM of active sessions number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_4_day | Aggregate metric derived from a sliding window over the previous 4th day, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_5_day | Aggregate metric derived from a sliding window over the previous 5th day, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_6_day | Aggregate metric derived from a sliding window over the previous 6th day, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_7_day | Aggregate metric derived from a sliding window over the previous 7th day, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| active_users_past_8_14_day | Aggregate metric derived from a sliding window over the interval of the past 8 to 14 days, representing a SUM of active sessions (number of sessions were long enough to be considered an active session, 0 otherwise) for each user. |
+| add_to_carts_past_1_day | Aggregate metric derived from a sliding window over the previous 1st day, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_15_30_day | Aggregate metric derived from a sliding window over the interval of the past 15 to 30 days, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_2_day | Aggregate metric derived from a sliding window over the previous 2nd day, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_3_day | Aggregate metric derived from a sliding window over the previous 3rd day, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_4_day | Aggregate metric derived from a sliding window over the previous 4th day, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_5_day | Aggregate metric derived from a sliding window over the previous 5th day, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_6_day | Aggregate metric derived from a sliding window over the previous 6th day, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_7_day | Aggregate metric derived from a sliding window over the previous 7th day, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| add_to_carts_past_8_14_day | Aggregate metric derived from a sliding window over the interval of the past 8 to 14 days, representing a SUM of `add_to_cart` events (number of add_to_cart events, 0 otherwise) for each user. |
+| checkouts_past_1_day | Aggregate metric derived from a sliding window over the previous 1st day, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_15_30_day | Aggregate metric derived from a sliding window over the interval of the past 15 to 30 days, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_2_day | Aggregate metric derived from a sliding window over the previous 2nd day, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_3_day | Aggregate metric derived from a sliding window over the previous 3rd day, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_4_day | Aggregate metric derived from a sliding window over the previous 4th day, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_5_day | Aggregate metric derived from a sliding window over the previous 5th day, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_6_day | Aggregate metric derived from a sliding window over the previous 6th day, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_7_day | Aggregate metric derived from a sliding window over the previous 7th day, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
+| checkouts_past_8_14_day | Aggregate metric derived from a sliding window over the interval of the past 8 to 14 days, representing a SUM of `begin_checkout` events (number of begin_checkout events, 0 otherwise) for each user. |
 | purchases_past_1_day | Aggregate metric derived from a sliding window over the previous X days, summerized to the number of `purchase` events occurred for each user. |
 | purchases_past_15_30_day | 〃 |
 | purchases_past_2_day | 〃 |
@@ -105,7 +106,6 @@ Features:
 | purchases_past_6_day | 〃 |
 | purchases_past_7_day | 〃 |
 | purchases_past_8_14_day | 〃 |
-| user_ltv_revenue | Summarization of `ecommerce.purchase_revenue_in_usd` over a period of X days for each user |
 | view_items_past_1_day | Aggregate metric derived from a sliding window over the previous X days, summerized to the number of `view_item` events occurred for each user. |
 | view_items_past_15_30_day | 〃 |
 | view_items_past_2_day | 〃 |
@@ -229,3 +229,7 @@ Features:
 | view_items_past_8_14_day | 〃 |
 | visits_past_1_7_day | Aggregate metric derived from a sliding window over the previous X days, summerized to the number of visits an user have had. |
 | visits_past_8_14_day | 〃 |
+
+### Auto Audience Segmentation Features
+| Feature | Source Field from GA4 Event |
+| -------- | -------- |
