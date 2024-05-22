@@ -56,6 +56,21 @@ def training_pl(
     min_num_clusters: int, 
     image_uri: str,
 ):
+    """
+    This pipeline trains a scikit-learn clustering model and uploads it to GCS.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        dataset: The BigQuery dataset where the training data is stored.
+        location: The Google Cloud region where the pipeline will be run.
+        training_table: The BigQuery table containing the training data.
+        bucket_name: The GCS bucket where the trained model will be uploaded.
+        model_name: The name of the trained model.
+        p_wiggle: The p_wiggle parameter for the scikit-learn clustering model.
+        min_num_clusters: The minimum number of clusters for the scikit-learn clustering model.
+        image_uri: The image URI for the scikit-learn clustering model.
+    """
+
     # Train scikit-learn clustering model and upload to GCS
     train_interest_based_segmentation_model = train_scikit_cluster_model(
         location=location,
@@ -99,6 +114,19 @@ def prediction_pl(
     pubsub_activation_topic: str,
     pubsub_activation_type: str
 ):
+    """
+    This pipeline runs batch prediction using a Vertex AI model and sends a pubsub activation message.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        model_name: The name of the Vertex AI model.
+        bigquery_source: The BigQuery table containing the prediction data.
+        bigquery_destination_prefix: The BigQuery table prefix where the prediction results will be stored.
+        pubsub_activation_topic: The Pub/Sub topic to send the activation message.
+        pubsub_activation_type: The type of activation message to send.
+    """
+    
     # Get the latest model named `model_name`
     model_op = get_latest_model(
         project=project_id,

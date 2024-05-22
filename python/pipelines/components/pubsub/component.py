@@ -39,6 +39,18 @@ def send_pubsub_activation_msg(
     activation_type: str,
     predictions_table: Input[Dataset]
 ) -> None:
+    """
+    This function sends a Pub/Sub message to trigger the activation application.
+
+    Args:
+        project: The Google Cloud project ID.
+        topic_name: The name of the Pub/Sub topic to send the message to.
+        activation_type: The type of activation message to send.
+        predictions_table: The BigQuery table containing the predictions to be activated.
+
+    Returns:
+        None
+    """
 
     import json
     import logging

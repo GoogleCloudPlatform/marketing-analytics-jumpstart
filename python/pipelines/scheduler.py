@@ -20,7 +20,7 @@ import yaml
 
 from pipelines.pipeline_ops import pause_schedule, schedule_pipeline, delete_schedules
 
-
+# Ensures that the provided file path is a valid YAML file.
 def check_extention(file_path: str, type: str = '.yaml'):
     if os.path.exists(file_path):
         if not file_path.lower().endswith(type):
@@ -51,6 +51,16 @@ pipelines_list = {
 } # key should match pipeline names as in the config.yaml files for automatic compilation
 
 if __name__ == "__main__":
+    """
+    This Python code defines a script for scheduling and deleting Vertex AI pipelines. It uses the pipelines_list dictionary 
+    to map pipeline names to their corresponding module and function names. this script provides a convenient way to schedule 
+    and delete Vertex AI pipelines schedules from the command line. 
+    The script takes the following arguments:
+        -c: Path to the configuration YAML file.
+        -p: Pipeline key name as it is in the config.yaml file.
+        -i: The compiled pipeline input filename.
+        -d: (Optional) Flag to delete the scheduled pipeline.
+    """
     logging.basicConfig(level=logging.INFO)
     
     parser = ArgumentParser()
@@ -80,6 +90,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
+    # Reads the configuration YAML file and extracts the relevant parameters for the pipeline 
+    # and the artifact registry. It then checks if the pipeline name is valid and retrieves 
+    # the corresponding module and function name from the pipelines_list dictionary.
     repo_params = {}
     with open(args.config, encoding='utf-8') as fh:
         params = yaml.full_load(fh)
@@ -98,30 +111,31 @@ if __name__ == "__main__":
     template_artifact_uri = f"https://{repo_params['region']}-kfp.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{my_pipeline_vars['name']}/latest"
 
     if args.delete:
+        # If the -d flag is set, the script calls the delete_schedules function to delete the 
+        # scheduled pipeline.
         logging.info(f"Deleting scheduler for {args.pipeline}")
         delete_schedules(project_id=generic_pipeline_vars['project_id'],
-        region=generic_pipeline_vars['region'],
-        pipeline_name=my_pipeline_vars['name'])
+                        region=generic_pipeline_vars['region'],
+                        pipeline_name=my_pipeline_vars['name'])
     else:
         logging.info(f"Creating scheduler for {args.pipeline}")
+        # Creates a new schedule for the pipeline and returns the schedule object. 
+        # If the schedule is successfully created, the script checks if the pipeline is supposed 
+        # to be paused and calls the pause_schedule function to pause it.
         schedule = schedule_pipeline(
-            project_id=generic_pipeline_vars['project_id'],
-            region=generic_pipeline_vars['region'],
-            template_path = args.input,
-            pipeline_parameters=my_pipeline_vars['pipeline_parameters'],
-            pipeline_parameters_substitutions= my_pipeline_vars['pipeline_parameters_substitutions'],
-            pipeline_name=my_pipeline_vars['name'],
-            pipeline_template_uri=template_artifact_uri,
-            pipeline_sa=generic_pipeline_vars['service_account'],
-            pipeline_root=generic_pipeline_vars['root_path'],
-            cron=my_pipeline_vars['schedule']['cron'],
-            max_concurrent_run_count=my_pipeline_vars['schedule']['max_concurrent_run_count'],
-            start_time=my_pipeline_vars['schedule']['start_time'],
-            end_time=my_pipeline_vars['schedule']['end_time']
+                    project_id=generic_pipeline_vars['project_id'],
+                    region=generic_pipeline_vars['region'],
+                    template_path = args.input,
+                    pipeline_parameters=my_pipeline_vars['pipeline_parameters'],
+                    pipeline_parameters_substitutions= my_pipeline_vars['pipeline_parameters_substitutions'],
+                    pipeline_sa=generic_pipeline_vars['service_account'],
+                    pipeline_name=my_pipeline_vars['name'],
+                    pipeline_root=generic_pipeline_vars['root_path'],
+                    cron=my_pipeline_vars['schedule']['cron'],
+                    max_concurrent_run_count=my_pipeline_vars['schedule']['max_concurrent_run_count'],
+                    start_time=my_pipeline_vars['schedule']['start_time'],
+                    end_time=my_pipeline_vars['schedule']['end_time']
         )
-
-        #if schedule is None or schedule.state != 'ACTIVE':
-        #    raise Exception(f"Scheduling pipeline failed {schedule}")
 
         if my_pipeline_vars['schedule']['state'] == 'PAUSED':
             logging.info(f"Pausing scheduler for {args.pipeline}")

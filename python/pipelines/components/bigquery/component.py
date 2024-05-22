@@ -874,7 +874,7 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
                         DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
                         FROM `{{mds_project_id}}.{{mds_dataset}}.event`
                         WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
-                        GROUP BY 1
+                        GROUP BY 1, 2
                 )
                 SELECT
                     user_pseudo_id,
@@ -896,7 +896,7 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
                         event_name = 'page_view'
                         AND DATE(ga.event_timestamp) BETWEEN DATE_START AND DATE_END
                 )
-                GROUP BY 1, 2;
+                GROUP BY 1, 2, 3;
             END
         """)
         template.globals.update({'clean_column_values': _clean_column_values})

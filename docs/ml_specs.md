@@ -18,6 +18,11 @@ The out-of-box ML driven use cases requires the following events tagged in the G
 | page_view | Automatically collected event |	https://support.google.com/analytics/answer/9234069?hl=en |
 | click | Automatically collected event |	https://support.google.com/analytics/answer/9234069?hl=en |
 
+## GA4 User identifiers
+The Marketing Analytics Jumpstart solution uses Google Analytics 4 user pseudo IDs as the primary identifier for users. It also includes the user IDs as well. Google Analytics 4 uses User-ID to associate identifiers with individual users, enabling you to connect their behavior across sessions, devices, and platforms. [User-ID - Analytics Help](https://support.google.com/analytics/answer/9355972?hl=en) You can use User-ID to create remarketing audiences and join Analytics data with first-party data, such as CRM data. [Best practices for User-ID - Analytics Help](https://support.google.com/analytics/answer/12675187?hl=en) The User-ID feature is designed for use with Google Analytics technologies and must comply with the Analytics SDK/User-ID Feature Policy. Remember that User IDs sent to Google Analytics must be shorter than 256 characters. [Measure activity across platforms with User-ID - Analytics Help](https://support.google.com/analytics/answer/9213390?hl=en)
+
+Each user must have a unique User ID, and the `user_id` parameter must be the same each time a user visits your website. [About data segments that use User ID to advertise - Ads Help](https://support.google.com/google-ads/answer/9199250?hl=en) Analytics can also use device ID as an identity space. [GA4 Reporting identity - Analytics Help](https://support.google.com/analytics/answer/10976610?hl=en)
+
 ## Modelling Principles
 
 The machine pipelines were designed taking the following modelling principles:

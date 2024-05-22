@@ -14,6 +14,7 @@
 
 from datetime import datetime
 from os import name
+from tracemalloc import start
 
 import pip
 from kfp import compiler
@@ -36,6 +37,19 @@ def substitute_pipeline_params(
     pipeline_params: Dict[str, Any],
     pipeline_param_substitutions: Dict[str, Any]
 ) -> Dict[str, Any]:
+    """
+    This function substitutes placeholders in the pipeline_params dictionary with values from the pipeline_param_substitutions dictionary.
+
+    Args:
+        pipeline_params: A dictionary of pipeline parameters.
+        pipeline_param_substitutions: A dictionary of substitutions to apply to the pipeline parameters.
+
+    Returns:
+        A dictionary of pipeline parameters with the substitutions applied.
+
+    Raises:
+        Exception: If a placeholder is not found in the pipeline_param_substitutions dictionary.
+    """
 
     # if pipeline parameters include placeholders such as {PROJECT_ID} etc,
     # the following will replace such placeholder with the values
@@ -48,12 +62,39 @@ def substitute_pipeline_params(
 
 
 def get_bucket_name_and_path(uri):
+    """
+    This function takes a Google Cloud Storage URI and returns the bucket name and path.
+
+    Args:
+        uri: The Google Cloud Storage URI.
+
+    Returns:
+        A tuple containing the bucket name and path.
+
+    Raises:
+        ValueError: If the URI is not a valid Google Cloud Storage URI.
+    """
+    if not uri.startswith("gs://"):
+        raise ValueError("URI must start with gs://")
+    
     no_prefix_uri = uri[len("gs://"):]
     splits = no_prefix_uri.split("/")
+
     return splits[0], "/".join(splits[1:])
 
 
 def write_to_gcs(uri: str, content: str):
+    """
+    Writes the given content to a Google Cloud Storage (GCS) bucket.
+
+    Args:
+        uri: The GCS URI of the file to write to.
+        content: The content to write to the file.
+
+    Raises:
+        ValueError: If the URI is not a valid GCS URI.
+    """
+
     bucket_name, path = get_bucket_name_and_path(uri)
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
@@ -62,6 +103,21 @@ def write_to_gcs(uri: str, content: str):
 
 
 def generate_auto_transformation(column_names: List[str]) -> List[Dict[str, Any]]:
+    """
+    Generates a list of auto-transformation dictionaries for the given column names.
+
+    Args:
+        column_names: A list of column names.
+
+    Returns:
+        A list of auto-transformation dictionaries.
+
+    Raises:
+        ValueError: If the column_names list is empty.
+    """
+    if not column_names:
+        raise ValueError("column_names must not be empty")
+
     transformations = []
     for column_name in column_names:
         transformations.append({"auto": {"column_name": column_name}})
@@ -69,6 +125,20 @@ def generate_auto_transformation(column_names: List[str]) -> List[Dict[str, Any]
 
 
 def write_auto_transformations(uri: str, column_names: List[str]):
+    """
+    Generates a list of auto-transformation dictionaries for the given column names and writes them to a Google Cloud Storage (GCS) bucket.
+
+    Args:
+        uri: The GCS URI of the file to write to.
+        column_names: A list of column names.
+
+    Raises:
+        ValueError: If the column_names list is empty.
+    """
+
+    if not column_names:
+        raise ValueError("column_names must not be empty")
+
     transformations = generate_auto_transformation(column_names)
     write_to_gcs(uri, json.dumps(transformations))
 
@@ -76,12 +146,45 @@ def write_auto_transformations(uri: str, column_names: List[str]):
 
 
 def read_custom_transformation_file(custom_transformation_file: str):
-    import json
-    with open(custom_transformation_file, "r") as f:
-        transformations = json.load(f)
+    """
+    Reads a custom transformation file and returns the transformations as a list of dictionaries.
+
+    Args:
+        custom_transformation_file: The path to the custom transformation file.
+
+    Returns:
+        A list of dictionaries representing the custom transformations.
+
+    Raises:
+        FileNotFoundError: If the custom transformation file does not exist.
+        JSONDecodeError: If the custom transformation file is not valid JSON.
+    """
+    
+    transformations = None
+    try:
+        with open(custom_transformation_file, "r") as f:
+            transformations = json.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Custom transformation file not found: {custom_transformation_file}")
+    except json.JSONDecodeError:
+        raise json.JSONDecodeError(f"Invalid JSON in custom transformation file: {custom_transformation_file}")
+    
     return transformations
 
+
 def write_custom_transformations(uri: str, custom_transformation_file: str):
+    """
+    Writes custom transformation definitions to a Google Cloud Storage (GCS) bucket.
+
+    Args:
+        uri: The GCS URI of the file to write to.
+        custom_transformation_file: The path to the custom transformation file.
+
+    Raises:
+        FileNotFoundError: If the custom transformation file does not exist.
+        JSONDecodeError: If the custom transformation file is not valid JSON.
+    """
+
     transformations = read_custom_transformation_file(custom_transformation_file)
     write_to_gcs(uri, json.dumps(transformations))
 
@@ -98,11 +201,34 @@ def compile_pipeline(
         pipeline_parameters_substitutions: Optional[Dict[str, Any]] = None,
         enable_caching: bool = True,
         type_check: bool = True) -> str:
+    """
+    Compiles a Vertex AI Pipeline.
+
+    This function takes a pipeline function, a template path, a pipeline name, and optional pipeline parameters and substitutions, and compiles them into a Vertex AI Pipeline YAML file.
+
+    Args:
+        pipeline_func: The pipeline function to compile.
+        template_path: The path to the pipeline template file.
+        pipeline_name: The name of the pipeline.
+        pipeline_parameters: The parameters to pass to the pipeline.
+        pipeline_parameters_substitutions: A dictionary of substitutions to apply to the pipeline parameters.
+        enable_caching: Whether to enable caching for the pipeline.
+        type_check: Whether to perform type checking on the pipeline parameters.
+
+    Returns:
+        The path to the compiled pipeline YAML file.
+
+    Raises:
+        Exception: If an error occurs while compiling the pipeline.
+    """
 
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
             pipeline_parameters, pipeline_parameters_substitutions)
-    print(pipeline_parameters)
+    logging.info("Pipeline parameters: {}".format(pipeline_parameters))
+
+    # The function uses the compiler.Compiler() class to compile the pipeline defined by the pipeline_func function. 
+    # The compiled pipeline is saved to the template_path file.
     compiler.Compiler().compile(
         pipeline_func=pipeline_func,
         package_path=template_path,
@@ -111,12 +237,15 @@ def compile_pipeline(
         type_check=type_check,
     )
 
+    # The function opens the compiled pipeline template file and loads the configuration using the yaml.safe_load() function.
     with open(template_path, 'r') as file:
         configuration = yaml.safe_load(file)
 
+    # The function sets the enable_caching value of the configuration to the enable_caching parameter.
     _set_enable_caching_value(pipeline_spec=configuration,
                               enable_caching=enable_caching)
 
+    # Saves the updated pipeline configuration back to the template_path file.
     with open(template_path, 'w') as yaml_file:
         yaml.dump(configuration, yaml_file)
 
@@ -138,6 +267,33 @@ def run_pipeline_from_func(
         credentials: Optional[credentials.Credentials] = None,
         encryption_spec_key_name: Optional[str] = None,
         wait: bool = False) -> str:
+    """
+    Runs a Vertex AI Pipeline from a function.
+
+    This function takes a pipeline function, a pipeline root directory, a project ID, a location, a service account, pipeline parameters, and optional parameters for pipeline parameter substitutions, caching, experiment name, job ID, labels, credentials, encryption key name, and waiting for completion. It creates a PipelineJob object from the pipeline function, submits the pipeline to Vertex AI, and optionally waits for the pipeline to complete.
+
+    Args:
+        pipeline_func: The pipeline function to run.
+        pipeline_root: The root directory of the pipeline.
+        project_id: The ID of the project that contains the pipeline.
+        location: The location of the pipeline.
+        service_account: The service account to use for the pipeline.
+        pipeline_parameters: The parameters to pass to the pipeline.
+        pipeline_parameters_substitutions: A dictionary of substitutions to apply to the pipeline parameters.
+        enable_caching: Whether to enable caching for the pipeline.
+        experiment_name: The name of the experiment to create for the pipeline.
+        job_id: The ID of the pipeline job.
+        labels: The labels to apply to the pipeline.
+        credentials: The credentials to use for the pipeline.
+        encryption_spec_key_name: The encryption key to use for the pipeline.
+        wait: Whether to wait for the pipeline to complete.
+
+    Returns:
+        A PipelineJob object.
+
+    Raises:
+        RuntimeError: If the pipeline execution fails.
+    """
 
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
@@ -206,8 +362,6 @@ def _extract_schema_from_bigquery(
     return schema
 
 
-# Compile Tabular Workflow Training pipelines
-# You don't need to define the pipeline elsewhere since the pre-compiled pipeline component is defined in the `automl_tabular_pl_v4.yaml`
 def compile_automl_tabular_pipeline(
         template_path: str,
         parameters_path: str,
@@ -217,7 +371,7 @@ def compile_automl_tabular_pipeline(
         exclude_features = List[Any],
         enable_caching: bool = True) -> tuple:
     """
-    Compiles an AutoML Tabular Workflows pipeline.
+    Compiles an AutoML Tabular Workflows pipeline. You don't need to define the pipeline elsewhere since the pre-compiled pipeline component is defined in the `automl_tabular_pl_v4.yaml` file.
 
     Args:
         template_path: The path to the pipeline template file.
@@ -294,10 +448,14 @@ def compile_automl_tabular_pipeline(
 
     from google_cloud_pipeline_components.preview.automl.tabular import utils as automl_tabular_utils
 
+    # This checks if there are any substitutions defined in the pipeline_parameters_substitutions dictionary. If so, it applies these substitutions to the pipeline_parameters dictionary. This allows for using placeholders in the pipeline parameters, making the pipeline more flexible and reusable.
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
             pipeline_parameters, pipeline_parameters_substitutions)
 
+    # This section handles the feature transformations for the pipeline. It checks if there is a 
+    # custom_transformations file specified. If so, it reads the transformations from that file. 
+    # Otherwise, it extracts the schema from the BigQuery table and generates automatic transformations based on the schema.
     pipeline_parameters['transformations'] = pipeline_parameters['transformations'].format(
         timestamp=datetime.now().strftime("%Y%m%d%H%M%S"))
     
@@ -331,6 +489,10 @@ def compile_automl_tabular_pipeline(
     
     logging.info(f'features:{schema}')
 
+    # This section compiles the AutoML Tabular Workflows pipeline. It uses the automl_tabular_utils module to 
+    # generate the pipeline components and parameters. It then loads a pre-compiled pipeline template file 
+    # (automl_tabular_pl_v4.yaml) and hydrates it with the generated parameters. Finally, it writes the 
+    # compiled pipeline template and parameters to the specified files.
     if pipeline_parameters['predefined_split_key']:
         pipeline_parameters['training_fraction'] = None
         pipeline_parameters['validation_fraction'] = None
@@ -353,14 +515,6 @@ def compile_automl_tabular_pipeline(
     _set_enable_caching_value(pipeline_spec=configuration,
                               enable_caching=enable_caching)
 
-    # TODO: This params should be set in conf.yaml . However if i do so the validations in 
-    # .get_automl_tabular_pipeline_and_parameters fail as this values are not
-    # accepted in the given package. (I use a custom pipeline yaml instead of the one in 
-    # the package and that causes the issue.)
-    # ETA for a fix is 7th of Feb when a new aiplatform sdk will be released.
-    parameter_values['model_display_name'] = "{}-model".format(pipeline_name)
-    parameter_values['model_description'] = "{}-model".format(pipeline_name)
-
     # hydrate pipeline.yaml with parameters as default values
     for k, v in parameter_values.items():
         if k in configuration['root']['inputDefinitions']['parameters']:
@@ -370,11 +524,8 @@ def compile_automl_tabular_pipeline(
 
     with open(template_path, 'w') as yaml_file:
         yaml.dump(configuration, yaml_file)
-
     with open(parameters_path, 'w') as param_file:
         yaml.dump(parameter_values, param_file)
-
-    # shutil.copy(pathlib.Path(__file__).parent.resolve().joinpath('automl_tabular_p_v2.yaml'), template_path)
 
     return template_path, parameter_values
 
@@ -478,15 +629,15 @@ def schedule_pipeline(
         region: str,
         template_path: str,
         pipeline_name: str,
-        pipeline_template_uri: str,
         pipeline_sa: str,
         pipeline_root: str,
         cron: str,
         max_concurrent_run_count: str,
+        start_time: str,
+        end_time: str,
         pipeline_parameters: Dict[str, Any] = None,
         pipeline_parameters_substitutions: Optional[Dict[str, Any]] = None,
-        start_time: str = None,
-        end_time: str = None) -> dict:
+    ) -> dict:
     """
     This function schedules a Vertex AI Pipeline to run on a regular basis.
 
@@ -511,6 +662,7 @@ def schedule_pipeline(
 
     from google.cloud import aiplatform
 
+    # Substitute pipeline parameters with necessary substitutions
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
             pipeline_parameters, pipeline_parameters_substitutions)
@@ -520,15 +672,19 @@ def schedule_pipeline(
 
     # Create a PipelineJob object
     pipeline_job = aiplatform.PipelineJob(
-    template_path=template_path,
-    pipeline_root=pipeline_root,
-    display_name=f"{pipeline_name}",
+        template_path=template_path,
+        pipeline_root=pipeline_root,
+        display_name=f"{pipeline_name}",
     )
 
+    # Create the schedule with the pipeline job defined
     pipeline_job_schedule = pipeline_job.create_schedule(
-    display_name=f"{pipeline_name}",
-    cron=cron,
-    max_concurrent_run_count=max_concurrent_run_count,
+        display_name=f"{pipeline_name}",
+        cron=cron,
+        max_concurrent_run_count=max_concurrent_run_count,
+        start_time=start_time,
+        end_time=end_time,
+        service_account=pipeline_sa,
     )
 
     logging.info(f"Pipeline scheduled : {pipeline_name}")
