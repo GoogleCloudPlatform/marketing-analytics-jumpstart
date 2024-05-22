@@ -13,6 +13,9 @@
 # limitations under the License.
 
 from datetime import datetime
+from os import name
+
+import pip
 from kfp import compiler
 from google.cloud.aiplatform.pipeline_jobs import PipelineJob, _set_enable_caching_value
 from google.cloud.aiplatform import TabularDataset, Artifact
@@ -167,6 +170,22 @@ def _extract_schema_from_bigquery(
         table_name: str,
         table_schema: str,
         ) -> list:
+    """
+    Extracts the schema from a BigQuery table or view.
+
+    Args:
+        project: The ID of the project that contains the table or view.
+        location: The location of the table or view.
+        table_name: The name of the table or view.
+        table_schema: The path to the schema file.
+
+    Returns:
+        A list of the column names in the table or view.
+
+    Raises:
+        Exception: If the table or view does not exist.
+    """
+    
     from google.cloud import bigquery
     from google.api_core import exceptions
     try:
@@ -186,8 +205,9 @@ def _extract_schema_from_bigquery(
         schema = [feature['name'] for feature in d]
     return schema
 
+
 # Compile Tabular Workflow Training pipelines
-# You don't need to define the pipeline elsewhere since the pre-compiled pipeline component is defined in the `automl_tabular_pl_v?.yaml`
+# You don't need to define the pipeline elsewhere since the pre-compiled pipeline component is defined in the `automl_tabular_pl_v4.yaml`
 def compile_automl_tabular_pipeline(
         template_path: str,
         parameters_path: str,
@@ -204,66 +224,66 @@ def compile_automl_tabular_pipeline(
             pipeline_parameters, pipeline_parameters_substitutions)
 
     """
-        additional_experiments: dict
-#    cv_trainer_worker_pool_specs_override: list
-#    data_source_bigquery_table_path: str [Default: '']
-#    data_source_csv_filenames: str [Default: '']
-#    dataflow_service_account: str [Default: '']
-#    dataflow_subnetwork: str [Default: '']
-#    dataflow_use_public_ips: bool [Default: True]
-#    disable_early_stopping: bool [Default: False]
-#    distill_batch_predict_machine_type: str [Default: 'n1-standard-16']
-#    distill_batch_predict_max_replica_count: int [Default: 25.0]
-#    distill_batch_predict_starting_replica_count: int [Default: 25.0]
-#    enable_probabilistic_inference: bool [Default: False]
-#    encryption_spec_key_name: str [Default: '']
-#    evaluation_batch_explain_machine_type: str [Default: 'n1-highmem-8']
-#    evaluation_batch_explain_max_replica_count: int [Default: 10.0]
-#    evaluation_batch_explain_starting_replica_count: int [Default: 10.0]
-#    evaluation_batch_predict_machine_type: str [Default: 'n1-highmem-8']
-#    evaluation_batch_predict_max_replica_count: int [Default: 20.0]
-#    evaluation_batch_predict_starting_replica_count: int [Default: 20.0]
-#    evaluation_dataflow_disk_size_gb: int [Default: 50.0]
-#    evaluation_dataflow_machine_type: str [Default: 'n1-standard-4']
-#    evaluation_dataflow_max_num_workers: int [Default: 100.0]
-#    evaluation_dataflow_starting_num_workers: int [Default: 10.0]
-#    export_additional_model_without_custom_ops: bool [Default: False]
-#    fast_testing: bool [Default: False]
-#    location: str
-#    model_description: str [Default: '']
-#    model_display_name: str [Default: '']
-#    optimization_objective: str
-#    optimization_objective_precision_value: float [Default: -1.0]
-#    optimization_objective_recall_value: float [Default: -1.0]
-#    predefined_split_key: str [Default: '']
-#    prediction_type: str
-#    project: str
-#    quantiles: list
-#    root_dir: str
-#    run_distillation: bool [Default: False]
-#    run_evaluation: bool [Default: False]
-#    stage_1_num_parallel_trials: int [Default: 35.0]
-#    stage_1_tuner_worker_pool_specs_override: list
-#    stage_1_tuning_result_artifact_uri: str [Default: '']
-#    stage_2_num_parallel_trials: int [Default: 35.0]
-#    stage_2_num_selected_trials: int [Default: 5.0]
-#    stats_and_example_gen_dataflow_disk_size_gb: int [Default: 40.0]
-#    stats_and_example_gen_dataflow_machine_type: str [Default: 'n1-standard-16']
-#    stats_and_example_gen_dataflow_max_num_workers: int [Default: 25.0]
-#    stratified_split_key: str [Default: '']
-#    study_spec_parameters_override: list
-#    target_column: str
-#    test_fraction: float [Default: -1.0]
-#    timestamp_split_key: str [Default: '']
-#    train_budget_milli_node_hours: float
-#    training_fraction: float [Default: -1.0]
-#    transform_dataflow_disk_size_gb: int [Default: 40.0]
-#    transform_dataflow_machine_type: str [Default: 'n1-standard-16']
-#    transform_dataflow_max_num_workers: int [Default: 25.0]
-#    transformations: str
-#    validation_fraction: float [Default: -1.0]
-#    vertex_dataset: system.Artifact
-#    weight_column: str [Default: '']
+    additional_experiments: dict
+    cv_trainer_worker_pool_specs_override: list
+    data_source_bigquery_table_path: str [Default: '']
+    data_source_csv_filenames: str [Default: '']
+    dataflow_service_account: str [Default: '']
+    dataflow_subnetwork: str [Default: '']
+    dataflow_use_public_ips: bool [Default: True]
+    disable_early_stopping: bool [Default: False]
+    distill_batch_predict_machine_type: str [Default: 'n1-standard-16']
+    distill_batch_predict_max_replica_count: int [Default: 25.0]
+    distill_batch_predict_starting_replica_count: int [Default: 25.0]
+    enable_probabilistic_inference: bool [Default: False]
+    encryption_spec_key_name: str [Default: '']
+    evaluation_batch_explain_machine_type: str [Default: 'n1-highmem-8']
+    evaluation_batch_explain_max_replica_count: int [Default: 10.0]
+    evaluation_batch_explain_starting_replica_count: int [Default: 10.0]
+    evaluation_batch_predict_machine_type: str [Default: 'n1-highmem-8']
+    evaluation_batch_predict_max_replica_count: int [Default: 20.0]
+    evaluation_batch_predict_starting_replica_count: int [Default: 20.0]
+    evaluation_dataflow_disk_size_gb: int [Default: 50.0]
+    evaluation_dataflow_machine_type: str [Default: 'n1-standard-4']
+    evaluation_dataflow_max_num_workers: int [Default: 100.0]
+    evaluation_dataflow_starting_num_workers: int [Default: 10.0]
+    export_additional_model_without_custom_ops: bool [Default: False]
+    fast_testing: bool [Default: False]
+    location: str
+    model_description: str [Default: '']
+    model_display_name: str [Default: '']
+    optimization_objective: str
+    optimization_objective_precision_value: float [Default: -1.0]
+    optimization_objective_recall_value: float [Default: -1.0]
+    predefined_split_key: str [Default: '']
+    prediction_type: str
+    project: str
+    quantiles: list
+    root_dir: str
+    run_distillation: bool [Default: False]
+    run_evaluation: bool [Default: False]
+    stage_1_num_parallel_trials: int [Default: 35.0]
+    stage_1_tuner_worker_pool_specs_override: list
+    stage_1_tuning_result_artifact_uri: str [Default: '']
+    stage_2_num_parallel_trials: int [Default: 35.0]
+    stage_2_num_selected_trials: int [Default: 5.0]
+    stats_and_example_gen_dataflow_disk_size_gb: int [Default: 40.0]
+    stats_and_example_gen_dataflow_machine_type: str [Default: 'n1-standard-16']
+    stats_and_example_gen_dataflow_max_num_workers: int [Default: 25.0]
+    stratified_split_key: str [Default: '']
+    study_spec_parameters_override: list
+    target_column: str
+    test_fraction: float [Default: -1.0]
+    timestamp_split_key: str [Default: '']
+    train_budget_milli_node_hours: float
+    training_fraction: float [Default: -1.0]
+    transform_dataflow_disk_size_gb: int [Default: 40.0]
+    transform_dataflow_machine_type: str [Default: 'n1-standard-16']
+    transform_dataflow_max_num_workers: int [Default: 25.0]
+    transformations: str
+    validation_fraction: float [Default: -1.0]
+    vertex_dataset: system.Artifact
+    weight_column: str [Default: '']
     """
 
     pipeline_parameters['transformations'] = pipeline_parameters['transformations'].format(
@@ -355,6 +375,24 @@ def upload_pipeline_artefact_registry(
         repo_name: str,
         tags: list = None,
         description: str = None) -> str:
+    """
+    This function uploads a pipeline YAML file to the Artifact Registry.
+
+    Args:
+        template_path: The path to the pipeline YAML file.
+        project_id: The ID of the project that contains the pipeline.
+        region: The location of the pipeline.
+        repo_name: The name of the repository to upload the pipeline to.
+        tags: A list of tags to apply to the pipeline.
+        description: A description of the pipeline.
+
+    Returns:
+        The name of the uploaded pipeline.
+
+    Raises:
+        Exception: If an error occurs while uploading the pipeline.
+    """
+    logging.info(f"Uploading pipeline to {region}-kfp.pkg.dev/{project_id}/{repo_name}")
 
     host = f"https://{region}-kfp.pkg.dev/{project_id}/{repo_name}"
     client = RegistryClient(host=host)
@@ -372,6 +410,21 @@ def delete_pipeline_artefact_registry(
         region: str,
         repo_name: str,
         package_name: str) -> str:
+    """
+    This function deletes a pipeline from the Artifact Registry.
+
+    Args:
+        project_id: The ID of the project that contains the pipeline.
+        region: The location of the pipeline.
+        repo_name: The name of the repository that contains the pipeline.
+        package_name: The name of the pipeline to delete.
+
+    Returns:
+        A string containing the response from the Artifact Registry.
+
+    Raises:
+        Exception: If an error occurs while deleting the pipeline.
+    """
 
     host = f"https://{region}-kfp.pkg.dev/{project_id}/{repo_name}"
     client = RegistryClient(host=host)
@@ -382,12 +435,29 @@ def delete_pipeline_artefact_registry(
 
 
 def get_gcp_bearer_token() -> str:
-    # creds.valid is False, and creds.token is None
-    # Need to refresh credentials to populate those
+    """
+    Retrieves a bearer token for Google Cloud Platform (GCP) authentication.
+    creds.valid is False, and creds.token is None
+    Need to refresh credentials to populate those
+
+    Returns:
+        A string containing the bearer token.
+
+    Raises:
+        Exception: If an error occurs while retrieving the bearer token.
+    """
+
+    # Get the default credentials for the current environment.
     creds, project = google.auth.default()
+
+    # Refresh the credentials to ensure they are valid.
     creds.refresh(google.auth.transport.requests.Request())
-    creds.refresh(google.auth.transport.requests.Request())
-    return creds.token
+
+    # Extract the bearer token from the refreshed credentials.
+    bearer_token = creds.token
+
+    # Return the bearer token.
+    return bearer_token
 
 
 # Function to schedule the pipeline.
@@ -402,35 +472,100 @@ def schedule_pipeline(
         max_concurrent_run_count: str,
         start_time: str = None,
         end_time: str = None) -> dict:
+    """
+    This function schedules a Vertex AI Pipeline to run on a regular basis.
 
+    Args:
+        project_id: The ID of the project that contains the pipeline.
+        region: The location of the pipeline.
+        pipeline_name: The name of the pipeline to schedule.
+        pipeline_template_uri: The URI of the pipeline template file.
+        pipeline_sa: The service account to use for the pipeline.
+        pipeline_root: The root directory of the pipeline.
+        cron: The cron expression that defines the schedule.
+        max_concurrent_run_count: The maximum number of concurrent pipeline runs.
+        start_time: The start time of the schedule.
+        end_time: The end time of the schedule.
+
+    Returns:
+        A dictionary containing information about the scheduled pipeline.
+
+    Raises:
+        Exception: If an error occurs while scheduling the pipeline.
+    """
+
+    # Construct the API request URL
     url = f"https://{region}-aiplatform.googleapis.com/v1beta1/projects/{project_id}/locations/{region}/schedules"
 
+    # Deletes scheduled queries with matching description
     delete_schedules(project_id, region, pipeline_name)
 
+    # Construct the request body
     body = dict(
+        # User provided name of the Schedule. The name can be up to 128 characters long and can consist of any UTF-8 characters.
         display_name=f"{pipeline_name}",
+        # The resource name of the Schedule.
+        name=f"{pipeline_name}",
+        # Cron schedule (https://en.wikipedia.org/wiki/Cron) to launch scheduled runs. To explicitly set a timezone to the cron tab, 
+        # apply a prefix in the cron tab: "CRON_TZ=${IANA_TIME_ZONE}" or "TZ=${IANA_TIME_ZONE}". The ${IANA_TIME_ZONE} may only be a 
+        # valid string from IANA time zone database. For example, "CRON_TZ=America/New_York 1 * * * *", or "TZ=America/New_York 1 * * * *".
         cron=cron,
+        # Maximum number of runs that can be started concurrently for this Schedule. This is the limit for starting the scheduled requests 
+        # and not the execution of the operations/jobs created by the requests (if applicable).
         max_concurrent_run_count=max_concurrent_run_count,
+        # Timestamp after which the first run can be scheduled. Default to Schedule create time if not specified. 
+        # A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. 
+        # Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z".
         start_time=start_time,
+        # Timestamp after which no new runs can be scheduled. If specified, The schedule will be completed when either endTime is reached or 
+        # when scheduled_run_count >= maxRunCount. If not specified, new runs will keep getting scheduled until this Schedule is paused or deleted. 
+        # Already scheduled runs will be allowed to complete. Unset if not specified. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond 
+        # resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z".
         end_time=end_time,
+        # Request for PipelineService.CreatePipelineJob. CreatePipelineJobRequest.parent field is required (format: projects/{project}/locations/{location}).
         create_pipeline_job_request=dict(
             parent=f"projects/{project_id}/locations/{region}",
+            # The PipelineJob to create.
             pipelineJob=dict(
+                # The display name of the Pipeline. The name can be up to 128 characters long and can consist of any UTF-8 characters.
                 displayName=f"{pipeline_name}",
+                # A template uri from where the PipelineJob.pipeline_spec, if empty, will be downloaded. 
+                # Currently, only uri from Vertex Template Registry & Gallery is supported. 
+                # Reference to https://cloud.google.com/vertex-ai/docs/pipelines/create-pipeline-template.
                 template_uri=pipeline_template_uri,
+                # The service account that the pipeline workload runs as. If not specified, the Compute Engine default service account in 
+                # the project will be used. See https://cloud.google.com/compute/docs/access/service-accounts#default_service_account. 
+                # Users starting the pipeline must have the iam.serviceAccounts.actAs permission on this service account.
                 service_account=pipeline_sa,
+                # Runtime config of the pipeline.
                 runtimeConfig=dict(
+                    # A path in a Cloud Storage bucket, which will be treated as the root output directory of the pipeline. It is used by the system 
+                    # to generate the paths of output artifacts. The artifact paths are generated with a sub-path pattern {job_id}/{taskId}/{outputKey} 
+                    # under the specified output directory. The service account specified in this pipeline must have the storage.objects.get and storage.objects.create 
+                    # permissions for this bucket.
                     gcsOutputDirectory=pipeline_root,
+                    # The runtime parameters of the PipelineJob. The parameters will be passed into PipelineJob.pipeline_spec to replace the placeholders at runtime. 
+                    # This field is used by pipelines built using PipelineJob.pipeline_spec.schema_version 2.1.0, such as pipelines built using Kubeflow Pipelines SDK 1.9 
+                    # or higher and the v2 DSL.
                     parameterValues=dict()
+                ),
+                # The pipeline specification in a Struct Protobuf
+                pipelineSpec=dict(
+                    pipelineInfo=dict(
+                        name=f"{pipeline_name}",
+                        description=f"{pipeline_name}",
+                    )
                 )
             )
         )
     )
 
+    # Defines the request header
     headers = requests.structures.CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     headers["Authorization"] = "Bearer {}".format(get_gcp_bearer_token())
 
+    # Submits the request to the API
     resp = requests.post(url=url, json=body, headers=headers)
     data = resp.json()  # Check the JSON Response Content documentation below
 
@@ -442,18 +577,35 @@ def get_schedules(
         project_id: str,
         region: str,
         pipeline_name: str) -> list:
+    """
+    This function retrieves all schedules associated with a given pipeline name in a specific project and region.
 
+    Args:
+        project_id: The ID of the project that contains the pipeline.
+        region: The location of the pipeline.
+        pipeline_name: The name of the pipeline to retrieve schedules for.
+
+    Returns:
+        A list of the schedules associated with the pipeline. If no schedules are found, returns None.
+
+    Raises:
+        Exception: If an error occurs while retrieving the schedules.
+    """
+
+    # Defines the filter query parameter for the URL request
     filter = ""
     if pipeline_name is not None:
         filter = f"filter=display_name={pipeline_name}"
     url = f"https://{region}-aiplatform.googleapis.com/v1beta1/projects/{project_id}/locations/{region}/schedules?{filter}"
 
+    # Defines the header for the URL request
     headers = requests.structures.CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     headers["Authorization"] = "Bearer {}".format(get_gcp_bearer_token())
 
+    # Make the request
     resp = requests.get(url=url, headers=headers)
-    data = resp.json()  # Check the JSON Response Content documentation below
+    data = resp.json()  # Check the JSON Response Content 
     if "schedules" in data:
         return data['schedules']
     else:
@@ -464,22 +616,39 @@ def pause_schedule(
         project_id: str,
         region: str,
         pipeline_name: str) -> list:
+    """
+    This function pauses all schedules associated with a given pipeline name in a specific project and region.
 
+    Args:
+        project_id: The ID of the project that contains the pipeline.
+        region: The location of the pipeline.
+        pipeline_name: The name of the pipeline to pause schedules for.
+
+    Returns:
+        A list of the names of the paused schedules. If no schedules are found, returns None.
+    
+    Raises:
+        Exception: If an error occurs while pausing the schedules.
+    """
+
+    # Get the list of schedules for the given pipeline name
     schedules = get_schedules(project_id, region, pipeline_name)
     if schedules is None:
         logging.info(f"No schedules found with display_name {pipeline_name}")
         return None
 
+    # Creating the request header
     headers = requests.structures.CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     headers["Authorization"] = "Bearer {}".format(get_gcp_bearer_token())
 
+    # Pause the schedules where the display_name matches
     paused_schedules = []
     for s in schedules:
         url = f"https://{region}-aiplatform.googleapis.com/v1beta1/{s['name']}:pause"
         resp = requests.post(url=url, headers=headers)
 
-        data = resp.json()  # Check the JSON Response Content documentation below
+        data = resp.json()  # Check the JSON Response Content
         print(resp.status_code == 200)
         if resp.status_code != 200:
             raise Exception(
@@ -494,22 +663,39 @@ def delete_schedules(
         project_id: str,
         region: str,
         pipeline_name: str) -> list:
+    """
+    This function deletes all schedules associated with a given pipeline name in a specific project and region.
 
+    Args:
+        project_id: The ID of the project that contains the pipeline.
+        region: The location of the pipeline.
+        pipeline_name: The name of the pipeline to delete schedules for.
+
+    Returns:
+        A list of the names of the deleted schedules. If no schedules are found, returns None.
+    
+    Raises:
+        Exception: If an error occurs while deleting the schedules.
+    """
+
+    # Get all schedules for the given pipeline name
     schedules = get_schedules(project_id, region, pipeline_name)
     if schedules is None:
         logging.info(f"No schedules found with display_name {pipeline_name}")
         return None
 
+    # Defines the header used in the API request
     headers = requests.structures.CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     headers["Authorization"] = "Bearer {}".format(get_gcp_bearer_token())
 
+    # Delete each schedule where the display_name matches
     deleted_schedules = []
     for s in schedules:
         url = f"https://{region}-aiplatform.googleapis.com/v1beta1/{s['name']}"
         resp = requests.delete(url=url, headers=headers)
 
-        data = resp.json()  # Check the JSON Response Content documentation below
+        data = resp.json()  # Check the JSON Response Content
         logging.info(f"scheduled resourse {s['name']} deleted")
         deleted_schedules.append(s['name'])
 
@@ -533,22 +719,44 @@ def run_pipeline(
     encryption_spec_key_name: Optional[str] = None,
     wait: bool = False,
 ) -> PipelineJob:
+    
+    """
+    Runs a Vertex AI Pipeline.
+    This function provides a convenient way to run a Vertex AI Pipeline. It takes care of creating the PipelineJob object, 
+    submitting the pipeline, and waiting for completion (if desired). It also allows for substituting placeholders in the 
+    pipeline parameters, making the pipeline more flexible and reusable.
 
+    Args:
+        pipeline_root: The root directory of the pipeline.
+        template_path: The path to the pipeline template file.
+        project_id: The ID of the project that contains the pipeline.
+        location: The location of the pipeline.
+        service_account: The service account to use for the pipeline.
+        pipeline_parameters: The parameters to pass to the pipeline.
+        pipeline_parameters_substitutions: A dictionary of substitutions to apply to the pipeline parameters.
+        enable_caching: Whether to enable caching for the pipeline.
+        experiment_name: The name of the experiment to create for the pipeline.
+        job_id: The ID of the pipeline job.
+        failure_policy: The failure policy for the pipeline.
+        labels: The labels to apply to the pipeline.
+        credentials: The credentials to use for the pipeline.
+        encryption_spec_key_name: The encryption key to use for the pipeline.
+        wait: Whether to wait for the pipeline to complete.
+
+    Returns:
+        A PipelineJob object.
+    """
+
+    # Substitute placeholders in the pipeline_parameters dictionary with values from the pipeline_parameters_substitutions dictionary. 
+    # This is useful for making the pipeline more flexible and reusable, as the same pipeline can be used with different parameter 
+    # values by simply providing a different pipeline_parameters_substitutions dictionary.
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
             pipeline_parameters, pipeline_parameters_substitutions)
     
     logging.info(f"Pipeline parameters : {pipeline_parameters}")
 
-    # Create Vertex Dataset
-    #vertex_datasets_uri = create_dataset(
-    #    display_name=pipeline_parameters['vertex_dataset_display_name'],
-    #    bigquery_source=pipeline_parameters['data_source_bigquery_table_path'],
-    #    project_id=pipeline_parameters['project'])
-    #
-    #input_artifacts: Dict[str, str] = {}
-    #input_artifacts['vertex_datasets'] = vertex_datasets_uri
-
+    # Creates a PipelineJob object with the provided arguments.
     pl = PipelineJob(
         display_name='na',  # not needed and will be optional in next major release
         template_path=template_path,
@@ -558,51 +766,20 @@ def run_pipeline(
         project=project_id,
         location=location,
         parameter_values=pipeline_parameters,
-        #input_artifacts=input_artifacts,
         encryption_spec_key_name=encryption_spec_key_name,
         credentials=credentials,
         failure_policy=failure_policy,
         labels=labels)
 
+    # Submits the pipeline to Vertex AI 
     pl.submit(service_account=service_account, experiment=experiment_name)
+
+    logging.info(f"Pipeline submitted")
+
+    # Waits for the pipeline to complete.
     if (wait):
         pl.wait()
         if (pl.has_failed):
             raise RuntimeError("Pipeline execution failed")
     return pl
-
-
-#def create_dataset(
-#    display_name: str,
-#    bigquery_source: str,
-#    project_id: str,
-#    location: str = "us-central1",
-#    credentials: Optional[credentials.Credentials] = None,
-#    sync: bool = True,
-#    create_request_timeout: Optional[float] = None,
-#    ) -> str:
-#    
-#    #bigquery_source in this format "bq://<project_id>.purchase_propensity.v_purchase_propensity_training_30_15"
-#    #dataset = TabularDataset.create(
-#    #    display_name=display_name,
-#    #    bq_source=[bigquery_source],
-#    #    project=project_id,
-#    #    location=location,
-#    #    credentials=credentials,
-#    #    sync=sync,
-#    #    create_request_timeout=create_request_timeout)
-#    #dataset.wait()
-#
-#    artifact = Artifact.create(
-#        schema_title="system.Dataset",
-#        uri=bigquery_source,
-#        display_name=display_name,
-#        project=project_id,
-#        location=location,
-#    )
-#    artifact.wait()
-#
-#    # Should be: 7104764862735056896
-#    # Cannot use full resource name of format: projects/294348452381/locations/us-central1/datasets/7104764862735056896
-#    return artifact.resource_id
     

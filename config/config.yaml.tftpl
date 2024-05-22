@@ -1136,7 +1136,7 @@ vertex_ai:
         schedule:
           # The `cron` is the cron schedule. Make sure you review the TZ=America/New_York timezone.
           # More information can be found at https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules.
-          cron: "TZ=America/New_York 0 8 * * *"
+          cron: "TZ=America/New_York 0 8-23/2 * * *"
           # The `max_concurrent_run_count` defines the maximum number of concurrent pipeline runs.
           max_concurrent_run_count: 1
           start_time: null
