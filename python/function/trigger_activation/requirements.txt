@@ -1,2 +1,2 @@
 functions-framework==3.3.0
-google-cloud-dataflow-client==0.8.2
+google-cloud-dataflow-client==0.8.10

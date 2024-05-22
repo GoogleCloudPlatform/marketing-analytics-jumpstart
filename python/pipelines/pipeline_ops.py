@@ -185,7 +185,7 @@ def _extract_schema_from_bigquery(
     Raises:
         Exception: If the table or view does not exist.
     """
-    
+
     from google.cloud import bigquery
     from google.api_core import exceptions
     try:
@@ -216,75 +216,87 @@ def compile_automl_tabular_pipeline(
         pipeline_parameters_substitutions: Optional[Dict[str, Any]] = None,
         exclude_features = List[Any],
         enable_caching: bool = True) -> tuple:
+    """
+    Compiles an AutoML Tabular Workflows pipeline.
+
+    Args:
+        template_path: The path to the pipeline template file.
+        parameters_path: The path to the pipeline parameters file.
+        pipeline_name: The name of the pipeline.
+        pipeline_parameters: The parameters to pass to the pipeline. All these possible parameters can be set in the config.yaml.tftpl file, instead of in this file.
+            additional_experiments: dict
+            cv_trainer_worker_pool_specs_override: list
+            data_source_bigquery_table_path: str [Default: '']
+            data_source_csv_filenames: str [Default: '']
+            dataflow_service_account: str [Default: '']
+            dataflow_subnetwork: str [Default: '']
+            dataflow_use_public_ips: bool [Default: True]
+            disable_early_stopping: bool [Default: False]
+            distill_batch_predict_machine_type: str [Default: 'n1-standard-16']
+            distill_batch_predict_max_replica_count: int [Default: 25.0]
+            distill_batch_predict_starting_replica_count: int [Default: 25.0]
+            enable_probabilistic_inference: bool [Default: False]
+            encryption_spec_key_name: str [Default: '']
+            evaluation_batch_explain_machine_type: str [Default: 'n1-highmem-8']
+            evaluation_batch_explain_max_replica_count: int [Default: 10.0]
+            evaluation_batch_explain_starting_replica_count: int [Default: 10.0]
+            evaluation_batch_predict_machine_type: str [Default: 'n1-highmem-8']
+            evaluation_batch_predict_max_replica_count: int [Default: 20.0]
+            evaluation_batch_predict_starting_replica_count: int [Default: 20.0]
+            evaluation_dataflow_disk_size_gb: int [Default: 50.0]
+            evaluation_dataflow_machine_type: str [Default: 'n1-standard-4']
+            evaluation_dataflow_max_num_workers: int [Default: 100.0]
+            evaluation_dataflow_starting_num_workers: int [Default: 10.0]
+            export_additional_model_without_custom_ops: bool [Default: False]
+            fast_testing: bool [Default: False]
+            location: str
+            model_description: str [Default: '']
+            model_display_name: str [Default: '']
+            optimization_objective: str
+            optimization_objective_precision_value: float [Default: -1.0]
+            optimization_objective_recall_value: float [Default: -1.0]
+            predefined_split_key: str [Default: '']
+            prediction_type: str
+            project: str
+            quantiles: list
+            root_dir: str
+            run_distillation: bool [Default: False]
+            run_evaluation: bool [Default: False]
+            stage_1_num_parallel_trials: int [Default: 35.0]
+            stage_1_tuner_worker_pool_specs_override: list
+            stage_1_tuning_result_artifact_uri: str [Default: '']
+            stage_2_num_parallel_trials: int [Default: 35.0]
+            stage_2_num_selected_trials: int [Default: 5.0]
+            stats_and_example_gen_dataflow_disk_size_gb: int [Default: 40.0]
+            stats_and_example_gen_dataflow_machine_type: str [Default: 'n1-standard-16']
+            stats_and_example_gen_dataflow_max_num_workers: int [Default: 25.0]
+            stratified_split_key: str [Default: '']
+            study_spec_parameters_override: list
+            target_column: str
+            test_fraction: float [Default: -1.0]
+            timestamp_split_key: str [Default: '']
+            train_budget_milli_node_hours: float
+            training_fraction: float [Default: -1.0]
+            transform_dataflow_disk_size_gb: int [Default: 40.0]
+            transform_dataflow_machine_type: str [Default: 'n1-standard-16']
+            transform_dataflow_max_num_workers: int [Default: 25.0]
+            transformations: str
+            validation_fraction: float [Default: -1.0]
+            vertex_dataset: system.Artifact
+            weight_column: str [Default: '']
+        pipeline_parameters_substitutions: A dictionary of substitutions to apply to the pipeline parameters.
+        exclude_features: A list of features to exclude from the pipeline.
+        enable_caching: Whether to enable caching for the pipeline.
+
+    Returns:
+        A tuple containing the path to the compiled pipeline template file and the pipeline parameters.
+    """
 
     from google_cloud_pipeline_components.preview.automl.tabular import utils as automl_tabular_utils
 
     if pipeline_parameters_substitutions != None:
         pipeline_parameters = substitute_pipeline_params(
             pipeline_parameters, pipeline_parameters_substitutions)
-
-    """
-    additional_experiments: dict
-    cv_trainer_worker_pool_specs_override: list
-    data_source_bigquery_table_path: str [Default: '']
-    data_source_csv_filenames: str [Default: '']
-    dataflow_service_account: str [Default: '']
-    dataflow_subnetwork: str [Default: '']
-    dataflow_use_public_ips: bool [Default: True]
-    disable_early_stopping: bool [Default: False]
-    distill_batch_predict_machine_type: str [Default: 'n1-standard-16']
-    distill_batch_predict_max_replica_count: int [Default: 25.0]
-    distill_batch_predict_starting_replica_count: int [Default: 25.0]
-    enable_probabilistic_inference: bool [Default: False]
-    encryption_spec_key_name: str [Default: '']
-    evaluation_batch_explain_machine_type: str [Default: 'n1-highmem-8']
-    evaluation_batch_explain_max_replica_count: int [Default: 10.0]
-    evaluation_batch_explain_starting_replica_count: int [Default: 10.0]
-    evaluation_batch_predict_machine_type: str [Default: 'n1-highmem-8']
-    evaluation_batch_predict_max_replica_count: int [Default: 20.0]
-    evaluation_batch_predict_starting_replica_count: int [Default: 20.0]
-    evaluation_dataflow_disk_size_gb: int [Default: 50.0]
-    evaluation_dataflow_machine_type: str [Default: 'n1-standard-4']
-    evaluation_dataflow_max_num_workers: int [Default: 100.0]
-    evaluation_dataflow_starting_num_workers: int [Default: 10.0]
-    export_additional_model_without_custom_ops: bool [Default: False]
-    fast_testing: bool [Default: False]
-    location: str
-    model_description: str [Default: '']
-    model_display_name: str [Default: '']
-    optimization_objective: str
-    optimization_objective_precision_value: float [Default: -1.0]
-    optimization_objective_recall_value: float [Default: -1.0]
-    predefined_split_key: str [Default: '']
-    prediction_type: str
-    project: str
-    quantiles: list
-    root_dir: str
-    run_distillation: bool [Default: False]
-    run_evaluation: bool [Default: False]
-    stage_1_num_parallel_trials: int [Default: 35.0]
-    stage_1_tuner_worker_pool_specs_override: list
-    stage_1_tuning_result_artifact_uri: str [Default: '']
-    stage_2_num_parallel_trials: int [Default: 35.0]
-    stage_2_num_selected_trials: int [Default: 5.0]
-    stats_and_example_gen_dataflow_disk_size_gb: int [Default: 40.0]
-    stats_and_example_gen_dataflow_machine_type: str [Default: 'n1-standard-16']
-    stats_and_example_gen_dataflow_max_num_workers: int [Default: 25.0]
-    stratified_split_key: str [Default: '']
-    study_spec_parameters_override: list
-    target_column: str
-    test_fraction: float [Default: -1.0]
-    timestamp_split_key: str [Default: '']
-    train_budget_milli_node_hours: float
-    training_fraction: float [Default: -1.0]
-    transform_dataflow_disk_size_gb: int [Default: 40.0]
-    transform_dataflow_machine_type: str [Default: 'n1-standard-16']
-    transform_dataflow_max_num_workers: int [Default: 25.0]
-    transformations: str
-    validation_fraction: float [Default: -1.0]
-    vertex_dataset: system.Artifact
-    weight_column: str [Default: '']
-    """
 
     pipeline_parameters['transformations'] = pipeline_parameters['transformations'].format(
         timestamp=datetime.now().strftime("%Y%m%d%H%M%S"))
@@ -464,12 +476,15 @@ def get_gcp_bearer_token() -> str:
 def schedule_pipeline(
         project_id: str,
         region: str,
+        template_path: str,
         pipeline_name: str,
         pipeline_template_uri: str,
         pipeline_sa: str,
         pipeline_root: str,
         cron: str,
         max_concurrent_run_count: str,
+        pipeline_parameters: Dict[str, Any] = None,
+        pipeline_parameters_substitutions: Optional[Dict[str, Any]] = None,
         start_time: str = None,
         end_time: str = None) -> dict:
     """
@@ -494,83 +509,31 @@ def schedule_pipeline(
         Exception: If an error occurs while scheduling the pipeline.
     """
 
-    # Construct the API request URL
-    url = f"https://{region}-aiplatform.googleapis.com/v1beta1/projects/{project_id}/locations/{region}/schedules"
+    from google.cloud import aiplatform
 
+    if pipeline_parameters_substitutions != None:
+        pipeline_parameters = substitute_pipeline_params(
+            pipeline_parameters, pipeline_parameters_substitutions)
+    
     # Deletes scheduled queries with matching description
     delete_schedules(project_id, region, pipeline_name)
 
-    # Construct the request body
-    body = dict(
-        # User provided name of the Schedule. The name can be up to 128 characters long and can consist of any UTF-8 characters.
-        display_name=f"{pipeline_name}",
-        # The resource name of the Schedule.
-        name=f"{pipeline_name}",
-        # Cron schedule (https://en.wikipedia.org/wiki/Cron) to launch scheduled runs. To explicitly set a timezone to the cron tab, 
-        # apply a prefix in the cron tab: "CRON_TZ=${IANA_TIME_ZONE}" or "TZ=${IANA_TIME_ZONE}". The ${IANA_TIME_ZONE} may only be a 
-        # valid string from IANA time zone database. For example, "CRON_TZ=America/New_York 1 * * * *", or "TZ=America/New_York 1 * * * *".
-        cron=cron,
-        # Maximum number of runs that can be started concurrently for this Schedule. This is the limit for starting the scheduled requests 
-        # and not the execution of the operations/jobs created by the requests (if applicable).
-        max_concurrent_run_count=max_concurrent_run_count,
-        # Timestamp after which the first run can be scheduled. Default to Schedule create time if not specified. 
-        # A timestamp in RFC3339 UTC "Zulu" format, with nanosecond resolution and up to nine fractional digits. 
-        # Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z".
-        start_time=start_time,
-        # Timestamp after which no new runs can be scheduled. If specified, The schedule will be completed when either endTime is reached or 
-        # when scheduled_run_count >= maxRunCount. If not specified, new runs will keep getting scheduled until this Schedule is paused or deleted. 
-        # Already scheduled runs will be allowed to complete. Unset if not specified. A timestamp in RFC3339 UTC "Zulu" format, with nanosecond 
-        # resolution and up to nine fractional digits. Examples: "2014-10-02T15:01:23Z" and "2014-10-02T15:01:23.045123456Z".
-        end_time=end_time,
-        # Request for PipelineService.CreatePipelineJob. CreatePipelineJobRequest.parent field is required (format: projects/{project}/locations/{location}).
-        create_pipeline_job_request=dict(
-            parent=f"projects/{project_id}/locations/{region}",
-            # The PipelineJob to create.
-            pipelineJob=dict(
-                # The display name of the Pipeline. The name can be up to 128 characters long and can consist of any UTF-8 characters.
-                displayName=f"{pipeline_name}",
-                # A template uri from where the PipelineJob.pipeline_spec, if empty, will be downloaded. 
-                # Currently, only uri from Vertex Template Registry & Gallery is supported. 
-                # Reference to https://cloud.google.com/vertex-ai/docs/pipelines/create-pipeline-template.
-                template_uri=pipeline_template_uri,
-                # The service account that the pipeline workload runs as. If not specified, the Compute Engine default service account in 
-                # the project will be used. See https://cloud.google.com/compute/docs/access/service-accounts#default_service_account. 
-                # Users starting the pipeline must have the iam.serviceAccounts.actAs permission on this service account.
-                service_account=pipeline_sa,
-                # Runtime config of the pipeline.
-                runtimeConfig=dict(
-                    # A path in a Cloud Storage bucket, which will be treated as the root output directory of the pipeline. It is used by the system 
-                    # to generate the paths of output artifacts. The artifact paths are generated with a sub-path pattern {job_id}/{taskId}/{outputKey} 
-                    # under the specified output directory. The service account specified in this pipeline must have the storage.objects.get and storage.objects.create 
-                    # permissions for this bucket.
-                    gcsOutputDirectory=pipeline_root,
-                    # The runtime parameters of the PipelineJob. The parameters will be passed into PipelineJob.pipeline_spec to replace the placeholders at runtime. 
-                    # This field is used by pipelines built using PipelineJob.pipeline_spec.schema_version 2.1.0, such as pipelines built using Kubeflow Pipelines SDK 1.9 
-                    # or higher and the v2 DSL.
-                    parameterValues=dict()
-                ),
-                # The pipeline specification in a Struct Protobuf
-                pipelineSpec=dict(
-                    pipelineInfo=dict(
-                        name=f"{pipeline_name}",
-                        description=f"{pipeline_name}",
-                    )
-                )
-            )
-        )
+    # Create a PipelineJob object
+    pipeline_job = aiplatform.PipelineJob(
+    template_path=template_path,
+    pipeline_root=pipeline_root,
+    display_name=f"{pipeline_name}",
     )
 
-    # Defines the request header
-    headers = requests.structures.CaseInsensitiveDict()
-    headers["Content-Type"] = "application/json"
-    headers["Authorization"] = "Bearer {}".format(get_gcp_bearer_token())
+    pipeline_job_schedule = pipeline_job.create_schedule(
+    display_name=f"{pipeline_name}",
+    cron=cron,
+    max_concurrent_run_count=max_concurrent_run_count,
+    )
 
-    # Submits the request to the API
-    resp = requests.post(url=url, json=body, headers=headers)
-    data = resp.json()  # Check the JSON Response Content documentation below
+    logging.info(f"Pipeline scheduled : {pipeline_name}")
 
-    logging.info(f"scheduler for {pipeline_name} submitted")
-    return data
+    return pipeline_job
 
 
 def get_schedules(

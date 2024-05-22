@@ -830,6 +830,9 @@ vertex_ai:
           min_num_clusters: 3
           bucket_name: "${project_id}-custom-models"
           image_uri: "us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-2:latest"
+          #exclude_features:
+          #  - user_pseudo_id
+          #  - user_id
         pipeline_parameters_substitutions: null
       prediction:
         name: "auto-segmentation-prediction-pl"

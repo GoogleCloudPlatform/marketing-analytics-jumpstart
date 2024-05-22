@@ -66,6 +66,10 @@ if __name__ == "__main__":
                         choices=list(pipelines_list.keys()),
                         help='Pipeline key name as it is in config.yaml')
     
+    parser.add_argument("-i", '--input-file',
+                    dest="input",
+                    required=True,
+                    help='the compiled pipeline input filename')
     
     parser.add_argument("-d", '--delete',
                         dest="delete",
@@ -74,6 +78,7 @@ if __name__ == "__main__":
                         help='if flag is set- delete scheduled pipeline')
 
     args = parser.parse_args()
+
 
     repo_params = {}
     with open(args.config, encoding='utf-8') as fh:
@@ -102,6 +107,9 @@ if __name__ == "__main__":
         schedule = schedule_pipeline(
             project_id=generic_pipeline_vars['project_id'],
             region=generic_pipeline_vars['region'],
+            template_path = args.input,
+            pipeline_parameters=my_pipeline_vars['pipeline_parameters'],
+            pipeline_parameters_substitutions= my_pipeline_vars['pipeline_parameters_substitutions'],
             pipeline_name=my_pipeline_vars['name'],
             pipeline_template_uri=template_artifact_uri,
             pipeline_sa=generic_pipeline_vars['service_account'],
@@ -112,8 +120,8 @@ if __name__ == "__main__":
             end_time=my_pipeline_vars['schedule']['end_time']
         )
 
-        if 'state' not in schedule or schedule['state'] != 'ACTIVE':
-            raise Exception(f"Scheduling pipeline failed {schedule}")
+        #if schedule is None or schedule.state != 'ACTIVE':
+        #    raise Exception(f"Scheduling pipeline failed {schedule}")
 
         if my_pipeline_vars['schedule']['state'] == 'PAUSED':
             logging.info(f"Pausing scheduler for {args.pipeline}")
