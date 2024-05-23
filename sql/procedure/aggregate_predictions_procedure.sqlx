@@ -13,14 +13,14 @@
   -- limitations under the License.
   -- Setting procedure to lookback from the day before `inference_date`
 
-# This procedure aggregates predictions from multiple BigQuery tables into a single table.
-# It can be breakdown in 6 steps:
-# 1. Declare Variables: The code declares several variables that will be used throughout the procedure.
-# 2. Define Helper Functions: The code defines several helper functions that will be used in the procedure
-# 3. Set Variable Values: The code sets the values of the declared variables using the helper functions and other expressions.
-# 4. Create Temporary Tables: The code creates several temporary tables that will be used to store intermediate results.
-# 5. Execute Queries: The code executes several SQL queries to aggregate the predictions from the different BigQuery tables.
-# 6. Create Final Table: The code creates a final BigQuery table that contains the aggregated predictions.
+-- This procedure aggregates predictions from multiple BigQuery tables into a single table.
+-- It can be breakdown in 6 steps:
+-- 1. Declare Variables: The code declares several variables that will be used throughout the procedure.
+-- 2. Define Helper Functions: The code defines several helper functions that will be used in the procedure
+-- 3. Set Variable Values: The code sets the values of the declared variables using the helper functions and other expressions.
+-- 4. Create Temporary Tables: The code creates several temporary tables that will be used to store intermediate results.
+-- 5. Execute Queries: The code executes several SQL queries to aggregate the predictions from the different BigQuery tables.
+-- 6. Create Final Table: The code creates a final BigQuery table that contains the aggregated predictions.
 DECLARE
   project_id,
   table_pattern, #  A pattern used to identify the BigQuery tables that contain the predictions.
@@ -67,7 +67,7 @@ DECLARE
   second_join_select_columns ARRAY<STRING>;
 SET
   project_id = '{{project_id}}';
-# A procedure that retrieves the column names for a specified BigQuery table.
+-- A procedure that retrieves the column names for a specified BigQuery table.
 CREATE OR REPLACE PROCEDURE
   {{dataset_id}}.get_columns_for_table(table_name STRING,
     data_set STRING,
@@ -85,7 +85,7 @@ SELECT ARRAY_AGG(column_name)
 """, data_set, table_name_only) INTO table_columns;
 END
   ;
-# A procedure that retrieves the name of the latest BigQuery table that matches a specified pattern.
+-- A procedure that retrieves the name of the latest BigQuery table that matches a specified pattern.
 CREATE OR REPLACE PROCEDURE
   {{dataset_id}}.get_latest_table_by_pattern(dataset_name STRING,
     table_pattern STRING,
@@ -113,7 +113,7 @@ SET
     temp_table );
 END
   ;
-#  A function that returns the difference between two arrays.
+--  A function that returns the difference between two arrays.
 CREATE TEMP FUNCTION
   array_diff(src_array ARRAY<STRING>,
     rm_array ARRAY<STRING>)
@@ -128,7 +128,7 @@ CREATE TEMP FUNCTION
         element
       FROM
         UNNEST(rm_array) AS element ) ));
-# A function that returns the common elements between two arrays.
+-- A function that returns the common elements between two arrays.
 CREATE TEMP FUNCTION
   array_common(arr_one ARRAY<STRING>,
     arr_two ARRAY<STRING>) AS ((
@@ -140,7 +140,7 @@ CREATE TEMP FUNCTION
         UNNEST(arr_one) AS element
       WHERE
         element IN UNNEST(arr_two) ) ));
-# A function that creates a SQL expression for selecting common columns from two tables.
+-- A function that creates a SQL expression for selecting common columns from two tables.
 CREATE TEMP FUNCTION
   create_common_columns_select(common_columns ARRAY<STRING>,
     f_alias STRING,
@@ -154,7 +154,7 @@ CREATE TEMP FUNCTION
             CONCAT('COALESCE(',f_alias, '.', element, ',', s_alias,'.', element,') AS ', element)
           FROM
             UNNEST(common_columns) AS element) ), ',') ));
-# A function that creates a SQL expression for selecting columns from a single table.
+-- A function that creates a SQL expression for selecting columns from a single table.
 CREATE TEMP FUNCTION
   create_columns_select(COLUMNS ARRAY<STRING>,
     t_alias STRING)
@@ -356,13 +356,14 @@ SET
   third_query_str = FORMAT("""
 CREATE OR REPLACE TABLE `%s.{{dataset_id}}.{{table_id}}` AS
 SELECT
+e.user_pseudo_id,
 %s,
 f.feature_timestamp AS auto_segment_processed_timestamp,
 f.prediction AS Auto_Segment_ID,
 %s
 FROM temp2 AS e
 full outer join `%s` AS f
-ON e.user_pseudo_id=f.user_id;
+ON e.user_pseudo_id=f.user_pseudo_id;
 """, project_id, second_join_selections, auto_audience_segmentation_selections, auto_audience_segmentation_table);
 EXECUTE IMMEDIATE
   third_query_str;
