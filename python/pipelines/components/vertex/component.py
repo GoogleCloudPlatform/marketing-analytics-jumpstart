@@ -41,6 +41,7 @@ if os.path.exists(config_file_path):
 
 
 
+
 @component(
     base_image=base_image,
     #target_image=target_image,
@@ -207,6 +208,8 @@ def elect_best_tabular_model(
     elected_model.schema_title = 'google.VertexModel'
     #classification_metrics_logger.log_roc_curve(fpr_arr,tpr_arr, th_arr)
 
+
+
     
 @component(
     base_image=base_image,
@@ -219,7 +222,20 @@ def get_latest_model(
     display_name: str,
     elected_model: Output[VertexModel]
 ) -> None:
-    """
+    """Vertex pipelines component that elects the latest model based on the display name.
+
+    Args:
+        project (str):
+            Project to retrieve models and model registry from
+        location (str):
+            Location to retrieve models and model registry from
+        display_name (str):
+            The display name of the model for which selection is going to be made
+        elected_model: Output[VertexModel]:
+            The output VertexModel object containing the latest model information.
+
+    Raises:
+        Exception: If no models are found in the vertex model registry that match the display name.
     """
   
     from google.cloud import aiplatform as aip
@@ -283,6 +299,8 @@ def get_latest_model(
     elected_model.schema_title = 'google.VertexModel'
 
 
+
+
 @component(base_image=base_image)
 def batch_prediction(
     destination_table: Output[Dataset],
@@ -298,6 +316,38 @@ def batch_prediction(
     generate_explanation: bool = False,
     dst_table_expiration_hours: int = 0
 ):
+    """Vertex pipelines component that performs batch prediction using a Vertex AI model.
+
+    Args:
+        destination_table (Output[Dataset]):
+            The output BigQuery table where the predictions will be stored.
+        bigquery_source (str):
+            The BigQuery table containing the data to be predicted.
+        bigquery_destination_prefix (str):
+            The BigQuery table prefix where the predictions will be stored.
+        job_name_prefix (str):
+            The prefix for the batch prediction job name.
+        model (Input[VertexModel]):
+            The Vertex AI model to be used for prediction.
+        machine_type (str, optional):
+            The machine type to use for the batch prediction job. Defaults to "n1-standard-2".
+        max_replica_count (int, optional):
+            The maximum number of replicas to use for the batch prediction job. Defaults to 10.
+        batch_size (int, optional):
+            The batch size to use for the batch prediction job. Defaults to 64.
+        accelerator_count (int, optional):
+            The number of accelerators to use for the batch prediction job. Defaults to 0.
+        accelerator_type (str, optional):
+            The type of accelerators to use for the batch prediction job. Defaults to None.
+        generate_explanation (bool, optional):
+            Whether to generate explanations for the predictions. Defaults to False.
+        dst_table_expiration_hours (int, optional):
+            The number of hours after which the destination table will expire. Defaults to 0.
+
+    Raises:
+        Exception: If the batch prediction job fails.
+    """
+
     from datetime import datetime, timedelta, timezone
     import logging
     from google.cloud import bigquery
@@ -339,6 +389,8 @@ def batch_prediction(
     logging.info(batch_prediction_job.to_dict())
 
 
+
+
 @component(base_image=base_image)
 # Note currently KFP SDK doesn't support outputting artifacts in `google` namespace.
 # Use the base type dsl.Artifact instead.
@@ -348,6 +400,21 @@ def return_unmanaged_model(
     model_name: str,
     model: Output[Artifact]
 ) -> None:
+    """Vertex pipelines component that returns an unmanaged model artifact.
+
+    Args:
+        image_uri (str):
+            The URI of the container image for the unmanaged model.
+        bucket_name (str):
+            The name of the Google Cloud Storage bucket where the unmanaged model is stored.
+        model_name (str):
+            The name of the unmanaged model file in the Google Cloud Storage bucket.
+        model (Output[Artifact]):
+            The output VertexModel artifact.
+
+    Raises:
+        Exception: If the model artifact cannot be created.
+    """
     from google_cloud_pipeline_components import v1
     from google_cloud_pipeline_components.types import artifact_types
     from kfp import dsl
@@ -369,6 +436,21 @@ def get_tabular_model_explanation(
     model: Input[VertexModel],
     model_explanation: Output[Dataset],
 ) -> None:
+    """Vertex pipelines component that retrieves tabular model explanations from the AutoML API.
+
+    Args:
+        project (str):
+            Project to retrieve models and model registry from
+        location (str):
+            Location to retrieve models and model registry from
+        model (Input[VertexModel]):
+            The Vertex AI model for which explanations will be retrieved.
+        model_explanation (Output[Dataset]):
+            The output BigQuery dataset where the model explanations will be stored.
+
+    Raises:
+        Exception: If the model explanations cannot be retrieved.
+    """
     from google.cloud import aiplatform
     import logging
     import re

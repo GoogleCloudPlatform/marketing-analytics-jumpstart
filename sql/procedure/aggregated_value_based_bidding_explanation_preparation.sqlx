@@ -19,9 +19,9 @@ DECLARE end_date DATE DEFAULT NULL;
 DECLARE max_date DATE;
 DECLARE min_date DATE;
 
-# explain_start_date, explain_end_date: Variables to store the start and end dates for the explanation period.
-# start_date, end_date: Variables to store the start and end dates specified by the user.
-# max_date, min_date: Variables to store the maximum and minimum dates in the aggregated_vbb table.
+-- explain_start_date, explain_end_date: Variables to store the start and end dates for the explanation period.
+-- start_date, end_date: Variables to store the start and end dates specified by the user.
+-- max_date, min_date: Variables to store the maximum and minimum dates in the aggregated_vbb table.
 SET max_date = (SELECT MAX(Dt) FROM `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`); 
 SET min_date = (SELECT MIN(Dt) FROM `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`); 
 SET explain_start_date = min_date;
@@ -29,8 +29,8 @@ SET explain_end_date = max_date;
 SET start_date = PARSE_DATE("%Y-%m-%d", {{start_date}});
 SET end_date = PARSE_DATE("%Y-%m-%d", {{end_date}});
 
-# Validate User-Specified Dates: The code checks if the user-specified start and end dates are valid and within the 
-# range of dates in the aggregated_vbb table. If either date is invalid or out of range, it is adjusted to the nearest valid date.
+-- Validate User-Specified Dates: The code checks if the user-specified start and end dates are valid and within the 
+-- range of dates in the aggregated_vbb table. If either date is invalid or out of range, it is adjusted to the nearest valid date.
 IF start_date IS NULL OR start_date < min_date  OR start_date > max_date OR start_date > end_date THEN
     SET explain_start_date =  min_date;
 ELSE
@@ -43,7 +43,7 @@ ELSE
     SET explain_end_date =  end_date;
 END IF;
 
-# Volume of conversions actions table to be used for reporting
+-- Volume of conversions actions table to be used for reporting
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{volume_table_name}}`
 AS
 SELECT DISTINCT
@@ -62,7 +62,7 @@ FROM
 WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
 ;
 
-# Daily aggregated volume of conversions actions table to be used for reporting
+-- Daily aggregated volume of conversions actions table to be used for reporting
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{daily_volume_view_name}}`
 AS
 SELECT DISTINCT
@@ -81,7 +81,7 @@ FROM
 WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
 ;
 
-# Weekly aggregated volume of conversions actions table to be used for reporting
+-- Weekly aggregated volume of conversions actions table to be used for reporting
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{weekly_volume_view_name}}`
 AS
 SELECT DISTINCT
@@ -114,7 +114,7 @@ WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
 )
 ;
 
-# Correlation between purchase and other conversion actions table to be used for reporting
+-- Correlation between purchase and other conversion actions table to be used for reporting
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{corr_table_name}}`
 AS
 SELECT DISTINCT
