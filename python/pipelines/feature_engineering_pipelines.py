@@ -33,14 +33,37 @@ def auto_audience_segmentation_feature_engineering_pipeline(
     mds_dataset: str,
     stored_procedure_name: str,
     full_dataset_table: str,
-    #training_table: str,
-    #inference_table: str,
     reg_expression: str,
     query_auto_audience_segmentation_inference_preparation: str,
     query_auto_audience_segmentation_training_preparation: str,
     perc_keep: int = 35,
     timeout: Optional[float] = 3600.0
 ):
+    """
+    This pipeline defines the steps for feature engineering for the auto audience segmentation model.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        dataset: The BigQuery dataset where the raw data is stored.
+        date_start: The start date for the data to be processed.
+        date_end: The end date for the data to be processed.
+        feature_table: The BigQuery table where the feature data will be stored.
+        mds_project_id: The Google Cloud project ID where the Marketing Data Store (MDS) is located.
+        mds_dataset: The MDS dataset where the product data is stored.
+        stored_procedure_name: The name of the BigQuery stored procedure that will be used to prepare the full dataset.
+        full_dataset_table: The BigQuery table where the full dataset will be stored.
+        #training_table: The BigQuery table where the training data will be stored.
+        #inference_table: The BigQuery table where the inference data will be stored.
+        reg_expression: The regular expression that will be used to identify the pages to be included in the analysis.
+        query_auto_audience_segmentation_inference_preparation: The SQL query that will be used to prepare the inference data.
+        query_auto_audience_segmentation_training_preparation: The SQL query that will be used to prepare the training data.
+        perc_keep: The percentage of pages to be included in the analysis.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
     # Feature data preparation
     feature_table_preparation = bq_dynamic_query_exec_output(
         location=location,
@@ -91,6 +114,20 @@ def aggregated_value_based_bidding_feature_engineering_pipeline(
     query_aggregated_value_based_bidding_explanation_preparation: str,
     timeout: Optional[float] = 3600.0
 ):
+    """
+    This pipeline defines the steps for feature engineering for the aggregated value based bidding model.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        query_aggregated_value_based_bidding_training_preparation: The SQL query that will be used to prepare the training data.
+        query_aggregated_value_based_bidding_explanation_preparation: The SQL query that will be used to prepare the explanation data.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
+
     # Training data preparation
     training_table_preparation = sp(
         project=project_id,
@@ -111,12 +148,27 @@ def audience_segmentation_feature_engineering_pipeline(
     project_id: str,
     location: Optional[str],
     query_user_lookback_metrics: str,
-    query_user_scoped_segmentation_metrics: str,
     query_user_segmentation_dimensions: str,
     query_audience_segmentation_inference_preparation: str,
     query_audience_segmentation_training_preparation: str,
     timeout: Optional[float] = 3600.0
 ):
+    """
+    This pipeline defines the steps for feature engineering for the audience segmentation model.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        query_user_lookback_metrics: The SQL query that will be used to calculate the user lookback metrics.
+        query_user_segmentation_dimensions: The SQL query that will be used to calculate the user segmentation dimensions.
+        query_audience_segmentation_inference_preparation: The SQL query that will be used to prepare the inference data.
+        query_audience_segmentation_training_preparation: The SQL query that will be used to prepare the training data.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
+
     # Features Preparation
     phase_1 = list()
     phase_1.append(sp(
@@ -153,12 +205,27 @@ def purchase_propensity_feature_engineering_pipeline(
     query_purchase_propensity_label: str,
     query_user_dimensions: str,
     query_user_rolling_window_metrics: str,
-    query_user_scoped_metrics: str,
-    query_user_session_event_aggregated_metrics: str,
     query_purchase_propensity_inference_preparation: str,
     query_purchase_propensity_training_preparation: str,
     timeout: Optional[float] = 3600.0
 ):
+    """
+    This pipeline defines the steps for feature engineering for the purchase propensity model.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        query_purchase_propensity_label: The SQL query that will be used to calculate the purchase propensity label.
+        query_user_dimensions: The SQL query that will be used to calculate the user dimensions.
+        query_user_rolling_window_metrics: The SQL query that will be used to calculate the user rolling window metrics.
+        query_purchase_propensity_inference_preparation: The SQL query that will be used to prepare the inference data.
+        query_purchase_propensity_training_preparation: The SQL query that will be used to prepare the training data.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
+
     # Features Preparation
     phase_1 = list()
     phase_1.append(
@@ -203,11 +270,27 @@ def customer_lifetime_value_feature_engineering_pipeline(
     query_customer_lifetime_value_label: str,
     query_user_lifetime_dimensions: str,
     query_user_rolling_window_lifetime_metrics: str,
-    query_user_scoped_lifetime_metrics: str,
     query_customer_lifetime_value_inference_preparation: str,
     query_customer_lifetime_value_training_preparation: str,
     timeout: Optional[float] = 3600.0
 ):
+    """
+    This pipeline defines the steps for feature engineering for the customer lifetime value model.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        query_customer_lifetime_value_label: The SQL query that will be used to calculate the customer lifetime value label.
+        query_user_lifetime_dimensions: The SQL query that will be used to calculate the user lifetime dimensions.
+        query_user_rolling_window_lifetime_metrics: The SQL query that will be used to calculate the user rolling window lifetime metrics.
+        query_customer_lifetime_value_inference_preparation: The SQL query that will be used to prepare the inference data.
+        query_customer_lifetime_value_training_preparation: The SQL query that will be used to prepare the training data.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
+
     # Features Preparation
     phase_1 = list()
     phase_1.append(
@@ -252,6 +335,19 @@ def reporting_preparation_pl(
     query_aggregate_last_day_predictions: str,
     timeout: Optional[float] = 3600.0
 ):
+    """
+    This pipeline defines the steps for preparing the reporting data.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        query_aggregate_last_day_predictions: The SQL query that will be used to aggregate the last day predictions.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
+    
     # Reporting Preparation
     aggregate_predictions = sp(
         project=project_id,

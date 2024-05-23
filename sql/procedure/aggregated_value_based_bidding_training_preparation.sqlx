@@ -19,9 +19,31 @@
 # of the feature importance, there is no problem in applying this strategy.
 # Validation and test subsets are not replicated.
 
+# This code snippet defines a BigQuery SQL view named {{view_name}} 
+# in the project {{project_id}} and dataset {{dataset}}. 
+# The view is used for training the Aggregated value-based bidding model.
 
 -- The view schema should match with the `transformations-value-based-bidding.json` file.
 -- Taking into consideration the excluded_features as listed in the `config.yaml` file.
+--
+-- The view schema includes the following columns:
+--    data_split: String indicating the data split (TRAIN, VALIDATE, TEST).
+--    Dt: Date of the data.
+--    First_Visits: SUM of first visits for each Date.
+--    Visit_Product_Page: SUM of visits to product pages for each Date.
+--    View_Product_Details: SUM of views of product details for each Date.
+--    Add_Product_to_Cart: SUM of times products were added to the cart for each Date.
+--    View_Cart: SUM of times the cart was viewed for each Date.
+--    Begin_Checkout: SUM of times checkout was initiated for each Date.
+--    Added_Shipping_Info: SUM of times shipping information was added for each Date.
+--    Added_Payment_Info: SUM of times payment information was added for each Date.
+--    Purchase_Product: SUM of purchases made for each Date.
+--
+-- The view is defined using a series of UNION ALL statements that combine data from 
+-- the aggregated_vbb table in the {{mds_project_id}}.{{mds_dataset}} dataset.
+--    The first three UNION ALL statements select data for the training split. Each statement selects the same data, effectively replicating it three times. This is done to increase the size of the training dataset and potentially improve model performance.
+--    The fourth UNION ALL statement selects data for the validation split, filtering for data within the specified eval_start_date and eval_end_date range.
+--    The fifth UNION ALL statement selects data for the test split, also filtering for data within the specified eval_start_date and eval_end_date range.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.{{view_name}}`
 (data_split,
     Dt,
