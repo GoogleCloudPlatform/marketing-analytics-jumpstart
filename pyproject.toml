@@ -13,9 +13,9 @@
 # limitations under the License.
 
 [tool.poetry]
-name = "marketing-data-engine"
+name = "marketing-analytics-jumpstart"
 version = "1.0.0"
-description = "Marketing Data Engine"
+description = "Marketing Analytics Jumpstart"
 authors = ["Marketing Analytics Solutions Architects <ma-se@google.com>"]
 license = "Apache 2.0"
 readme = "README.md"

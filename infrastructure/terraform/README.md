@@ -166,7 +166,7 @@ At this time, the Terraform scripts in this folder perform the following tasks:
 - Dataform repository connected to the GitHub repo
 - Deploys the marketing data store (MDS), feature store, ML pipelines and activation application
 
-The Looker Studio Dashboard deployment is a separate [step](https://github.com/GoogleCloudPlatform/marketing-data-engine/blob/main/python/lookerstudio/README.md).
+The Looker Studio Dashboard deployment is a separate [step](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/python/lookerstudio/README.md).
 
 ## Post-Installation Instructions
 
