@@ -2,7 +2,9 @@
 ## Introduction
 ![tech architecture](images/activation_tech_architecture.png)
 The activation process enriches your Google Analytics 4 (GA4) user profiles with custom properties based on machine learning predictions for the different use cases supported by MAJ. This enrichment enables granular audience segmentation for targeted remarketing campaigns.
+
 The activation process is automated and built on Google Cloud Dataflow for efficient data processing and reliable data delivery into GA4.
+
 This guide details how to monitor the activation process, leverage the enriched user data, and tailor the process to fit your specific requirements.
 ## Activation process overview
 
