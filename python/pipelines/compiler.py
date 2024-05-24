@@ -22,6 +22,8 @@ python -m pipelines.compiler -c ../config/conf.yaml -p train_pipeline -o my_comp
 '''
 
 # config path : pipeline module and function name
+# This dictionary maps pipeline names to their corresponding module and function names.
+# This allows the script to dynamically import the correct pipeline function based on the provided pipeline name.
 pipelines_list = {
     'vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution': "pipelines.feature_engineering_pipelines.auto_audience_segmentation_feature_engineering_pipeline",
     'vertex_ai.pipelines.feature-creation-aggregated-value-based-bidding.execution': "pipelines.feature_engineering_pipelines.aggregated_value_based_bidding_feature_engineering_pipeline",
@@ -38,10 +40,20 @@ pipelines_list = {
     'vertex_ai.pipelines.clv.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.clv.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_regression_pl",
     'vertex_ai.pipelines.value_based_bidding.training': None, # tabular workflows pipelines is precompiled
-    'vertex_ai.pipelines.value_based_bidding.explanation': "pipelines.tabular_pipelines.explanation_tabular_workflow_regression_pl"
+    'vertex_ai.pipelines.value_based_bidding.explanation': "pipelines.tabular_pipelines.explanation_tabular_workflow_regression_pl",
+    'vertex_ai.pipelines.reporting_preparation.execution': "pipelines.feature_engineering_pipelines.reporting_preparation_pl",
 } # key should match pipeline names as in the `config.yaml.tftpl` files for automatic compilation
                 
 if __name__ == "__main__":
+    """
+    This Python code defines a script for compiling Vertex AI pipelines. 
+    This script provides a convenient way to compile Vertex AI pipelines from a configuration file. 
+    It allows users to specify the pipeline name, parameters, and output filename, and it automatically handles the compilation process.
+    It takes three arguments:
+        -c: Path to the configuration YAML file (config.yaml)
+        -p: Pipeline key name as it is in config.yaml
+        -o: The compiled pipeline output filename
+    """
     logging.basicConfig(level=logging.INFO)
     
     parser = ArgumentParser()
@@ -63,11 +75,14 @@ if __name__ == "__main__":
                     required=True,
                     help='the compiled pipeline output filename')
 
+    # Parses the provided command-line arguments. It retrieves the path to the configuration file, the pipeline name, and the output filename.
     args = parser.parse_args()
 
    
 
     pipeline_params={}
+    # Opens the configuration file and uses the yaml module to parse it.
+    # It extracts the pipeline parameters based on the provided pipeline name.
     with open(args.config, encoding='utf-8') as fh:
         pipeline_params = yaml.full_load(fh)
         for i in args.pipeline.split('.'):
@@ -76,6 +91,19 @@ if __name__ == "__main__":
 
     logging.info(pipeline_params)
     
+    # The script checks the pipeline type:
+    # If the pipeline type is tabular-workflows, it uses the compile_automl_tabular_pipeline function to compile the pipeline.
+    # Otherwise, it uses the compile_pipeline function to compile the pipeline.
+    # Both functions take the following arguments:
+    #   template_path: Path to the compiled pipeline template file.
+    #   pipeline_name: Name of the pipeline.
+    #   pipeline_parameters: Parameters to pass to the pipeline.
+    #   pipeline_parameters_substitutions: Substitutions to apply to the pipeline parameters.
+    #   enable_caching: Whether to enable caching for the pipeline.
+    #   type_check: Whether to perform type checking on the pipeline parameters.
+    # The compile_automl_tabular_pipeline function also takes the following arguments:
+    #   parameters_path: Path to the pipeline parameters file.
+    #   exclude_features: List of features to exclude from the pipeline.
     if pipeline_params['type'] == 'tabular-workflows':
         compile_automl_tabular_pipeline(
             template_path = args.output,

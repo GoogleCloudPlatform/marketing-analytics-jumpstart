@@ -13,17 +13,25 @@
   -- limitations under the License.
   -- Setting procedure to lookback from the day before `inference_date`
 
+-- This procedure prepares data for the audience segmentation inference pipeline. 
+-- It extracts relevant features from the user segmentation dimensions and user lookback metrics metrics tables 
+-- and combines them into a single table for model inference.
 DECLARE lastest_processed_time_ud TIMESTAMP;
 DECLARE lastest_processed_time_uwm TIMESTAMP;
 DECLARE lastest_processed_time_um TIMESTAMP;
 
+-- Parameters:
+--   inference_date: The date for which to prepare the data. This date should be one day before the actual inference date to account for data processing delays.
 -- Setting procedure to lookback from the day before `inference_date`
 SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
+-- Get the latest processed timestamps: The latest processed timestamps for each of the three feature tables are retrieved. These timestamps are used to filter the data to ensure that only the most recent data is used for inference.
 SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` WHERE feature_date = inference_date LIMIT 1);
-SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_segmentation_metrics` WHERE feature_date = inference_date LIMIT 1);
 
+
+-- Prepare user segmentation dimensions data: The user_segmentation_dimensions table is queried to extract relevant features for the inference date. 
+-- The query uses the user_segmentation_dimensions_window window function to aggregate features over the past 15 days.
 CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
@@ -63,6 +71,9 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
     user_segmentation_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
+
+-- Prepare user lookback metrics data: The user_lookback_metrics table is queried to extract relevant features for the inference date. 
+-- The query uses the user_lookback_metrics_window window function to aggregate features over the past 15 days.
 CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
   SELECT DISTINCT
     UWM.user_pseudo_id,
@@ -96,6 +107,8 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
 );
 
 
+-- Combine the data: The data from the three feature tables is combined into a single table called inference_preparation. 
+-- This table contains all of the features that will be used for model inference.
 CREATE OR REPLACE TEMP TABLE inference_preparation AS (
   SELECT DISTINCT
     UD.user_pseudo_id,
@@ -144,8 +157,52 @@ CREATE OR REPLACE TEMP TABLE inference_preparation AS (
     AND UWM.feature_date = UD.feature_date
 );
 
+
+-- Delete all rows from the insert_table
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
 
+
+-- Insert the data into the target table: The data from the inference_preparation table is inserted into the target table specified by the insert_table parameter. 
+-- This table will be used by the model inference pipeline.
+-- 
+-- The table schema includes the following columns:
+--     feature_date: 	The date for which the features are extracted.
+--     user_pseudo_id: The unique identifier for the user.
+--     user_id: The user ID.
+--     device_category:	The category of the device used by the user.
+--     device_mobile_brand_name:	The brand name of the mobile device used by the user.
+--     device_mobile_model_name:	The model name of the mobile device used by the user.
+--     device_os:	The operating system of the device used by the user.
+--     device_os_version:	The version of the operating system used by the user.
+--     device_language:	The language used by the user.
+--     device_web_browser:	The web browser used by the user.
+--     device_web_browser_version:	The version of the web browser used by the user.
+--     geo_sub_continent:	The sub-continent of the user's location.
+--     geo_country: The country of the user's location.
+--     geo_region:	The region of the user's location.
+--     geo_city:	The city of the user's location.
+--     geo_metro:	The metropolitan area of the user's location.
+--     last_traffic_source_medium:	The medium used to reach the user's last session.
+--     last_traffic_source_name:	The name of the traffic source used to reach the user's last session.
+--     last_traffic_source_source:	The source of the last traffic source used by the user.
+--     first_traffic_source_medium:	The medium of the first traffic source used by the user.
+--     first_traffic_source_name:	The name of the first traffic source used by the user.
+--     first_traffic_source_source:	The source of the first traffic source used by the user.
+--     has_signed_in_with_user_id:	Whether the user has signed in with a user ID.
+--     active_users_past_1_7_day:	The number of active users in the past 7 days for each user.
+--     active_users_past_8_14_day:	The number of active users in the past 8-14 days for each user.
+--     purchases_past_1_7_day:	The number of purchases in the past 7 days for each user.
+--     purchases_past_8_14_day:	The number of purchases in the past 8-14 days for each user.
+--     visits_past_1_7_day:	The number of visits in the past 7 days for each user.
+--     visits_past_8_14_day:	The number of visits in the past 8-14 days for each user.
+--     view_items_past_1_7_day:	The number of items viewed in the past 7 days for each user.
+--     view_items_past_8_14_day:	The number of items viewed in the past 8-14 days for each user.
+--     add_to_carts_past_1_7_day:	The number of items added to carts in the past 7 days for each user.
+--     add_to_carts_past_8_14_day:	The number of items added to carts in the past 8-14 days for each user.
+--     checkouts_past_1_7_day:	The number of checkouts in the past 7 days for each user.
+--     checkouts_past_8_14_day:	The number of checkouts in the past 8-14 days for each user.
+--     ltv_revenue_past_1_7_day:	The lifetime value revenue in the past 7 days for each user.
+--     ltv_revenue_past_7_15_day:	The lifetime value revenue in the past 7-15 days for each user.   
 INSERT INTO
   `{{project_id}}.{{dataset}}.{{insert_table}}` (feature_date,
     user_pseudo_id,
@@ -226,6 +283,9 @@ SELECT
 FROM
   inference_preparation;
 
+
+-- Create the final inference table: The audience_segmentation_inference_15 table is created by selecting the latest values for each feature from the insert_table. 
+-- This table will be used by the model inference pipeline.
 CREATE OR REPLACE TABLE
   `{{project_id}}.{{dataset}}.audience_segmentation_inference_15` AS(
   SELECT DISTINCT
@@ -262,6 +322,10 @@ CREATE OR REPLACE TABLE
   FROM
     `{{project_id}}.{{dataset}}.{{insert_table}}` );
 
+
+-- Create the final inference view: The v_audience_segmentation_inference_15 view is created by selecting the latest values for each feature from the audience_segmentation_inference_15 table. 
+-- This view will be used by the model inference pipeline.
+-- The v_audience_segmentation_inference_15 view is created by selecting the latest values for each feature from the audience_segmentation_inference_15 table.
 CREATE OR REPLACE VIEW
   `{{project_id}}.{{dataset}}.v_audience_segmentation_inference_15` (processed_timestamp,
   feature_date,
@@ -362,11 +426,13 @@ FROM (
   checkouts_past_8_14_day,
   ltv_revenue_past_1_7_day,
   ltv_revenue_past_7_15_day,
+  -- Row order for each user_pseudo_id is used to select the latest value for each feature.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_row_order
   FROM
     `{{project_id}}.{{dataset}}.audience_segmentation_inference_15`
 )
 WHERE
+  -- Only the latest row ordered by feature_date descending 
   user_row_order = 1;
 
 DROP TABLE inference_preparation;

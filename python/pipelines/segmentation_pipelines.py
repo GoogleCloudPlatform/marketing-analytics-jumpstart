@@ -18,19 +18,8 @@ import kfp.dsl as dsl
 
 from pipelines.components.bigquery.component import (
     bq_select_best_kmeans_model, bq_clustering_predictions, 
-    bq_flatten_kmeans_prediction_table, bq_evaluate, bq_stored_procedure_exec)
+    bq_flatten_kmeans_prediction_table, bq_evaluate)
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
-
-from google_cloud_pipeline_components.types import artifact_types
-from google_cloud_pipeline_components.v1.bigquery import (
-    BigqueryCreateModelJobOp, BigqueryEvaluateModelJobOp,
-    BigqueryExportModelJobOp, BigqueryPredictModelJobOp,
-    BigqueryQueryJobOp)
-
-from google_cloud_pipeline_components.v1.endpoint import (EndpointCreateOp,
-                                                            ModelDeployOp)
-from google_cloud_pipeline_components.v1.model import ModelUploadOp
-from kfp.components.importer_node import importer
 
 from pipelines.components.bigquery.component import (
     bq_clustering_exec)
@@ -62,6 +51,26 @@ def training_pl(
     
 
 ):
+    """
+    This function defines the Vertex AI Pipeline for Audience Segmentation Training.
+
+    Args:
+        project_id (str): The Google Cloud project ID.
+        location (str): The Google Cloud region where the pipeline will be deployed.
+        model_dataset_id (str): The BigQuery dataset ID where the model will be stored.
+        model_name_bq_prefix (str): The prefix for the BQML model name.
+        vertex_model_name (str): The name of the Vertex AI model.
+        training_data_bq_table (str): The BigQuery table containing the training data.
+        exclude_features (list): A list of features to exclude from the training data.
+        km_num_clusters (int): The number of clusters to use for training.
+        km_init_method (str): The initialization method to use for training.
+        km_distance_type (str): The distance type to use for training.
+        km_standardize_features (str): Whether to standardize the features before training.
+        km_max_interations (int): The maximum number of iterations to train for.
+        km_early_stop (str): Whether to use early stopping during training.
+        km_min_rel_progress (float): The minimum relative progress required for early stopping.
+        km_warm_start (str): Whether to use warm start during training.
+    """
 
     # Train BQML clustering model and uploads to Vertex AI Model Registry
     bq_model = bq_clustering_exec(
@@ -105,11 +114,25 @@ def prediction_pl(
     number_of_models_considered: int,
     bigquery_source: str,
     bigquery_destination_prefix: str,
-    aggregated_predictions_dataset_location: str,
-    query_aggregate_last_day_predictions: str,
     pubsub_activation_topic: str,
-    pubsub_activation_type: str,
+    pubsub_activation_type: str
 ):
+    """
+    This function defines the Vertex AI Pipeline for Audience Segmentation Prediction.
+
+    Args:
+        project_id (str): The Google Cloud project ID.
+        location (Optional[str]): The Google Cloud region where the pipeline will be deployed.
+        model_dataset_id (str): The BigQuery dataset ID where the model is stored.
+        model_name_bq_prefix (str): The prefix for the BQML model name.
+        model_metric_name (str): The metric name to use for model selection.
+        model_metric_threshold (float): The metric threshold to use for model selection.
+        number_of_models_considered (int): The number of models to consider for selection.
+        bigquery_source (str): The BigQuery table containing the prediction data.
+        bigquery_destination_prefix (str): The prefix for the BigQuery table where the predictions will be stored.
+        pubsub_activation_topic (str): The Pub/Sub topic to send the activation message to.
+        pubsub_activation_type (str): The type of activation message to send.
+    """
 
     # Get the best candidate model according to the parameters.
     purchase_propensity_label = bq_select_best_kmeans_model(
@@ -144,13 +167,4 @@ def prediction_pl(
         activation_type=pubsub_activation_type,
         predictions_table=flatten_predictions.outputs['destination_table'],
     ).set_display_name('send_pubsub_activation_msg').after(flatten_predictions)
-
-    # Invokes the BQ stored procedure that collects all predictions tables and aggregates into a single table.
-    bq_stored_procedure_exec(
-        project=project_id,
-        location=aggregated_predictions_dataset_location,
-        query=query_aggregate_last_day_predictions,
-        query_parameters=[]
-
-    ).set_display_name('aggregate_predictions').after(flatten_predictions)
 

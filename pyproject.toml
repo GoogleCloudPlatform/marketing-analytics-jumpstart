@@ -1,6 +1,20 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 [tool.poetry]
 name = "marketing-data-engine"
-version = "0.1.0"
+version = "1.0.0"
 description = "Marketing Data Engine"
 authors = ["Marketing Analytics Solutions Architects <ma-se@google.com>"]
 license = "Apache 2.0"
@@ -9,10 +23,11 @@ packages = [{include = "python"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-google-cloud-aiplatform = "1.22.0"
+google-cloud-aiplatform = "1.52.0"
+shapely = "<2.0.0"
 google-cloud = "^0.34.0"
 jinja2 = ">=3.0.1,<4.0.0"
-pip = "22.3.1"
+pip = "23.3"
 invoke = "2.2.0"
 ## pyinvoke = "1.0.4"
 pre-commit = ">=2.14.1,<3.0.0"
@@ -29,7 +44,7 @@ kfp = "2.0.0-rc.2"
 kfp-server-api = "2.0.0-rc.1"
 #kfp-server-api = "2.0.0.a6"
 #kfp-server-api = "2.0.0b1"
-urllib3 = "1.26.15"
+urllib3 = "1.26.18"
 toml = "0.10.2"
 docker = "^6.0.1"
 db-dtypes = "1.2.0"
@@ -40,12 +55,14 @@ scikit-learn = "1.2.2"
 #seaborn = "0.12.2"
 ma-components = {path = "python/base_component_image/", develop = true}
 google-cloud-pubsub = "2.15.0"
-google-analytics-admin = "0.17.0"
-google-analytics-data = "^0.17.1"
-pyarrow = "15.0.0"
+#google-analytics-admin = "0.17.0"
+google-analytics-admin = "0.22.7"
+google-analytics-data = "^0.18.0"
+pyarrow = "15.0.2"
 
 [tool.poetry.group.component_vertex.dependencies]
-google-cloud-aiplatform = "1.22.0"
+google-cloud-aiplatform = "1.52.0"
+shapely = "<2.0.0"
 toml = "0.10.2"
 
 [tool.poetry.scripts]
@@ -61,10 +78,10 @@ pytest-cov = "^4.0.0"
 pytest-xdist = "^3.0.2"
 
 [tool.poetry.group.dev.dependencies]
-pip = "22.3.1"
+pip = "23.3"
 invoke = "2.2.0"
 pre-commit = ">=2.14.1,<3.0.0"
-black = "22.10.0"
+black = "22.12.0"
 flake8 = "5.0.4"
 flake8-annotations = "2.9.1"
 

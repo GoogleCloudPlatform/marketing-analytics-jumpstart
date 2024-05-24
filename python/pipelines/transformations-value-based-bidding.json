@@ -1,42 +1,50 @@
 [
     {
         "numeric": {
-            "column_name": "First_Visits"
+            "column_name": "First_Visits",
+            "invalid_values_allowed": true
         }
     },
     {
         "numeric": {
-            "column_name": "Visit_Product_Page"
+            "column_name": "Visit_Product_Page",
+            "invalid_values_allowed": true
         }
     },
     {
         "numeric": {
-            "column_name": "View_Product_Details"
+            "column_name": "View_Product_Details",
+            "invalid_values_allowed": true
         }
     },
     {
         "numeric": {
-            "column_name": "Add_Product_to_Cart"
+            "column_name": "Add_Product_to_Cart",
+            "invalid_values_allowed": true
         }
     },
     {
         "numeric": {
-            "column_name": "View_Cart"
+            "column_name": "View_Cart",
+            "invalid_values_allowed": true
         }
     },
     {
         "numeric": {
-            "column_name": "Begin_Checkout"
+            "column_name": "Begin_Checkout",
+            "invalid_values_allowed": true
         }
     },
     {
         "numeric": {
-            "column_name": "Added_Shipping_Info"
+            "column_name": "Added_Shipping_Info",
+            "invalid_values_allowed": true
         }
     },
     {
         "numeric": {
-            "column_name": "Added_Payment_Info"
+            "column_name": "Added_Payment_Info",
+            "invalid_values_allowed": true
         }
     }
 ]

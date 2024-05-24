@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, List
-from kfp.dsl import component, Output, Artifact, Model, Input, Metrics, Dataset
+from typing import Optional
+from kfp.dsl import component, Output, Model
 import os
 import yaml
 
@@ -28,7 +28,7 @@ if os.path.exists(config_file_path):
     vertex_components_params = configs['vertex_ai']['components']
     repo_params = configs['artifact_registry']['pipelines_docker_repo']
 
-    # target_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['image_name']}:{vertex_components_params['tag']}"
+    # defines the base_image variable, which specifies the Docker image to be used for the component. This image is retrieved from the config.yaml file, which contains configuration parameters for the project.
     base_image = f"{repo_params['region']}-docker.pkg.dev/{repo_params['project_id']}/{repo_params['name']}/{vertex_components_params['base_image_name']}:{vertex_components_params['base_image_tag']}"
 
 
@@ -43,8 +43,41 @@ def train_scikit_cluster_model(
     model_name: str,
     p_wiggle: int = 10,
     min_num_clusters: int = 3,
+    columns_to_skip: int = 3,
     timeout: Optional[float] = 1800
 ) -> None:
+    """
+    This component trains a scikit-learn cluster model using the KMeans algorithm. It provides a reusable and configurable way 
+    to train a scikit-learn cluster model using KFP.
+
+    The component trainng logic is described in the following steps:
+        Constructs a BigQuery client object using the provided project ID.
+        Reads the training data from the specified BigQuery table.
+        Defines a function _create_model to create a scikit-learn pipeline with a KMeans clustering model.
+        Defines an objective function _objective for hyperparameter optimization using Optuna. 
+            This function trains the model with different hyperparameter values and evaluates its performance using the silhouette score.
+        Creates an Optuna study and optimizes the objective function to find the best hyperparameters.
+        Trains the final model with the chosen hyperparameters.
+        Saves the trained model as a pickle file.
+        Creates a GCS bucket if it doesn't exist.
+        Uploads the pickled model to the GCS bucket.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        dataset: The BigQuery dataset name.
+        location: The Google Cloud region where the BigQuery dataset is located.
+        training_table: The BigQuery table name containing the training data.
+        cluster_model: The output model artifact.
+        bucket_name: The Google Cloud Storage bucket name to upload the trained model.
+        model_name: The name of the model to be saved in the bucket.
+        p_wiggle: The percentage wiggle allowed for the best score.
+        min_num_clusters: The minimum number of clusters to consider.
+        columns_to_skip: The number of columns to skip from the beginning of the dataset.
+        timeout: The maximum time in seconds to wait for the training job to complete.
+
+    Returns:
+        None
+    """
 
     import numpy as np
     import pandas as pd
@@ -74,8 +107,9 @@ def train_scikit_cluster_model(
         query=f"""SELECT * FROM `{project_id}.{dataset}.{training_table}`"""
         ).to_dataframe()
 
-    # Skipping the first two columns: [user_id, feature_timestamp]
-    features = list(training_dataset_df.columns[2:])
+    # Skipping the first three columns: [user_pseudo_id, user_id, feature_timestamp]
+    columns_to_skip 
+    features = list(training_dataset_df.columns[columns_to_skip:])
     min_num_clusters = 3
     max_num_clusters = len(features)
 
@@ -85,7 +119,7 @@ def train_scikit_cluster_model(
                 transformers=[
                     ('tfidf',
                     TfidfTransformer(norm='l2'),
-                    list(range(2, len(features) + 2))  # Skipping the first two columns: [user_id, feature_timestamp]
+                    list(range(columns_to_skip, len(features) + columns_to_skip))  # Skipping the first three columns: [user_pseudo_id, user_id, feature_timestamp]
                     )
                 ]
             )),
@@ -185,14 +219,5 @@ def train_scikit_cluster_model(
     # Upload the model to GCS
     _upload_to_gcs(bucket_name, model_filename, destination_blob_name)
     
-
-@component(base_image=base_image)
-def upload_scikit_model_to_gcs_bucket(
-    project_id: str,
-    location: str,
-    cluster_model: Input[Model],
-    bucket_name: Input[Artifact],
-) -> None:
-    pass
 
 

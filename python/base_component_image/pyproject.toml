@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ma-components"
-version = "0.1"
+version = "1.0.0"
 description = "contains components used in marketing analytics project. the need is to package the components and containerise so that they can be used from the python function based component"
 authors = ["Christos Aniftos <aniftos@google.com>"]
 readme = "README.md"
@@ -8,6 +8,7 @@ packages = [{include = "ma_components"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
+pip = "23.3"
 ## Fixing this error: https://stackoverflow.com/questions/76175487/sudden-importerror-cannot-import-name-appengine-from-requests-packages-urlli
 kfp = "2.0.0-rc.2"
 #kfp = {version = "2.0.0-b12", allow-prereleases = true}
@@ -15,11 +16,12 @@ kfp = "2.0.0-rc.2"
 kfp-server-api = "2.0.0-rc.1"
 #kfp-server-api = "2.0.0.a6"
 #kfp-server-api = "2.0.0b1"
-urllib3 = "1.26.15"
+urllib3 = "1.26.18"
 toml = "^0.10.2"
 docker = "^6.0.1"
 google-cloud-bigquery = "2.30.0"
-google-cloud-aiplatform = "1.22.0"
+google-cloud-aiplatform = "1.52.0"
+shapely = "<2.0.0"
 google-cloud-pubsub = "2.15.0"
 #google-cloud-pipeline-components = "1.0.33"
 google-cloud-pipeline-components = "2.6.0"
@@ -29,8 +31,8 @@ scikit-learn = "1.2.2"
 #plotly = "5.16.0" 
 #matplotlib= "3.7.2" 
 #seaborn = "0.12.2"
-pyarrow = "15.0.0"
+pyarrow = "15.0.2"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

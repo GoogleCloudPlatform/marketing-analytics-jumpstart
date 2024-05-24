@@ -151,6 +151,7 @@ To resume working on a new terminal session run the following commands:
   # Change directory to the source code root directory
   SOURCE_ROOT="${HOME}/marketing-analytics-jumpstart"
   cd ${SOURCE_ROOT}
+  TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
   # Resume the terminal session using values stored on Terraform outputs
   ./scripts/session-resume.sh
   ```

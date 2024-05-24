@@ -1,7 +1,8 @@
 [
 	{
 	  "numeric": {
-		"column_name": "user_ltv_revenue"
+		"column_name": "user_ltv_revenue",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
@@ -106,272 +107,326 @@
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_1_day"
+		"column_name": "active_users_past_1_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_2_day"
+		"column_name": "active_users_past_2_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_3_day"
+		"column_name": "active_users_past_3_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_4_day"
+		"column_name": "active_users_past_4_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_5_day"
+		"column_name": "active_users_past_5_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_6_day"
+		"column_name": "active_users_past_6_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_7_day"
+		"column_name": "active_users_past_7_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_8_14_day"
+		"column_name": "active_users_past_8_14_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "active_users_past_15_30_day"
+		"column_name": "active_users_past_15_30_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_1_day"
+		"column_name": "purchases_past_1_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_2_day"
+		"column_name": "purchases_past_2_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_3_day"
+		"column_name": "purchases_past_3_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_4_day"
+		"column_name": "purchases_past_4_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_5_day"
+		"column_name": "purchases_past_5_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_6_day"
+		"column_name": "purchases_past_6_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_7_day"
+		"column_name": "purchases_past_7_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_8_14_day"
+		"column_name": "purchases_past_8_14_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "purchases_past_15_30_day"
+		"column_name": "purchases_past_15_30_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_1_day"
+		"column_name": "visits_past_1_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_2_day"
+		"column_name": "visits_past_2_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_3_day"
+		"column_name": "visits_past_3_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_4_day"
+		"column_name": "visits_past_4_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_5_day"
+		"column_name": "visits_past_5_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_6_day"
+		"column_name": "visits_past_6_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_7_day"
+		"column_name": "visits_past_7_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_8_14_day"
+		"column_name": "visits_past_8_14_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "visits_past_15_30_day"
+		"column_name": "visits_past_15_30_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_1_day"
+		"column_name": "view_items_past_1_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_2_day"
+		"column_name": "view_items_past_2_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_3_day"
+		"column_name": "view_items_past_3_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_4_day"
+		"column_name": "view_items_past_4_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_5_day"
+		"column_name": "view_items_past_5_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_6_day"
+		"column_name": "view_items_past_6_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_7_day"
+		"column_name": "view_items_past_7_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_8_14_day"
+		"column_name": "view_items_past_8_14_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "view_items_past_15_30_day"
+		"column_name": "view_items_past_15_30_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_1_day"
+		"column_name": "add_to_carts_past_1_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_2_day"
+		"column_name": "add_to_carts_past_2_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_3_day"
+		"column_name": "add_to_carts_past_3_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_4_day"
+		"column_name": "add_to_carts_past_4_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_5_day"
+		"column_name": "add_to_carts_past_5_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_6_day"
+		"column_name": "add_to_carts_past_6_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_7_day"
+		"column_name": "add_to_carts_past_7_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_8_14_day"
+		"column_name": "add_to_carts_past_8_14_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "add_to_carts_past_15_30_day"
+		"column_name": "add_to_carts_past_15_30_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_1_day"
+		"column_name": "checkouts_past_1_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_2_day"
+		"column_name": "checkouts_past_2_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_3_day"
+		"column_name": "checkouts_past_3_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_4_day"
+		"column_name": "checkouts_past_4_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_5_day"
+		"column_name": "checkouts_past_5_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_6_day"
+		"column_name": "checkouts_past_6_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_7_day"
+		"column_name": "checkouts_past_7_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_8_14_day"
+		"column_name": "checkouts_past_8_14_day",
+		"invalid_values_allowed": true
 	  }
 	},
 	{
 	  "numeric": {
-		"column_name": "checkouts_past_15_30_day"
+		"column_name": "checkouts_past_15_30_day",
+		"invalid_values_allowed": true
 	  }
 	}
   ]

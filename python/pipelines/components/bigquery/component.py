@@ -732,11 +732,12 @@ def bq_dynamic_query_exec_output(
         FROM (
             SELECT
                 REGEXP_EXTRACT(page_path, '{{re_page_path}}') as feature,
-                COUNT(DISTINCT user_id) as users
+                COUNT(DISTINCT user_pseudo_id) as users
 
             FROM (
                 SELECT
-                    user_pseudo_id as user_id,
+                    user_pseudo_id,
+                    user_id,
                     page_location as page_path
                 FROM `{{mds_project_id}}.{{mds_dataset}}.event`
                 WHERE
@@ -868,13 +869,15 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
                     visitor_pool AS (
                         SELECT
                         user_pseudo_id,
+                        user_id,
                         MAX(event_timestamp) as feature_timestamp,
                         DATE(MAX(event_timestamp)) - LOOKBACK_DAYS as date_lookback
                         FROM `{{mds_project_id}}.{{mds_dataset}}.event`
                         WHERE DATE(event_timestamp) BETWEEN DATE_START AND DATE_END
-                        GROUP BY 1
+                        GROUP BY 1, 2
                 )
                 SELECT
+                    user_pseudo_id,
                     user_id,
                     feature_timestamp,
                     {% for f in features %}COUNTIF( REGEXP_EXTRACT(page_path, RE_PAGE_PATH) = '{{ f }}' ) as {{ clean_column_values(f) }},
@@ -882,7 +885,8 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
                 FROM (
                     SELECT
                         vp.feature_timestamp,
-                        ga.user_pseudo_id as user_id,
+                        ga.user_pseudo_id,
+                        ga.user_id,
                         page_location as page_path
                     FROM `{{mds_project_id}}.{{mds_dataset}}.event` as ga
                     INNER JOIN visitor_pool as vp
@@ -892,7 +896,7 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
                         event_name = 'page_view'
                         AND DATE(ga.event_timestamp) BETWEEN DATE_START AND DATE_END
                 )
-                GROUP BY 1, 2;
+                GROUP BY 1, 2, 3;
             END
         """)
         template.globals.update({'clean_column_values': _clean_column_values})
