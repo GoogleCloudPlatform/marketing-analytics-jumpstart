@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "looker studio deployment"
 version = "0.1.0"
-description = "Deployment process for the Marketing Data Engine Looker Studio dashboard."
+description = "Deployment process for the Marketing Analytics Jumpstart Looker Studio dashboard."
 authors = ["Monty Chavez <montychavez@google.com>"]
 license = "Apache 2.0"
 readme = "README.md"

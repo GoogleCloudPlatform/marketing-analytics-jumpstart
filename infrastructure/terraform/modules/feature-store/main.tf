@@ -27,9 +27,7 @@ locals {
   customer_lifetime_value_project_id    = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id
   project_id                            = local.feature_store_project_id
   sql_dir                               = var.sql_dir_input
-  builder_repository_id                 = "marketing-data-engine-base-repo"
-  cloud_build_service_account_name      = "cloud-builder-runner"
-  cloud_build_service_account_email     = "${local.cloud_build_service_account_name}@${local.project_id}.iam.gserviceaccount.com"
+  builder_repository_id                 = "marketing-analytics-jumpstart-base-repo"
 }
 
 module "project_services" {
@@ -53,37 +51,4 @@ module "project_services" {
     "sourcerepo.googleapis.com",
     "storage-api.googleapis.com",
   ]
-}
-
-resource "google_artifact_registry_repository" "cloud_builder_repository" {
-  project       = local.feature_store_project_id
-  location      = var.region
-  repository_id = local.builder_repository_id
-  description   = "Custom builder images for Marketing Data Engine"
-  format        = "DOCKER"
-  depends_on = [
-    module.project_services.project_id
-  ]
-}
-
-module "cloud_build_service_account" {
-  source     = "terraform-google-modules/service-accounts/google"
-  version    = "~> 3.0"
-  project_id = var.project_id
-  prefix     = "mde"
-  names      = [local.cloud_build_service_account_name]
-  project_roles = [
-    "${var.project_id}=>roles/artifactregistry.writer",
-    "${var.project_id}=>roles/cloudbuild.builds.editor",
-    "${var.project_id}=>roles/iap.tunnelResourceAccessor",
-    "${var.project_id}=>roles/compute.osLogin",
-    "${var.project_id}=>roles/bigquery.jobUser",
-    "${var.project_id}=>roles/bigquery.dataEditor",
-    "${var.project_id}=>roles/storage.objectViewer",
-    "${var.project_id}=>roles/storage.objectCreator",
-    "${var.project_id}=>roles/aiplatform.user",
-    "${var.project_id}=>roles/pubsub.publisher",
-  ]
-  display_name = "cloud build runner"
-  description  = "Marketing Data Engine Cloud Build Account"
 }

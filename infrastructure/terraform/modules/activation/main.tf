@@ -163,7 +163,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
   project       = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : ""
   location      = var.location
   repository_id = var.artifact_repository_id
-  description   = "Pipeline container repository"
+  description   = "Docker image repository for the activation application dataflow job base image"
   format        = "DOCKER"
 }
 
