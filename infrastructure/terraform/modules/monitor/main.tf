@@ -30,6 +30,46 @@ locals {
   mds_dataform_repo = "marketing-analytics"
 }
 
+module "project_services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "14.1.0"
+
+  disable_dependent_services  = false
+  disable_services_on_destroy = false
+
+  project_id = var.project_id
+
+  activate_apis = [
+    "cloudfunctions.googleapis.com",
+    "bigquery.googleapis.com",
+    "logging.googleapis.com",
+    "bigquerystorage.googleapis.com",
+    "storage.googleapis.com",
+  ]
+}
+
+# This resource executes gcloud commands to check whether the BigQuery API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_bigquery_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "bigquery.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "bigquery api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+}
+
 module "dashboard_bigquery" {
   source  = "terraform-google-modules/bigquery/google"
   version = "~> 5.4"
@@ -37,7 +77,7 @@ module "dashboard_bigquery" {
   dataset_id                 = local.dashboard_dataset_name
   dataset_name               = local.dashboard_dataset_name
   description                = "providing links to looker dashboard"
-  project_id                 = var.project_id
+  project_id                 = null_resource.check_bigquery_api.id != "" ? module.project_services.project_id : ""
   location                   = var.location
   delete_contents_on_destroy = true
 
@@ -56,8 +96,8 @@ module "dashboard_bigquery" {
 module "load_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
   version       = "~> 3.4.1"
-  project_id    = var.project_id
-  name          = "maj-monitor-${var.project_id}"
+  project_id    = module.project_services.project_id
+  name          = "maj-monitor-${module.project_services.project_id}"
   location      = var.location
   force_destroy = true
 }
@@ -92,13 +132,13 @@ resource "google_storage_bucket_object" "resource_link_load_file" {
 
 resource "google_bigquery_job" "monitor_resources_load" {
   job_id  = uuid()
-  project = var.project_id
+  project = module.project_services.project_id
   load {
     source_uris = [
       "gs://${module.load_bucket.name}/${google_storage_bucket_object.resource_link_load_file.output_name}",
     ]
     destination_table {
-      project_id = var.project_id
+      project_id = module.project_services.project_id
       dataset_id = module.dashboard_bigquery.bigquery_dataset.dataset_id
       table_id   = module.dashboard_bigquery.table_ids[0]
     }
@@ -128,7 +168,7 @@ module "log_export_bigquery" {
   dataset_id                 = local.log_dataset_name
   dataset_name               = local.log_dataset_name
   description                = "Holds log exports"
-  project_id                 = var.project_id
+  project_id                 = module.project_services.project_id
   location                   = var.location
   delete_contents_on_destroy = true
 
@@ -161,7 +201,7 @@ resource "google_logging_project_sink" "mds_daily_execution" {
 }
 
 resource "google_project_iam_member" "mds_daily_execution_member" {
-  project = var.project_id
+  project = module.project_services.project_id
   role    = "roles/bigquery.dataEditor"
   member  = element(concat(google_logging_project_sink.mds_daily_execution[*].writer_identity, [""]), 0)
 }
@@ -178,7 +218,7 @@ resource "google_logging_project_sink" "vertex_pipeline_execution" {
 }
 
 resource "google_project_iam_member" "vertex_pipeline_execution_member" {
-  project = var.project_id
+  project = module.project_services.project_id
   role    = "roles/bigquery.dataEditor"
   member  = element(concat(google_logging_project_sink.vertex_pipeline_execution[*].writer_identity, [""]), 0)
 }
@@ -195,7 +235,7 @@ resource "google_logging_project_sink" "activation_pipeline_execution" {
 }
 
 resource "google_project_iam_member" "activation_pipeline_execution_member" {
-  project = var.project_id
+  project = module.project_services.project_id
   role    = "roles/bigquery.dataEditor"
   member  = element(concat(google_logging_project_sink.activation_pipeline_execution[*].writer_identity, [""]), 0)
 }
@@ -204,7 +244,7 @@ data "template_file" "looker_studio_dashboard_url" {
   template = file("${local.source_root_dir}/templates/looker_studio_create_dashboard_url_template.txt")
   vars = {
     mds_project                    = var.mds_project_id
-    monitor_project                = var.project_id
+    monitor_project                = module.project_services.project_id
     feature_store_project          = var.feature_store_project_id
     report_id                      = "f61f65fe-4991-45fc-bcdc-80593966f28c"
     mds_ga4_product_dataset        = "marketing_ga4_v1_${var.mds_dataset_suffix}"
