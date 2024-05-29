@@ -26,12 +26,14 @@ This architecture diagram describes the end-to-end flow of data in the Marketing
 We heard common stories from customers who were struggling with two frequent objectives:
 
 1. **Cloud greenfield marketers without engineering resources to deploy data and processing systems**.
+    - These marketers are new to the cloud and lack the technical expertise to deploy data and processing systems.
+    - They need a solution that is easy to deploy and manage, and that provides a holistic view of their marketing data.
+    - The Marketing Data Store provides a pre-built infrastructure that can be easily deployed and used to analyze marketing data.
 
-        Marketing data is siloed across a large number of different applications. An average marketers need to use about 10-15 different applications to do their job. They want to bring the data from these systems into BigQuery to gain a holistic understand of their marketing performance and strategy. Infrastructure development was technically challenging with unclear user benefits. We want to solve their deployment challenges by providing an easy-to-deploy robust infrastructure while making the underlying data easier to analyze through our logical data model to get a quicker time to value. 
-
-2. **Marketers leveraging Marketing Analytics models without a consolidated logical data model**. 
-        
-        Commonly, it was recommended to bend the model to meet your data structure and multiple copies of data were being used by different marketing analytics models and system. That did not scale well in terms of governance, maintenance and costs. MDW's logical data model will allow us to build ML models against a consistent data structure requiring little-to-no modification for each customer. This will expedite deployment time and provide a quicker time to value.
+2. **Marketers leveraging Marketing Analytics models without a consolidated logical data model**.     
+    - These marketers are already using Marketing Analytics models, but they are struggling with the lack of a consistent data model.
+    - This can lead to problems with data quality, governance, and maintenance.
+    - The Marketing Data Store provides a logical data model that can be used to build and deploy Marketing Analytics models. This can help to improve data quality, governance, and maintenance.
 
 ## Benefits of the solution
 
@@ -113,6 +115,28 @@ When the `create_dev_environment` variable is set to `true`, a development envir
 
 ![Dataform Repository](images/data_store_dataform_github_repository.png)
 After deploying the Marketing Data Store, the repository called `marketing_analytics` is created in Dataform.
+
+## What is deployed to Google Cloud?
+
+This section provides a detailed overview of the Google Cloud resources deployed as part of the Marketing Data Store solution.
+
+| Google Cloud Resource | Resource Name | Resource Link |
+| -------- | ------- | -------- |
+| APIs & Services | Dataflow API, Vertex AI API, Data Lineage API, Cloud Logging API, Artifact Registry API, Compute Engine API, Cloud Monitoring API, BigQuery API, Cloud Build API, Secret Manager API, Cloud Pub/Sub API, Workflows API, Eventarc API, Google Analytics Admin API, Dataform API, Cloud Functions API, Cloud Resource Manager API, Cloud Dataplex API, Cloud Scheduler API, Workflow Executions API, Container Analysis API, Cloud Run Admin API, Looker API | [APIs & Services](images/apis_services.png) |
+| BigQuery Datasets & Tables | marketing_ads_base_prod, marketing_ads_v1_prod, marketing_assertions, marketing_ga4_analysis_prod, marketing_ga4_base_prod, marketing_ga4_feature_prod, marketing_ga4_v1_prod | [BigQuery Datasets & Tables](images/dataform_bigquery_datasets.png) |
+| Dataform | marketing-analytics | [Dataform](images/data_store_dataform_github_repository.png) |
+| Cloud Workflow | dataform-prod-incremental | [Workflows](images/data_store_workflows.png) |
+| Cloud Scheduler | daily-dataform-prod | [Cloud Scheduler](images/dataform_scheduler.png) |
+
+**Note:**
+The Google Cloud APIs and services used by the Marketing Data Store solution enable functionalities such as data processing, machine learning, workflow orchestration, data storage, and monitoring.
+
+If you cannot find all the resources listed above, there are a few possible reasons.
+- Incomplete Deployment: If the deployment process has not yet completed, some resources may still be in the process of being created.
+- Deployment Errors: If there were errors during the deployment process, some resources may not have been created successfully.
+- Insufficient Permissions: If you do not have the necessary permissions to view all the resources, you may not be able to see them.
+- Insufficient Quotas: If you do not have enough quota to view all the resources, you may not be able to see them. You can request quota increases from [Google Cloud console](https://cloud.google.com/docs/quotas/view-manage).
+
 
 ## Manually Triggering Data Store Workflow
 
