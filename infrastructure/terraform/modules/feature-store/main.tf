@@ -20,12 +20,6 @@ locals {
   config_vars                           = yamldecode(data.local_file.config_vars.content)
   config_bigquery                       = local.config_vars.bigquery
   feature_store_project_id              = local.config_vars.bigquery.dataset.feature_store.project_id
-  purchase_propensity_project_id        = local.config_vars.bigquery.dataset.purchase_propensity.project_id
-  audience_segmentation_project_id      = local.config_vars.bigquery.dataset.audience_segmentation.project_id
-  auto_audience_segmentation_project_id = local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id
-  aggregated_vbb_project_id             = local.config_vars.bigquery.dataset.aggregated_vbb.project_id
-  customer_lifetime_value_project_id    = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id
-  project_id                            = local.feature_store_project_id
   sql_dir                               = var.sql_dir_input
   builder_repository_id                 = "marketing-analytics-jumpstart-base-repo"
 }
@@ -52,3 +46,26 @@ module "project_services" {
     "storage-api.googleapis.com",
   ]
 }
+
+# This resource executes gcloud commands to check whether the BigQuery API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_bigquery_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "bigquery.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "bigquery api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+}
+
