@@ -6,7 +6,7 @@ SET
       SELECT
         user_pseudo_id AS client_id,
         '${ga4_stream_id}' AS stream_id,
-        NTILE(10) OVER (ORDER BY a.prediction DESC) AS cltv_decile
+        NTILE(10) OVER (ORDER BY prediction DESC) AS cltv_decile
       FROM `%s`
   """, prediction_table_name);
 EXECUTE IMMEDIATE
