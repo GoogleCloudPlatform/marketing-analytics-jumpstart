@@ -61,6 +61,50 @@ For example:
 By the end of the ML prediction process, a triggering event containing the path to the prediction table is sent to Pub/Sub, which automatically initiates the activation process on the prediction results.
 You can also manually trigger the activation pipeline by sending the message through the [Pub/Sub console](https://console.cloud.google.com/cloudpubsub/topic/detail/activation-trigger?mods=logs_tg_staging&tab=messages&modal=publishmessage)
 
+## Activation using User Data Import
+GA4 [user-data import](https://support.google.com/analytics/answer/10071143?hl=en) is a file based batch import manually initiated through the GA4 console. Do the following steps for the user-data import.
+
+- Export the prediction data by calling a stored procedure. For each of the use cases the corresponde procedure call are listed in the following table:
+
+| Use Case |	Procedure Call |
+| -------- | ------- |
+| Purchase Propensity | ``CALL `activation.export_purchase_propensity_predictions`('purchase_propensity.predictions_2024_05_30T02_03_10_419Z_751_view');`` |
+| Customer Lifetime Value  | ``CALL `activation.export_cltv_predictions`('customer_lifetime_value.predictions_2024_05_30T03_02_07_517Z_917_view_final');`` |
+| Demographic Audience Segmentation | ``CALL `activation.export_audience_segmentation_predictions`('audience_segmentation.pred_audience_segmentation_inference_15_1717066870_view');`` |
+| Interest based Audience Segmentation | ``CALL `activation.export_auto_audience_segmentation_predictions`('auto_audience_segmentation.predictions_2024_05_30T04_02_47_517Z_877');`` |
+
+**Note:** replace the table name in the sample code with the actual prediction table name in your environment.
+
+- Navigate to the `csv-export` folder within your `activation-app` bucket in Google Cloud Storage. Download the CSV file from previous step. The files are named according to the following pattern:
+
+| Use Case |	Export file name |
+| -------- | ------- |
+| Purchase Propensity | `csv-export/purchase_propensity-000000000000.csv` |
+| Customer Lifetime Value  | `csv-export/cltv-000000000000.csv` |
+| Demographic Audience Segmentation | `csv-export/audience_segmentation-000000000000.csv` |
+| Interest based Audience Segmentation | `csv-export/auto_audience_segmentation-000000000000.csv` |
+
+**Note:** If you have a large number of users in the prediction tables the csv file export can output multiple files with incremental file suffix attached to the use case based file name. In that case you need to download all the files.
+
+- Import the data from GA4 console
+1. In GA4 Admin console choose **Data Import**
+
+  ![alt text](images/ga4_data_import1.png)
+
+2. Choose **Create data source** and select **Data type** `User data by Client ID`
+
+3. Give the data source a descriptive name.
+
+4. Choose **Manual CSV upload** and **Upload CSV**
+
+5. Select the export file you downloaded from GCS bucket in the previous step, choose **Next**
+
+6. Map out the field based on the Use Case you currently loading predictions for. The following is a sample for the purchase propensity mapping.
+
+![alt text](images/ga4_data_import2.png)
+
+7. Choose **Import**
+
 ## Build custom audiences in GA4
 **Note:**  It can take up to 24 hours after sending data through the Measurement Protocol before the activation user data becomes available in GA4.
 
@@ -72,6 +116,8 @@ To build your custom audience, follow the [Create an audience guide](https://sup
 1. Click the save button to create the custom audience.
 
 Now you have a custom audience that is automatically updated as new activation events are sent by the activation process. This custom audience can then be used for targeted remarketing campaigns in Google Ads or other platforms. Follow the [Share audiences guide](https://support.google.com/analytics/answer/12800258) to learn how to export your audience for use in external platforms.
+
+**Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering. 
 
 ## Monitoring & Troubleshooting
 The activation process logs all sent Measurement Protocol messages in log tables within the `activation` dataset in BigQuery. This includes both successful and failed transmissions, allowing you to track the progress of the activation, get number of events sent to GA4 and identify any potential issues.
