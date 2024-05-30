@@ -1,0 +1,27 @@
+DECLARE
+  select_query STRING;
+SET
+  select_query = FORMAT("""
+    CREATE TEMPORARY TABLE tmp_selection AS
+      SELECT
+        user_pseudo_id AS client_id,
+        '${ga4_stream_id}' AS stream_id,
+        prediction AS p_p_prediction,
+        NTILE(10) OVER (ORDER BY prediction_prob DESC) AS p_p_decile
+      FROM `%s`
+  """, prediction_table_name);
+EXECUTE IMMEDIATE
+  select_query;
+EXPORT DATA
+  OPTIONS ( uri = 'gs://${export_bucket}/csv-export/purchase_propensity-*.csv',
+    format = 'CSV',
+    OVERWRITE = TRUE,
+    header = TRUE,
+    field_delimiter = ',' ) AS (
+  SELECT
+    client_id,
+    stream_id,
+    p_p_prediction,
+    p_p_decile
+  FROM
+    tmp_selection );
