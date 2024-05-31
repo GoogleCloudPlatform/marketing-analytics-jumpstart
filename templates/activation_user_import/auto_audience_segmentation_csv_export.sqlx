@@ -1,0 +1,25 @@
+DECLARE
+  select_query STRING;
+SET
+  select_query = FORMAT("""
+    CREATE TEMPORARY TABLE tmp_selection AS
+      SELECT
+        user_pseudo_id AS client_id,
+        '${ga4_stream_id}' AS stream_id,
+        prediction AS a_a_s_prediction
+      FROM `%s`
+  """, prediction_table_name);
+EXECUTE IMMEDIATE
+  select_query;
+EXPORT DATA
+  OPTIONS ( uri = 'gs://${export_bucket}/csv-export/auto_audience_segmentation-*.csv',
+    format = 'CSV',
+    OVERWRITE = TRUE,
+    header = TRUE,
+    field_delimiter = ',' ) AS (
+  SELECT
+    client_id,
+    stream_id,
+    a_a_s_prediction
+  FROM
+    tmp_selection );
