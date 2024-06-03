@@ -100,7 +100,7 @@ resource "null_resource" "check_bigquery_api" {
     MAX_TRIES=100
     while ! gcloud services list --project=${module.project_services.project_id} | grep -i "bigquery.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 6
       printf "."
       COUNTER=$((COUNTER + 1))
     done
@@ -138,7 +138,7 @@ resource "null_resource" "check_artifactregistry_api" {
     MAX_TRIES=100
     while ! gcloud services list --project=${module.project_services.project_id} | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 6
       printf "."
       COUNTER=$((COUNTER + 1))
     done
@@ -164,7 +164,7 @@ resource "null_resource" "check_pubsub_api" {
     MAX_TRIES=100
     while ! gcloud services list --project=${module.project_services.project_id} | grep -i "pubsub.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 6
       printf "."
       COUNTER=$((COUNTER + 1))
     done
