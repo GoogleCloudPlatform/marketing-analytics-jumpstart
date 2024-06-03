@@ -20,6 +20,14 @@ data "google_project" "data_processing" {
   project_id = var.data_processing_project_id
 }
 
+data "google_secret_manager_secret" "github_secret_name" {
+  secret_id = google_secret_manager_secret.github-secret.name
+}
+
+data "google_secret_manager_secret_version" "secret_version_github_name" {
+  secret = google_secret_manager_secret.github-secret.name
+}
+
 provider "google" {
   region = var.google_default_region
 }
@@ -34,7 +42,7 @@ module "dataform-workflow-dev" {
   # the path to the Terraform module that will be used to create the Dataform workflow environment.
   source = "../dataform-workflow"
 
-  project_id             = var.data_processing_project_id
+  project_id             = module.data_processing_project_services.project_id
   # The name of the Dataform workflow environment.
   environment            = "dev"
   region                 = var.google_default_region
@@ -68,7 +76,7 @@ module "dataform-workflow-staging" {
   # the path to the Terraform module that will be used to create the Dataform workflow environment.
   source = "../dataform-workflow"
 
-  project_id             = var.data_processing_project_id
+  project_id             = module.data_processing_project_services.project_id
   # The name of the Dataform workflow environment.
   environment            = "staging"
   region                 = var.google_default_region
@@ -102,7 +110,7 @@ module "dataform-workflow-prod" {
   # the path to the Terraform module that will be used to create the Dataform workflow environment.
   source = "../dataform-workflow"
 
-  project_id             = var.data_processing_project_id
+  project_id             = module.data_processing_project_services.project_id
   # The name of the Dataform workflow environment.
   environment            = "prod"
   region                 = var.google_default_region

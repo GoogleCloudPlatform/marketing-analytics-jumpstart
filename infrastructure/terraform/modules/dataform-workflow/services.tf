@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # https://registry.terraform.io/modules/terraform-google-modules/project-factory/google/latest/submodules/project_services
-module "data-processing-project-services" {
+module "data_processing_project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "14.1.0"
 
