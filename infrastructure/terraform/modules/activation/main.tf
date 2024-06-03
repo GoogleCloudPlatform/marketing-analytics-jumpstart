@@ -111,6 +111,10 @@ resource "null_resource" "check_bigquery_api" {
     sleep 20
     EOT
   }
+
+  depends_on = [
+    module.project_services
+  ]
 }
 
 module "bigquery" {
@@ -145,6 +149,10 @@ resource "null_resource" "check_artifactregistry_api" {
     sleep 20
     EOT
   }
+
+  depends_on = [
+    module.project_services
+  ]
 }
 
 # This resource executes gcloud commands to check whether the PubSub API is enabled.
@@ -167,6 +175,10 @@ resource "null_resource" "check_pubsub_api" {
     sleep 20
     EOT
   }
+
+  depends_on = [
+    module.project_services
+  ]
 }
 
 # This resouce calls a python command defined inside the module ga4_setup that is responsible for creating

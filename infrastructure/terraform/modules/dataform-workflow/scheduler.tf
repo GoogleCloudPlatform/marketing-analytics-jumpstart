@@ -14,7 +14,7 @@
 
 # This creates a Cloud Scheduler job that triggers the Dataform incremental workflow on a daily schedule. 
 resource "google_cloud_scheduler_job" "daily-dataform-increments" {
-  project          = var.project_id
+  project          = module.data_processing_project_services.project_id
   name             = "daily-dataform-${var.environment}"
   description      = "Daily Dataform ${var.environment} environment incremental update"
   # The schedule attribute specifies the schedule for the job. In this case, the job is scheduled to run daily at the specified times.
@@ -25,10 +25,14 @@ resource "google_cloud_scheduler_job" "daily-dataform-increments" {
   attempt_deadline = "320s"
   paused           = false
 
+  retry_config {
+    retry_count = 1
+  }
+
   # The http_target attribute specifies the HTTP target for the job. In this case, the job is configured to send an HTTP POST request to the Cloud Workflows Executions API to trigger the Dataform incremental workflow.
   http_target {
     http_method = "POST"
-    uri         = "https://workflowexecutions.googleapis.com/v1/projects/${var.project_id}/locations/${var.region}/workflows/${google_workflows_workflow.dataform-incremental-workflow.name}/executions"
+    uri         = "https://workflowexecutions.googleapis.com/v1/projects/${module.data_processing_project_services.project_id}/locations/${var.region}/workflows/${google_workflows_workflow.dataform-incremental-workflow.name}/executions"
 
     oauth_token {
       service_account_email = google_service_account.scheduler.email

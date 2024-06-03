@@ -53,4 +53,8 @@ ga4_stream_id         = "Google Analytics data stream id"
 
 project_owner_email   = "Project owner email"
 dataform_github_repo  = "URL of the GitHub or GitLab repo which contains the Dataform scripts. Should start with https://"
-dataform_github_token = "GitHub token generated for that repo"
+# Personal access tokens are intended to access GitHub resources on behalf of yourself.
+# Generate a github developer token for the repo above following this link:
+# https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic
+# If you github token key is invalid the following error will show up in the [Dataform Setting page](../docs/images/dataform_github_token_error.png)
+dataform_github_token = "GitHub Developer token generated for the repo above"

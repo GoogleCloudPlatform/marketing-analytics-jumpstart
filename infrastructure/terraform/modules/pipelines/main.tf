@@ -54,3 +54,108 @@ module "project_services" {
     "dataflow.googleapis.com",
   ]
 }
+
+# This resource executes gcloud commands to check whether the BigQuery API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_bigquery_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "bigquery.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "bigquery api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+# This resource executes gcloud commands to check whether the AI Platform API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_aiplatform_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "aiplatform.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "ai platform api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+
+# This resource executes gcloud commands to check whether the Dataflow API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_dataflow_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "dataflow.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "dataflow api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+# This resource executes gcloud commands to check whether the Artifact Registry API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_artifactregistry_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "artifactregistry.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "artifact registry api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}

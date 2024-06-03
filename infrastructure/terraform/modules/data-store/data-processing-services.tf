@@ -14,7 +14,7 @@
 
 # This is a module that activates APIs services in the Cloud Project.
 # https://registry.terraform.io/modules/terraform-google-modules/project-factory/google/latest/submodules/project_services
-module "data-processing-project-services" {
+module "data_processing_project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "14.1.0"
 
@@ -27,8 +27,93 @@ module "data-processing-project-services" {
     "logging.googleapis.com",
     "monitoring.googleapis.com",
     "bigquery.googleapis.com",
+    "bigquerystorage.googleapis.com",
     "dataform.googleapis.com",
     "secretmanager.googleapis.com",
     "cloudasset.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "storage.googleapis.com",
+    "datapipelines.googleapis.com",
+    "analyticsadmin.googleapis.com",
+  ]
+}
+
+
+# This resource executes gcloud commands to check whether the BigQuery API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_bigquery_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "bigquery.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "bigquery api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.data_processing_project_services
+  ]
+}
+
+# This resource executes gcloud commands to check whether the Secret Manager API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_secretmanager_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "secretmanager.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "secret manager api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.data_processing_project_services
+  ]
+}
+
+
+# This resource executes gcloud commands to check whether the Dataform API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_dataform_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "dataform.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "dataform api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.data_processing_project_services
   ]
 }
