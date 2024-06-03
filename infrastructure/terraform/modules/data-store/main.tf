@@ -24,10 +24,6 @@ data "google_secret_manager_secret" "github_secret_name" {
   secret_id = google_secret_manager_secret.github-secret.name
 }
 
-data "google_secret_manager_secret_version" "secret_version_github_name" {
-  secret = google_secret_manager_secret.github-secret.name
-}
-
 provider "google" {
   region = var.google_default_region
 }

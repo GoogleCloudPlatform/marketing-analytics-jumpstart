@@ -175,6 +175,101 @@ resource "null_resource" "generate_sql_queries" {
 }
 
 
+module "initial_project_services" {
+  source  = "terraform-google-modules/project-factory/google//modules/project_services"
+  version = "14.1.0"
+
+  disable_dependent_services  = false
+  disable_services_on_destroy = false
+
+  project_id = var.tf_state_project_id
+
+  activate_apis = [
+    "cloudresourcemanager.googleapis.com",
+    "serviceusage.googleapis.com",
+    "iam.googleapis.com"
+  ]
+}
+
+# This resource executes gcloud commands to check whether the Cloud Resource Manager API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_cloudresourcemanager_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.initial_project_services.project_id} | grep -i "cloudresourcemanager.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 6
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "cloudresourcemanager api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.initial_project_services
+  ]
+}
+
+
+# This resource executes gcloud commands to check whether the service usage API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_serviceusage_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.initial_project_services.project_id} | grep -i "serviceusage.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 6
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "serviceusage api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.initial_project_services
+  ]
+}
+
+
+# This resource executes gcloud commands to check whether the IAM API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_iam_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.initial_project_services.project_id} | grep -i "iam.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 6
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "iam api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.initial_project_services
+  ]
+}
 
 # Create the data store module.
 # The data store module creates the marketing data store in BigQuery, creates the ETL pipeline in Dataform 
