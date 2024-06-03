@@ -13,11 +13,11 @@
 # limitations under the License.
 
 locals {
-  purchase_propensity_project_id        = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.purchase_propensity.project_id : ""
-  audience_segmentation_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.audience_segmentation.project_id : ""
-  auto_audience_segmentation_project_id = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id : ""
-  aggregated_vbb_project_id             = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.aggregated_vbb.project_id : ""
-  customer_lifetime_value_project_id    = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.customer_lifetime_value.project_id : ""
+  purchase_propensity_project_id        = local.config_vars.bigquery.dataset.purchase_propensity.project_id == "" ? null_resource.check_bigquery_api.id : ""
+  audience_segmentation_project_id      = local.config_vars.bigquery.dataset.audience_segmentation.project_id == "" ? null_resource.check_bigquery_api.id : ""
+  auto_audience_segmentation_project_id = local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id == "" ? null_resource.check_bigquery_api.id : ""
+  aggregated_vbb_project_id             = local.config_vars.bigquery.dataset.aggregated_vbb.project_id == "" ? null_resource.check_bigquery_api.id : ""
+  customer_lifetime_value_project_id    = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id == "" ? null_resource.check_bigquery_api.id : ""
 }
 
 # This resource creates a BigQuery dataset called `feature_store`.
