@@ -21,7 +21,7 @@ locals {
 
 # This resources creates a workflow that runs the Dataform incremental pipeline.
 resource "google_workflows_workflow" "dataform-incremental-workflow" {
-  project         = var.project_id
+  project         = module.data_processing_project_services.project_id
   name            = "dataform-${var.environment}-incremental"
   region          = var.region
   description     = "Dataform incremental workflow for ${var.environment} environment"
