@@ -48,7 +48,7 @@ resource "null_resource" "check_bigquery_api" {
     MAX_TRIES=100
     while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "bigquery.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 6
       printf "."
       COUNTER=$((COUNTER + 1))
     done
@@ -74,7 +74,7 @@ resource "null_resource" "check_workflowsr_api" {
     MAX_TRIES=100
     while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "workflows.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 6
       printf "."
       COUNTER=$((COUNTER + 1))
     done
@@ -101,7 +101,7 @@ resource "null_resource" "check_dataform_api" {
     MAX_TRIES=100
     while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "dataform.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 6
       printf "."
       COUNTER=$((COUNTER + 1))
     done
@@ -128,7 +128,7 @@ resource "null_resource" "check_cloudscheduler_api" {
     MAX_TRIES=100
     while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "cloudscheduler.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 6
       printf "."
       COUNTER=$((COUNTER + 1))
     done
