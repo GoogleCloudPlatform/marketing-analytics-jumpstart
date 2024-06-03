@@ -13,25 +13,25 @@
 # limitations under the License.
 
 resource "google_service_account" "scheduler" {
-  project      = var.project_id
+  project      = module.data_processing_project_services.project_id
   account_id   = "workflow-scheduler-${var.environment}"
   display_name = "Service Account to schedule Dataform workflows in ${var.environment}"
 }
 
 resource "google_project_iam_member" "scheduler-workflow-invoker" {
-  project = var.project_id
+  project = module.data_processing_project_services.project_id
   member  = "serviceAccount:${google_service_account.scheduler.email}"
   role    = "roles/workflows.invoker"
 }
 
 resource "google_service_account" "workflow-dataform" {
-  project      = var.project_id
+  project      = module.data_processing_project_services.project_id
   account_id   = "workflow-dataform-${var.environment}"
   display_name = "Service Account to run Dataform workflows in ${var.environment}"
 }
 
 resource "google_project_iam_member" "worflow-dataform-dataform-editor" {
-  project = var.project_id
+  project = module.data_processing_project_services.project_id
   member  = "serviceAccount:${google_service_account.workflow-dataform.email}"
   role    = "roles/dataform.editor"
 }

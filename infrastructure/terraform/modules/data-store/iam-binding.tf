@@ -21,7 +21,7 @@ resource "google_project_iam_member" "email-role" {
   ])
   role    = each.key
   member  = "user:${var.project_owner_email}"
-  project = data.google_project.data_processing.project_id
+  project = module.data_processing_project_services.project_id
 }
 
 locals {
@@ -34,7 +34,7 @@ resource "null_resource" "wait_for_dataform_sa_creation" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud asset search-all-iam-policies --scope=projects/${var.data_processing_project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.dataform_sa}" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud asset search-all-iam-policies --scope=projects/${module.data_processing_project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.dataform_sa}" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -62,7 +62,7 @@ resource "google_project_iam_member" "dataform-serviceaccount" {
   ])
   role    = each.key
   member  = "serviceAccount:${local.dataform_sa}"
-  project = data.google_project.data_processing.project_id
+  project = module.data_processing_project_services.project_id
 }
 
 // Owner role to BigQuery in the destination data project the Dataform SA.
@@ -74,7 +74,7 @@ resource "google_project_iam_member" "dataform-bigquery-data-owner" {
   ])
   role    = each.key
   member  = "serviceAccount:${local.dataform_sa}"
-  project = data.google_project.data.project_id
+  project = module.data_processing_project_services.project_id
 }
 
 // Read access to the GA4 exports

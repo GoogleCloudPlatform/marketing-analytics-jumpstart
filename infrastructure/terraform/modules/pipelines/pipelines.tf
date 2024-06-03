@@ -14,19 +14,19 @@
 
 # This resource creates a service account to run the Vertex AI pipelines
 resource "google_service_account" "service_account" {
-  project      = local.pipeline_vars.project_id
+  project      = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : ""
   account_id   = local.pipeline_vars.service_account_id
   display_name = local.pipeline_vars.service_account_id
-  description  = "sa to run pipelines"
+  description  = "Service Account to run Vertex AI Pipelines"
 }
 
-# TODO - Add Principal to vertex-pipelines-sa resourse: new principals: 65903025497@cloudbuuild.gserviceaccount.com - role: service account user
+# TODO - Add Principal to vertex-pipelines-sa resource: new principals: 65903025497@cloudbuuild.gserviceaccount.com - role: service account user
 # review this issue: https://github.com/hashicorp/terraform-provider-google/issues/10903
 # TODO - SERVICE ACCOUNT NEEDS ACCESS TO DATASETS
 
 # This resource binds the service account to the required roles
 resource "google_project_iam_member" "pipelines_sa_roles" {
-  project = local.pipeline_vars.project_id
+  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : ""
   member  = "serviceAccount:${google_service_account.service_account.email}"
 
   for_each = toset([
@@ -45,7 +45,7 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
 
 # This resource binds the service account to the required roles in the mds project
 resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
-  project = var.mds_project_id
+  project = null_resource.check_bigquery_api.id != "" ? module.project_services.project_id : ""
   member  = "serviceAccount:${google_service_account.service_account.email}"
 
   for_each = toset([
@@ -56,15 +56,15 @@ resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
 
 # This resource creates a service account to run the dataflow jobs
 resource "google_service_account" "dataflow_worker_service_account" {
-  project      = local.pipeline_vars.project_id
+  project      = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : ""
   account_id   = local.dataflow_vars.worker_service_account_id
   display_name = local.dataflow_vars.worker_service_account_id
-  description  = "sa to run dataflow jobs"
+  description  = "Service Account to run Dataflow jobs"
 }
 
 # This resource binds the service account to the required roles
 resource "google_project_iam_member" "dataflow_worker_sa_roles" {
-  project = local.pipeline_vars.project_id
+  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : ""
   member  = "serviceAccount:${google_service_account.dataflow_worker_service_account.email}"
 
   for_each = toset([
@@ -79,14 +79,14 @@ resource "google_project_iam_member" "dataflow_worker_sa_roles" {
 # This resource binds the service account to the required roles
 # Allow pipelines SA service account use dataflow worker SA
 resource "google_service_account_iam_member" "dataflow_sa_iam" {
-  service_account_id = "projects/${local.pipeline_vars.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
+  service_account_id = "projects/${module.project_services.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.service_account.email}"
 }
 
 # This resource creates a Cloud Storage Bucket for the pipeline artifacts
 resource "google_storage_bucket" "pipelines_bucket" {
-  project                     = local.pipeline_vars.project_id
+  project                     = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : ""
   name                        = local.pipeline_vars.bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
@@ -106,7 +106,7 @@ resource "google_storage_bucket" "pipelines_bucket" {
 
 # This resource creates a Cloud Storage Bucket for the model assets
 resource "google_storage_bucket" "custom_model_bucket" {
-  project                     = local.pipeline_vars.project_id
+  project                     = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : ""
   name                        = local.pipeline_vars.model_bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
@@ -167,7 +167,7 @@ locals {
 
 # This resource creates an Artifact Registry repository for the pipeline artifacts
 resource "google_artifact_registry_repository" "pipelines-repo" {
-  project       = module.project_services.project_id
+  project       = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : ""
   location      = local.artifact_registry_vars.pipelines_repo.region
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
@@ -187,10 +187,10 @@ resource "google_artifact_registry_repository" "pipelines-repo" {
 
 # This resource creates an Artifact Registry repository for the pipeline docker images
 resource "google_artifact_registry_repository" "pipelines_docker_repo" {
-  project       = module.project_services.project_id
+  project       = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : ""
   location      = local.artifact_registry_vars.pipelines_docker_repo.region
   repository_id = local.artifact_registry_vars.pipelines_docker_repo.name
-  description   = "DOCKER images Repository"
+  description   = "Docker Images Repository"
   # The format is Docker images.
   format        = "DOCKER"
 }
