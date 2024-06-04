@@ -67,7 +67,7 @@ resource "null_resource" "check_bigquery_api" {
 
 # This resource executes gcloud commands to check whether the Workflows API is enabled.
 # Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_workflowsr_api" {
+resource "null_resource" "check_workflows_api" {
   provisioner "local-exec" {
     command = <<-EOT
     COUNTER=0

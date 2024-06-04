@@ -22,6 +22,12 @@ locals {
   feature_store_project_id              = local.config_vars.bigquery.dataset.feature_store.project_id
   sql_dir                               = var.sql_dir_input
   builder_repository_id                 = "marketing-analytics-jumpstart-base-repo"
+  purchase_propensity_project_id        = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.purchase_propensity.project_id : local.feature_store_project_id
+  audience_segmentation_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.audience_segmentation.project_id : local.feature_store_project_id
+  auto_audience_segmentation_project_id = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id : local.feature_store_project_id
+  aggregated_vbb_project_id             = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.aggregated_vbb.project_id : local.feature_store_project_id
+  customer_lifetime_value_project_id    = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.customer_lifetime_value.project_id : local.feature_store_project_id
+  aggregate_predictions_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.aggregated_predictions.project_id : local.feature_store_project_id
 }
 
 module "project_services" {
@@ -67,5 +73,9 @@ resource "null_resource" "check_bigquery_api" {
     sleep 20
     EOT
   }
+
+  depends_on = [
+    module.project_services
+  ]
 }
 

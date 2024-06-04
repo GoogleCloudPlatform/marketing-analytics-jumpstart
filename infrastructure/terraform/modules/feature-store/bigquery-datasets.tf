@@ -12,19 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-locals {
-  purchase_propensity_project_id        = local.config_vars.bigquery.dataset.purchase_propensity.project_id == "" ? null_resource.check_bigquery_api.id : ""
-  audience_segmentation_project_id      = local.config_vars.bigquery.dataset.audience_segmentation.project_id == "" ? null_resource.check_bigquery_api.id : ""
-  auto_audience_segmentation_project_id = local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id == "" ? null_resource.check_bigquery_api.id : ""
-  aggregated_vbb_project_id             = local.config_vars.bigquery.dataset.aggregated_vbb.project_id == "" ? null_resource.check_bigquery_api.id : ""
-  customer_lifetime_value_project_id    = local.config_vars.bigquery.dataset.customer_lifetime_value.project_id == "" ? null_resource.check_bigquery_api.id : ""
-}
-
 # This resource creates a BigQuery dataset called `feature_store`.
 resource "google_bigquery_dataset" "feature_store" {
   dataset_id                 = local.config_bigquery.dataset.feature_store.name
   friendly_name              = local.config_bigquery.dataset.feature_store.friendly_name
-  project                    = local.feature_store_project_id
+  project                    = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : var.project_id
   description                = local.config_bigquery.dataset.feature_store.description
   location                   = local.config_bigquery.dataset.feature_store.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -50,7 +42,7 @@ resource "google_bigquery_dataset" "feature_store" {
 resource "google_bigquery_dataset" "purchase_propensity" {
   dataset_id                 = local.config_bigquery.dataset.purchase_propensity.name
   friendly_name              = local.config_bigquery.dataset.purchase_propensity.friendly_name
-  project                    = local.purchase_propensity_project_id
+  project                    = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
   description                = local.config_bigquery.dataset.purchase_propensity.description
   location                   = local.config_bigquery.dataset.purchase_propensity.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -76,7 +68,7 @@ resource "google_bigquery_dataset" "purchase_propensity" {
 resource "google_bigquery_dataset" "customer_lifetime_value" {
   dataset_id                 = local.config_bigquery.dataset.customer_lifetime_value.name
   friendly_name              = local.config_bigquery.dataset.customer_lifetime_value.friendly_name
-  project                    = local.customer_lifetime_value_project_id
+  project                    = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
   description                = local.config_bigquery.dataset.customer_lifetime_value.description
   location                   = local.config_bigquery.dataset.customer_lifetime_value.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -102,7 +94,7 @@ resource "google_bigquery_dataset" "customer_lifetime_value" {
 resource "google_bigquery_dataset" "audience_segmentation" {
   dataset_id                 = local.config_bigquery.dataset.audience_segmentation.name
   friendly_name              = local.config_bigquery.dataset.audience_segmentation.friendly_name
-  project                    = local.audience_segmentation_project_id
+  project                    = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
   description                = local.config_bigquery.dataset.audience_segmentation.description
   location                   = local.config_bigquery.dataset.audience_segmentation.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -128,7 +120,7 @@ resource "google_bigquery_dataset" "audience_segmentation" {
 resource "google_bigquery_dataset" "auto_audience_segmentation" {
   dataset_id                 = local.config_bigquery.dataset.auto_audience_segmentation.name
   friendly_name              = local.config_bigquery.dataset.auto_audience_segmentation.friendly_name
-  project                    = local.auto_audience_segmentation_project_id
+  project                    = null_resource.check_bigquery_api.id != "" ? local.auto_audience_segmentation_project_id : local.feature_store_project_id
   description                = local.config_bigquery.dataset.auto_audience_segmentation.description
   location                   = local.config_bigquery.dataset.auto_audience_segmentation.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -186,7 +178,7 @@ module "aggregated_vbb" {
   dataset_id   = local.config_bigquery.dataset.aggregated_vbb.name
   dataset_name = local.config_bigquery.dataset.aggregated_vbb.friendly_name
   description  = local.config_bigquery.dataset.aggregated_vbb.description
-  project_id   = local.aggregated_vbb_project_id
+  project_id   = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
   location     = local.config_bigquery.dataset.aggregated_vbb.location
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
