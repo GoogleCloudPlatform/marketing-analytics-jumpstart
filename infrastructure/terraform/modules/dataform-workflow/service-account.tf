@@ -13,25 +13,105 @@
 # limitations under the License.
 
 resource "google_service_account" "scheduler" {
-  project      = module.data_processing_project_services.project_id
+  depends_on = [
+    module.data_processing_project_services,
+    null_resource.check_cloudscheduler_api,
+    ]
+  
+  project      = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   account_id   = "workflow-scheduler-${var.environment}"
   display_name = "Service Account to schedule Dataform workflows in ${var.environment}"
 }
 
+locals {
+  scheduler_sa = "workflow-scheduler-${var.environment}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
+  workflows_sa = "workflow-dataform-${var.environment}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
+}
+
+# Wait for the scheduler service account to be created
+resource "null_resource" "wait_for_scheduler_sa_creation" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud asset search-all-iam-policies --scope=projects/${module.data_processing_project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.scheduler_sa}" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "scheduler service account was not created, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.data_processing_project_services,
+    null_resource.check_dataform_api
+  ]
+}
+
 resource "google_project_iam_member" "scheduler-workflow-invoker" {
-  project = module.data_processing_project_services.project_id
+  depends_on = [
+    module.data_processing_project_services,
+    null_resource.check_cloudscheduler_api,
+    null_resource.wait_for_scheduler_sa_creation
+    ]
+
+  project = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   member  = "serviceAccount:${google_service_account.scheduler.email}"
   role    = "roles/workflows.invoker"
 }
 
 resource "google_service_account" "workflow-dataform" {
-  project      = module.data_processing_project_services.project_id
+  depends_on = [
+    module.data_processing_project_services,
+    null_resource.check_workflows_api,
+    ]
+  
+  project      = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   account_id   = "workflow-dataform-${var.environment}"
   display_name = "Service Account to run Dataform workflows in ${var.environment}"
 }
 
+# Wait for the workflows service account to be created
+resource "null_resource" "wait_for_workflows_sa_creation" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud asset search-all-iam-policies --scope=projects/${module.data_processing_project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.workflows_sa}" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 3
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "workflows service account was not created, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.data_processing_project_services,
+    null_resource.check_dataform_api
+  ]
+}
+
+
 resource "google_project_iam_member" "worflow-dataform-dataform-editor" {
-  project = module.data_processing_project_services.project_id
+  depends_on = [
+    module.data_processing_project_services,
+    null_resource.check_dataform_api,
+    null_resource.wait_for_workflows_sa_creation
+    ]
+
+  project = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   member  = "serviceAccount:${google_service_account.workflow-dataform.email}"
   role    = "roles/dataform.editor"
 }
