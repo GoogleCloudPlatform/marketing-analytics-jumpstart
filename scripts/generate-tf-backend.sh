@@ -47,10 +47,8 @@ section_open  "Check and set the TF_STATE_BUCKET variable"
     set_environment_variable_if_not_set "TF_STATE_BUCKET" "${TF_STATE_PROJECT}-terraform-state"
 section_close
 
-section_open "Enable the Cloud Resource Manager, Service Usage and IAM APIs"
-    gcloud services enable cloudresourcemanager.googleapis.com
-    gcloud services enable serviceusage.googleapis.com
-    gcloud services enable iam.googleapis.com
+section_open "Enable all the required APIs"
+    enable_all_apis
 section_close
 
 section_open "Install poetry libraries in the virtual environment for Terraform"
