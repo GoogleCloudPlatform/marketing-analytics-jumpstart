@@ -26,6 +26,28 @@ NC='\033[0m' # No Color
 DIVIDER=$(printf %"$(tput cols)"s | tr " " "*")
 DIVIDER+="\n"
 
+# DECLARE VARIABLES
+declare -a apis_array=("cloudresourcemanager.googleapis.com"
+                "serviceusage.googleapis.com"
+                "iam.googleapis.com"
+                "logging.googleapis.com"
+                "monitoring.googleapis.com"
+                "bigquery.googleapis.com"
+                "bigquerystorage.googleapis.com"
+                "dataform.googleapis.com"
+                "secretmanager.googleapis.com"
+                "cloudasset.googleapis.com"
+                "cloudfunctions.googleapis.com"
+                "storage.googleapis.com"
+                "datapipelines.googleapis.com"
+                "analyticsadmin.googleapis.com"
+                "workflows.googleapis.com"
+                "cloudscheduler.googleapis.com"
+                "bigquerymigration.googleapis.com"
+                "bigquerydatatransfer.googleapis.com"
+                "dataform.googleapis.com"
+                )
+
 get_project_id() {
     local __resultvar=$1
     VALUE=$(gcloud config get-value project | xargs)
@@ -204,4 +226,41 @@ set_application_default_credentials() {
   unset _CREDENTIAL_FILE_PATH
   unset _CREDENTIAL_FILE_DIR
   unset _SOURCE_ROOT
+}
+
+# shell script function to check if api is enabled
+check_apis_enabled(){
+    local __api_endpoint=$1
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=$PROJECT_ID | grep -i $__api_endpoint && [ $COUNTER -lt $MAX_TRIES ]
+    do
+        sleep 6
+        printf "."
+        COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+        echo "${__api_endpoint} api is not enabled, installation can not continue!"
+        exit 1
+    else
+        echo "${__api_endpoint} api is enabled"
+    fi
+    unset __api_endpoint
+}
+
+# shell script function to enable api
+enable_apis(){
+    local __api_endpoint=$1
+    gcloud services enable $__api_endpoint
+    check_apis_enabled $__api_endpoint
+    unset __api_endpoint
+}
+
+# enable all apis in the array
+enable_all_apis () {
+    ## now loop through the above array
+    for i in "${apis_array[@]}"
+    do
+        enable_apis "$i"
+    done
 }
