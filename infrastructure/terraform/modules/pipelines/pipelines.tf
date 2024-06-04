@@ -26,7 +26,7 @@ resource "null_resource" "wait_for_vertex_pipelines_sa_creation" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud asset search-all-iam-policies --scope=projects/${module.project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.pipeline_vars.service_account}" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud iam service-accounts list --project=${module.project_services.project_id} --filter="EMAIL:${local.pipeline_vars.service_account} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -103,7 +103,7 @@ resource "null_resource" "wait_for_dataflow_worker_sa_creation" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud asset search-all-iam-policies --scope=projects/${module.project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.dataflow_vars.worker_service_account}" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud iam service-accounts list --project=${module.project_services.project_id} --filter="EMAIL:${local.dataflow_vars.worker_service_account} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
