@@ -29,12 +29,13 @@ locals {
 }
 
 # Wait for the scheduler service account to be created
+#while ! gcloud asset search-all-iam-policies --scope=projects/${module.data_processing_project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.scheduler_sa}" && [ $COUNTER -lt $MAX_TRIES ]
 resource "null_resource" "wait_for_scheduler_sa_creation" {
   provisioner "local-exec" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud asset search-all-iam-policies --scope=projects/${module.data_processing_project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.scheduler_sa}" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud iam service-accounts list --project=${module.data_processing_project_services.project_id} --filter="EMAIL:${local.scheduler_sa} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -83,7 +84,7 @@ resource "null_resource" "wait_for_workflows_sa_creation" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud asset search-all-iam-policies --scope=projects/${module.data_processing_project_services.project_id} --flatten="policy.bindings[].members[]" --filter="policy.bindings.members~\"serviceAccount:\"" --format="value(policy.bindings.members.split(sep=\":\").slice(1))" | grep -i "${local.workflows_sa}" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud iam service-accounts list --project=${module.data_processing_project_services.project_id} --filter="EMAIL:${local.workflows_sa} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
