@@ -416,7 +416,7 @@ module "pipeline_bucket" {
     condition = {
       age            = 365
       with_state     = "ANY"
-      matches_prefix = module.project_services.project_id
+      matches_prefix = var.project_id
     }
   }]
 
@@ -575,7 +575,7 @@ module "function_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
   version       = "~> 3.4.1"
   project_id    = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
-  name          = "activation-trigger-${module.project_services.project_id}"
+  name          = "${local.app_prefix}-trigger-${module.project_services.project_id}"
   location      = var.location
   # When deleting a bucket, this boolean option will delete all contained objects. 
   # If false, Terraform will fail to delete buckets which contain objects.

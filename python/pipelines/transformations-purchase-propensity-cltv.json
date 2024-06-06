@@ -27,22 +27,12 @@
 	},
 	{
 	  "categorical": {
-		"column_name": "device_os_version"
-	  }
-	},
-	{
-	  "categorical": {
 		"column_name": "device_language"
 	  }
 	},
 	{
 	  "categorical": {
 		"column_name": "device_web_browser"
-	  }
-	},
-	{
-	  "categorical": {
-		"column_name": "device_web_browser_version"
 	  }
 	},
 	{
