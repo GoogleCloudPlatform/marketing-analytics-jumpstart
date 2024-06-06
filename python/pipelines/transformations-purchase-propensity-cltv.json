@@ -42,11 +42,6 @@
 	},
 	{
 	  "categorical": {
-		"column_name": "device_web_browser_version"
-	  }
-	},
-	{
-	  "categorical": {
 		"column_name": "geo_sub_continent"
 	  }
 	},
