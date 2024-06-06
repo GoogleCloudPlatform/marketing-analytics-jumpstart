@@ -27,11 +27,6 @@
 	},
 	{
 	  "categorical": {
-		"column_name": "device_os_version"
-	  }
-	},
-	{
-	  "categorical": {
 		"column_name": "device_language"
 	  }
 	},
