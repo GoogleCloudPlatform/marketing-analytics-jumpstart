@@ -318,6 +318,33 @@ resource "null_resource" "build_push_pipelines_components_image" {
   }
 }
 
+
+# Wait for the dataflow worker service account to be created
+resource "null_resource" "check_pipeline_docker_image_pushed" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud artifacts docker images list --project=${module.project_services.project_id} ${local.artifact_registry_vars.pipelines_docker_repo.region}-docker.pkg.dev/${module.project_services.project_id}/${local.artifact_registry_vars.pipelines_docker_repo.name} --format="table(IMAGE, CREATE_TIME, UPDATE_TIME)" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 5
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "pipeline docker image was not created, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services,
+    null_resource.build_push_pipelines_components_image
+  ]
+}
+
 #######
 ## Feature Engineering Pipelines
 #######

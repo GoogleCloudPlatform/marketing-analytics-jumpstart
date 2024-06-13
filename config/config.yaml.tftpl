@@ -741,17 +741,7 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
-          # The `km_num_clusters` parameter defines the number of clusters to be used during training.
-          km_num_clusters: 10
-          # The `km_init_method` parameter defines the BQML initialization method to be used
-          km_init_method: "KMEANS++"
-          km_distance_type: "EUCLIDEAN"
-          km_standardize_features: "TRUE"
-          km_max_interations: 20
-          km_early_stop: "TRUE"
-          km_min_rel_progress: 0.01
-          km_warm_start: "FALSE"
-          model_dataset_id: "${project_id}.audience_segmentation" # to also include project.dataset
+          dataset: "audience_segmentation" 
           # The name of the Audience Segmentation Clustering model
           model_name_bq_prefix: "audience-segmentation-model"
           # The name of the Audience Segmentation Clustering model
@@ -760,6 +750,14 @@ vertex_ai:
           # The schema in this table or view must match the schema in the json files.
           # Take into consideration the `excluded_features` list below. They won't be used for training.
           training_data_bq_table: "${project_id}.audience_segmentation.v_audience_segmentation_training_15"
+          columns_to_skip: 4
+          p_wiggle: 10
+          min_num_clusters: 3
+          km_distance_type: "EUCLIDEAN"
+          km_early_stop: "TRUE"
+          km_warm_start: "FALSE"
+          use_split_column: "TRUE"
+          use_hparams_tuning: "FALSE"
           # Features to be excluded from the training dataset.
           exclude_features:
             - processed_timestamp
@@ -825,19 +823,29 @@ vertex_ai:
           end_time: null
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
-          location: "${cloud_region}"
+          location: "${location}"
           project_id: "${project_id}"
           dataset: "auto_audience_segmentation"
-          # The name of the Auto Audience Segmentation Clustering model or the Interest based Audience Segmentation model name
-          model_name: "auto-audience-segmentation-model"
-          training_table: "v_auto_audience_segmentation_training_15"
+          # The name of the Audience Segmentation Clustering model 
+          model_name_bq_prefix: "auto-audience-segmentation-model"
+          # The name of the Audience Segmentation Clustering model
+          vertex_model_name: "auto-audience-segmentation-model"
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
+          training_data_bq_table: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_training_15"
+          columns_to_skip: 3
           p_wiggle: 10
           min_num_clusters: 3
-          bucket_name: "${project_id}-custom-models"
-          image_uri: "us-docker.pkg.dev/vertex-ai/prediction/sklearn-cpu.1-2:latest"
-          #exclude_features:
-          #  - user_pseudo_id
-          #  - user_id
+          km_distance_type: "EUCLIDEAN"
+          km_early_stop: "TRUE"
+          km_warm_start: "FALSE"
+          use_split_column: "FALSE"
+          use_hparams_tuning: "FALSE"
+          exclude_features:
+            - user_pseudo_id
+            - user_id
+            - feature_timestamp
         pipeline_parameters_substitutions: null
       prediction:
         name: "auto-segmentation-prediction-pl"
@@ -854,7 +862,7 @@ vertex_ai:
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
-          location: "${cloud_region}"
+          location: "${location}"
           model_name: "auto-audience-segmentation-model"
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"

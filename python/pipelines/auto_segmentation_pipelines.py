@@ -27,7 +27,7 @@ from pipelines.components.vertex.component import (
     return_unmanaged_model
 )
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
-from pipelines.components.python.component import train_scikit_cluster_model
+from pipelines.components.python.component import train_scikit_cluster_model, hyper_parameter_tuning_scikit_audience_model
 
 from google_cloud_pipeline_components.types import artifact_types
 from google_cloud_pipeline_components.v1.bigquery import (
@@ -98,6 +98,82 @@ def training_pl(
         unmanaged_container_model=unmanaged_model.outputs['model']
     ).after(*[unmanaged_model])
 
+
+
+
+# This is the Vertex AI Pipeline definition for Auto Audience Segmentation Traning pipelines.
+# This pipeline will be compiled, uploaded and scheduled by a terraform resource in the folder `infrastructure/terraform/modules/pipelines/pipelines.tf`.
+# To change these parameters, check the appropriate section in the `config.yaml.tftpl` file.
+@dsl.pipeline()
+def training_pl_2(
+    project_id: str,
+    dataset: str,
+    location: str,
+
+    model_name_bq_prefix: str,
+    vertex_model_name: str,
+
+    training_data_bq_table: str,
+    exclude_features: list,
+
+    p_wiggle: int,
+    min_num_clusters: int, 
+    columns_to_skip: int,
+
+    km_distance_type: str,
+    km_early_stop: str,
+    km_warm_start: str,
+
+    use_split_column: str,
+    use_hparams_tuning: str
+):
+    """
+    This pipeline trains a scikit-learn clustering model and uploads it to GCS.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        dataset: The BigQuery dataset where the training data is stored.
+        location: The Google Cloud region where the pipeline will be run.
+        training_table: The BigQuery table containing the training data.
+        model_name: The name of the trained model.
+        p_wiggle: The p_wiggle parameter for the scikit-learn clustering model.
+        min_num_clusters: The minimum number of clusters for the scikit-learn clustering model.
+    """
+
+    # Runs hyperparameter tuning to find the best number of segments
+    hp_params = hyper_parameter_tuning_scikit_audience_model(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        training_table=training_data_bq_table,
+        p_wiggle=p_wiggle,
+        min_num_clusters=min_num_clusters,
+        columns_to_skip=columns_to_skip,
+        use_split_column=use_split_column,
+    )
+
+    # Train BQML clustering model and uploads to Vertex AI Model Registry
+    bq_model = bq_clustering_exec(
+        project_id= project_id,
+        location= location,
+        model_dataset_id= dataset,
+        model_name_bq_prefix= model_name_bq_prefix,
+        vertex_model_name= vertex_model_name,
+        training_data_bq_table= training_data_bq_table,
+        exclude_features=exclude_features,
+        model_parameters = hp_params.outputs["model_parameters"],
+        km_distance_type= km_distance_type,
+        km_early_stop= km_early_stop,
+        km_warm_start= km_warm_start,
+        use_split_column= use_split_column,
+        use_hparams_tuning= use_hparams_tuning
+    )
+    
+    # Evaluate the BQ model
+    evaluateModel = bq_evaluate(
+        project=project_id, 
+        location=location, 
+        model=bq_model.outputs["model"]).after(bq_model)
 
 
 
