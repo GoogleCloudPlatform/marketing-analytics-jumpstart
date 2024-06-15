@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from typing import Optional
 
 from kfp.dsl import component, Output, Model, Dataset
@@ -108,8 +109,7 @@ def train_scikit_cluster_model(
         query=f"""SELECT * FROM `{project_id}.{dataset}.{training_table}`"""
         ).to_dataframe()
 
-    # Skipping the first three columns: [user_pseudo_id, user_id, feature_timestamp]
-    columns_to_skip 
+    # Skipping the first n columns
     features = list(training_dataset_df.columns[columns_to_skip:])
     min_num_clusters = 3
     max_num_clusters = len(features)
@@ -120,7 +120,7 @@ def train_scikit_cluster_model(
                 transformers=[
                     ('tfidf',
                     TfidfTransformer(norm='l2'),
-                    list(range(columns_to_skip, len(features) + columns_to_skip))  # Skipping the first three columns: [user_pseudo_id, user_id, feature_timestamp]
+                    list(range(columns_to_skip, len(features) + columns_to_skip))  # Skipping the first n columns
                     )
                 ]
             )),
@@ -243,7 +243,6 @@ def hyper_parameter_tuning_scikit_audience_model(
     training_table: str,
     model_parameters: Output[Dataset],
     p_wiggle: int = 10,
-    min_num_clusters: int = 3,
     columns_to_skip: int = 3,
     use_split_column: Optional[str] = "FALSE",
     timeout: Optional[float] = 1800
@@ -295,7 +294,10 @@ def hyper_parameter_tuning_scikit_audience_model(
     from sklearn.preprocessing import FunctionTransformer
     from sklearn.feature_extraction.text import TfidfTransformer
     from sklearn.metrics import silhouette_samples, silhouette_score
-    
+    from sklearn.compose import make_column_selector as selector
+    from sklearn.impute import SimpleImputer
+    from sklearn.preprocessing import StandardScaler, OneHotEncoder
+
     import logging
     from google.cloud import bigquery
 
@@ -315,19 +317,39 @@ def hyper_parameter_tuning_scikit_audience_model(
         query=f"""SELECT * FROM `{training_table}` WHERE {filter_clause}"""
         ).to_dataframe()
 
-    # Skipping the first three columns: [user_pseudo_id, user_id, feature_timestamp]
+    # Skipping the first n columns
     features = list(training_dataset_df.columns[columns_to_skip:])
+    logging.info(f"Features: {features}")
+    logging.info(f"Training dataset shape: {training_dataset_df.shape}")
+    logging.info(f"Training dataset dtypes: {training_dataset_df.dtypes}")
+
     min_num_clusters = 3
     max_num_clusters = len(features)
+    logging.info(f"min_num_clusters: {min_num_clusters}")
+    logging.info(f"max_num_clusters: {max_num_clusters}")
+
 
     def _create_model(params):
+
+        logging.info(f"Creating model with params: {params}")
+        
+        numeric_transformer = Pipeline(steps=[
+            ('imputer', SimpleImputer(strategy='median')),
+            ('scaler', StandardScaler())
+            ])
+
+        categorical_transformer = Pipeline(steps=[
+            ('imputer', SimpleImputer(strategy='most_frequent')),
+            #('tfidf', TfidfTransformer(norm='l2'))
+            ('onehot', OneHotEncoder(sparse_output=False))
+            ])
+
         model = Pipeline([
             ('transform', ColumnTransformer(
                 transformers=[
-                    ('tfidf',
-                    TfidfTransformer(norm='l2'),
-                    list(range(columns_to_skip, len(features) + columns_to_skip))  # Skipping the first three columns: [user_pseudo_id, user_id, feature_timestamp]
-                    )
+                    ('num', numeric_transformer, selector(dtype_exclude=object)),
+                    ('cat', categorical_transformer, selector(dtype_include=object))
+                
                 ]
             )),
             ('model', KMeans(
@@ -349,7 +371,7 @@ def hyper_parameter_tuning_scikit_audience_model(
         }
 
         model = _create_model(params)
-        model.fit(training_dataset_df)
+        model.fit(training_dataset_df[training_dataset_df.columns[columns_to_skip:]])
         labels = model.predict(training_dataset_df)
 
         return silhouette_score(
@@ -358,7 +380,7 @@ def hyper_parameter_tuning_scikit_audience_model(
             sample_size=int(len(training_dataset_df) * 0.1) if int(len(training_dataset_df) * 0.1) < 10_000 else 10_000,
             random_state=42
         ), params['n_clusters']
-    
+
     study = optuna.create_study(
         directions=["maximize", "minimize"],
         sampler=optuna.samplers.TPESampler(seed=42, n_startup_trials=25)

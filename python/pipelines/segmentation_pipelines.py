@@ -39,7 +39,6 @@ def training_pl(
     exclude_features: list,
 
     p_wiggle: int,
-    min_num_clusters: int, 
     columns_to_skip: int,
 
     km_distance_type: str,
@@ -81,7 +80,6 @@ def training_pl(
         dataset=dataset,
         training_table=training_data_bq_table,
         p_wiggle=p_wiggle,
-        min_num_clusters=min_num_clusters,
         columns_to_skip=columns_to_skip,
         use_split_column=use_split_column,
     )
