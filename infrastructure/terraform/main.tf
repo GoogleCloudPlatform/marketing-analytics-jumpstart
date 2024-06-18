@@ -129,7 +129,7 @@ resource "null_resource" "poetry_install" {
 data "external" "check_ga4_property_type" {
   program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=check_property_type --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
   working_dir = local.source_root_dir
-  depends_on  = [null_resource.poetry_install.id]
+  depends_on  = [null_resource.poetry_install]
 }
 
 # Runs the poetry invoke command to generate the sql queries and procedures.
