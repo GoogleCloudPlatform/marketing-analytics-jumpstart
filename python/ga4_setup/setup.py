@@ -110,6 +110,11 @@ def get_measurement_id(configuration: map):
   """
   return get_data_stream(configuration['property_id'], configuration['stream_id']).web_stream_data.measurement_id
 
+def get_property(configuration: map, transport: str = None):
+  client = AnalyticsAdminServiceClient(transport=transport)
+  return client.get_property(
+    name=f"properties/{configuration['property_id']}"
+  )
 
 
 
@@ -504,6 +509,13 @@ def entry():
       'measurement_secret': get_measurement_protocol_secret(configuration, secret_display_name)
     }
     print(json.dumps(properties))
+
+  if args.ga4_resource == "check_property_type":
+    property = get_property(configuration)
+    result = {
+      'supported': f"{property.property_type == property.property_type.PROPERTY_TYPE_ORDINARY}"
+    }
+    print(json.dumps(result))
 
   # python setup.py --ga4_resource=custom_events
   if args.ga4_resource == "custom_events":
