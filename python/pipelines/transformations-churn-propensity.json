@@ -1,0 +1,422 @@
+[
+	{
+	  "numeric": {
+		"column_name": "user_ltv_revenue",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_category"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_mobile_brand_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_mobile_model_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_os"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_language"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_web_browser"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_sub_continent"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_country"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_region"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_city"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_metro"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "last_traffic_source_medium"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "last_traffic_source_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "last_traffic_source_source"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "first_traffic_source_medium"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "first_traffic_source_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "first_traffic_source_source"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "has_signed_in_with_user_id"
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_6_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_7_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_8_14_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "active_users_past_15_30_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_6_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_7_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_8_14_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "purchases_past_15_30_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_6_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_7_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_8_14_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "visits_past_15_30_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_6_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_7_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_8_14_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_items_past_15_30_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_6_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_7_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_8_14_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "add_to_carts_past_15_30_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_6_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_7_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_8_14_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "checkouts_past_15_30_day",
+		"invalid_values_allowed": true
+	  }
+	}
+  ]

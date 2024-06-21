@@ -1789,9 +1789,8 @@ SELECT DISTINCT
 )
 WHERE
   user_row_order = 1;
-
-# This is a view preparing rows for purchase propensity modelling looking back 30 days and looking ahead 15 days.
-# This is to be used in case recently no purchases are registered, and you don't have a way to train the classification model.
+-- This is a view preparing rows for purchase propensity modelling looking back 30 days and looking ahead 15 days.
+-- This is to be used in case recently no purchases are registered, and you don't have a way to train the classification model.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_training_30_15_rare_sales`
 (processed_timestamp, 
   data_split,

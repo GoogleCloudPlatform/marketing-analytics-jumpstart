@@ -1,0 +1,27 @@
+[
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "feature description"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE",
+    "description": "feature description"
+  },
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING",
+    "description": "feature description"
+  },
+  {
+    "name": "churned",
+    "type": "INTEGER",
+    "description": "feature description"
+  },
+  {
+    "name": "bounced",
+    "type": "INTEGER",
+    "description": "feature description"
+  }
+]

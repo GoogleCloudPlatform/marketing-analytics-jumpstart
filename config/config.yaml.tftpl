@@ -129,6 +129,7 @@ vertex_ai:
   # - feature-creation-auto-audience-segmentation
   # - feature-creation-audience-segmentation
   # - feature-creation-purchase-propensity
+  # - feature-creation-churn-propensity
   # - feature-creation-customer-ltv
   # - propensity
   #   - training
@@ -354,6 +355,55 @@ vertex_ai:
           date_timezone: "UTC" # used when input_date is None and need to get current date.
           purchase_propensity_inference_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_inference_preparation"
           purchase_propensity_training_preparation_procedure_name: "${project_id}.purchase_propensity.invoke_purchase_propensity_training_preparation"
+    
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the churn propensity model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
+    feature-creation-churn-propensity:
+      execution:
+        name: "feature-creation-churn-propensity"
+        job_id_prefix: "feature-creation-churn-propensity-"
+        experiment_name: "feature-creation-churn-propensity"
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 1 * * *"
+          # Define the maximum number of concurrent pipeline runs.
+          # The default value is 1.
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: PAUSED # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_churn_propensity_label: "
+            CALL `{churn_propensity_label_procedure_name}`();"
+          query_user_dimensions: "
+            CALL `{user_dimensions_procedure_name}`();"
+          query_user_rolling_window_metrics: "
+            CALL `{user_rolling_window_metrics_procedure_name}`();"
+          query_churn_propensity_inference_preparation: "
+            CALL `{churn_propensity_inference_preparation_procedure_name}`();"
+          query_churn_propensity_training_preparation: "
+            CALL `{churn_propensity_training_preparation_procedure_name}` ();"
+          timeout: 3600.0
+        pipeline_parameters_substitutions:
+          churn_propensity_label_procedure_name: "${project_id}.feature_store.invoke_churn_propensity_label"
+          user_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_dimensions"
+          user_rolling_window_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_metrics"
+          date_timezone: "UTC" # used when input_date is None and need to get current date.
+          churn_propensity_inference_preparation_procedure_name: "${project_id}.churn_propensity.invoke_churn_propensity_inference_preparation"
+          churn_propensity_training_preparation_procedure_name: "${project_id}.churn_propensity.invoke_churn_propensity_training_preparation"
+
 
     # This pipeline contains the configuration parameters for the feature creation pipeline for the customer lifetime value model.
     # To deploy this pipeline to your Google Cloud project:
@@ -709,6 +759,153 @@ vertex_ai:
           pubsub_activation_type: "purchase-propensity-30-15"  # purchase-propensity-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
         pipeline_parameters_substitutions: null
     
+    # This pipeline contains the configuration parameters for the churn propensity training and inference pipelines for the churn propensity model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
+    churn_propensity:
+      training:
+        name: "churn-propensity-training-pl"
+        job_id_prefix: "churn-propensity-training-pl-"
+        experiment_name: "churn-propensity-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
+        type: "tabular-workflows"
+        schedule:
+          cron: "TZ=America/New_York 0 8 * * SAT"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: PAUSED # possible states ACTIVE or PAUSED
+        # These are pipeline parameters that will be passed to the pipeline to be recompiled
+        pipeline_parameters:
+          project: "${project_id}"
+          location: "${cloud_region}"
+          root_dir: "gs://${project_id}-pipelines/churn-propensity-training"
+          transformations: "gs://${project_id}-pipelines/churn-propensity-training/transformations_config_{timestamp}.json"
+          # These are specific data types transformations that will be applied to the dataset.
+          custom_transformations: "pipelines/transformations-churn-propensity.json"
+          train_budget_milli_node_hours: 100 # 1000 = 1 hour 
+          # Set these to apply feature selection tuning.
+          max_selected_features: 20
+          apply_feature_selection_tuning: true
+          run_evaluation: true
+          run_distillation: false
+          # The Churn Propensity model name
+          model_display_name: "churn-propensity-model" 
+          # The Churn Propensity model description
+          model_description: "Churn Propensity Classification AutoML Model"
+          # Use `prediction_type` to "regression" for training models that predict a numerical value.  For classification models, use "classification" and you will
+          # also get the probability likelihood for that class.
+          prediction_type: "classification"
+          # The optimization objectives may change depending on the `prediction_type`.
+          # For binary classification, use "maximize-au-roc", "minimize-log-loss", "maximize-au-prc", "maximize-precision-at-recall" or "maximize-recall-at-precision". 
+          # For multi class classification, use "minimize-log-loss". 
+          # For regression, use "minimize-rmse", "minimize-mae", or "minimize-rmsle".
+          optimization_objective: "maximize-au-roc" # maximize-precision-at-recall, maximize-au-prc, maximize-au-roc, minimize-log-loss, maximize-recall-at-precision
+          #Don't use when parameter `optimization_objective` is not `maximize-precision-at-recall` or `maximize-recall-at-precision`
+          #optimization_objective_recall_value: 0.72
+          #optimization_objective_precision_value: 0.72
+          target_column: "churned"
+          predefined_split_key: "data_split"
+          data_source_csv_filenames: null
+          training_fraction: null
+          validation_fraction: null
+          test_fraction: null
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
+          data_source_bigquery_table_path: "bq://${project_id}.churn_propensity.v_churn_propensity_training_30_30_last_window"
+          data_source_bigquery_table_schema: "../sql/schema/table/churn_propensity_training_preparation.json"
+          dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          transform_dataflow_max_num_workers: 10
+          stats_and_example_gen_dataflow_max_num_workers: 10
+          evaluation_dataflow_starting_num_workers: 5
+          evaluation_dataflow_max_num_workers: 10
+          distill_batch_predict_max_replica_count: 10
+          distill_batch_predict_starting_replica_count: 10
+          evaluation_batch_predict_max_replica_count: 10
+          evaluation_batch_predict_starting_replica_count: 10
+          timestamp_split_key: null
+          stratified_split_key: null
+          weight_column: null
+          additional_experiments: null
+          export_additional_model_without_custom_ops: false
+          # Override the study spec parameters in case you want to restrict hyperparameter search space. Including `model_type`.
+          # In this case, for Value Based Bidding, we're looking for a perfect fit using a tree based model.
+          # Don't use when parameter `apply_feature_selection_tuning` is `true`
+          #study_spec_parameters_override:
+          #  - parameter_id: "model_type"
+          #    categorical_value_spec:
+          #      values: 
+          #        - nn
+          #        - boosted_trees
+          #  - parameter_id: "feature_selection_rate"
+          #    double_value_spec:
+          #      min_value: 0.5
+          #      max_value: 1.0
+          #    scale_type: UNIT_LINEAR_SCALE
+        # Features to be excluded from the training dataset.
+        exclude_features:
+          - processed_timestamp
+          - data_split
+          #- feature_date
+          - user_pseudo_id
+          - user_id
+          - device_web_browser_version
+          - device_os_version
+          - churned
+        pipeline_parameters_substitutions: null 
+      prediction:
+        name: "churn-propensity-prediction-pl"
+        job_id_prefix: "churn-propensity-prediction-pl-"
+        experiment_name: "churn-propensity-prediction"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
+        type: "custom"
+        schedule:
+          cron: "TZ=America/New_York 0 5 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          state: PAUSED # possible states ACTIVE or PAUSED
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${cloud_region}"
+          job_name_prefix: "churn-propensity-prediction-pl-"
+          # The Purchase Propensity model name to be used for prediction
+          model_display_name: "churn-propensity-model" 
+          model_metric_name: "logLoss"
+          # The `model_metric_threshold` parameter defines what is the maximum acceptable value for the `model_metric_name` so that the model can be selected.
+          # If the actual models metrics values are higher than this limit, no models will be selected and the pipeline is going to fail.
+          model_metric_threshold: 0.9
+          number_of_models_considered: 1
+          # This is the prediction dataset table or view.
+          bigquery_source: "${project_id}.churn_propensity.v_churn_propensity_inference_30_30"
+          bigquery_destination_prefix: "${project_id}.churn_propensity"
+          bq_unique_key: "user_pseudo_id"
+          machine_type: "n1-standard-4"
+          max_replica_count: 10
+          batch_size: 64
+          accelerator_count: 0
+          accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
+          generate_explanation: false
+          # This is the probability value that will tell the condition to slit into the two classes.
+          # For probabilities higher than `threashold`, set postive label to 1, otherwise 0.
+          threashold: 0.5
+          positive_label: "1"
+          # THese are parameters to trigger the Activation Application Dataflow.
+          pubsub_activation_topic: "activation-trigger"
+          pubsub_activation_type: "churn-propensity-30-15"  # churn-propensity-30-15 | churn-propensity-15-15 | churn-propensity-15-7" 
+        pipeline_parameters_substitutions: null
+    
     # This pipeline contains the configuration parameters for the segmentation training and inference pipelines for the audience segmentation model.
     # To deploy this pipeline to your Google Cloud project:
     ## 1. Define the pipeline parameters below, following YAML format
@@ -860,7 +1057,7 @@ vertex_ai:
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
-          location: "${location}"
+          location: "${cloud_region}"
           model_name: "auto-audience-segmentation-model"
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"
@@ -1221,6 +1418,18 @@ bigquery:
       max_time_travel_hours: 168
       default_partition_expiration_days: 365
       default_table_expiration_days: 365
+    # Dataset for the churn propensity use case.
+    churn_propensity:
+      name: "churn_propensity"
+      location: "${location}"
+      project_id: "${project_id}"
+      collation: "und:ci"
+      is_case_insensitive: TRUE
+      description: "Churn Propensity Use Case dataset for Marketing behavioural modeling"
+      friendly_name: "Churn Propensity Dataset"
+      max_time_travel_hours: 168
+      default_partition_expiration_days: 365
+      default_table_expiration_days: 365
     # Dataset for the customer lifetime value use case.
     customer_lifetime_value:
       project_id: "${project_id}"
@@ -1305,6 +1514,13 @@ bigquery:
       table_name: "purchase_propensity_inference_preparation"
       location: "${location}"
       table_description: "Purchase Propensity Inference Preparation table to be used for Model Prediction"
+    # Table containing the feature engineered dataset that will be used for the Churn Propensity prediction pipeline.
+    churn_propensity_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "churn_propensity"
+      table_name: "churn_propensity_inference_preparation"
+      location: "${location}"
+      table_description: "Purchase Propensity Inference Preparation table to be used for Model Prediction"
     # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
     purchase_propensity_label:
       project_id: "${project_id}"
@@ -1312,6 +1528,13 @@ bigquery:
       table_name: "purchase_propensity_label"
       location: "${location}"
       table_description: "Purchase Propensity Label table to be used for Model Prediction"
+    # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
+    churn_propensity_label:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      table_name: "churn_propensity_label"
+      location: "${location}"
+      table_description: "Churn Propensity Label table to be used for Model Prediction"
     # Table containing the feature engineered dimensions that will be used for the Purchase Propensity training and inference pipeline.
     user_dimensions:
       project_id: "${project_id}"
@@ -1393,6 +1616,9 @@ bigquery:
     purchase_propensity_query_template:
       none: none
     # This is a query template to be used by the Activation application, so there is no configuration to be applied.
+    churn_propensity_query_template:
+      none: none
+    # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     cltv_query_template:
       none: none
     # This is a stored procedure that CALLs the Aggregated Value Based Bidding Training Preparation stored procedure.
@@ -1408,6 +1634,25 @@ bigquery:
       # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
       # This is usually the same value as the look forward window.
       interval_max_date: 15
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
+      interval_min_date: 30
+      # `training_split_end_number` must be smaller then `validation_split_end_number`.
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = TRAIN (Between 1 and `training_split_end_number`)
+      train_split_end_number: 5
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = VALIDATE (Between `training_split_end_number` and `validation_split_end_number`)
+      # The rest of the rows will belong to the `data_split` = TEST (Between `validation_split_end_number` and 10)
+      validation_split_end_number: 8
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+    # This is a stored procedure that CALLs the Purchase Propensity Training Preparation stored procedure.
+    invoke_churn_propensity_training_preparation:
+      project_id: "${project_id}"
+      dataset: "churn_propensity"
+      stored_procedure: "churn_propensity_training_preparation"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
+      interval_max_date: 30
       # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
       # This is usually the same value as the lookback window.
       interval_min_date: 30
@@ -1466,11 +1711,16 @@ bigquery:
       stored_procedure: "auto_audience_segmentation_training_preparation"
       # The `lookback_days` parameter is the number of days to look back for training data.
       lookback_days: 15
-    # This is a stored procedure that CALLs the Purchase Propensity Training Inference Preparation stored procedure.
+    # This is a stored procedure that CALLs the Purchase Propensity Inference Inference Preparation stored procedure.
     invoke_purchase_propensity_inference_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
       stored_procedure: "purchase_propensity_inference_preparation"
+    # This is a stored procedure that CALLs the Churn Propensity Inference Inference Preparation stored procedure.
+    invoke_churn_propensity_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "churn_propensity"
+      stored_procedure: "churn_propensity_inference_preparation"
     # This is a stored procedure that CALLs the Customer Lifetime Value Inference Preparation stored procedure.
     invoke_customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
@@ -1600,6 +1850,22 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 30
+    # This is a stored procedure that CALLs the Churn Propensity Label Backfill stored procedure.
+    invoke_backfill_churn_propensity_label:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "churn_propensity_label"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
+      interval_max_date: 30
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
+      interval_min_date: 30
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_end_date: 30
     # This is a stored procedure that CALLs the User Dimensions Backfill stored procedure.
     invoke_backfill_user_dimensions:
       mds_project_id: "${mds_project_id}"
@@ -1690,6 +1956,14 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_input_date: 15
+    # This is a stored procedure that CALLs the Purchase Propensity Label stored procedure.
+    invoke_churn_propensity_label:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      stored_procedure: "churn_propensity_label"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_input_date: 30
     # This is a stored procedure that CALLs the User Dimensions stored procedure.
     invoke_user_dimensions:
       project_id: "${project_id}"
@@ -1873,6 +2147,17 @@ bigquery:
       insert_table: "purchase_propensity_label"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that calculates the label column for the Churn Propensity use case.
+    # The label represents wether a user will make a purchase over a period of time.
+    # Typically, looking at a period of 30 days in the future.
+    # The granularity level is per user per day.
+    churn_propensity_label:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      name: "churn_propensity_label"
+      insert_table: "churn_propensity_label"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
     # This is the stored procedure that collects the features and prepare the examples rows to train a model.
     # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
     # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
@@ -1889,6 +2174,23 @@ bigquery:
       expiration_duration_hours: 168
       custom_start_date: "'2023-01-01'"
       custom_end_date: "NULL"
+    # This is the stored procedure that collects the features and prepare the examples rows to train a model.
+    # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
+    # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
+    # you will provide at maximum a couple of millions of rows.
+    churn_propensity_training_preparation:
+      project_id: "${project_id}"
+      dataset: "churn_propensity"
+      name: "churn_propensity_training_preparation"
+      insert_table: "churn_propensity_training_full_dataset"
+      feature_store_project_id: "${project_id}"
+      feature_store_dataset: "feature_store"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      expiration_duration_hours: 168
+      custom_start_date: "'2023-01-01'"
+      custom_end_date: "NULL"
+      table_sampling_percentage: 1
     # This is the stored procedure that UPSERTs new user dimensions rows daily. 
     # The granularity level is per user per day.
     # These dimensions are used for the Purchase Propensity use case.
@@ -2000,6 +2302,16 @@ bigquery:
       insert_table: "purchase_propensity_inference_preparation"
       expiration_duration_hours: 168
     # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
+    churn_propensity_inference_preparation:
+      project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
+      dataset: "churn_propensity"
+      name: "churn_propensity_inference_preparation"
+      feature_store_project_id: "${project_id}" 
+      feature_store_dataset: "feature_store"
+      insert_table: "churn_propensity_inference_preparation"
+      expiration_duration_hours: 168
+    # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     customer_lifetime_value_inference_preparation:
       project_id: "${project_id}"
       mds_dataset: "${mds_dataset}"
@@ -2052,6 +2364,7 @@ bigquery:
       table_id: "latest"
       customer_lifetime_value_dataset: "customer_lifetime_value"
       purchase_propensity_dataset: "purchase_propensity"
+      churn_propensity_dataset: "churn_propensity"
       audience_segmentation_dataset: "audience_segmentation"
       auto_audience_segmentation_dataset: "auto_audience_segmentation"
 

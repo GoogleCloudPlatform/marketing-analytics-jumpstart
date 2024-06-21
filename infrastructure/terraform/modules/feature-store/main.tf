@@ -23,6 +23,7 @@ locals {
   sql_dir                               = var.sql_dir_input
   builder_repository_id                 = "marketing-analytics-jumpstart-base-repo"
   purchase_propensity_project_id        = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.purchase_propensity.project_id : local.feature_store_project_id
+  churn_propensity_project_id           = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.churn_propensity.project_id : local.feature_store_project_id
   audience_segmentation_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.audience_segmentation.project_id : local.feature_store_project_id
   auto_audience_segmentation_project_id = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id : local.feature_store_project_id
   aggregated_vbb_project_id             = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.aggregated_vbb.project_id : local.feature_store_project_id
