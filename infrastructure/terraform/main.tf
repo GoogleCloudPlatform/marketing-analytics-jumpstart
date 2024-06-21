@@ -76,6 +76,7 @@ locals {
   generated_sql_procedures_content_hash   = sha512(join("", [for f in local.generated_sql_procedures_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
 }
 
+
 # Create a configuration file for the feature store.
 # the template file is located at 
 # ${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl.
@@ -125,6 +126,12 @@ resource "null_resource" "poetry_install" {
   }
 }
 
+data "external" "check_ga4_property_type" {
+  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=check_property_type --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  working_dir = local.source_root_dir
+  depends_on  = [null_resource.poetry_install]
+}
+
 # Runs the poetry invoke command to generate the sql queries and procedures.
 # This command is executed before the feature store is created.
 resource "null_resource" "generate_sql_queries" {
@@ -172,6 +179,13 @@ resource "null_resource" "generate_sql_queries" {
   #  command     = self.triggers.destroy_command
   #  working_dir = self.triggers.working_dir
   #}
+
+  lifecycle {
+    precondition {
+      condition     = data.external.check_ga4_property_type.result["supported"] == "True"
+      error_message = "The configured GA4 property is not supported"
+    }
+  }
 }
 
 
