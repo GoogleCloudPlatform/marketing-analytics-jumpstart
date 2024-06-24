@@ -53,6 +53,7 @@ module "project_services" {
     "artifactregistry.googleapis.com",
     "aiplatform.googleapis.com",
     "dataflow.googleapis.com",
+    "bigqueryconnection.googleapis.com"
   ]
 }
 

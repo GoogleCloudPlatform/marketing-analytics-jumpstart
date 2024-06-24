@@ -1,0 +1,57 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- Create a gemini-1.5-pro-001 model using a remote connection to us-central1.vertex_ai
+CREATE OR REPLACE MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`
+REMOTE WITH CONNECTION `{{project_id}}.{{region}}.vertex_ai`
+OPTIONS (ENDPOINT = 'gemini-1.5-pro-001');
+
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
+SELECT 
+(SELECT feature_date FROM `{{project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) LIMIT 1) AS feature_date,
+ml_generate_text_llm_result AS gemini_insights, 
+FROM ML.GENERATE_TEXT(
+  MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`,
+  (
+    SELECT 
+    CONCAT("You're a Google Analytics 4 Report Analyst. Your objective is to describe, explain, extract insights and offer recommendations from all the metrics calculated for the users. \n",
+    "Here are the user behaviour and revenue metrics calculated over the past 30 days.\n\n",
+    "Metrics JSON:\n",
+    (SELECT CONCAT(STRING_AGG(TO_JSON_STRING(t), ", \n")) FROM (SELECT * EXCEPT(processed_timestamp, feature_date) FROM `{{project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)) t),
+    "\n\n",
+    "Here are a the metrics descriptions:\n",
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{project_id}}`.{{feature_store_dataset}}.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    "\n\n") as prompt),
+  STRUCT(8192 AS max_output_tokens, 
+         TRUE AS flatten_json_output,
+         TRUE AS ground_with_google_search,
+         0.95 AS top_p,
+         40 AS top_k,
+         1 AS temperature));
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.gemini_insights = T.gemini_insights
+WHEN NOT MATCHED THEN
+  INSERT 
+    (
+     feature_date,
+     gemini_insights)
+  VALUES
+    (T.feature_date,
+     T.gemini_insights)
+;

@@ -26,10 +26,10 @@ CREATE OR REPLACE TEMP TABLE dates_interval as (
     ORDER BY input_date DESC
 );
 
-# Run these once each day.
-## Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU 
+-- Run these once each day.
+---- Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU 
 CREATE OR REPLACE TEMP TABLE engagement as (
-  SELECT 
+  SELECT DISTINCT
     user_pseudo_id,
     input_date as feature_date,
     ga_session_id as session_id, 
@@ -47,11 +47,34 @@ CREATE OR REPLACE TEMP TABLE engagement as (
   GROUP BY user_pseudo_id, feature_date, session_id
 );
 
-CREATE OR REPLACE TEMP TABLE revenue_users as (
-  SELECT 
+CREATE OR REPLACE TEMP TABLE revenue as (
+SELECT DISTINCT
+  feature_date,
+  SUM(sum_revenue_per_day) as sum_revenue_per_day,
+  COALESCE(MAX(sum_revenue_per_day),0.0) AS max_daily_revenue,
+  COALESCE(MIN(sum_revenue_per_day),0.0) AS min_daily_revenue
+FROM(
+SELECT DISTINCT
+  input_date as feature_date,
+  event_date,
+  COALESCE(SUM(ecommerce.purchase_revenue_in_usd), 0.0) as sum_revenue_per_day,
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+ON E.device_type_id = D.device_type_id 
+CROSS JOIN dates_interval as DI
+WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+  AND E.ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+  AND ecommerce.transaction_id IS NOT NULL
+  AND ecommerce.transaction_id <> '(not set)'
+GROUP BY feature_date, event_date)
+GROUP BY feature_date
+);
+
+CREATE OR REPLACE TEMP TABLE users as (
+  SELECT DISTINCT
     input_date as feature_date,
-    SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day,
-    COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END) as active_users
+    SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END), DATE_DIFF(MAX(event_date), MIN(event_date), DAY)) as active_users
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id 
@@ -63,7 +86,7 @@ CREATE OR REPLACE TEMP TABLE revenue_users as (
 );
 
 CREATE OR REPLACE TEMP TABLE first_purchasers as (
-  SELECT
+  SELECT DISTINCT
   input_date as feature_date,
   COUNT(first_time_purchasers) as first_time_purchasers
   FROM(
@@ -90,7 +113,7 @@ CREATE OR REPLACE TEMP TABLE first_purchasers as (
 );
 
 CREATE OR REPLACE TEMP TABLE new_users_ as (
-  SELECT
+  SELECT DISTINCT
   input_date as feature_date,
   COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
@@ -104,12 +127,12 @@ CREATE OR REPLACE TEMP TABLE new_users_ as (
 );
 
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
-  SELECT
+  SELECT DISTINCT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     DI.input_date AS feature_date,
     COALESCE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),0) AS purchasers_users,
     COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),COUNT(DISTINCT event_date)),0.0) AS average_daily_purchasers,
-    COALESCE(MAX(active_users),0) AS active_users,
+    CAST(COALESCE(MAX(active_users),0) AS INT64) AS active_users,
     COALESCE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),0.0) AS DAU,
     COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH)),0.0) AS MAU,
     COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK)),0.0) AS WAU,
@@ -123,8 +146,8 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
     COALESCE(SAFE_DIVIDE(SUM(e.purchase_revenue_in_usd),COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END)),0.0) AS ARPPU,
     COALESCE(SAFE_DIVIDE(SUM(e.purchase_revenue_in_usd),MAX(active_users)),0.0) AS ARPU,
     COALESCE(SAFE_DIVIDE(SUM(e.purchase_revenue_in_usd),COUNT(DISTINCT event_date)),0.0) AS average_daily_revenue,
-    COALESCE(MAX(sum_revenue_per_day),0.0) AS max_daily_revenue,
-    COALESCE(MIN(sum_revenue_per_day),0.0) AS min_daily_revenue,
+    COALESCE(MAX(max_daily_revenue),0.0) AS max_daily_revenue,
+    COALESCE(MIN(min_daily_revenue),0.0) AS min_daily_revenue,
     COALESCE(MAX(new_users),0) AS new_users,
     COALESCE(COUNT(DISTINCT e.user_pseudo_id) - MAX(new_users),0) AS returning_users,
     COALESCE(MAX(first_time_purchasers),0) AS first_time_purchasers,
@@ -138,7 +161,9 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   CROSS JOIN dates_interval as DI
   INNER JOIN engagement as e 
     ON EV.user_pseudo_id = e.user_pseudo_id AND DI.input_date = e.feature_date AND EV.ga_session_id = e.session_id
-  INNER JOIN revenue_users as r
+  INNER JOIN users as u
+    ON DI.input_date = u.feature_date
+  INNER JOIN revenue as r
     ON DI.input_date = r.feature_date
   INNER JOIN first_purchasers as fp
     ON DI.input_date = fp.feature_date

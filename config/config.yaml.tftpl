@@ -2019,7 +2019,7 @@ bigquery:
       stored_procedure: "user_scoped_segmentation_metrics"
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
-      interval_end_date: 180
+      interval_end_date: 30
     # This is a stored procedure that CALLs the User Segmentation Dimensions stored procedure.
     invoke_user_segmentation_dimensions:
       project_id: "${project_id}"
@@ -2043,7 +2043,7 @@ bigquery:
       stored_procedure: "user_scoped_metrics"
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
-      interval_end_date: 180
+      interval_end_date: 30
   # This section sets the parameters for the features, training and inference procedures that insert data into tables and views to be used for
   # training and prediction.
   # There is no strict recommendation on the right parameters that will maximize the models performance, however here are some back of the envelope numbers.
