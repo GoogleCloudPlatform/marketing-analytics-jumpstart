@@ -27,6 +27,17 @@ For each use case, a corresponding SQL query template dictates how prediction va
 
 The [activation configuration](../templates/activation_type_configuration_template.tpl) file links the GA4 custom events with their corresponding query templates and [GA4 Measurement Protocol payload template](../templates/app_payload_template.jinja2)
 
+The payload have the following keys set based on the [payload reference documentation](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference#payload_post_body):
+
+| Key |	Value |
+| -------- | --------- |
+| `client_id` | `user_pseudo_id` from the last GA4 event |
+| `user_id` | `user_id` from the last GA4 event and is only set if the field is not empty |
+| `timestamp_micros` | 1 micro second before `event_timestamp` of the last GA4 event |
+| `consent` | Allow sending user data from the request's events and user properties to Google for advertising purposes and personalized advertising for the user. |
+| `user_properties` | [GA4 Custom User Properties](#activation-process-overview) specific for each use case |
+| `event` | [GA4 Custom Event](#activation-process-overview) specific for each use case and `session_id` from the last GA4 event as [Event-scoped custom parameters](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference#custom_parameters) |
+
 The activation pipeline reads the activation configuration to dynamically determine the templates to use for the specific use case it is processing.
 
 Activation Pipeline Steps:
