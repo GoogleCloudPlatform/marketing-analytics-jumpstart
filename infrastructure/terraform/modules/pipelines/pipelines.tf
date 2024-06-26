@@ -68,6 +68,7 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     "roles/artifactregistry.reader",
     "roles/pubsub.publisher",
     "roles/dataflow.developer",
+    "roles/bigquery.connectionUser"
   ])
   role = each.key
 }
