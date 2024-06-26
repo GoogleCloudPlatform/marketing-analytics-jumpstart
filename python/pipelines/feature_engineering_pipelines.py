@@ -421,3 +421,41 @@ def reporting_preparation_pl(
         query=query_aggregate_last_day_predictions,
         query_parameters=[]
     ).set_display_name('aggregate_predictions')
+
+
+@dsl.pipeline()
+def gemini_insights_pl(
+    project_id: str,
+    location: Optional[str],
+    query_invoke_user_scoped_metrics: str,
+    query_invoke_user_behaviour_revenue_insights: str,
+    timeout: Optional[float] = 3600.0
+):
+    """
+    This pipeline defines the steps for invoking the user behaviour revenue insights query.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        query_invoke_user_behaviour_revenue_insights: The SQL query that will be used to invoke the user behaviour revenue gemini insights.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
+    
+    # User Scoped Metrics
+    user_scoped_metrics = sp(
+        project=project_id,
+        location=location,
+        query=query_invoke_user_scoped_metrics,
+        query_parameters=[]
+    ).set_display_name('user_scoped_metrics')
+
+    # User behaviour revenue insights
+    user_behaviour_revenue_insights = sp(
+        project=project_id,
+        location=location,
+        query=query_invoke_user_behaviour_revenue_insights,
+        query_parameters=[]
+    ).set_display_name('user_behaviour_revenue_insights')

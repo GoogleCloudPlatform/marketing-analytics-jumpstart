@@ -1403,6 +1403,67 @@ vertex_ai:
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           aggregate_last_day_predictions_procedure_name: "${project_id}.aggregated_predictions.aggregate_last_day_predictions"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
+    
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the audience segmentation model.
+    # This block defines the pipeline parameters that are going to be used for three tasks: compilation, upload and scheduling.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
+    gemini_insights:
+      execution:
+        # The `name` parameter is the name of the pipeline that will appear in the Vertex AI pipeline UI.
+        name: "gemini-insights"
+        # The `job_id_prefix` is the prefix of the Vertex AI Custom Job that will be used at the execution of each individual component step.
+        job_id_prefix: "gemini-insights-"
+        # The `experiment_name` is the name of the experiment that will appear in the Vertex AI Experiments UI.
+        experiment_name: "gemini-insights"
+        # The `type` defines whether the pipeline is going to be a `tabular-workflows` or a `custom` pipeline.
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
+        type: "custom"
+        # The `schedule` defines the schedule values of the pipeline.
+        # This solution uses the Vertex AI Pipeline Scheduler.
+        # More information can be found at https://cloud.google.com/vertex-ai/docs/pipelines/scheduler.
+        schedule:
+          # The `cron` is the cron schedule. Make sure you review the TZ=America/New_York timezone.
+          # More information can be found at https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules.
+          cron: "TZ=America/New_York 0 8 * * *"
+          # The `max_concurrent_run_count` defines the maximum number of concurrent pipeline runs.
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
+          state: PAUSED # possible states ACTIVE or PAUSED
+        # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
+        # Those values may difer depending on the pipeline type and the pipeline steps being used.
+        # Make sure you review the python function the defines the pipeline.
+        # The pipeline definition function can be found in `python/pipelines/feature_engineering_pipelines.py` 
+        # or other files ending with `python/pipelines/*_pipeline.py`.
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          query_invoke_user_scoped_metrics: "
+            CALL `{user_scoped_metrics_procedure_name}`();"
+          query_invoke_user_behaviour_revenue_insights: "
+            CALL `{user_behaviour_revenue_insights_procedure_name}`();"
+          # The `timeout` parameter defines the timeout of the pipeline in seconds.
+          # The default value is 3600 seconds (1 hour).
+          timeout: 3600.0
+        # The `pipeline_parameters_substitutions` defines the substitutions that are going to be applied to the pipeline parameters before compilation.
+        # Check the parameter values above to see if they are used. 
+        # They typically follow this format {parameter_subsititution_key}.
+        # To apply a substitution, make sure you define the pair: {parameter_subsititution_key}: {parameter_subsititution_value}.
+        pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
+          user_scoped_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_metrics"
+          user_behaviour_revenue_insights_procedure_name: "${project_id}.gemini_insights.invoke_user_behaviour_revenue_insights"
+          date_timezone: "UTC" # used when input_date is None and need to get current date.
 
 # This block contains configuration parameters for the BigQuery Datasets, Tables, Queries and Stored Procedures.
 bigquery:
