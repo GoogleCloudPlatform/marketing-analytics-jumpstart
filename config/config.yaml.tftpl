@@ -567,6 +567,9 @@ vertex_ai:
           distill_batch_predict_starting_replica_count: 10
           evaluation_batch_predict_max_replica_count: 10
           evaluation_batch_predict_starting_replica_count: 10
+          evaluation_dataflow_disk_size_gb: 30
+          stats_and_example_gen_dataflow_disk_size_gb: 30
+          transform_dataflow_disk_size_gb: 30
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -686,6 +689,9 @@ vertex_ai:
           distill_batch_predict_starting_replica_count: 10
           evaluation_batch_predict_max_replica_count: 10
           evaluation_batch_predict_starting_replica_count: 10
+          evaluation_dataflow_disk_size_gb: 30
+          stats_and_example_gen_dataflow_disk_size_gb: 30
+          transform_dataflow_disk_size_gb: 30
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -833,6 +839,9 @@ vertex_ai:
           distill_batch_predict_starting_replica_count: 10
           evaluation_batch_predict_max_replica_count: 10
           evaluation_batch_predict_starting_replica_count: 10
+          evaluation_dataflow_disk_size_gb: 30
+          stats_and_example_gen_dataflow_disk_size_gb: 30
+          transform_dataflow_disk_size_gb: 30
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -1142,6 +1151,9 @@ vertex_ai:
           distill_batch_predict_starting_replica_count: 10
           evaluation_batch_predict_max_replica_count: 10
           evaluation_batch_predict_starting_replica_count: 10
+          evaluation_dataflow_disk_size_gb: 30
+          stats_and_example_gen_dataflow_disk_size_gb: 30
+          transform_dataflow_disk_size_gb: 30
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -1247,6 +1259,9 @@ vertex_ai:
           distill_batch_predict_starting_replica_count: 10
           evaluation_batch_predict_max_replica_count: 10
           evaluation_batch_predict_starting_replica_count: 10
+          evaluation_dataflow_disk_size_gb: 30
+          stats_and_example_gen_dataflow_disk_size_gb: 30
+          transform_dataflow_disk_size_gb: 30
           timestamp_split_key: null
           stratified_split_key: null
           weight_column: null
@@ -1485,6 +1500,14 @@ bigquery:
       location: "${location}"
       description: "Dataset with aggregated prediction results from multiple use cases"
       friendly_name: "Aggregated Predictions Dataset"
+    # Dataset for the gemini insights tables and procedures.
+    gemini_insights:
+      project_id: "${project_id}"
+      name: "gemini_insights"
+      location: "${location}"
+      description: "Dataset with gemini_insights results from multiple use cases"
+      friendly_name: "Gemini Insights Dataset"
+      max_time_travel_hours: 168
   table:
     # Table containing the feature engineered dataset that will be used for the Audience Segmentation prediction pipeline.
     audience_segmentation_inference_preparation:
@@ -1621,6 +1644,13 @@ bigquery:
     # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     cltv_query_template:
       none: none
+    create_gemini_model:
+      project_id: "${project_id}"
+      dataset: "gemini_insights"
+      model_name: "gemini_1_5_pro"
+      region: lower("${cloud_region}")
+      connection_name: "vertex_ai"
+      endpoint_name: "gemini-1.5-pro-001"
     # This is a stored procedure that CALLs the Aggregated Value Based Bidding Training Preparation stored procedure.
     invoke_aggregated_value_based_bidding_training_preparation:
       project_id: "${project_id}"
@@ -1940,6 +1970,19 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 15
+    # This is a stored procedure that CALLS the User Behaviour Revenue Insights Backfill stored procedure.
+    invoke_backfill_user_behaviour_revenue_insights:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "gemini_insights"
+      insert_table: "user_behaviour_revenue_insights"
+      model_name: "gemini_1_5_pro"
+    # This is a stored procedure that CALLS the User Behaviour Revenue Insights stored procedure.
+    invoke_user_behaviour_revenue_insights:
+      project_id: "${project_id}"
+      dataset: "gemini_insights"
+      stored_procedure: "user_behaviour_revenue_insights"
     # This is a stored procedure that CALLs the User Lifetime Value Label stored procedure.
     invoke_customer_lifetime_value_label:
       project_id: "${project_id}"
@@ -2367,5 +2410,12 @@ bigquery:
       churn_propensity_dataset: "churn_propensity"
       audience_segmentation_dataset: "audience_segmentation"
       auto_audience_segmentation_dataset: "auto_audience_segmentation"
+    user_behaviour_revenue_insights:
+      project_id: "${project_id}"
+      dataset: "gemini_insights"
+      name: "user_behaviour_revenue_insights"
+      feature_store_project_id: "${project_id}"
+      feature_store_dataset: "feature_store"
+      insert_table: "user_behaviour_revenue_insights"
 
   

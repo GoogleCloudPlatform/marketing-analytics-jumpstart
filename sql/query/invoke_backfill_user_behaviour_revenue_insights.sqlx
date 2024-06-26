@@ -12,9 +12,6 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
-SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
-
 
 CREATE OR REPLACE TEMP TABLE prompts_per_day AS
 SELECT DISTINCT
@@ -25,10 +22,10 @@ CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to extr
     TO_JSON_STRING(t),
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{project_id}}`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
     "\n\n"
 ) as prompt
-FROM (SELECT DISTINCT  feature_date as calculation_base_date, * EXCEPT(processed_timestamp, feature_date) FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics` WHERE feature_date = input_date ORDER BY feature_date DESC) t
+FROM (SELECT DISTINCT  feature_date as calculation_base_date, * EXCEPT(processed_timestamp, feature_date) FROM `{{project_id}}.feature_store.user_scoped_metrics` WHERE feature_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND CURRENT_DATE() ORDER BY feature_date DESC) t
 ;
 
 
@@ -42,7 +39,7 @@ CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to iden
       STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(ISOWEEK FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{project_id}}`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
     "\n\n"
 ) as prompt,
 FROM (
@@ -50,8 +47,8 @@ SELECT DISTINCT
 feature_date as calculation_base_date, 
 EXTRACT(ISOWEEK FROM feature_date) as calculation_base_week_number,
 * EXCEPT(processed_timestamp, feature_date) 
-FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics`
-WHERE feature_date BETWEEN DATE_SUB(input_date, INTERVAL 1 WEEK) AND input_date AND
+FROM `{{project_id}}.feature_store.user_scoped_metrics`
+WHERE feature_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 51 WEEK) AND CURRENT_DATE() AND
 EXTRACT(ISOWEEK FROM feature_date) IS NOT NULL
 ORDER BY feature_date DESC) t
 ORDER BY calculation_base_date DESC;
@@ -68,7 +65,7 @@ CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to iden
       STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(MONTH FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{project_id}}`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
     "\n\n"
 ) as prompt,
 FROM (
@@ -76,8 +73,8 @@ SELECT DISTINCT
 feature_date as calculation_base_date, 
 EXTRACT(MONTH FROM feature_date) as calculation_base_week_number,
 * EXCEPT(processed_timestamp, feature_date) 
-FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics` 
-WHERE feature_date BETWEEN DATE_SUB(input_date, INTERVAL 1 MONTH) AND input_date AND
+FROM `{{project_id}}.feature_store.user_scoped_metrics` 
+WHERE feature_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 11 MONTH) AND CURRENT_DATE() AND
 EXTRACT(MONTH FROM feature_date) IS NOT NULL
 ORDER BY feature_date DESC) t
 ORDER BY calculation_base_date DESC;
@@ -86,13 +83,12 @@ ORDER BY calculation_base_date DESC;
 CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_daily_gemini_calls AS
 SELECT DISTINCT
 feature_date,
-ml_generate_text_llm_result AS gemini_insights, 
+ml_generate_text_llm_result AS {{dataset}}, 
 FROM ML.GENERATE_TEXT(
-  MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.{{model_name}}`,
   (
     SELECT feature_date, prompt
     FROM prompts_per_day
-    WHERE feature_date = input_date
   ),
   STRUCT(8192 AS max_output_tokens, 
          TRUE AS flatten_json_output,
@@ -102,20 +98,20 @@ FROM ML.GENERATE_TEXT(
          1 AS temperature));
 
 
-MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_daily` I
+MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_daily` I
 USING user_behaviour_revenue_insights_daily_gemini_calls T
 ON I.feature_date = T.feature_date
 WHEN MATCHED THEN
   UPDATE SET 
-    I.gemini_insights = T.gemini_insights
+    I.{{dataset}} = T.{{dataset}}
 WHEN NOT MATCHED THEN
   INSERT 
     (
      feature_date,
-     gemini_insights)
+     {{dataset}})
   VALUES
     (T.feature_date,
-     T.gemini_insights)
+     T.{{dataset}})
 ;
 
 
@@ -123,13 +119,12 @@ CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_weekly_gemini_calls
 SELECT DISTINCT
 feature_date,
 feature_week_number,
-ml_generate_text_llm_result AS gemini_insights, 
+ml_generate_text_llm_result AS {{dataset}}, 
 FROM ML.GENERATE_TEXT(
-  MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.{{model_name}}`,
   (
     SELECT feature_date, feature_week_number, prompt
     FROM prompts_per_week
-    WHERE feature_date = input_date
   ),
   STRUCT(8192 AS max_output_tokens, 
          TRUE AS flatten_json_output,
@@ -139,23 +134,23 @@ FROM ML.GENERATE_TEXT(
          1 AS temperature));
 
 
-MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_weekly` I
+MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_weekly` I
 USING user_behaviour_revenue_insights_weekly_gemini_calls T
 ON I.feature_date = T.feature_date
    AND I.feature_week_number = T.feature_week_number
 WHEN MATCHED THEN
   UPDATE SET 
-    I.gemini_insights = T.gemini_insights
+    I.{{dataset}} = T.{{dataset}}
 WHEN NOT MATCHED THEN
   INSERT 
     (
      feature_date,
      feature_week_number,
-     gemini_insights)
+     {{dataset}})
   VALUES
     (T.feature_date,
      T.feature_week_number,
-     T.gemini_insights)
+     T.{{dataset}})
 ;
 
 
@@ -163,13 +158,12 @@ CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_monthly_gemini_call
 SELECT DISTINCT
 feature_date,
 feature_month,
-ml_generate_text_llm_result AS gemini_insights, 
+ml_generate_text_llm_result AS {{dataset}}, 
 FROM ML.GENERATE_TEXT(
-  MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.{{model_name}}`,
   (
     SELECT feature_date, feature_month, prompt
     FROM prompts_per_month
-    WHERE feature_date = input_date
   ),
   STRUCT(8192 AS max_output_tokens, 
          TRUE AS flatten_json_output,
@@ -179,21 +173,21 @@ FROM ML.GENERATE_TEXT(
          1 AS temperature));
 
 
-MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_monthly` I
+MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_monthly` I
 USING user_behaviour_revenue_insights_monthly_gemini_calls T
 ON I.feature_date = T.feature_date
    AND I.feature_month = T.feature_month
 WHEN MATCHED THEN
   UPDATE SET 
-    I.gemini_insights = T.gemini_insights
+    I.{{dataset}} = T.{{dataset}}
 WHEN NOT MATCHED THEN
   INSERT 
     (
      feature_date,
      feature_month,
-     gemini_insights)
+     {{dataset}})
   VALUES
     (T.feature_date,
      T.feature_month,
-     T.gemini_insights)
+     T.{{dataset}})
 ;

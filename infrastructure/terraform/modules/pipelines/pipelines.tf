@@ -791,37 +791,3 @@ resource "null_resource" "compile_churn_propensity_prediction_pipelines" {
     working_dir = self.triggers.working_dir
   }
 }
-
-
-## This creates a cloud resource connection.
-## Note: The cloud resource nested object has only one output only field - serviceAccountId.
-resource "google_bigquery_connection" "vertex_ai_connection" {
-  connection_id = "vertex_ai"
-  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
-  location = local.config_bigquery.region
-  cloud_resource {}
-} 
-
-
-# This resource binds the service account to the required roles
-resource "google_project_iam_member" "vertex_ai_connection_sa_roles" {
-  depends_on = [
-    module.project_services,
-    null_resource.check_aiplatform_api,
-    google_bigquery_connection.vertex_ai_connection
-    ]
-  
-  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
-  member  = "serviceAccount:${google_bigquery_connection.vertex_ai_connection.cloud_resource[0].service_account_id}"
-
-  for_each = toset([
-    "roles/bigquery.jobUser",
-    "roles/bigquery.dataEditor",
-    "roles/storage.admin",
-    "roles/storage.objectViewer",
-    "roles/aiplatform.user",
-    "roles/bigquery.connectionUser",
-    "roles/bigquery.connectionAdmin"
-  ])
-  role = each.key
-}
