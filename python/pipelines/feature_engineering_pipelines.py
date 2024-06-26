@@ -458,4 +458,4 @@ def gemini_insights_pl(
         location=location,
         query=query_invoke_user_behaviour_revenue_insights,
         query_parameters=[]
-    ).set_display_name('user_behaviour_revenue_insights')
+    ).after(*[user_scoped_metrics]).set_display_name('user_behaviour_revenue_insights')
