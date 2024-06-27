@@ -56,10 +56,6 @@
     "type": "STRING"
   },
   {
-    "name": "device_web_browser_version",
-    "type": "STRING"
-  },
-  {
     "name": "geo_sub_continent",
     "type": "STRING"
   },
@@ -417,10 +413,6 @@
   },
   {
     "name": "device_mobile_model_name",
-    "type": "STRING"
-  },
-  {
-    "name": "device_os_version",
     "type": "STRING"
   },
   {

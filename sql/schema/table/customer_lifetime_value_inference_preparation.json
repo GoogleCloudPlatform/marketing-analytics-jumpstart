@@ -35,22 +35,12 @@
       "description": "user_pseudo_id"
     },
     {
-      "name": "device_os_version",
-      "type": "STRING",
-      "description": "user_pseudo_id"
-    },
-    {
       "name": "device_language",
       "type": "STRING",
       "description": "user_pseudo_id"
     },
     {
       "name": "device_web_browser",
-      "type": "STRING",
-      "description": "user_pseudo_id"
-    },
-    {
-      "name": "device_web_browser_version",
       "type": "STRING",
       "description": "user_pseudo_id"
     },
