@@ -59,7 +59,7 @@ CREATE OR REPLACE TEMP TABLE prompts_per_month AS
 SELECT DISTINCT
 calculation_base_date as feature_date,
 EXTRACT(ISOWEEK FROM t.calculation_base_date) as feature_month,
-CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to identify what has changed in these weekly user behaviour and revenue metrics. \n",
+CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to identify what has changed in these monthly user behaviour and revenue metrics. \n",
     "Here are the user behaviour and revenue daily metrics accumulated over the last month.\n\n",
     "Metrics JSON:\n",
       STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(MONTH FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),
