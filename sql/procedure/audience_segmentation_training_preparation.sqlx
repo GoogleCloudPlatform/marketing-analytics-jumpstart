@@ -32,12 +32,12 @@ SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_pr
 -- If either parameter is not valid, the procedure sets the corresponding date to the maximum or
 -- minimum date of the available data.
 IF (custom_start_date IS NOT NULL OR custom_start_date >= min_date OR custom_start_date <= max_date) 
-   AND custom_start_date < custom_end_date THEN
+   AND custom_start_date < max_date THEN
   SET min_date = custom_start_date;
 END IF;
 
 IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_date >= min_date) 
-   AND custom_end_date > custom_start_date THEN
+   AND custom_end_date > min_date THEN
   SET max_date = custom_end_date;
 END IF;
 

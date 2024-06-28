@@ -1015,7 +1015,7 @@ vertex_ai:
     ## 9. Run terraform apply
     ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
     ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
-    auto_segmentation:
+    auto_segmentation: 
       training:
         name: "auto-segmentation-training-pl"
         job_id_prefix: "auto-segmentation-training-pl-"
@@ -2211,7 +2211,7 @@ bigquery:
       expiration_duration_hours: 168 
       # This parameter helps you set a maximum number of samples per split.
       samples_per_split: 100000
-      custom_start_date: "'2023-01-01'"
+      custom_start_date: "'2024-01-01'"
       custom_end_date: "NULL"
     # This is the stored procedure that calculates the label column for the Customer Lifetime Value use case.
     # The label represents the lifetime value revenue gain over a period of time.
@@ -2460,6 +2460,8 @@ bigquery:
       insert_table: "auto_audience_segmentation_training_preparation"
       lookback_days: 15
       expiration_duration_hours: 12
+      custom_start_date: "'2024-01-01'"
+      custom_end_date: "NULL"
     # This procedure aggregates all the daily predictions generates into a consumable table grouped for each user.
     # This table is used for multiple Looker Studio dashboards reports. 
     aggregate_predictions_procedure:
