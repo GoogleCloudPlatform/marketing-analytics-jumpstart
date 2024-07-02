@@ -45,7 +45,8 @@ FROM
   `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`
 WHERE
   feature_timestamp >= TIMESTAMP(DATE_START)
-  AND feature_timestamp <= TIMESTAMP(DATE_END);
+  AND feature_timestamp <= TIMESTAMP(DATE_END)
+LIMIT {{total_samples}};
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_training_15`
   OPTIONS(
@@ -57,4 +58,5 @@ AS
 SELECT DISTINCT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_training_15`
 WHERE
   feature_timestamp >= TIMESTAMP(DATE_START)
-  AND feature_timestamp <= TIMESTAMP(DATE_END);
+  AND feature_timestamp <= TIMESTAMP(DATE_END)
+LIMIT {{total_samples}};

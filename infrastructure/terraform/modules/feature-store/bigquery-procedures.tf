@@ -878,7 +878,7 @@ resource "google_bigquery_routine" "user_behaviour_revenue_insights" {
   }
 
   depends_on = [
-    google_bigquery_job.create_gemini_model_job
+    null_resource.check_gemini_model_exists
   ]
 }
 
@@ -1088,7 +1088,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_behaviour_revenue_insig
   description     = "Procedure that backfills the user_behaviour_revenue_insights table with gemini insights. Daily granularity level. Run this procedure occasionally before consuming gemini insights on the Looker Dahboard."
 
   depends_on = [
-    google_bigquery_job.create_gemini_model_job
+    null_resource.check_gemini_model_exists
   ]
 }
 
@@ -1460,17 +1460,41 @@ data "local_file" "create_gemini_model_file" {
   filename = "${local.sql_dir}/query/create_gemini_model.sql"
 }
 
-resource "google_bigquery_job" "create_gemini_model_job" {
-  project       = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
-  job_id        = "bq_create_gemini_model_job"
-  query {
-    query = data.local_file.create_gemini_model_file.content
-    create_disposition = ""
-    write_disposition = ""
+# This resource executes gcloud commands to run a query that creates a gemini model connected to Vertex AI LLM API.
+resource "null_resource" "create_gemini_model" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${local.poetry_run_alias} bq query --use_legacy_sql=false --max_rows=100 --maximum_bytes_billed=10000000 < ${data.local_file.create_gemini_model_file.filename}
+    EOT
+  }
+  depends_on = [
+    google_bigquery_connection.vertex_ai_connection
+  ]
+}
+
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the model is created in BigQuery.
+resource "null_resource" "check_gemini_model_exists" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! bq --project_id=${local.gemini_insights_project_id} ls -m --format=pretty ${local.gemini_insights_project_id}:${local.config_bigquery.dataset.gemini_insights.name} | grep -i "gemini_1_5_pro" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 5
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "Gemini model was not created, terraform can not continue!"
+      exit 1
+    fi
+    sleep 5
+    EOT
   }
 
   depends_on = [
-    google_bigquery_connection.vertex_ai_connection
+    google_bigquery_connection.vertex_ai_connection,
+    null_resource.create_gemini_model
   ]
 }
 
@@ -1488,6 +1512,6 @@ resource "google_bigquery_routine" "invoke_user_behaviour_revenue_insights" {
   description     = "Procedure that invokes the user_behaviour_revenue_insights table with gemini insights. Daily granularity level. Run this procedure daily before consuming gemini insights on the Looker Dahboard."
 
   depends_on = [
-    google_bigquery_job.create_gemini_model_job
+    null_resource.check_gemini_model_exists
   ]
 }

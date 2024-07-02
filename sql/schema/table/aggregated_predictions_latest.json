@@ -4,10 +4,6 @@
     "type": "FLOAT"
   },
   {
-    "name": "user_pseudo_id",
-    "type": "STRING"
-  },
-  {
     "name": "ltv_processed_timestamp",
     "type": "TIMESTAMP"
   },
@@ -24,48 +20,20 @@
     "type": "STRING"
   },
   {
-    "name": "propensity_score",
+    "name": "purchase_score",
     "type": "FLOAT"
   },
   {
-    "name": "propensity_processed_timestamp",
+    "name": "purchase_processed_timestamp",
     "type": "TIMESTAMP"
   },
   {
-    "name": "propensity_feature_date",
+    "name": "purchase_feature_date",
     "type": "DATE"
   },
   {
     "name": "p_p_decile",
     "type": "INTEGER"
-  },
-  {
-    "name": "device_mobile_brand_name",
-    "type": "STRING"
-  },
-  {
-    "name": "device_os",
-    "type": "STRING"
-  },
-  {
-    "name": "device_language",
-    "type": "STRING"
-  },
-  {
-    "name": "device_web_browser",
-    "type": "STRING"
-  },
-  {
-    "name": "geo_sub_continent",
-    "type": "STRING"
-  },
-  {
-    "name": "geo_metro",
-    "type": "STRING"
-  },
-  {
-    "name": "has_signed_in_with_user_id",
-    "type": "BOOLEAN"
   },
   {
     "name": "active_users_past_1_30_day",
@@ -210,6 +178,82 @@
   {
     "name": "checkouts_past_150_180_day",
     "type": "INTEGER"
+  },
+  {
+    "name": "Segment_ID",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Segment_Distance",
+    "type": "FLOAT"
+  },
+  {
+    "name": "segment_processed_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "segment_feature_date",
+    "type": "DATE"
+  },
+  {
+    "name": "active_users_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "purchases_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "visits_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "view_items_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "add_to_carts_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "checkouts_past_1_7_day",
+    "type": "INTEGER"
+  },
+  {
+    "name": "ltv_revenue_past_1_7_day",
+    "type": "FLOAT"
+  },
+  {
+    "name": "ltv_revenue_past_7_15_day",
+    "type": "FLOAT"
+  },
+  {
+    "name": "device_mobile_brand_name",
+    "type": "STRING"
+  },
+  {
+    "name": "device_os",
+    "type": "STRING"
+  },
+  {
+    "name": "device_language",
+    "type": "STRING"
+  },
+  {
+    "name": "device_web_browser",
+    "type": "STRING"
+  },
+  {
+    "name": "geo_sub_continent",
+    "type": "STRING"
+  },
+  {
+    "name": "geo_metro",
+    "type": "STRING"
+  },
+  {
+    "name": "has_signed_in_with_user_id",
+    "type": "BOOLEAN"
   },
   {
     "name": "user_ltv_revenue",
@@ -408,6 +452,10 @@
     "type": "INTEGER"
   },
   {
+    "name": "user_id",
+    "type": "STRING"
+  },
+  {
     "name": "device_category",
     "type": "STRING"
   },
@@ -452,10 +500,6 @@
     "type": "STRING"
   },
   {
-    "name": "user_id",
-    "type": "STRING"
-  },
-  {
     "name": "active_users_past_8_14_day",
     "type": "INTEGER"
   },
@@ -480,52 +524,28 @@
     "type": "INTEGER"
   },
   {
-    "name": "Segment_ID",
-    "type": "INTEGER"
+    "name": "likely_to_churn",
+    "type": "STRING"
   },
   {
-    "name": "Segment_Distance",
+    "name": "churn_score",
     "type": "FLOAT"
   },
   {
-    "name": "segment_processed_timestamp",
+    "name": "churn_processed_timestamp",
     "type": "TIMESTAMP"
   },
   {
-    "name": "segment_feature_date",
+    "name": "churn_feature_date",
     "type": "DATE"
   },
   {
-    "name": "active_users_past_1_7_day",
+    "name": "c_p_decile",
     "type": "INTEGER"
   },
   {
-    "name": "purchases_past_1_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_1_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_1_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_1_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_1_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "ltv_revenue_past_1_7_day",
-    "type": "FLOAT"
-  },
-  {
-    "name": "ltv_revenue_past_7_15_day",
-    "type": "FLOAT"
+    "name": "user_pseudo_id",
+    "type": "STRING"
   },
   {
     "name": "auto_segment_processed_timestamp",
@@ -540,27 +560,15 @@
     "type": "INTEGER"
   },
   {
-    "name": "Google_Redesign_Apparel_Mens_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
     "name": "Google_Redesign_Clearance",
     "type": "INTEGER"
   },
   {
+    "name": "Google_Redesign_Apparel_Mens_sortci_newest_desc",
+    "type": "INTEGER"
+  },
+  {
     "name": "basket_html",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Lifestyle_Drinkware",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Stationery_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
-    "name": "signin_html",
     "type": "INTEGER"
   },
   {
@@ -572,19 +580,27 @@
     "type": "INTEGER"
   },
   {
-    "name": "Google_Redesign_Apparel_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
     "name": "store_html",
     "type": "INTEGER"
   },
   {
-    "name": "Google_Bike_sortci_newest_desc",
+    "name": "Google_Redesign_Lifestyle_Drinkware",
     "type": "INTEGER"
   },
   {
-    "name": "store_html_sortci_newest_desc",
+    "name": "signin_html",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Apparel_sortci_newest_desc",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Apparel_Womens",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Stationery_sortci_newest_desc",
     "type": "INTEGER"
   }
 ]

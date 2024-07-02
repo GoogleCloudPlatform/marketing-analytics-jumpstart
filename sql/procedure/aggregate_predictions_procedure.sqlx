@@ -112,6 +112,8 @@ SELECT
     `%s.__TABLES__`
   WHERE
     table_id LIKE '%s'
+  AND
+    NOT CONTAINS_SUBSTR(table_id, 'error')
   ORDER BY
     last_modified_time DESC
   LIMIT

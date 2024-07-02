@@ -2460,7 +2460,9 @@ bigquery:
       insert_table: "auto_audience_segmentation_training_preparation"
       lookback_days: 15
       expiration_duration_hours: 12
-      custom_start_date: "'2024-01-01'"
+      # This parameter helps you set a maximum number of samples.
+      total_samples: 100000
+      custom_start_date: "'2024-05-01'"
       custom_end_date: "NULL"
     # This procedure aggregates all the daily predictions generates into a consumable table grouped for each user.
     # This table is used for multiple Looker Studio dashboards reports. 
