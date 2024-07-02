@@ -48,66 +48,6 @@ from google_cloud_pipeline_components.types import artifact_types
 def training_pl(
     project_id: str,
     dataset: str,
-    location: Optional[str],
-    training_table: str,
-    bucket_name: str,
-    model_name: str,
-    p_wiggle: int,
-    min_num_clusters: int, 
-    image_uri: str,
-):
-    """
-    This pipeline trains a scikit-learn clustering model and uploads it to GCS.
-
-    Args:
-        project_id: The Google Cloud project ID.
-        dataset: The BigQuery dataset where the training data is stored.
-        location: The Google Cloud region where the pipeline will be run.
-        training_table: The BigQuery table containing the training data.
-        bucket_name: The GCS bucket where the trained model will be uploaded.
-        model_name: The name of the trained model.
-        p_wiggle: The p_wiggle parameter for the scikit-learn clustering model.
-        min_num_clusters: The minimum number of clusters for the scikit-learn clustering model.
-        image_uri: The image URI for the scikit-learn clustering model.
-    """
-
-    # Train scikit-learn clustering model and upload to GCS
-    train_interest_based_segmentation_model = train_scikit_cluster_model(
-        location=location,
-        project_id=project_id,
-        dataset=dataset,
-        training_table=training_table,
-        p_wiggle=p_wiggle,
-        min_num_clusters=min_num_clusters,
-        bucket_name=bucket_name,
-        model_name=model_name
-    )
-
-    # Return unmanaged model resource uploaded to GCS
-    unmanaged_model = return_unmanaged_model(
-        image_uri=image_uri,
-        bucket_name=bucket_name,
-        model_name=model_name
-    ).after(*[train_interest_based_segmentation_model])
-
-    # Consuming the UnmanagedContainerModel artifact for the previous step
-    model_upload_with_artifact = ModelUploadOp(
-        project=project_id,
-        location=location,
-        display_name=model_name,
-        unmanaged_container_model=unmanaged_model.outputs['model']
-    ).after(*[unmanaged_model])
-
-
-
-
-# This is the Vertex AI Pipeline definition for Auto Audience Segmentation Traning pipelines.
-# This pipeline will be compiled, uploaded and scheduled by a terraform resource in the folder `infrastructure/terraform/modules/pipelines/pipelines.tf`.
-# To change these parameters, check the appropriate section in the `config.yaml.tftpl` file.
-@dsl.pipeline()
-def training_pl_2(
-    project_id: str,
-    dataset: str,
     location: str,
 
     model_name_bq_prefix: str,
@@ -182,7 +122,11 @@ def training_pl_2(
 def prediction_pl(
     project_id: str,
     location: Optional[str],
-    model_name: str,
+    model_dataset_id: str, # to also include project.dataset
+    model_name_bq_prefix: str, # must match the model name defined in the training pipeline. for now it is {NAME_OF_PIPELINE}-model
+    model_metric_name: str, # one of davies_bouldin_index ,  mean_squared_distance
+    model_metric_threshold: float,
+    number_of_models_considered: int,
     bigquery_source: str,
     bigquery_destination_prefix: str,
     pubsub_activation_topic: str,
@@ -192,37 +136,50 @@ def prediction_pl(
     This pipeline runs batch prediction using a Vertex AI model and sends a pubsub activation message.
 
     Args:
-        project_id: The Google Cloud project ID.
-        location: The Google Cloud region where the pipeline will be run.
-        model_name: The name of the Vertex AI model.
-        bigquery_source: The BigQuery table containing the prediction data.
-        bigquery_destination_prefix: The BigQuery table prefix where the prediction results will be stored.
-        pubsub_activation_topic: The Pub/Sub topic to send the activation message.
-        pubsub_activation_type: The type of activation message to send.
+        project_id (str): The Google Cloud project ID.
+        location (Optional[str]): The Google Cloud region where the pipeline will be deployed.
+        model_dataset_id (str): The BigQuery dataset ID where the model is stored.
+        model_name_bq_prefix (str): The prefix for the BQML model name.
+        model_metric_name (str): The metric name to use for model selection.
+        model_metric_threshold (float): The metric threshold to use for model selection.
+        number_of_models_considered (int): The number of models to consider for selection.
+        bigquery_source (str): The BigQuery table containing the prediction data.
+        bigquery_destination_prefix (str): The prefix for the BigQuery table where the predictions will be stored.
+        pubsub_activation_topic (str): The Pub/Sub topic to send the activation message to.
+        pubsub_activation_type (str): The type of activation message to send.
     """
     
-    # Get the latest model named `model_name`
-    model_op = get_latest_model(
-        project=project_id,
+    # Get the best candidate model according to the parameters.
+    auto_segmentation_model = bq_select_best_kmeans_model(
+        project_id=project_id,
         location=location,
-        display_name=model_name
-    )
+        model_prefix=model_name_bq_prefix,
+        dataset_id= model_dataset_id,
+        metric_name= model_metric_name,
+        metric_threshold= model_metric_threshold,
+        number_of_models_considered= number_of_models_considered,
+    ).set_display_name('elect_latest_model')
 
-    # Submit a vertex ai job to run batch prediction using the `bigquery_source` as prediction dataset.
-    prediction_op = batch_prediction(
-        job_name_prefix='vaip-batch',
-        bigquery_source=f"{bigquery_source}",
-        bigquery_destination_prefix=bigquery_destination_prefix,
-        model=model_op.outputs["elected_model"],
-        max_replica_count=1,
-        # dst_table_expiration_hours=24*7
-    ).after(model_op)
+    # Submits a BigQuery job to generate the predictions using the `bigquery_source` and prediction dataset.
+    predictions_op = bq_clustering_predictions(
+        model = auto_segmentation_model.outputs['elected_model'],
+        project_id = project_id,
+        location = location,
+        bigquery_source = bigquery_source,
+        bigquery_destination_prefix= bigquery_destination_prefix)
+
+    # Flattens the prediction table
+    flatten_predictions = bq_flatten_kmeans_prediction_table(
+        project_id=project_id,
+        location=location,
+        source_table=predictions_op.outputs['destination_table']
+    )
 
     # Sends a pubsub activation message that will trigger the Activation Dataflow job.
     send_pubsub_activation_msg(
         project=project_id,
         topic_name=pubsub_activation_topic,
         activation_type=pubsub_activation_type,
-        predictions_table=prediction_op.outputs['destination_table'],
-    ).set_display_name('send_pubsub_activation_msg').after(prediction_op)
+        predictions_table=flatten_predictions.outputs['destination_table'],
+    ).set_display_name('send_pubsub_activation_msg').after(flatten_predictions)
 

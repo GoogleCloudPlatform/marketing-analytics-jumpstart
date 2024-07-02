@@ -144,7 +144,7 @@ def prediction_pl(
     """
 
     # Get the best candidate model according to the parameters.
-    purchase_propensity_label = bq_select_best_kmeans_model(
+    segmentation_model = bq_select_best_kmeans_model(
         project_id=project_id,
         location=location,
         model_prefix=model_name_bq_prefix,
@@ -156,7 +156,7 @@ def prediction_pl(
 
     # Submits a BigQuery job to generate the predictions using the `bigquery_source` and prediction dataset.
     predictions_op = bq_clustering_predictions(
-        model = purchase_propensity_label.outputs['elected_model'],
+        model = segmentation_model.outputs['elected_model'],
         project_id = project_id,
         location = location,
         bigquery_source = bigquery_source,

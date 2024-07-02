@@ -941,7 +941,7 @@ vertex_ai:
           end_time: null
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be compiled
-        # For Demographics Segmentation model, we use the BQML KMeans clustering algorithm.
+        # For Demographics Audience Segmentation model, we use the BQML KMeans clustering algorithm.
         # Check the official documentation for better understanding the algorithm 
         # (https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-create-kmeans).
         pipeline_parameters:
@@ -999,7 +999,7 @@ vertex_ai:
           # This is the prediction dataset table or view.
           bigquery_source: "${project_id}.audience_segmentation.v_audience_segmentation_inference_15"
           bigquery_destination_prefix: "${project_id}.audience_segmentation.pred_audience_segmentation_inference_15"
-          # THese are parameters to trigger the Activation Application Dataflow.
+          # These are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "audience-segmentation-15"
         pipeline_parameters_substitutions: null
@@ -1020,6 +1020,8 @@ vertex_ai:
         name: "auto-segmentation-training-pl"
         job_id_prefix: "auto-segmentation-training-pl-"
         experiment_name: "auto-segmentation-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
         schedule:
           cron: "TZ=America/New_York 0 12 * * SAT"
@@ -1027,6 +1029,10 @@ vertex_ai:
           start_time: null
           end_time: null
           state: PAUSED # possible states ACTIVE or PAUSED
+        # These are pipeline parameters that will be passed to the pipeline to be compiled
+        # For Interest based Auto Audience Segmentation model, we use the BQML KMeans clustering algorithm.
+        # Check the official documentation for better understanding the algorithm 
+        # (https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-create-kmeans).
         pipeline_parameters:
           location: "${location}"
           project_id: "${project_id}"
@@ -1046,6 +1052,7 @@ vertex_ai:
           km_warm_start: "FALSE"
           use_split_column: "FALSE"
           use_hparams_tuning: "FALSE"
+          # Features to be excluded from the training dataset.
           exclude_features:
             - user_pseudo_id
             - user_id
@@ -1066,10 +1073,20 @@ vertex_ai:
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
-          location: "${cloud_region}"
-          model_name: "auto-audience-segmentation-model"
+          location: "${location}"
+          model_dataset_id: "${project_id}.auto_audience_segmentation" # to also include project.dataset
+          # The name of the Audience Segmentation Clustering model
+          model_name_bq_prefix: "auto-audience-segmentation-model" # must match the model name defined in the training pipeline.
+          model_metric_name: "davies_bouldin_index" # one of davies_bouldin_index ,  mean_squared_distance
+          # This is the model metric value that will tell us if the model has good quality or not.
+          # Lower index values indicate a better clustering result. The index is improved (lowered) by increased separation between clusters and decreased variation within clusters.
+          # Check official documentation for better understanding 
+          # (https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-evaluate#mlevaluate_output)
+          model_metric_threshold: 10 
+          number_of_models_considered: 2
+          # THis is the prediction dataset table or view
           bigquery_source: "${project_id}.auto_audience_segmentation.v_auto_audience_segmentation_inference_15"
-          bigquery_destination_prefix: "${project_id}.auto_audience_segmentation"
+          bigquery_destination_prefix: "${project_id}.auto_audience_segmentation.pred_auto_audience_segmentation_inference_15"
           # These are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
           pubsub_activation_type: "auto-audience-segmentation-15"

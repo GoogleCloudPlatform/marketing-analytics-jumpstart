@@ -217,7 +217,7 @@ CALL
     audience_segmentation_table);
 CALL
   {{dataset_id}}.get_latest_table_by_pattern(auto_audience_segmentation_dataset,
-    'predictions_%',
+    'pred_%_view',
     auto_audience_segmentation_table);
 
 -- Getting predictions tables columns for each use case
@@ -267,7 +267,8 @@ SET
   'feature_date',
   'user_pseudo_id'];
 SET
-  auto_audience_segmentation_special_columns = ['user_id',
+  auto_audience_segmentation_special_columns = ['NEAREST_CENTROIDS_DISTANCE',
+  'user_pseudo_id',
   'feature_timestamp',
   'prediction'];
 
@@ -443,11 +444,11 @@ SET
   fourth_query_str = FORMAT("""
 CREATE OR REPLACE TABLE `%s.{{dataset_id}}.{{table_id}}` AS
 SELECT
---g.user_pseudo_id,
 %s,
 %s,
 h.feature_timestamp AS auto_segment_processed_timestamp,
-h.prediction AS Auto_Segment_ID,
+h.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].CENTROID_ID AS Auto_Segment_ID,
+h.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].DISTANCE AS Auto_Segment_Distance,
 %s
 FROM temp3 AS g
 full outer join `%s` AS h
