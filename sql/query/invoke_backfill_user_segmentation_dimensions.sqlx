@@ -46,12 +46,8 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_mobile_brand_name,
   LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_mobile_model_name,
   LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_os,
-  --LAST_VALUE(device_os_version) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_os_version,
-  LAST_VALUE(SPLIT(device_os_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_os_version,
   LAST_VALUE(language) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS device_language,
   LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_web_browser,
-  --LAST_VALUE(browser_version) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_web_browser_version,
-  LAST_VALUE(SPLIT(device_web_browser_version, '.')[OFFSET(0)]) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_web_browser_version,
   LAST_VALUE(device_advertising_id) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_advertising_id
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.traffic_source` as T
@@ -90,10 +86,8 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   MAX(UDESS.device_mobile_brand_name) as device_mobile_brand_name,
   MAX(UDESS.device_mobile_model_name) as device_mobile_model_name,
   MAX(UDESS.device_os) as device_os,
-  MAX(UDESS.device_os_version) as device_os_version,
   MAX(UDESS.device_language) as device_language,
   MAX(UDESS.device_web_browser) as device_web_browser,
-  MAX(UDESS.device_web_browser_version) as device_web_browser_version,
   APPROX_TOP_COUNT(UDESS.geo_sub_continent, 1)[OFFSET(0)].value as geo_sub_continent,
   APPROX_TOP_COUNT(UDESS.geo_country, 1)[OFFSET(0)].value as geo_country,
   APPROX_TOP_COUNT(UDESS.geo_region, 1)[OFFSET(0)].value as geo_region,

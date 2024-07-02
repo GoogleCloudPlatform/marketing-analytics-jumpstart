@@ -35,22 +35,12 @@
       "description": "feature description"
     },
     {
-      "name": "device_os_version",
-      "type": "STRING",
-      "description": "feature description"
-    },
-    {
       "name": "device_language",
       "type": "STRING",
       "description": "feature description"
     },
     {
       "name": "device_web_browser",
-      "type": "STRING",
-      "description": "feature description"
-    },
-    {
-      "name": "device_web_browser_version",
       "type": "STRING",
       "description": "feature description"
     },

@@ -1,0 +1,17 @@
+[
+    {
+        "name": "feature_date",
+        "type": "DATE",
+        "description": "Date as base of the calculation to lookback and calculate the features."
+      },
+      {
+        "name": "feature_week_number",
+        "type": "INTEGER",
+        "description": "The ISO 8601 week number of the feature_date"
+      },
+      {
+        "name": "gemini_insights",
+        "type": "STRING",
+        "description": "The gemini generated insights about the user behavior and revenue metrics"
+      }
+]

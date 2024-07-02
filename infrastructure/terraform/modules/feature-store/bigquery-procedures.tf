@@ -324,6 +324,32 @@ resource "google_bigquery_routine" "purchase_propensity_inference_preparation" {
   }
 }
 
+# This resource reads the contents of a local SQL file named churn_propensity_inference_preparation.sql and 
+# stores it in a variable named churn_propensity_inference_preparation_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named churn_propensity_inference_preparation.
+data "local_file" "churn_propensity_inference_preparation_file" {
+  filename = "${local.sql_dir}/procedure/churn_propensity_inference_preparation.sql"
+}
+
+# The churn_propensity_inference_preparation procedure is designed to prepare features for the Churn Propensity model.
+# ##
+# The procedure is typically invoked before prediction the Churn Propensity model to ensure that the features data 
+# is in the correct format and contains the necessary features for prediction.
+resource "google_bigquery_routine" "churn_propensity_inference_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  routine_id      = "churn_propensity_inference_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.churn_propensity_inference_preparation_file.content
+  description     = "Procedure that prepares features for Churn Propensity model inference. User-per-day granularity level features. Run this procedure every time before Churn Propensity model predict."
+  arguments {
+    name      = "inference_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+}
+
 # This resource reads the contents of a local SQL file named purchase_propensity_label.sql and 
 # stores it in a variable named purchase_propensity_label_file.content. 
 # The SQL file is expected to contain the definition of a BigQuery procedure named purchase_propensity_label.
@@ -342,6 +368,42 @@ resource "google_bigquery_routine" "purchase_propensity_label" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.purchase_propensity_label_file.content
+  description     = "User-per-day granularity level labels. Run this procedure daily."
+  arguments {
+    name      = "input_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "end_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "rows_added"
+    mode      = "OUT"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+}
+
+# This resource reads the contents of a local SQL file named churn_propensity_label.sql and 
+# stores it in a variable named churn_propensity_label_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named churn_propensity_label.
+data "local_file" "churn_propensity_label_file" {
+  filename = "${local.sql_dir}/procedure/churn_propensity_label.sql"
+}
+
+# The churn_propensity_label procedure is designed to prepare label for the Churn Propensity model.
+# ##
+# The procedure is typically invoked before training the Churn Propensity model to ensure that the labeled data 
+# is in the correct format and ready for training.
+resource "google_bigquery_routine" "churn_propensity_label" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "churn_propensity_label"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.churn_propensity_label_file.content
   description     = "User-per-day granularity level labels. Run this procedure daily."
   arguments {
     name      = "input_date"
@@ -379,6 +441,48 @@ resource "google_bigquery_routine" "purchase_propensity_training_preparation" {
   language        = "SQL"
   definition_body = data.local_file.purchase_propensity_training_preparation_file.content
   description     = "Procedure that prepares features for Purchase Propensity model training. User-per-day granularity level features. Run this procedure every time before Purchase Propensity model train."
+  arguments {
+    name      = "start_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "end_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "train_split_end_number"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+  arguments {
+    name      = "validation_split_end_number"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+}
+
+
+# This resource reads the contents of a local SQL file named churn_propensity_training_preparation.sql and 
+# stores it in a variable named churn_propensity_training_preparation_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named churn_propensity_training_preparation.
+data "local_file" "churn_propensity_training_preparation_file" {
+  filename = "${local.sql_dir}/procedure/churn_propensity_training_preparation.sql"
+}
+
+# The churn_propensity_training_preparation procedure is designed to prepare features for the Churn Propensity model.
+# ##
+# The procedure is typically invoked before training the Churn Propensity model to ensure that the features data 
+# is in the correct format and contains the necessary features for training.
+resource "google_bigquery_routine" "churn_propensity_training_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  routine_id      = "churn_propensity_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.churn_propensity_training_preparation_file.content
+  description     = "Procedure that prepares features for Churn Propensity model training. User-per-day granularity level features. Run this procedure every time before Churn Propensity model train."
   arguments {
     name      = "start_date"
     mode      = "INOUT"
@@ -751,6 +855,33 @@ resource "google_bigquery_routine" "aggregate_last_day_predictions" {
   definition_body = data.local_file.aggregate_predictions_procedure_file.content
 }
 
+# This resource reads the contents of a local SQL file named user_behaviour_revenue_insights.sql and 
+# stores it in a variable named user_behaviour_revenue_insights_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named user_behaviour_revenue_insights.
+data "local_file" "user_behaviour_revenue_insights_file" {
+  filename = "${local.sql_dir}/procedure/user_behaviour_revenue_insights.sql"
+}
+
+# The user_behaviour_revenue_insights procedure is designed to generate gemini insights. 
+resource "google_bigquery_routine" "user_behaviour_revenue_insights" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
+  dataset_id      = local.config_bigquery.dataset.gemini_insights.name
+  routine_id      = "user_behaviour_revenue_insights"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.user_behaviour_revenue_insights_file.content
+  description     = "Procedure that generates gemini insights for . Daily granularity level. Run this procedure every day before consuming gemini insights on the Looker Dahboard."
+  arguments {
+    name      = "input_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+
+  depends_on = [
+    null_resource.check_gemini_model_exists
+  ]
+}
+
 /*
  *Including the backfill routines
  */
@@ -768,6 +899,7 @@ resource "google_bigquery_routine" "invoke_backfill_customer_lifetime_value_labe
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_customer_lifetime_value_label_file.content
+  description     = "Procedure that backfills the customer_lifetime_value_label feature table. Run this procedure occasionally before training the models."
 }
 
 data "local_file" "invoke_backfill_purchase_propensity_label_file" {
@@ -781,6 +913,21 @@ resource "google_bigquery_routine" "invoke_backfill_purchase_propensity_label" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_purchase_propensity_label_file.content
+  description     = "Procedure that backfills the purchase_propensity_label feature table. Run this procedure occasionally before training the models."
+}
+
+data "local_file" "invoke_backfill_churn_propensity_label_file" {
+  filename = "${local.sql_dir}/query/invoke_backfill_churn_propensity_label.sql"
+}
+
+resource "google_bigquery_routine" "invoke_backfill_churn_propensity_label" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "invoke_backfill_churn_propensity_label"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_backfill_churn_propensity_label_file.content
+  description     = "Procedure that backfills the churn_propensity_label feature table. Run this procedure occasionally before training the models."
 }
 
 data "local_file" "invoke_backfill_user_dimensions_file" {
@@ -794,6 +941,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_dimensions_file.content
+  description     = "Procedure that backfills the user_dimensions feature table. Run this procedure occasionally before training the models."
 }
 
 data "local_file" "invoke_backfill_user_lifetime_dimensions_file" {
@@ -807,6 +955,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_lifetime_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_lifetime_dimensions_file.content
+  description     = "Procedure that backfills the user_lifetime_dimensions feature table. Run this procedure occasionally before training the models."
 }
 
 
@@ -821,6 +970,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_lookback_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_lookback_metrics_file.content
+  description     = "Procedure that backfills the user_lookback_metrics feature table. Run this procedure occasionally before training the models."
 }
 
 
@@ -835,6 +985,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_lifetime
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_rolling_window_lifetime_metrics_file.content
+  description     = "Procedure that backfills the user_rolling_window_lifetime_metrics feature table. Run this procedure occasionally before training the models."
 }
 
 
@@ -849,6 +1000,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_rolling_window_metrics_file.content
+  description     = "Procedure that backfills the user_rolling_window_metrics feature table. Run this procedure occasionally before training the models."
 }
 
 
@@ -863,6 +1015,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_scoped_lifetime_metrics
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_scoped_lifetime_metrics_file.content
+  description     = "Procedure that backfills the user_segmentation_dimeuser_scoped_lifetime_metricsnsions feature table. Run this procedure occasionally before training the models."
 }
 
 data "local_file" "invoke_backfill_user_scoped_metrics_file" {
@@ -876,6 +1029,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_scoped_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_scoped_metrics_file.content
+  description     = "Procedure that backfills the user_segmentation_dimuser_scoped_metricsensions feature table. Run this procedure occasionally before training the models."
 }
 
 data "local_file" "invoke_backfill_user_scoped_segmentation_metrics_file" {
@@ -889,6 +1043,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_scoped_segmentation_met
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_scoped_segmentation_metrics_file.content
+  description     = "Procedure that backfills the user_scoped_segmentation_metrics feature table. Run this procedure occasionally before training the models."
 }
 
 data "local_file" "invoke_backfill_user_segmentation_dimensions_file" {
@@ -902,6 +1057,7 @@ resource "google_bigquery_routine" "invoke_backfill_user_segmentation_dimensions
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_segmentation_dimensions_file.content
+  description     = "Procedure that backfills the user_segmentation_dimensions feature table. Run this procedure occasionally before training the models."
 }
 
 data "local_file" "invoke_backfill_user_session_event_aggregated_metrics_file" {
@@ -915,6 +1071,25 @@ resource "google_bigquery_routine" "invoke_backfill_user_session_event_aggregate
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_session_event_aggregated_metrics_file.content
+  description     = "Procedure that backfills the user_session_event_aggregated_metrics feature table. Run this procedure occasionally before training the models."
+}
+
+data "local_file" "invoke_backfill_user_behaviour_revenue_insights_file" {
+  filename = "${local.sql_dir}/query/invoke_backfill_user_behaviour_revenue_insights.sql"
+}
+
+resource "google_bigquery_routine" "invoke_backfill_user_behaviour_revenue_insights" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
+  dataset_id      = local.config_bigquery.dataset.gemini_insights.name
+  routine_id      = "invoke_backfill_user_behaviour_revenue_insights"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_backfill_user_behaviour_revenue_insights_file.content
+  description     = "Procedure that backfills the user_behaviour_revenue_insights table with gemini insights. Daily granularity level. Run this procedure occasionally before consuming gemini insights on the Looker Dahboard."
+
+  depends_on = [
+    null_resource.check_gemini_model_exists
+  ]
 }
 
 /*
@@ -947,6 +1122,20 @@ resource "google_bigquery_routine" "invoke_purchase_propensity_inference_prepara
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_purchase_propensity_inference_preparation_file.content
+}
+
+
+data "local_file" "invoke_churn_propensity_inference_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_churn_propensity_inference_preparation.sql"
+}
+
+resource "google_bigquery_routine" "invoke_churn_propensity_inference_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  routine_id      = "invoke_churn_propensity_inference_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_churn_propensity_inference_preparation_file.content
 }
 
 
@@ -1018,6 +1207,20 @@ resource "google_bigquery_routine" "invoke_purchase_propensity_training_preparat
 }
 
 
+data "local_file" "invoke_churn_propensity_training_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_churn_propensity_training_preparation.sql"
+}
+
+resource "google_bigquery_routine" "invoke_churn_propensity_training_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  routine_id      = "invoke_churn_propensity_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_churn_propensity_training_preparation_file.content
+}
+
+
 data "local_file" "invoke_audience_segmentation_training_preparation_file" {
   filename = "${local.sql_dir}/query/invoke_audience_segmentation_training_preparation.sql"
 }
@@ -1076,6 +1279,7 @@ resource "google_bigquery_routine" "invoke_customer_lifetime_value_label" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_customer_lifetime_value_label_file.content
+  description     = "Procedure that invokes the customer_lifetime_value_label table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 data "local_file" "invoke_purchase_propensity_label_file" {
@@ -1089,7 +1293,24 @@ resource "google_bigquery_routine" "invoke_purchase_propensity_label" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_purchase_propensity_label_file.content
+  description     = "Procedure that invokes the purchase_propensity_label table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
+
+
+data "local_file" "invoke_churn_propensity_label_file" {
+  filename = "${local.sql_dir}/query/invoke_churn_propensity_label.sql"
+}
+
+resource "google_bigquery_routine" "invoke_churn_propensity_label" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "invoke_churn_propensity_label"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_churn_propensity_label_file.content
+  description     = "Procedure that invokes the churn_propensity_label table. Daily granularity level. Run this procedure daily before running prediction pipelines."
+}
+
 
 data "local_file" "invoke_user_dimensions_file" {
   filename = "${local.sql_dir}/query/invoke_user_dimensions.sql"
@@ -1102,6 +1323,7 @@ resource "google_bigquery_routine" "invoke_user_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_dimensions_file.content
+  description     = "Procedure that invokes the user_dimensions table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 data "local_file" "invoke_user_lifetime_dimensions_file" {
@@ -1115,6 +1337,7 @@ resource "google_bigquery_routine" "invoke_user_lifetime_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_lifetime_dimensions_file.content
+  description     = "Procedure that invokes the user_lifetime_dimensions table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 
@@ -1129,6 +1352,7 @@ resource "google_bigquery_routine" "invoke_user_lookback_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_lookback_metrics_file.content
+  description     = "Procedure that invokes the user_lookback_metrics table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 
@@ -1143,6 +1367,7 @@ resource "google_bigquery_routine" "invoke_user_rolling_window_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_rolling_window_lifetime_metrics_file.content
+  description     = "Procedure that invokes the user_rolling_window_lifetime table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 
@@ -1157,6 +1382,7 @@ resource "google_bigquery_routine" "invoke_user_rolling_window_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_rolling_window_metrics_file.content
+  description     = "Procedure that invokes the user_rolling_window table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 
@@ -1171,6 +1397,7 @@ resource "google_bigquery_routine" "invoke_user_scoped_lifetime_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_scoped_lifetime_metrics_file.content
+  description     = "Procedure that invokes the user_scoped_lifetime table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 data "local_file" "invoke_user_scoped_metrics_file" {
@@ -1184,6 +1411,7 @@ resource "google_bigquery_routine" "invoke_user_scoped_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_scoped_metrics_file.content
+  description     = "Procedure that invokes the user_scoped_metrics table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 data "local_file" "invoke_user_scoped_segmentation_metrics_file" {
@@ -1197,6 +1425,7 @@ resource "google_bigquery_routine" "invoke_user_scoped_segmentation_metrics" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_scoped_segmentation_metrics_file.content
+  description     = "Procedure that invokes the user_scoped_segmentation_metrics table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 data "local_file" "invoke_user_segmentation_dimensions_file" {
@@ -1210,6 +1439,7 @@ resource "google_bigquery_routine" "invoke_user_segmentation_dimensions" {
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_segmentation_dimensions_file.content
+  description     = "Procedure that invokes the user_segmentation_dimensions table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
 data "local_file" "invoke_user_session_event_aggregated_metrics_file" {
@@ -1223,4 +1453,65 @@ resource "google_bigquery_routine" "invoke_user_session_event_aggregated_metrics
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.invoke_user_session_event_aggregated_metrics_file.content
+  description     = "Procedure that invokes the user_session_event_aggregated_metrics table. Daily granularity level. Run this procedure daily before running prediction pipelines."
+}
+
+data "local_file" "create_gemini_model_file" {
+  filename = "${local.sql_dir}/query/create_gemini_model.sql"
+}
+
+# This resource executes gcloud commands to run a query that creates a gemini model connected to Vertex AI LLM API.
+resource "null_resource" "create_gemini_model" {
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${local.poetry_run_alias} bq query --use_legacy_sql=false --max_rows=100 --maximum_bytes_billed=10000000 < ${data.local_file.create_gemini_model_file.filename}
+    EOT
+  }
+  depends_on = [
+    google_bigquery_connection.vertex_ai_connection
+  ]
+}
+
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the model is created in BigQuery.
+resource "null_resource" "check_gemini_model_exists" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! bq --project_id=${local.gemini_insights_project_id} ls -m --format=pretty ${local.gemini_insights_project_id}:${local.config_bigquery.dataset.gemini_insights.name} | grep -i "gemini_1_5_pro" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 5
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "Gemini model was not created, terraform can not continue!"
+      exit 1
+    fi
+    sleep 5
+    EOT
+  }
+
+  depends_on = [
+    google_bigquery_connection.vertex_ai_connection,
+    null_resource.create_gemini_model
+  ]
+}
+
+data "local_file" "invoke_user_behaviour_revenue_insights_file" {
+  filename = "${local.sql_dir}/query/invoke_user_behaviour_revenue_insights.sql"
+}
+
+resource "google_bigquery_routine" "invoke_user_behaviour_revenue_insights" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
+  dataset_id      = local.config_bigquery.dataset.gemini_insights.name
+  routine_id      = "invoke_user_behaviour_revenue_insights"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_user_behaviour_revenue_insights_file.content
+  description     = "Procedure that invokes the user_behaviour_revenue_insights table with gemini insights. Daily granularity level. Run this procedure daily before consuming gemini insights on the Looker Dahboard."
+
+  depends_on = [
+    null_resource.check_gemini_model_exists
+  ]
 }

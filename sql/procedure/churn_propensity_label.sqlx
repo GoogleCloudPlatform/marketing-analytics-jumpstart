@@ -1,0 +1,111 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- Run these windows aggregations every day. For each date in training and inference date ranges.
+-- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+DECLARE CHURN_MULTIPLIER_DAYS INT64;
+
+SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
+SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
+SET CHURN_MULTIPLIER_DAYS = 30;
+
+-- Calculating the first and last touch for each user.
+CREATE OR REPLACE TEMP TABLE first_and_last_touch_per_user AS (
+SELECT
+  user_pseudo_id,
+  MIN(event_timestamp) AS user_first_event,
+  MAX(event_timestamp) AS user_last_event
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON E.device_type_id = D.device_type_id
+WHERE event_date BETWEEN input_date AND end_date
+  AND LOWER(E.event_name) IN ('user_engagement') -- page_view, session_start, user_engagement
+  AND E.ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+GROUP BY 
+  user_pseudo_id
+);
+
+-- For the churned column, churned=0 if the user performs an action after 24 hours since their first touch, otherwise if their last action was only within the first 24 hours, then churned=1.
+-- For the bounced column, bounced=1 if the user's last action was within the first ten minutes since their first touch with the app, otherwise bounced=0. We can use this column to filter our training data later on, by conditionally querying for users where bounced = 0.
+CREATE OR REPLACE TEMP TABLE future_churn_per_user AS (
+SELECT
+  user_pseudo_id,
+  -- churned = 1 if last_event within X days of event, else 0
+  IF (user_last_event < TIMESTAMP_ADD(user_first_event, INTERVAL CHURN_MULTIPLIER_DAYS DAY), 1, 0) AS churned,
+  -- bounced = 1 if last_touch within 10 min, else 0
+  IF (user_last_event <= TIMESTAMP_ADD(user_first_event, INTERVAL 10 MINUTE), 1, 0) AS bounced,
+FROM
+  first_and_last_touch_per_user
+GROUP BY
+  user_pseudo_id,
+  user_first_event,
+  user_last_event
+);
+
+-- All users in the platform
+CREATE OR REPLACE TEMP TABLE all_possible_users as (
+  SELECT DISTINCT
+    Users.user_pseudo_id,
+    Days.event_date as event_date,
+    NULL as churned,
+    NULL as bounced,
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
+  CROSS JOIN 
+  (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
+  WHERE Days.event_date = input_date
+    AND LOWER(Users.event_name) IN ('user_engagement') -- page_view, session_start, user_engagement
+    AND Users.ga_session_id IS NOT NULL
+);
+
+
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
+SELECT DISTINCT
+  CURRENT_TIMESTAMP() AS processed_timestamp,
+  A.event_date as feature_date,
+  A.user_pseudo_id,
+  LEAST(COALESCE(B.churned, 0), 1) AS churned,
+  LEAST(COALESCE(B.bounced, 0), 1) AS bounced,
+FROM all_possible_users AS A
+LEFT JOIN future_churn_per_user AS B
+ON B.user_pseudo_id = A.user_pseudo_id
+    AND B.churned IS NOT NULL
+    AND B.bounced IS NOT NULL
+;
+
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date 
+  AND I.user_pseudo_id = T.user_pseudo_id
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.processed_timestamp = T.processed_timestamp,
+    I.churned = T.churned,
+    I.bounced = T.bounced
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     user_pseudo_id,
+     churned,
+     bounced)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.user_pseudo_id,
+     T.churned,
+     T.bounced)
+;
+
+SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);

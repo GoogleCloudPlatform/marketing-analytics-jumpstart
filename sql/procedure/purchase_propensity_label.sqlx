@@ -12,12 +12,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-# Run these windows aggregations every day. For each date in training and inference date ranges.
-## Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+-- Run these windows aggregations every day. For each date in training and inference date ranges.
+-- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
-## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
+-- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
 CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
   SELECT
     user_pseudo_id,
@@ -39,17 +39,18 @@ CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_15_30
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-  ON E.device_type_id = D.device_type_id
-    WHERE event_date BETWEEN input_date AND end_date
-    AND E.event_name='purchase'
+    ON E.device_type_id = D.device_type_id
+  WHERE event_date BETWEEN input_date AND end_date
+    AND LOWER(E.event_name) IN ('purchase')
     AND E.ga_session_id IS NOT NULL
     AND E.ecommerce.transaction_id IS NOT NULL 
     AND E.ecommerce.transaction_id <> '(not set)'
     AND D.device_os IS NOT NULL
-    GROUP BY user_pseudo_id
+  GROUP BY 
+    user_pseudo_id
 );
 
-## All users in the platform
+-- All users in the platform
 CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
   SELECT DISTINCT
     Users.user_pseudo_id,

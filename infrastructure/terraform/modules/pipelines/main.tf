@@ -24,6 +24,7 @@ locals {
   config_vars                              = yamldecode(data.local_file.config_vars.content)
   cloud_build_vars                         = local.config_vars.cloud_build
   artifact_registry_vars                   = local.config_vars.artifact_registry
+  pipeline_image_vars                      = local.config_vars.vertex_ai.components
   pipeline_vars                            = local.config_vars.vertex_ai.pipelines
   dataflow_vars                            = local.config_vars.dataflow
   config_bigquery                          = local.config_vars.bigquery
@@ -52,6 +53,7 @@ module "project_services" {
     "artifactregistry.googleapis.com",
     "aiplatform.googleapis.com",
     "dataflow.googleapis.com",
+    "bigqueryconnection.googleapis.com"
   ]
 }
 

@@ -1,0 +1,12 @@
+[
+    {
+        "name": "feature_date",
+        "type": "DATE",
+        "description": "Date as base of the calculation to lookback and calculate the features."
+      },
+      {
+        "name": "gemini_insights",
+        "type": "STRING",
+        "description": "The gemini generated insights about the user behavior and revenue metrics"
+      }
+]

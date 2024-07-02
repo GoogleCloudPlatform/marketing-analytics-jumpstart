@@ -88,6 +88,7 @@ def bq_clustering_exec(
     vertex_model_name: str,
     training_data_bq_table: str,
     exclude_features: list,
+    model_parameters: Optional[Input[Dataset]] = None,
     km_num_clusters: int = 4,
     km_init_method: str = "KMEANS++",
     km_distance_type: str = "EUCLIDEAN",
@@ -95,7 +96,9 @@ def bq_clustering_exec(
     km_max_interations: int = 20,
     km_early_stop: str = "TRUE",
     km_min_rel_progress: float = 0.01,
-    km_warm_start: str = "FALSE"
+    km_warm_start: str = "FALSE",
+    use_split_column: Optional[str] = "FALSE",
+    use_hparams_tuning: Optional[str] = "FALSE"
 ) -> None:
 
     """Creates and trains a BigQuery ML KMEANS model.
@@ -123,12 +126,6 @@ def bq_clustering_exec(
     import logging
     from datetime import datetime
 
-
-    client = bigquery.Client(
-        project=project_id,
-        location=location
-    )
-
     model_bq_name = f"{model_name_bq_prefix}_{str(int(datetime.now().timestamp()))}"
 
     exclude_sql=""
@@ -136,23 +133,55 @@ def bq_clustering_exec(
         for i in exclude_features:
             i = f'`{i}`'
         exclude_sql = f" EXCEPT ({', '.join(exclude_features)}) "
-        
-    query = f"""CREATE OR REPLACE MODEL 
-      `{model_dataset_id}.{model_bq_name}` OPTIONS (model_type='KMEANS', 
-      NUM_CLUSTERS={km_num_clusters}, 
-      MAX_ITERATIONS={km_max_interations}, 
-      MIN_REL_PROGRESS={km_min_rel_progress}, 
-      KMEANS_INIT_METHOD='{km_init_method}', 
-      --KMEANS_INIT_COL = string_value,
-      DISTANCE_TYPE='{km_distance_type}', 
-      EARLY_STOP={km_early_stop}, 
-      STANDARDIZE_FEATURES={km_standardize_features}, 
-      WARM_START={km_warm_start}, 
-      MODEL_REGISTRY='VERTEX_AI', 
-      VERTEX_AI_MODEL_ID='{vertex_model_name}' ) AS (
-        SELECT * {exclude_sql} FROM `{training_data_bq_table}`
-      )"""
+    
+    # Filter from data split column
+    if use_split_column == "TRUE":
+        filter_clause = f"""data_split = 'TRAIN'"""
+    else:
+        filter_clause = f"""TRUE"""
 
+    # Use model parameters if provided
+    if model_parameters is not None:
+        km_num_clusters = model_parameters.metadata["NUM_CLUSTERS"]
+        km_max_interations = model_parameters.metadata["MAX_ITERATIONS"]
+        km_min_rel_progress = model_parameters.metadata["MIN_REL_PROGRESS"]
+        km_init_method = model_parameters.metadata["KMEANS_INIT_METHOD"]
+        km_standardize_features = model_parameters.metadata["STANDARDIZE_FEATURES"]
+    
+    # Create model
+    if use_hparams_tuning == "TRUE":
+        query = query = f"""CREATE OR REPLACE MODEL 
+        `{project_id}.{model_dataset_id}.{model_bq_name}` OPTIONS (model_type='KMEANS', 
+        NUM_CLUSTERS=HPARAM_RANGE(2, {km_num_clusters}), 
+        MAX_ITERATIONS={km_max_interations}, 
+        MIN_REL_PROGRESS={km_min_rel_progress}, 
+        KMEANS_INIT_METHOD='{km_init_method}', 
+        DISTANCE_TYPE='{km_distance_type}', 
+        EARLY_STOP={km_early_stop}, 
+        STANDARDIZE_FEATURES={km_standardize_features}, 
+        WARM_START={km_warm_start}, 
+        NUM_TRIALS = 100,
+        HPARAM_TUNING_ALGORITHM = 'RANDOM_SEARCH',
+        HPARAM_TUNING_OBJECTIVES = 'DAVIES_BOULDIN_INDEX', 
+        MODEL_REGISTRY='VERTEX_AI', 
+        VERTEX_AI_MODEL_ID='{vertex_model_name}' ) AS (
+            SELECT * {exclude_sql} FROM `{training_data_bq_table}` WHERE {filter_clause}
+        )"""
+    else:
+        query = f"""CREATE OR REPLACE MODEL 
+        `{project_id}.{model_dataset_id}.{model_bq_name}` OPTIONS (model_type='KMEANS', 
+        NUM_CLUSTERS={km_num_clusters}, 
+        MAX_ITERATIONS={km_max_interations}, 
+        MIN_REL_PROGRESS={km_min_rel_progress}, 
+        KMEANS_INIT_METHOD='{km_init_method}', 
+        DISTANCE_TYPE='{km_distance_type}', 
+        EARLY_STOP={km_early_stop}, 
+        STANDARDIZE_FEATURES={km_standardize_features}, 
+        WARM_START={km_warm_start}, 
+        MODEL_REGISTRY='VERTEX_AI', 
+        VERTEX_AI_MODEL_ID='{vertex_model_name}' ) AS (
+            SELECT * {exclude_sql} FROM `{training_data_bq_table}` WHERE {filter_clause}
+        )"""
 
     client = bigquery.Client(
         project=project_id,
@@ -166,7 +195,7 @@ def bq_clustering_exec(
 
     r = query_job.result()
 
-    project, dataset  = model_dataset_id.split('.')
+    project, dataset  = project_id, model_dataset_id
     model.metadata = {"projectId": project, "datasetId": dataset,
                       "modelId": model_bq_name, 'vertex_model_name': vertex_model_name}
     
@@ -194,8 +223,6 @@ def bq_evaluate(
 
     from google.cloud import bigquery
     import json, google.auth, logging
-
-    #TODO: To investigate why EVALUATE doesn't return any result. Find a way to remediate that.
 
     query = f"""SELECT * FROM ML.EVALUATE(MODEL `{model.metadata["projectId"]}.{model.metadata["datasetId"]}.{model.metadata["modelId"]}`)"""
     

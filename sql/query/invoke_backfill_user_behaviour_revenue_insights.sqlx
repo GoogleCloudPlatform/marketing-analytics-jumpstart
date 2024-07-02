@@ -1,0 +1,193 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+
+CREATE OR REPLACE TEMP TABLE prompts_per_day AS
+SELECT DISTINCT
+calculation_base_date as feature_date,
+CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to extract important insights from all the user behaviour and revenue metrics calculated for the users. \n",
+    "Here are the user behaviour and revenue metrics calculated over the past 30 days from a base date.\n\n",
+    "Metrics JSON:\n",
+    TO_JSON_STRING(t),
+    "\n\n",
+    "Here are a the metrics descriptions:\n",
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{project_id}}`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    "\n\n"
+) as prompt
+FROM (SELECT DISTINCT  feature_date as calculation_base_date, * EXCEPT(processed_timestamp, feature_date) FROM `{{project_id}}.feature_store.user_scoped_metrics` WHERE feature_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND CURRENT_DATE() ORDER BY feature_date DESC) t
+;
+
+
+CREATE OR REPLACE TEMP TABLE prompts_per_week AS
+SELECT DISTINCT
+calculation_base_date as feature_date,
+EXTRACT(ISOWEEK FROM t.calculation_base_date) as feature_week_number,
+CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to identify what has changed in these weekly user behaviour and revenue metrics. \n",
+    "Here are the user behaviour and revenue metrics calculated over the ISO 8601 week numbers.\n\n",
+    "Metrics JSON:\n",
+      STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(ISOWEEK FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),
+    "\n\n",
+    "Here are a the metrics descriptions:\n",
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{project_id}}`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    "\n\n"
+) as prompt,
+FROM (
+SELECT DISTINCT  
+feature_date as calculation_base_date, 
+EXTRACT(ISOWEEK FROM feature_date) as calculation_base_week_number,
+* EXCEPT(processed_timestamp, feature_date) 
+FROM `{{project_id}}.feature_store.user_scoped_metrics`
+WHERE feature_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 51 WEEK) AND CURRENT_DATE() AND
+EXTRACT(ISOWEEK FROM feature_date) IS NOT NULL
+ORDER BY feature_date DESC) t
+ORDER BY calculation_base_date DESC;
+
+
+
+CREATE OR REPLACE TEMP TABLE prompts_per_month AS
+SELECT DISTINCT
+calculation_base_date as feature_date,
+EXTRACT(ISOWEEK FROM t.calculation_base_date) as feature_month,
+CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to identify what has changed in these monthly user behaviour and revenue metrics. \n",
+    "Here are the user behaviour and revenue daily metrics accumulated over the last month.\n\n",
+    "Metrics JSON:\n",
+      STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(MONTH FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),
+    "\n\n",
+    "Here are a the metrics descriptions:\n",
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{project_id}}`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    "\n\n"
+) as prompt,
+FROM (
+SELECT DISTINCT  
+feature_date as calculation_base_date, 
+EXTRACT(MONTH FROM feature_date) as calculation_base_week_number,
+* EXCEPT(processed_timestamp, feature_date) 
+FROM `{{project_id}}.feature_store.user_scoped_metrics` 
+WHERE feature_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 11 MONTH) AND CURRENT_DATE() AND
+EXTRACT(MONTH FROM feature_date) IS NOT NULL
+ORDER BY feature_date DESC) t
+ORDER BY calculation_base_date DESC;
+
+
+CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_daily_gemini_calls AS
+SELECT DISTINCT
+feature_date,
+ml_generate_text_llm_result AS {{dataset}}, 
+FROM ML.GENERATE_TEXT(
+  MODEL `{{project_id}}.{{dataset}}.{{model_name}}`,
+  (
+    SELECT feature_date, prompt
+    FROM prompts_per_day
+  ),
+  STRUCT(8192 AS max_output_tokens, 
+         TRUE AS flatten_json_output,
+         FALSE AS ground_with_google_search,
+         0.95 AS top_p,
+         40 AS top_k,
+         1 AS temperature));
+
+
+MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_daily` I
+USING user_behaviour_revenue_insights_daily_gemini_calls T
+ON I.feature_date = T.feature_date
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.{{dataset}} = T.{{dataset}}
+WHEN NOT MATCHED THEN
+  INSERT 
+    (
+     feature_date,
+     {{dataset}})
+  VALUES
+    (T.feature_date,
+     T.{{dataset}})
+;
+
+
+CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_weekly_gemini_calls AS
+SELECT DISTINCT
+feature_date,
+feature_week_number,
+ml_generate_text_llm_result AS {{dataset}}, 
+FROM ML.GENERATE_TEXT(
+  MODEL `{{project_id}}.{{dataset}}.{{model_name}}`,
+  (
+    SELECT feature_date, feature_week_number, prompt
+    FROM prompts_per_week
+  ),
+  STRUCT(8192 AS max_output_tokens, 
+         TRUE AS flatten_json_output,
+         FALSE AS ground_with_google_search,
+         0.95 AS top_p,
+         40 AS top_k,
+         1 AS temperature));
+
+
+MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_weekly` I
+USING user_behaviour_revenue_insights_weekly_gemini_calls T
+ON I.feature_date = T.feature_date
+   AND I.feature_week_number = T.feature_week_number
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.{{dataset}} = T.{{dataset}}
+WHEN NOT MATCHED THEN
+  INSERT 
+    (
+     feature_date,
+     feature_week_number,
+     {{dataset}})
+  VALUES
+    (T.feature_date,
+     T.feature_week_number,
+     T.{{dataset}})
+;
+
+
+CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_monthly_gemini_calls AS
+SELECT DISTINCT
+feature_date,
+feature_month,
+ml_generate_text_llm_result AS {{dataset}}, 
+FROM ML.GENERATE_TEXT(
+  MODEL `{{project_id}}.{{dataset}}.{{model_name}}`,
+  (
+    SELECT feature_date, feature_month, prompt
+    FROM prompts_per_month
+  ),
+  STRUCT(8192 AS max_output_tokens, 
+         TRUE AS flatten_json_output,
+         FALSE AS ground_with_google_search,
+         0.95 AS top_p,
+         40 AS top_k,
+         1 AS temperature));
+
+
+MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_monthly` I
+USING user_behaviour_revenue_insights_monthly_gemini_calls T
+ON I.feature_date = T.feature_date
+   AND I.feature_month = T.feature_month
+WHEN MATCHED THEN
+  UPDATE SET 
+    I.{{dataset}} = T.{{dataset}}
+WHEN NOT MATCHED THEN
+  INSERT 
+    (
+     feature_date,
+     feature_month,
+     {{dataset}})
+  VALUES
+    (T.feature_date,
+     T.feature_month,
+     T.{{dataset}})
+;

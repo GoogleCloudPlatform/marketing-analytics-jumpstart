@@ -536,7 +536,7 @@
     "type": "FLOAT"
   },
   {
-    "name": "will_purchase",
+    "name": "churned",
     "type": "INTEGER"
   }
 ]
