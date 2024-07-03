@@ -2,301 +2,301 @@
     {
       "name": "user_pseudo_id",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "user_id",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "feature_date",
       "type": "DATE",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "device_category",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "device_mobile_brand_name",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "device_mobile_model_name",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "device_os",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "device_language",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "device_web_browser",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "geo_sub_continent",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "geo_country",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "geo_region",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "geo_city",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "geo_metro",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "last_traffic_source_medium",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "last_traffic_source_name",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "last_traffic_source_source",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "first_traffic_source_medium",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "first_traffic_source_name",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "first_traffic_source_source",
       "type": "STRING",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "has_signed_in_with_user_id",
       "type": "BOOLEAN",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "active_users_past_1_30_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "active_users_past_30_60_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "active_users_past_60_90_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "active_users_past_90_120_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "active_users_past_120_150_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "active_users_past_150_180_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "purchases_past_1_30_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "purchases_past_30_60_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "purchases_past_60_90_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "purchases_past_90_120_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "purchases_past_120_150_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "purchases_past_150_180_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "visits_past_1_30_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "visits_past_30_60_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "visits_past_60_90_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "visits_past_90_120_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "visits_past_120_150_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "visits_past_150_180_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "view_items_past_1_30_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "view_items_past_30_60_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "view_items_past_60_90_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "view_items_past_90_120_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "view_items_past_120_150_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "view_items_past_150_180_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "add_to_carts_past_1_30_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "add_to_carts_past_30_60_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "add_to_carts_past_60_90_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "add_to_carts_past_90_120_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "add_to_carts_past_120_150_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "add_to_carts_past_150_180_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "checkouts_past_1_30_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "checkouts_past_30_60_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "checkouts_past_60_90_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "checkouts_past_90_120_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "checkouts_past_120_150_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "checkouts_past_150_180_day",
       "type": "INTEGER",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "ltv_revenue_past_1_30_day",
       "type": "FLOAT",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "ltv_revenue_past_30_90_day",
       "type": "FLOAT",
-      "description": "user_pseudo_id"
+      "description": ""
     },
     {
       "name": "ltv_revenue_past_90_180_day",
       "type": "FLOAT",
-      "description": "user_pseudo_id"
+      "description": ""
     }
   ]
