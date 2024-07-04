@@ -540,9 +540,11 @@ def run(argv=None):
   # Get the activation options.
   activation_options = pipeline_options.view_as(ActivationOptions)
   # Load the activation type configuration.
+  logging.info(f"Loading activation type configuration from {activation_options}")
   activation_type_configuration = load_activation_type_configuration(activation_options)
 
   # Build the query to be used to retrieve data from the source table.
+  logging.info(f"Building query to retrieve data from {activation_type_configuration}")
   load_from_source_query = build_query(activation_options, activation_type_configuration)
   logging.info(load_from_source_query)
 

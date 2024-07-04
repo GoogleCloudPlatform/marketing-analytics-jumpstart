@@ -12,31 +12,51 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This script intelligently determines the optimal date range for training a model by 
+-- considering user-defined parameters and the availability of churners within 
+-- the dataset. It ensures that the training data includes churners if they exist 
+-- within the specified bounds.
+
+-- Intended start and end dates for training data
 DECLARE train_start_date DATE DEFAULT NULL;
 DECLARE train_end_date DATE DEFAULT NULL;
+
+-- Control data splitting for training and validation (likely used in a subsequent process).
 DECLARE train_split_end_number INT64 DEFAULT NULL;
 DECLARE validation_split_end_number INT64 DEFAULT NULL;
-DECLARE purchasers INT64 DEFAULT NULL;
 
+-- Will store the count of distinct users who have churned within a given period.
+DECLARE churners INT64 DEFAULT NULL;
+
+-- Used to store the maximum and minimum event dates from the source data.
 DECLARE max_date DATE;
 DECLARE min_date DATE;
+
+-- Determining Maximum and Minimum Dates
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- Initializing Training Dates
 SET train_start_date = min_date;
 SET train_end_date = max_date;
 
+-- Setting Split Numbers
+-- Sets the train_split_end_number to a user-defined value. This value likely determines the proportion of data used for training.
 SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% for training use number 5. If you want 80% use number 7.
+-- Sets the validation_split_end_number to a user-defined value, controlling the proportion of data used for validation.
 SET validation_split_end_number = {{validation_split_end_number}};
 
--- IF there are no purchasers users in the time interval selected, then set "train_start_date" and "train_end_date" as "max_date" and "min_date".
-SET purchasers = (SELECT COUNT(DISTINCT user_pseudo_id) 
-                FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-                WHERE event_name = 'purchase' AND
-                event_date BETWEEN train_start_date AND train_end_date
+-- Determining Churners
+SET churners = (SELECT COUNT(DISTINCT user_pseudo_id) 
+                FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.churn_propensity_label`
+                WHERE churned = 1 AND
+                feature_date BETWEEN train_start_date AND train_end_date
                 );
 
-IF purchasers > 0 THEN
+-- Setting Training Dates
+-- If there are churners in the training set, then keep the user-defined dates, or else set
+-- the start and end dates instead.
+IF churners > 0 THEN
     SET train_start_date =  GREATEST(train_start_date, min_date);
     SET train_end_date = LEAST(train_end_date, max_date);
 ELSE
@@ -44,4 +64,6 @@ ELSE
     SET train_end_date = max_date;
 END IF;
 
+-- Finally, the script calls a stored procedure, passing the adjusted training dates and split numbers as arguments. 
+-- This stored procedure handles the actual data preparation for the model.
 CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(train_start_date, train_end_date, train_split_end_number, validation_split_end_number);

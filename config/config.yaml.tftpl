@@ -1770,8 +1770,8 @@ bigquery:
       # This is a number out of 10 deciles, how many rows will belong to the `data_split` = VALIDATE (Between `training_split_end_number` and `validation_split_end_number`)
       # The rest of the rows will belong to the `data_split` = TEST (Between `validation_split_end_number` and 10)
       validation_split_end_number: 8
-      mds_project_id: "${mds_project_id}"
-      mds_dataset: "${mds_dataset}"
+      feature_store_project_id: "${project_id}"
+      feature_store_dataset: "feature_store"
     # This is a stored procedure that CALLs the Audience Segmentation Training Preparation stored procedure.
     invoke_audience_segmentation_training_preparation:
       project_id: "${project_id}"

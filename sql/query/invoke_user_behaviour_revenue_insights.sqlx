@@ -12,6 +12,10 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This script determines the current date and then passes it as an argument to a stored procedure in your 
+-- BigQuery project. This pattern is commonly used when you want a stored procedure to perform operations 
+-- or calculations that are relevant to the current date.
+
 DECLARE input_date DATE;
 
 SET input_date= CURRENT_DATE();

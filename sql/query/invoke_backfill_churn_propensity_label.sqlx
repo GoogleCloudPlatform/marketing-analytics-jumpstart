@@ -12,6 +12,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- 
+
 DECLARE max_date DATE;
 DECLARE min_date DATE;
 DECLARE CHURN_MULTIPLIER_DAYS INT64;

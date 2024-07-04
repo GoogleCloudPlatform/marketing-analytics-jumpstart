@@ -12,23 +12,42 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This script determines a suitable date range for training data, taking into account 
+-- user-defined parameters and the available data in the events table. It then passes 
+-- this information to a stored procedure to handle the actual data preparation for model 
+-- training.
+
+-- Intended start and end dates for training data
 DECLARE train_start_date DATE DEFAULT NULL;
 DECLARE train_end_date DATE DEFAULT NULL;
+
+-- Control data splitting for training and validation.
 DECLARE train_split_end_number INT64 DEFAULT NULL;
 DECLARE validation_split_end_number INT64 DEFAULT NULL;
 
+-- Used to store the maximum and minimum event dates from the source data.
 DECLARE max_date DATE;
 DECLARE min_date DATE;
+
+-- Determining Maximum and Minimum Dates
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
 
+-- Initializing Training Dates
 SET train_start_date = min_date;
 SET train_end_date = max_date;
 
+-- Setting Split Numbers
+-- This line sets the train_split_end_number to a user-defined value. This value determines the proportion of data used for training.
 SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% for training use number 5. If you want 80% use number 7.
+-- This line sets the validation_split_end_number to a user-defined value, likely controlling the proportion of data used for validation.
 SET validation_split_end_number = {{validation_split_end_number}};
 
+-- Ensuring Training Dates are Within Bounds
+-- This line ensures that the train_start_date is not earlier than the calculated min_date.
 SET train_start_date =  GREATEST(train_start_date, min_date);
+-- This line ensures that the train_end_date is not later than the calculated max_date.
 SET train_end_date = LEAST(train_end_date, max_date);
 
+-- Finally, the script calls a stored procedure, passing the adjusted training dates and split numbers as arguments. This stored procedure handles the actual data preparation for the machine learning model.
 CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(train_start_date, train_end_date, train_split_end_number, validation_split_end_number);

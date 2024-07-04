@@ -12,6 +12,10 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This SQL script is a simple but common pattern used in BigQuery to trigger a 
+-- stored procedure with the current date as input. This pattern helps automate 
+-- tasks that need to be run regularly using the most up-to-date information.
+
 DECLARE inference_date DATE DEFAULT NULL;
 SET inference_date = CURRENT_DATE();
 
