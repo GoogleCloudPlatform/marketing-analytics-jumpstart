@@ -1,137 +1,137 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "feature column description"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "feature column description"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "Date as base of the calculation to lookback and calculate the features. Calculated daily."
   },
   {
-    "name": "purchasers_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchasers_users",
+      "type": "INTEGER",
+      "description": "The number of unique users who made at least one purchase in the past days."
   },
   {
-    "name": "average_daily_purchasers",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "average_daily_purchasers",
+      "type": "FLOAT",
+      "description": "The average number of purchasers across all the days in the selected time frame."
   },
   {
-    "name": "active_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users",
+      "type": "INTEGER",
+      "description": "The number of distinct users who visited your website or application in the past days. An active user is any user who has an engaged session or when Analytics collects: the `first_visit` event or `engagement_time_msec` parameter from a website; the `first_open` event or `engagement_time_msec` parameter from an Android app; the `first_open` or `user_engagement` event from an iOS app."
   },
   {
-    "name": "DAU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "DAU",
+      "type": "FLOAT",
+      "description": "Average Daily Active Users - the average number of distinct users who engaged with your website or application per calendar day, aggregated in the past days."
   },
   {
-    "name": "MAU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "MAU",
+      "type": "FLOAT",
+      "description": "Average Monthly Active Users - the average number of distinct users who engaged with your website or application per calendar month, aggregated in the past days."
   },
   {
-    "name": "WAU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "WAU",
+      "type": "FLOAT",
+      "description": "Average Weekly Active Users - the average number of distinct users who engaged with your website or application per calendar week, aggregated in the past days."
   },
   {
-    "name": "dau_per_mau",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "dau_per_mau",
+      "type": "FLOAT",
+      "description": "Average Daily Active Users (DAU) / Average Monthly Active Users (MAU) shows the average percentage of users who engaged for the calendar day out of the users who engaged per calendar month, aggregated in the past days. A higher ratio suggests good engagement and user retention."
   },
   {
-    "name": "dau_per_wau",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "dau_per_wau",
+      "type": "FLOAT",
+      "description": "Average Daily Active Users (DAU) / Average Weekly Active Users (WAU) shows the percentage of users who engaged in the last calendar day out of the users who engaged per calendar week, aggregated in the past days. A higher ratio suggests good engagement and user retention."
   },
   {
-    "name": "wau_per_mau",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "wau_per_mau",
+      "type": "FLOAT",
+      "description": "Average Weekly Active Users (WAU) / Average Monthly Active Users (MAU) shows the percentage of users who engaged for the calendar week out of the users who engaged per calendar month, aggregated in the past days. A higher ratio suggests good engagement and user retention."
   },
   {
-    "name": "users_engagement_duration_seconds",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "users_engagement_duration_seconds",
+      "type": "FLOAT",
+      "description": "The total length of time in seconds that your app screen was in the foreground or your web page was in focus, aggregated in the past days."
   },
   {
-    "name": "average_engagement_time",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "average_engagement_time",
+      "type": "FLOAT",
+      "description": "The average time that your website was in focus in a user's browser or mobile app was in the foreground of a user's device. This metric is calculated as the sum of user engagement durations per active user, aggregated in the past days."
   },
   {
-    "name": "average_engagement_time_per_session",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "average_engagement_time_per_session",
+      "type": "FLOAT",
+      "description": "The average engagement time per session, aggregated in the past days."
   },
   {
-    "name": "average_sessions_per_user",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "average_sessions_per_user",
+      "type": "FLOAT",
+      "description": "The average number of sessions per user, aggregated in the past days."
   },
   {
-    "name": "ARPPU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "ARPPU",
+      "type": "FLOAT",
+      "description": "Average revenue per paying user (ARPPU) is the total purchase revenue per active user who made a purchase, aggregated in the past days."
   },
   {
-    "name": "ARPU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "ARPU",
+      "type": "FLOAT",
+      "description": "Average revenue per active user (ARPU) is the total revenue generated on average from each active user, whether they made a purchase or not. ARPU = (Total ad revenue + purchase revenue + in-app purchase revenue + subscriptions) / Active users, aggregated in the past days."
   },
   {
-    "name": "average_daily_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "average_daily_revenue",
+      "type": "FLOAT",
+      "description": "The average total revenue, aggregated in the past days."
   },
   {
-    "name": "max_daily_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "max_daily_revenue",
+      "type": "FLOAT",
+      "description": "The maximum total revenue for a day over the selected time frame."
   },
   {
-    "name": "min_daily_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "min_daily_revenue",
+      "type": "FLOAT",
+      "description": "The minimum total revenue for a day over the selected time frame."
   },
   {
-    "name": "new_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "new_users",
+      "type": "INTEGER",
+      "description": "The number of new unique user IDs that logged the first_open or first_visit event. The metric allows you to measure the number of users who interacted with your site or launched your app for the first time, aggregated in the past days."
   },
   {
-    "name": "returning_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "returning_users",
+      "type": "INTEGER",
+      "description": "The number of users who have initiated at least one previous session, regardless of whether or not the previous sessions were engaged sessions, aggregated in the past days."
   },
   {
-    "name": "first_time_purchasers",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "first_time_purchasers",
+      "type": "INTEGER",
+      "description": "The number of users who made their first purchase in the selected time frame."
   },
   {
-    "name": "first_time_purchaser_conversion",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "first_time_purchaser_conversion",
+      "type": "FLOAT",
+      "description": "The percentage of active users who made their first purchase in the selected time frame. This metric is returned as a fraction; for example, 0.092 means 9.2% of active users were first-time purchasers."
   },
   {
-    "name": "first_time_purchasers_per_new_user",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "first_time_purchasers_per_new_user",
+      "type": "FLOAT",
+      "description": "The average number of first-time purchasers per new user, aggregated in the past days."
   },
   {
-    "name": "avg_user_conversion_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "avg_user_conversion_rate",
+      "type": "FLOAT",
+      "description": "The average number of distinct users who converted in a session divided by the total number of distinct users, aggregated in the past days."
   },
   {
-    "name": "avg_session_conversion_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "avg_session_conversion_rate",
+      "type": "FLOAT",
+      "description": "The average number of distinct user sessions of converting users divided by the total number of distinct user sessions, aggregated in the past days."
   }
 ]

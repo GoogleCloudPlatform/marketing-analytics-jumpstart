@@ -1,92 +1,92 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "feature description"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "feature description"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "The date serving as basis for the features calculation"
   },
   {
-    "name": "user_pseudo_id",
-    "type": "STRING",
-    "description": "feature description"
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "The user pseudo identifier"
   },
   {
-    "name": "purchase_day_1",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_1",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 1st day from the feature date"
   },
   {
-    "name": "purchase_day_2",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_2",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 2nd day from the feature date"
   },
   {
-    "name": "purchase_day_3",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_3",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 3rd day from the feature date"
   },
   {
-    "name": "purchase_day_4",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_4",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 4th day from the feature date"
   },
   {
-    "name": "purchase_day_5",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_5",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 5th day from the feature date"
   },
   {
-    "name": "purchase_day_6",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_6",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 6th day from the feature date"
   },
   {
-    "name": "purchase_day_7",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_7",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 7th day from the feature date"
   },
   {
-    "name": "purchase_day_8",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_8",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 8th day from the feature date"
   },
   {
-    "name": "purchase_day_9",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_9",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 9th day from the feature date"
   },
   {
-    "name": "purchase_day_10",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_10",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 10th day from the feature date"
   },
   {
-    "name": "purchase_day_11",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_11",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 11th day from the feature date"
   },
   {
-    "name": "purchase_day_12",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_12",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 12th day from the feature date"
   },
   {
-    "name": "purchase_day_13",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_13",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 13th day from the feature date"
   },
   {
-    "name": "purchase_day_14",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_14",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 14th day from the feature date"
   },
   {
-    "name": "purchase_day_15_30",
-    "type": "INTEGER",
-    "description": "feature description"
+      "name": "purchase_day_15_30",
+      "type": "INTEGER",
+      "description": "Predicted number of purchases by the user in the next 15 to 30 days from the feature date"
   }
 ]

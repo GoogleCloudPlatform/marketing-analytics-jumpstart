@@ -54,12 +54,14 @@ class ActivationOptions(GoogleCloudOptions):
       use_api_validation: A boolean flag indicating whether to use the Measurement Protocol API validation for debugging instead of sending the events.
       activation_type: The activation use case, which can be one of the following values:
         - audience-segmentation-15
+        - auto-audience-segmentation-15
         - cltv-180-180
         - cltv-180-90
         - cltv-180-30
         - purchase-propensity-30-15
         - purchase-propensity-15-15
         - purchase-propensity-15-7
+        - churn-propensity-30-15
       activation_type_configuration: The GCS path to the configuration file for all activation types.
     """
 
@@ -100,12 +102,14 @@ class ActivationOptions(GoogleCloudOptions):
       help='''
       Specifies the activation use case, currently supported values are:
         audience-segmentation-15
+        auto-audience-segmentation-15
         cltv-180-180
         cltv-180-90
         cltv-180-30
         purchase-propensity-30-15
         purchase-propensity-15-15
         purchase-propensity-15-7
+        churn-propensity-30-15
       ''',
       required=True
     )

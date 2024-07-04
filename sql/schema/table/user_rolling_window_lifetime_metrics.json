@@ -1,212 +1,212 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "feature column description"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "feature column description"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "The date serving as basis for the features calculation"
   },
   {
-    "name": "user_pseudo_id",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "The user pseudo identifier"
   },
   {
-    "name": "active_users_past_1_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_1_30_day",
+      "type": "INTEGER",
+      "description": "The count of distinct active users in the past 1 to 30 days relative to the feature date"
   },
   {
-    "name": "active_users_past_30_60_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_30_60_day",
+      "type": "INTEGER",
+      "description": "The count of distinct active users in the past 30 to 60 days relative to the feature date"
   },
   {
-    "name": "active_users_past_60_90_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_60_90_day",
+      "type": "INTEGER",
+      "description": "The count of distinct active users in the past 60 to 90 days relative to the feature date"
   },
   {
-    "name": "active_users_past_90_120_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_90_120_day",
+      "type": "INTEGER",
+      "description": "The count of distinct active users in the past 90 to 120 days relative to the feature date"
   },
   {
-    "name": "active_users_past_120_150_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_120_150_day",
+      "type": "INTEGER",
+      "description": "The count of distinct active users in the past 120 to 150 days relative to the feature date"
   },
   {
-    "name": "active_users_past_150_180_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_150_180_day",
+      "type": "INTEGER",
+      "description": "The count of distinct active users in the past 150 to 180 days relative to the feature date"
   },
   {
-    "name": "purchases_past_1_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_1_30_day",
+      "type": "INTEGER",
+      "description": "The count of purchases in the past 1 to 30 days relative to the feature date"
   },
   {
-    "name": "purchases_past_30_60_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_30_60_day",
+      "type": "INTEGER",
+      "description": "The count of purchases in the past 30 to 60 days relative to the feature date"
   },
   {
-    "name": "purchases_past_60_90_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_60_90_day",
+      "type": "INTEGER",
+      "description": "The count of purchases in the past 60 to 90 days relative to the feature date"
   },
   {
-    "name": "purchases_past_90_120_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_90_120_day",
+      "type": "INTEGER",
+      "description": "The count of purchases in the past 90 to 120 days relative to the feature date"
   },
   {
-    "name": "purchases_past_120_150_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_120_150_day",
+      "type": "INTEGER",
+      "description": "The count of purchases in the past 120 to 150 days relative to the feature date"
   },
   {
-    "name": "purchases_past_150_180_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_150_180_day",
+      "type": "INTEGER",
+      "description": "The count of purchases in the past 150 to 180 days relative to the feature date"
   },
   {
-    "name": "visits_past_1_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_1_30_day",
+      "type": "INTEGER",
+      "description": "The count of visits in the past 1 to 30 days relative to the feature date"
   },
   {
-    "name": "visits_past_30_60_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_30_60_day",
+      "type": "INTEGER",
+      "description": "The count of visits in the past 30 to 60 days relative to the feature date"
   },
   {
-    "name": "visits_past_60_90_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_60_90_day",
+      "type": "INTEGER",
+      "description": "The count of visits in the past 60 to 90 days relative to the feature date"
   },
   {
-    "name": "visits_past_90_120_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_90_120_day",
+      "type": "INTEGER",
+      "description": "The count of visits in the past 90 to 120 days relative to the feature date"
   },
   {
-    "name": "visits_past_120_150_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_120_150_day",
+      "type": "INTEGER",
+      "description": "The count of visits in the past 120 to 150 days relative to the feature date"
   },
   {
-    "name": "visits_past_150_180_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_150_180_day",
+      "type": "INTEGER",
+      "description": "The count of visits in the past 150 to 180 days relative to the feature date"
   },
   {
-    "name": "view_items_past_1_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_1_30_day",
+      "type": "INTEGER",
+      "description": "The count of view items events in the past 1 to 30 days relative to the feature date"
   },
   {
-    "name": "view_items_past_30_60_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_30_60_day",
+      "type": "INTEGER",
+      "description": "The count of view items events in the past 30 to 60 days relative to the feature date"
   },
   {
-    "name": "view_items_past_60_90_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_60_90_day",
+      "type": "INTEGER",
+      "description": "The count of view items events in the past 60 to 90 days relative to the feature date"
   },
   {
-    "name": "view_items_past_90_120_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_90_120_day",
+      "type": "INTEGER",
+      "description": "The count of view items events in the past 90 to 120 days relative to the feature date"
   },
   {
-    "name": "view_items_past_120_150_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_120_150_day",
+      "type": "INTEGER",
+      "description": "The count of view items events in the past 120 to 150 days relative to the feature date"
   },
   {
-    "name": "view_items_past_150_180_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_150_180_day",
+      "type": "INTEGER",
+      "description": "The count of view items events in the past 150 to 180 days relative to the feature date"
   },
   {
-    "name": "add_to_carts_past_1_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_1_30_day",
+      "type": "INTEGER",
+      "description": "The count of add to cart events in the past 1 to 30 days relative to the feature date"
   },
   {
-    "name": "add_to_carts_past_30_60_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_30_60_day",
+      "type": "INTEGER",
+      "description": "The count of add to cart events in the past 30 to 60 days relative to the feature date"
   },
   {
-    "name": "add_to_carts_past_60_90_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_60_90_day",
+      "type": "INTEGER",
+      "description": "The count of add to cart events in the past 60 to 90 days relative to the feature date"
   },
   {
-    "name": "add_to_carts_past_90_120_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_90_120_day",
+      "type": "INTEGER",
+      "description": "The count of add to cart events in the past 90 to 120 days relative to the feature date"
   },
   {
-    "name": "add_to_carts_past_120_150_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_120_150_day",
+      "type": "INTEGER",
+      "description": "The count of add to cart events in the past 120 to 150 days relative to the feature date"
   },
   {
-    "name": "add_to_carts_past_150_180_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_150_180_day",
+      "type": "INTEGER",
+      "description": "The count of add to cart events in the past 150 to 180 days relative to the feature date"
   },
   {
-    "name": "checkouts_past_1_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_1_30_day",
+      "type": "INTEGER",
+      "description": "The count of checkout events in the past 1 to 30 days relative to the feature date"
   },
   {
-    "name": "checkouts_past_30_60_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_30_60_day",
+      "type": "INTEGER",
+      "description": "The count of checkout events in the past 30 to 60 days relative to the feature date"
   },
   {
-    "name": "checkouts_past_60_90_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_60_90_day",
+      "type": "INTEGER",
+      "description": "The count of checkout events in the past 60 to 90 days relative to the feature date"
   },
   {
-    "name": "checkouts_past_90_120_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_90_120_day",
+      "type": "INTEGER",
+      "description": "The count of checkout events in the past 90 to 120 days relative to the feature date"
   },
   {
-    "name": "checkouts_past_120_150_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_120_150_day",
+      "type": "INTEGER",
+      "description": "The count of checkout events in the past 120 to 150 days relative to the feature date"
   },
   {
-    "name": "checkouts_past_150_180_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_150_180_day",
+      "type": "INTEGER",
+      "description": "The count of checkout events in the past 150 to 180 days relative to the feature date"
   },
   {
-    "name": "ltv_revenue_past_1_30_day",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "ltv_revenue_past_1_30_day",
+      "type": "FLOAT",
+      "description": "The user lifetime value revenue in the past 1 to 30 days relative to the feature date"
   },
   {
-    "name": "ltv_revenue_past_30_90_day",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "ltv_revenue_past_30_90_day",
+      "type": "FLOAT",
+      "description": "The user lifetime value revenue in the past 30 to 90 days relative to the feature date"
   },
   {
-    "name": "ltv_revenue_past_90_180_day",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "ltv_revenue_past_90_180_day",
+      "type": "FLOAT",
+      "description": "The user lifetime value revenue in the past 90 to 180 days relative to the feature date"
   }
 ]

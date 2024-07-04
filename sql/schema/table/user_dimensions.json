@@ -1,117 +1,117 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "feature column description"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "feature column description"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "The date serving as basis for the features calculation"
   },
   {
-    "name": "user_pseudo_id",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "The user pseudo identifier"
   },
   {
-    "name": "user_id",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "user_id",
+      "type": "STRING",
+      "description": "The user identifier of when the user has logged in"
   },
   {
-    "name": "user_ltv_revenue",
-    "type": "FLOAT64",
-    "description": "feature column description"
+      "name": "user_ltv_revenue",
+      "type": "FLOAT64",
+      "description": "The current user lifetime value"
   },
   {
-    "name": "device_category",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "device_category",
+      "type": "STRING",
+      "description": "The device category of the user last used to access"
   },
   {
-    "name": "device_mobile_brand_name",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "device_mobile_brand_name",
+      "type": "STRING",
+      "description": "The device mobile brand name last used by the user"
   },
   {
-    "name": "device_mobile_model_name",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "device_mobile_model_name",
+      "type": "STRING",
+      "description": "The device mobile model name last used by the user"
   },
   {
-    "name": "device_os",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "device_os",
+      "type": "STRING",
+      "description": "The device operating system last used by the user"
   },
   {
-    "name": "device_language",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "device_language",
+      "type": "STRING",
+      "description": "The device language last used by the user"
   },
   {
-    "name": "device_web_browser",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "device_web_browser",
+      "type": "STRING",
+      "description": "The device web browser last used by the user"
   },
   {
-    "name": "geo_sub_continent",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "geo_sub_continent",
+      "type": "STRING",
+      "description": "The geographic subcontinent from the user last access"
   },
   {
-    "name": "geo_country",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "geo_country",
+      "type": "STRING",
+      "description": "The geographic country from the user last access"
   },
   {
-    "name": "geo_region",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "geo_region",
+      "type": "STRING",
+      "description": "The geographic region from the user last access"
   },
   {
-    "name": "geo_city",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "geo_city",
+      "type": "STRING",
+      "description": "The geographic city from the user last access"
   },
   {
-    "name": "geo_metro",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "geo_metro",
+      "type": "STRING",
+      "description": "The geographic metropolitan area from the user user last access"
   },
   {
-    "name": "last_traffic_source_medium",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "last_traffic_source_medium",
+      "type": "STRING",
+      "description": "The last traffic source medium from where the user was acquired"
   },
   {
-    "name": "last_traffic_source_name",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "last_traffic_source_name",
+      "type": "STRING",
+      "description": "The last traffic source name from where the user was acquired"
   },
   {
-    "name": "last_traffic_source_source",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "last_traffic_source_source",
+      "type": "STRING",
+      "description": "The last traffic source soure from where the user was acquired"
   },
   {
-    "name": "first_traffic_source_medium",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "first_traffic_source_medium",
+      "type": "STRING",
+      "description": "The first traffic source medium from where the user was acquired"
   },
   {
-    "name": "first_traffic_source_name",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "first_traffic_source_name",
+      "type": "STRING",
+      "description": "The first traffic source name from where the user was acquired"
   },
   {
-    "name": "first_traffic_source_source",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "first_traffic_source_source",
+      "type": "STRING",
+      "description": "The first traffic source source from where the user was acquired"
   },
   {
-    "name": "has_signed_in_with_user_id",
-    "type": "BOOLEAN",
-    "description": "feature column description"
+      "name": "has_signed_in_with_user_id",
+      "type": "BOOLEAN",
+      "description": "A boolean indicating whether the user has signed in with the user id"
   }
 ]
