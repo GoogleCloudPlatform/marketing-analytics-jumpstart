@@ -12,6 +12,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This SQL script is designed to prepare data for training a machine learning model in 
+-- BigQuery, specifically for a scenario where you need to determine a lookback window 
+-- for feature engineering. It calculates a start date (DATE_START), an end date (DATE_END), 
+-- and a lookback period (LOOKBACK_DAYS) from an events table, and then passes these values 
+-- to a stored procedure.
+
 DECLARE DATE_START DATE DEFAULT NULL;
 DECLARE DATE_END DATE DEFAULT NULL;
 DECLARE LOOKBACK_DAYS INT64 DEFAULT NULL;
@@ -20,4 +26,7 @@ SET DATE_END = (SELECT DATE_SUB(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_pro
 SET DATE_START = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET LOOKBACK_DAYS = {{lookback_days}};
 
+-- This line calls a stored procedure, passing the calculated DATE_START, DATE_END, and LOOKBACK_DAYS as arguments. 
+-- This stored procedure handles the actual data preparation for the machine learning model, using the provided dates 
+-- and lookback period to construct features.
 CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(DATE_START, DATE_END, LOOKBACK_DAYS);

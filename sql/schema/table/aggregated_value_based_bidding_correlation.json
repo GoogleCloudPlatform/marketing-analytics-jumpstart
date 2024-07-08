@@ -1,34 +1,42 @@
 [
   {
     "name": "First_Visits_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between the First Visits events and Purchase events"
   },
   {
     "name": "Visit_Product_Page_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between the Visit Product Page events and Purchase events"
   },
   {
     "name": "View_Product_Details_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between the View Item events and Purchase events"
   },
   {
     "name": "Add_Product_to_Cart_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between Add to Cart events and Purchase events"
   },
   {
     "name": "View_Cart_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between the View Cart events and Purchase events"
   },
   {
     "name": "Begin_Checkout_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between the Begin Checkout events and Purchase events"
   },
   {
     "name": "Added_Shipping_Info_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between the Add Shiping Information events and Purchase events"
   },
   {
     "name": "Added_Payment_Info_corr_Purchase_Product",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The correlation between the Add Payment Information events and Purchase events"
   }
 ]

@@ -274,7 +274,8 @@ def create_custom_dimensions(configuration: map):
   create_custom_dimensions_for('Audience Segmentation', ['a_s_prediction'], existing_dimensions, configuration)
   create_custom_dimensions_for('Purchase Propensity', ['p_p_prediction', 'p_p_decile'], existing_dimensions, configuration)
   create_custom_dimensions_for('CLTV', ['cltv_decile'], existing_dimensions, configuration)
-  create_custom_dimensions_for('Behaviour Based Segmentation', ['a_a_s_prediction'], existing_dimensions, configuration)
+  create_custom_dimensions_for('Auto Audience Segmentation', ['a_a_s_prediction'], existing_dimensions, configuration)
+  create_custom_dimensions_for('Churn Propensity', ['c_p_prediction', 'c_p_decile'], existing_dimensions, configuration)
 
 
 

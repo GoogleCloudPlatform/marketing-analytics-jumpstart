@@ -54,12 +54,14 @@ class ActivationOptions(GoogleCloudOptions):
       use_api_validation: A boolean flag indicating whether to use the Measurement Protocol API validation for debugging instead of sending the events.
       activation_type: The activation use case, which can be one of the following values:
         - audience-segmentation-15
+        - auto-audience-segmentation-15
         - cltv-180-180
         - cltv-180-90
         - cltv-180-30
         - purchase-propensity-30-15
         - purchase-propensity-15-15
         - purchase-propensity-15-7
+        - churn-propensity-30-15
       activation_type_configuration: The GCS path to the configuration file for all activation types.
     """
 
@@ -100,12 +102,14 @@ class ActivationOptions(GoogleCloudOptions):
       help='''
       Specifies the activation use case, currently supported values are:
         audience-segmentation-15
+        auto-audience-segmentation-15
         cltv-180-180
         cltv-180-90
         cltv-180-30
         purchase-propensity-30-15
         purchase-propensity-15-15
         purchase-propensity-15-7
+        churn-propensity-30-15
       ''',
       required=True
     )
@@ -536,9 +540,11 @@ def run(argv=None):
   # Get the activation options.
   activation_options = pipeline_options.view_as(ActivationOptions)
   # Load the activation type configuration.
+  logging.info(f"Loading activation type configuration from {activation_options}")
   activation_type_configuration = load_activation_type_configuration(activation_options)
 
   # Build the query to be used to retrieve data from the source table.
+  logging.info(f"Building query to retrieve data from {activation_type_configuration}")
   load_from_source_query = build_query(activation_options, activation_type_configuration)
   logging.info(load_from_source_query)
 

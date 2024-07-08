@@ -36,3 +36,9 @@ variable "sql_dir_input" {
   type        = string
   description = "SQL queries directory"
 }
+
+variable "poetry_cmd" {
+  description = "alias for poetry command on the current system"
+  type        = string
+  default     = "poetry"
+}

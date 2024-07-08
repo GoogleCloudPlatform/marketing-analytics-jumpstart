@@ -1,0 +1,677 @@
+[
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "Timestamp of when the data was processed"
+  },
+  {
+    "name": "data_split",
+    "type": "STRING",
+    "description": "The indication of whether the row should be used for TRAINING, VALIDATION or TESTING"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE",
+    "description": "The date serving as basis for the features calculation"
+  },
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING",
+    "description": "The user pseudo identifier"
+  },
+  {
+    "name": "user_id",
+    "type": "STRING",
+    "description": "The user identifier of when the user has logged in"
+  },
+  {
+    "name": "user_ltv_revenue",
+    "type": "FLOAT",
+    "description": "The current user lifetime value"
+  },
+  {
+    "name": "device_category",
+    "type": "STRING",
+    "description": "The device category of the user last used to access"
+  },
+  {
+    "name": "device_mobile_brand_name",
+    "type": "STRING",
+    "description": "The device mobile brand name last used by the user"
+  },
+  {
+    "name": "device_mobile_model_name",
+    "type": "STRING",
+    "description": "The device mobile model name last used by the user"
+  },
+  {
+    "name": "device_os",
+    "type": "STRING",
+    "description": "The device operating system last used by the user"
+  },
+  {
+    "name": "device_language",
+    "type": "STRING",
+    "description": "The device language last used by the user"
+  },
+  {
+    "name": "device_web_browser",
+    "type": "STRING",
+    "description": "The device web browser last used by the user"
+  },
+  {
+    "name": "geo_sub_continent",
+    "type": "STRING",
+    "description": "The geographic subcontinent from the user last access"
+  },
+  {
+    "name": "geo_country",
+    "type": "STRING",
+    "description": "The geographic country from the user last access"
+  },
+  {
+    "name": "geo_region",
+    "type": "STRING",
+    "description": "The geographic region from the user last access"
+  },
+  {
+    "name": "geo_city",
+    "type": "STRING",
+    "description": "The geographic city from the user last access"
+  },
+  {
+    "name": "geo_metro",
+    "type": "STRING",
+    "description": "The geographic metropolitan area from the user user last access"
+  },
+  {
+    "name": "last_traffic_source_medium",
+    "type": "STRING",
+    "description": "The last traffic source medium from where the user was acquired"
+  },
+  {
+    "name": "last_traffic_source_name",
+    "type": "STRING",
+    "description": "The last traffic source name from where the user was acquired"
+  },
+  {
+    "name": "last_traffic_source_source",
+    "type": "STRING",
+    "description": "The last traffic source soure from where the user was acquired"
+  },
+  {
+    "name": "first_traffic_source_medium",
+    "type": "STRING",
+    "description": "The first traffic source medium from where the user was acquired"
+  },
+  {
+    "name": "first_traffic_source_name",
+    "type": "STRING",
+    "description": "The first traffic source name from where the user was acquired"
+  },
+  {
+    "name": "first_traffic_source_source",
+    "type": "STRING",
+    "description": "The first traffic source source from where the user was acquired"
+  },
+  {
+    "name": "has_signed_in_with_user_id",
+    "type": "BOOLEAN",
+    "description": "A boolean indicating whether the user has signed in with the user id"
+  },
+  {
+    "name": "engagement_rate",
+    "type": "FLOAT",
+    "description": "The percentage of sessions that were engaged sessions. Engagement rate = engaged sessions / total sessions Engagement rate is the inverse of bounce rate"
+  },
+  {
+    "name": "engaged_sessions_per_user",
+    "type": "INTEGER",
+    "description": "The number of engaged sessions per user"
+  },
+  {
+    "name": "session_conversion_rate",
+    "type": "FLOAT",
+    "description": "The session conversion rate is calculated by dividing the number of sessions with a conversion event by the total number of sessions"
+  },
+  {
+    "name": "bounces",
+    "type": "INTEGER",
+    "description": "The number of not engaged sessions"
+  },
+  {
+    "name": "bounce_rate_per_user",
+    "type": "FLOAT",
+    "description": "The percentage of sessions that were not engaged sessions per user. Bounce rate = not engaged sessions / total sessions Bounce rate is the inverse of engagement rate"
+  },
+  {
+    "name": "sessions_per_user",
+    "type": "INTEGER",
+    "description": "The number of sessions per user"
+  },
+  {
+    "name": "avg_views_per_session",
+    "type": "FLOAT",
+    "description": "The average number of views per sessions"
+  },
+  {
+    "name": "sum_engagement_time_seconds",
+    "type": "FLOAT",
+    "description": "The sum of time that your website was in focus in a user's browser or an app was in the foreground of a user's device in seconds per user"
+  },
+  {
+    "name": "avg_engagement_time_seconds",
+    "type": "FLOAT",
+    "description": "The average time that your website was in focus in a user's browser or an app was in the foreground of a user's device. Average engagement time = total user engagement durations / number of active users"
+  },
+  {
+    "name": "new_visits",
+    "type": "INTEGER",
+    "description": "The number of times your users opened your website for the first time"
+  },
+  {
+    "name": "returning_visits",
+    "type": "INTEGER",
+    "description": "The number of users who have initiated at least one previous session, regardless of whether or not the previous sessions were engaged sessions"
+  },
+  {
+    "name": "add_to_carts",
+    "type": "INTEGER",
+    "description": "The number of times users added items to their shopping carts"
+  },
+  {
+    "name": "cart_to_view_rate",
+    "type": "FLOAT",
+    "description": "The number of times users added items to their shopping carts divided by the the number of mobile app screens or web pages your users saw. Repeated views of a single screen or page are counted"
+  },
+  {
+    "name": "checkouts",
+    "type": "INTEGER",
+    "description": "The number of times users started the checkout process"
+  },
+  {
+    "name": "ecommerce_purchases",
+    "type": "INTEGER",
+    "description": "The number of purchases on your website or app"
+  },
+  {
+    "name": "ecommerce_quantity",
+    "type": "INTEGER",
+    "description": "The number of units for an ecommerce event"
+  },
+  {
+    "name": "ecommerce_revenue",
+    "type": "FLOAT",
+    "description": "The sum of revenue from purchases made on your website or app, minus any refunds given. Purchase revenue = purchases + in-app purchases + subscriptions - refund"
+  },
+  {
+    "name": "item_revenue",
+    "type": "FLOAT",
+    "description": "The total revenue from items only minus refunds, excluding tax and shipping"
+  },
+  {
+    "name": "item_quantity",
+    "type": "INTEGER",
+    "description": "The number of units for a single item included in ecommerce events"
+  },
+  {
+    "name": "item_view_events",
+    "type": "INTEGER",
+    "description": "The number of times an item was viewed"
+  },
+  {
+    "name": "items_clicked_in_promotion",
+    "type": "INTEGER",
+    "description": "The number of items that the customer clicked in a promotion"
+  },
+  {
+    "name": "items_clicked_in_list",
+    "type": "INTEGER",
+    "description": "The number of items that the customer clicked in a list of items"
+  },
+  {
+    "name": "items_checked_out",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out"
+  },
+  {
+    "name": "items_added_to_cart",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart"
+  },
+  {
+    "name": "item_list_view_events",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in list"
+  },
+  {
+    "name": "purchase_revenue",
+    "type": "FLOAT",
+    "description": "The total revenue from purchases, in-app purchases, subscriptions, and ad revenue. Total revenue = purchases + in-app purchases + subscriptions + ad revenue - refunds"
+  },
+  {
+    "name": "purchase_to_view_rate",
+    "type": "FLOAT",
+    "description": "The number of purchases on your website or app divided by the number of mobile app screens or web pages your users saw"
+  },
+  {
+    "name": "transactions_per_purchaser",
+    "type": "FLOAT",
+    "description": "The average number of purchases per buyer for the selected time frame"
+  },
+  {
+    "name": "user_conversion_rate",
+    "type": "FLOAT",
+    "description": "The number of users who performed a conversion action divided by the total number of users"
+  },
+  {
+    "name": "how_many_purchased_before",
+    "type": "INTEGER",
+    "description": "The number of times the user have purchased before"
+  },
+  {
+    "name": "has_abandoned_cart",
+    "type": "BOOLEAN",
+    "description": "a boolean indicating whether the user has abandoned a cart in the past"
+  },
+  {
+    "name": "active_users_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 1 day"
+  },
+  {
+    "name": "active_users_past_2_day",
+    "type": "INTEGER",
+    "description": "THe number of times the user has been active in the past 2nd day"
+  },
+  {
+    "name": "active_users_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 3rd day"
+  },
+  {
+    "name": "active_users_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 4th day"
+  },
+  {
+    "name": "active_users_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 5th day"
+  },
+  {
+    "name": "active_users_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 6th day"
+  },
+  {
+    "name": "active_users_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 7th day"
+  },
+  {
+    "name": "active_users_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 8 to 14 days"
+  },
+  {
+    "name": "active_users_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 15 to 30 days"
+  },
+  {
+    "name": "purchases_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past day"
+  },
+  {
+    "name": "purchases_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchases in the past 2nd day"
+  },
+  {
+    "name": "purchases_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 3rd day"
+  },
+  {
+    "name": "purchases_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 4th day"
+  },
+  {
+    "name": "purchases_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 5th day"
+  },
+  {
+    "name": "purchases_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 6th day"
+  },
+  {
+    "name": "purchases_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 7th day"
+  },
+  {
+    "name": "purchases_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 8 to 14 days"
+  },
+  {
+    "name": "purchases_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchases in the past 15 to 30 days"
+  },
+  {
+    "name": "visits_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past day"
+  },
+  {
+    "name": "visits_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 2nd day"
+  },
+  {
+    "name": "visits_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 3rd day"
+  },
+  {
+    "name": "visits_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 4th day"
+  },
+  {
+    "name": "visits_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 5th day"
+  },
+  {
+    "name": "visits_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 6th day"
+  },
+  {
+    "name": "visits_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 7th day"
+  },
+  {
+    "name": "visits_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 8 to 14 days"
+  },
+  {
+    "name": "visits_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 15 to 30 day"
+  },
+  {
+    "name": "view_items_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past day"
+  },
+  {
+    "name": "view_items_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 2nd day"
+  },
+  {
+    "name": "view_items_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 3rd day"
+  },
+  {
+    "name": "view_items_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 4th day"
+  },
+  {
+    "name": "view_items_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 5th day"
+  },
+  {
+    "name": "view_items_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 6th day"
+  },
+  {
+    "name": "view_items_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 7th day"
+  },
+  {
+    "name": "view_items_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 8 to 14 days"
+  },
+  {
+    "name": "view_items_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 15 to 30 days"
+  },
+  {
+    "name": "add_to_carts_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past day"
+  },
+  {
+    "name": "add_to_carts_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 2nd day"
+  },
+  {
+    "name": "add_to_carts_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 3rd day"
+  },
+  {
+    "name": "add_to_carts_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 4th day"
+  },
+  {
+    "name": "add_to_carts_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 5th day"
+  },
+  {
+    "name": "add_to_carts_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 6th day"
+  },
+  {
+    "name": "add_to_carts_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 7th day"
+  },
+  {
+    "name": "add_to_carts_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 8 to 14 days"
+  },
+  {
+    "name": "add_to_carts_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 15 to 30 days"
+  },
+  {
+    "name": "checkouts_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past day"
+  },
+  {
+    "name": "checkouts_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 2nd day"
+  },
+  {
+    "name": "checkouts_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 3rd day"
+  },
+  {
+    "name": "checkouts_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 4th day"
+  },
+  {
+    "name": "checkouts_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 5th day"
+  },
+  {
+    "name": "checkouts_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 6th day"
+  },
+  {
+    "name": "checkouts_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 7th day"
+  },
+  {
+    "name": "checkouts_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 8 to 14 days"
+  },
+  {
+    "name": "checkouts_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 15 to 30 days"
+  },
+  {
+    "name": "purchasers_users",
+    "type": "INTEGER",
+    "description": "The number of distinct users who have purchases in the past"
+  },
+  {
+    "name": "average_daily_purchasers",
+    "type": "FLOAT",
+    "description": "The average number of purchasers across all the days in the selected time frame"
+  },
+  {
+    "name": "active_users",
+    "type": "INTEGER",
+    "description": "The number of distinct users who visited your website or application. An active user is any user who has an engaged session or when Analytics collects: the first_visit event or engagement_time_msec parameter from a website the first_open event or engagement_time_msec parameter from an Android app the first_open or user_engagement event from an iOS app"
+  },
+  {
+    "name": "DAU",
+    "type": "FLOAT",
+    "description": "The number of users who engaged for the calendar day"
+  },
+  {
+    "name": "MAU",
+    "type": "FLOAT",
+    "description": "The number of users who engaged in the last 30 days"
+  },
+  {
+    "name": "WAU",
+    "type": "FLOAT",
+    "description": "The number of users who engaged in the last week"
+  },
+  {
+    "name": "dau_per_mau",
+    "type": "FLOAT",
+    "description": "Daily Active Users (DAU) / Monthly Active Users (MAU) shows the percentage of users who engaged for the calendar day out of the users who engaged in the last 30 days. A higher ratio suggests good engagement and user retention"
+  },
+  {
+    "name": "dau_per_wau",
+    "type": "FLOAT",
+    "description": "Daily Active Users (DAU) / Weekly Active Users (WAU) shows the percentage of users who engaged in the last 24 hours out of the users who engaged in the last 7 days. A higher ratio suggests good engagement and user retention"
+  },
+  {
+    "name": "wau_per_mau",
+    "type": "FLOAT",
+    "description": "Weekly Active Users (DAU) / Monthly Active Users (MAU) shows the percentage of users who engaged in the last 7 days out of the users who engaged in the last 30 days. A higher ratio suggests good engagement and user retention"
+  },
+  {
+    "name": "users_engagement_duration_seconds",
+    "type": "FLOAT",
+    "description": "The length of time that your app screen was in the foreground or your web page was in focus in seconds"
+  },
+  {
+    "name": "average_engagement_time",
+    "type": "FLOAT",
+    "description": "The average time that your website was in focus in a user's browser or an app was in the foreground of a user's device. Average engagement time = total user engagement durations / number of active users"
+  },
+  {
+    "name": "average_engagement_time_per_session",
+    "type": "FLOAT",
+    "description": "The average engagement time per session"
+  },
+  {
+    "name": "average_sessions_per_user",
+    "type": "FLOAT",
+    "description": "The average number of sessions per user"
+  },
+  {
+    "name": "ARPPU",
+    "type": "FLOAT",
+    "description": "Average revenue per paying user (ARPPU) is the total purchase revenue per active user who made a purchase"
+  },
+  {
+    "name": "ARPU",
+    "type": "FLOAT",
+    "description": "Average revenue per active user (ARPU) is the total revenue generated on average from each active user, whether they made a purchase or not. ARPU = (Total ad revenue + purchase revenue + in-app purchase revenue + subscriptions) / Active users"
+  },
+  {
+    "name": "average_daily_revenue",
+    "type": "FLOAT",
+    "description": "Average daily revenue The average total revenue for a day over the selected time frame"
+  },
+  {
+    "name": "max_daily_revenue",
+    "type": "FLOAT",
+    "description": "The maximum total revenue for a day over the selected time frame"
+  },
+  {
+    "name": "min_daily_revenue",
+    "type": "FLOAT",
+    "description": "The minimum total revenue for a day over the selected time frame"
+  },
+  {
+    "name": "new_users",
+    "type": "INTEGER",
+    "description": "The number of new unique user IDs that logged the first_open or first_visit event. The metric allows you to measure the number of users who interacted with your site or launched your app for the first time"
+  },
+  {
+    "name": "returning_users",
+    "type": "INTEGER",
+    "description": "The number of users who have initiated at least one previous session, regardless of whether or not the previous sessions were engaged sessions"
+  },
+  {
+    "name": "first_time_purchasers",
+    "type": "INTEGER",
+    "description": "The number of users who made their first purchase in the selected time frame."
+  },
+  {
+    "name": "first_time_purchaser_conversion",
+    "type": "FLOAT",
+    "description": "The percentage of active users who made their first purchase. This metric is returned as a fraction; for example, 0.092 means 9.2% of active users were first-time purchasers"
+  },
+  {
+    "name": "first_time_purchasers_per_new_user",
+    "type": "FLOAT",
+    "description": "The average number of first-time purchasers per new user"
+  },
+  {
+    "name": "avg_user_conversion_rate",
+    "type": "FLOAT",
+    "description": "The average number of converting user per total users"
+  },
+  {
+    "name": "avg_session_conversion_rate",
+    "type": "FLOAT",
+    "description": "The average number of converting session per total sessions"
+  },
+  {
+    "name": "churned",
+    "type": "INTEGER",
+    "description": "A boolean indicating whether the user has churned or not"
+  }
+]

@@ -1,598 +1,702 @@
 [
   {
     "name": "ltv",
-    "type": "FLOAT"
-  },
-  {
-    "name": "user_pseudo_id",
-    "type": "STRING"
+    "type": "FLOAT",
+    "description": "Customer lifetime value revenue gains per user pseudo id"
   },
   {
     "name": "ltv_processed_timestamp",
-    "type": "TIMESTAMP"
+    "type": "TIMESTAMP",
+    "description": "Processing timestamp of the customer lifetime value"
   },
   {
     "name": "ltv_feature_date",
-    "type": "DATE"
+    "type": "DATE",
+    "description": "Date the customer lifetime value was predicted"
   },
   {
     "name": "ltv_decile",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "Decile of the customer lifetime value revenue gain per user pseudo id"
   },
   {
     "name": "likely_to_purchase",
-    "type": "STRING"
+    "type": "STRING",
+    "description": "Likelihood to purchase per user pseudo id"
   },
   {
-    "name": "propensity_score",
-    "type": "FLOAT"
+    "name": "purchase_score",
+    "type": "FLOAT",
+    "description": "The prediction related to whether the user is going to purchase in the future per user pseudo id"
   },
   {
-    "name": "propensity_processed_timestamp",
-    "type": "TIMESTAMP"
+    "name": "purchase_processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "The timestamp of when the prediction was calculated"
   },
   {
-    "name": "propensity_feature_date",
-    "type": "DATE"
+    "name": "purchase_feature_date",
+    "type": "DATE",
+    "description": "Date in which the purchase propensity was calculated"
   },
   {
     "name": "p_p_decile",
-    "type": "INTEGER"
-  },
-  {
-    "name": "device_mobile_brand_name",
-    "type": "STRING"
-  },
-  {
-    "name": "device_os",
-    "type": "STRING"
-  },
-  {
-    "name": "device_language",
-    "type": "STRING"
-  },
-  {
-    "name": "device_web_browser",
-    "type": "STRING"
-  },
-  {
-    "name": "device_web_browser_version",
-    "type": "STRING"
-  },
-  {
-    "name": "geo_sub_continent",
-    "type": "STRING"
-  },
-  {
-    "name": "geo_metro",
-    "type": "STRING"
-  },
-  {
-    "name": "has_signed_in_with_user_id",
-    "type": "BOOLEAN"
+    "type": "INTEGER",
+    "description": "Decile of the purchase propensity likelihood per user pseudo id"
   },
   {
     "name": "active_users_past_1_30_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user was active in the past 30 days"
   },
   {
     "name": "active_users_past_30_60_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user was active in the past 30 to 60 days"
   },
   {
     "name": "active_users_past_60_90_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 60 to 90 days"
   },
   {
     "name": "active_users_past_90_120_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 90 to 120 days"
   },
   {
     "name": "active_users_past_120_150_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 120 to 150 days"
   },
   {
     "name": "active_users_past_150_180_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 150 to 180 days"
   },
   {
     "name": "purchases_past_1_30_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 30 days"
   },
   {
     "name": "purchases_past_30_60_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 30 to 60 days"
   },
   {
     "name": "purchases_past_60_90_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 60 to 90 days"
   },
   {
     "name": "purchases_past_90_120_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 90 to 120 days"
   },
   {
     "name": "purchases_past_120_150_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 120 to 150 days"
   },
   {
     "name": "purchases_past_150_180_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 150 to 180 days"
   },
   {
     "name": "visits_past_1_30_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has visited the website or app in the past 30 days"
   },
   {
     "name": "visits_past_30_60_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has visited the website or app in the past 30 to 60 days"
   },
   {
     "name": "visits_past_60_90_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has visited the website or app in the past 60 to 90 days"
   },
   {
     "name": "visits_past_90_120_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has visited the website or app in the past 90 to 120 days"
   },
   {
     "name": "visits_past_120_150_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has visited the website or app in the past 120 to 150 days"
   },
   {
     "name": "visits_past_150_180_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has visited the website or app in the past 150 to 180 days"
   },
   {
     "name": "view_items_past_1_30_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 30 days"
   },
   {
     "name": "view_items_past_30_60_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 30 to 60 days"
   },
   {
     "name": "view_items_past_60_90_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 60 to 90 days"
   },
   {
     "name": "view_items_past_90_120_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 90 to 120 days"
   },
   {
     "name": "view_items_past_120_150_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 120 to 150 days"
   },
   {
     "name": "view_items_past_150_180_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 150 to 180 days"
   },
   {
     "name": "add_to_carts_past_1_30_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to cart in the past 30 days"
   },
   {
     "name": "add_to_carts_past_30_60_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to cart in the past 30 to 60 days"
   },
   {
     "name": "add_to_carts_past_60_90_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to cart in the past 60 to 90 days"
   },
   {
     "name": "add_to_carts_past_90_120_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to cart in the past 90 to 120 days"
   },
   {
     "name": "add_to_carts_past_120_150_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to cart in the past 120 to 150 days"
   },
   {
     "name": "add_to_carts_past_150_180_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to cart in the past 150 to 180 days"
   },
   {
     "name": "checkouts_past_1_30_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 30 days"
   },
   {
     "name": "checkouts_past_30_60_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 30 to 60 days"
   },
   {
     "name": "checkouts_past_60_90_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 30 to 60 days"
   },
   {
     "name": "checkouts_past_90_120_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 90 to 120 days"
   },
   {
     "name": "checkouts_past_120_150_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 120 to 150 days"
   },
   {
     "name": "checkouts_past_150_180_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "user_ltv_revenue",
-    "type": "FLOAT"
-  },
-  {
-    "name": "active_users_past_1_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "active_users_past_2_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "active_users_past_3_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "active_users_past_4_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "active_users_past_5_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "active_users_past_6_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "active_users_past_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "active_users_past_15_30_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_1_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_2_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_3_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_4_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_5_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_6_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_15_30_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_1_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_2_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_3_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_4_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_5_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_6_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_15_30_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_1_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_2_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_3_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_4_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_5_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_6_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_15_30_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_1_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_2_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_3_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_4_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_5_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_6_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_15_30_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_1_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_2_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_3_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_4_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_5_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_6_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_7_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_15_30_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "device_category",
-    "type": "STRING"
-  },
-  {
-    "name": "device_mobile_model_name",
-    "type": "STRING"
-  },
-  {
-    "name": "device_os_version",
-    "type": "STRING"
-  },
-  {
-    "name": "geo_country",
-    "type": "STRING"
-  },
-  {
-    "name": "geo_region",
-    "type": "STRING"
-  },
-  {
-    "name": "geo_city",
-    "type": "STRING"
-  },
-  {
-    "name": "last_traffic_source_medium",
-    "type": "STRING"
-  },
-  {
-    "name": "last_traffic_source_name",
-    "type": "STRING"
-  },
-  {
-    "name": "last_traffic_source_source",
-    "type": "STRING"
-  },
-  {
-    "name": "first_traffic_source_medium",
-    "type": "STRING"
-  },
-  {
-    "name": "first_traffic_source_name",
-    "type": "STRING"
-  },
-  {
-    "name": "first_traffic_source_source",
-    "type": "STRING"
-  },
-  {
-    "name": "user_id",
-    "type": "STRING"
-  },
-  {
-    "name": "active_users_past_8_14_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "purchases_past_8_14_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "visits_past_8_14_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "view_items_past_8_14_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "add_to_carts_past_8_14_day",
-    "type": "INTEGER"
-  },
-  {
-    "name": "checkouts_past_8_14_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 150 to 180 days"
   },
   {
     "name": "Segment_ID",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The segment id for that user predicted by the audience segmentation model"
   },
   {
     "name": "Segment_Distance",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The segment distance for that user predicted by the audience segmentation model"
   },
   {
     "name": "segment_processed_timestamp",
-    "type": "TIMESTAMP"
+    "type": "TIMESTAMP",
+    "description": "Processing timestamp of the audience segmentation model"
   },
   {
     "name": "segment_feature_date",
-    "type": "DATE"
+    "type": "DATE",
+    "description": "Date in which the audience segmentation was calculated"
   },
   {
     "name": "active_users_past_1_7_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 7 days"
   },
   {
     "name": "purchases_past_1_7_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 7 days"
   },
   {
     "name": "visits_past_1_7_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 7 days"
   },
   {
     "name": "view_items_past_1_7_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 7 days"
   },
   {
     "name": "add_to_carts_past_1_7_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to cart in the past 7 days"
   },
   {
     "name": "checkouts_past_1_7_day",
-    "type": "INTEGER"
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 7 days"
   },
   {
     "name": "ltv_revenue_past_1_7_day",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The customer lifetime value gained in the past 7 days"
   },
   {
     "name": "ltv_revenue_past_7_15_day",
-    "type": "FLOAT"
+    "type": "FLOAT",
+    "description": "The customer lifetime value gained in the past 7 to 15 days"
+  },
+  {
+    "name": "device_mobile_brand_name",
+    "type": "STRING",
+    "description": "The device brand name last accessed by the user"
+  },
+  {
+    "name": "device_os",
+    "type": "STRING",
+    "description": "The device operating system last accessed by the user"
+  },
+  {
+    "name": "device_language",
+    "type": "STRING",
+    "description": "The device language last accessed by the user"
+  },
+  {
+    "name": "device_web_browser",
+    "type": "STRING",
+    "description": "The device web browser last accessed by the user"
+  },
+  {
+    "name": "geo_sub_continent",
+    "type": "STRING",
+    "description": "The geo sub continent last accessed by the user"
+  },
+  {
+    "name": "geo_metro",
+    "type": "STRING",
+    "description": "The geo metro last accessed by the user"
+  },
+  {
+    "name": "has_signed_in_with_user_id",
+    "type": "BOOLEAN",
+    "description": "A flag indicating whether the user has signed in and contains a user id"
+  },
+  {
+    "name": "user_ltv_revenue",
+    "type": "FLOAT",
+    "description": "The current customer lifetime value of the user"
+  },
+  {
+    "name": "active_users_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past day"
+  },
+  {
+    "name": "active_users_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 2nd day"
+  },
+  {
+    "name": "active_users_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 3rd day"
+  },
+  {
+    "name": "active_users_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 4th day"
+  },
+  {
+    "name": "active_users_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 5th day"
+  },
+  {
+    "name": "active_users_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 6th day"
+  },
+  {
+    "name": "active_users_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in past 7th day"
+  },
+  {
+    "name": "active_users_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in the past 15 to 30 days"
+  },
+  {
+    "name": "purchases_past_1_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has purchased in the past day"
+  },
+  {
+    "name": "purchases_past_2_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has purchased in the past 2nd day"
+  },
+  {
+    "name": "purchases_past_3_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has purchased in the past 3rd day"
+  },
+  {
+    "name": "purchases_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has purchased in the past 4th day"
+  },
+  {
+    "name": "purchases_past_5_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has purchased in the past 5th day"
+  },
+  {
+    "name": "purchases_past_6_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has purchased in the past 6th day"
+  },
+  {
+    "name": "purchases_past_7_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has purchased in the past 7th day"
+  },
+  {
+    "name": "purchases_past_15_30_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has purchased in the past 15 to 30 days"
+  },
+  {
+    "name": "visits_past_1_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has visited in the past day"
+  },
+  {
+    "name": "visits_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 2nd day"
+  },
+  {
+    "name": "visits_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 3rd day"
+  },
+  {
+    "name": "visits_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 4th day"
+  },
+  {
+    "name": "visits_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 5th day"
+  },
+  {
+    "name": "visits_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 6th day"
+  },
+  {
+    "name": "visits_past_7_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has visited in the past 7th day"
+  },
+  {
+    "name": "visits_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 15 to 30 days"
+  },
+  {
+    "name": "view_items_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past day"
+  },
+  {
+    "name": "view_items_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 2nd day"
+  },
+  {
+    "name": "view_items_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 3rd day"
+  },
+  {
+    "name": "view_items_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 4th day"
+  },
+  {
+    "name": "view_items_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 5th day"
+  },
+  {
+    "name": "view_items_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 6th day"
+  },
+  {
+    "name": "view_items_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 7th day"
+  },
+  {
+    "name": "view_items_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 15 to 30 days"
+  },
+  {
+    "name": "add_to_carts_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past day"
+  },
+  {
+    "name": "add_to_carts_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 2nd day"
+  },
+  {
+    "name": "add_to_carts_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 3rd day"
+  },
+  {
+    "name": "add_to_carts_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 4th day"
+  },
+  {
+    "name": "add_to_carts_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 5th day"
+  },
+  {
+    "name": "add_to_carts_past_6_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 6th day"
+  },
+  {
+    "name": "add_to_carts_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 7th day"
+  },
+  {
+    "name": "add_to_carts_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 15 to 30 days"
+  },
+  {
+    "name": "checkouts_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past day"
+  },
+  {
+    "name": "checkouts_past_2_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has checked out in the past 2nd day"
+  },
+  {
+    "name": "checkouts_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 3rd day"
+  },
+  {
+    "name": "checkouts_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 4th day"
+  },
+  {
+    "name": "checkouts_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 5th day"
+  },
+  {
+    "name": "checkouts_past_6_day",
+    "type": "INTEGER",
+    "description" : "The number of times the user has checked out in the past 6th day"
+  },
+  {
+    "name": "checkouts_past_7_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 7th day"
+  },
+  {
+    "name": "checkouts_past_15_30_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 15 to 30 days"
+  },
+  {
+    "name": "user_id",
+    "type": "STRING",
+    "description": "The last user identifier logged in"
+  },
+  {
+    "name": "device_category",
+    "type": "STRING",
+    "description": "The last device category used"
+  },
+  {
+    "name": "device_mobile_model_name",
+    "type": "STRING",
+    "description": "The last device model name used"
+  },
+  {
+    "name": "geo_country",
+    "type": "STRING",
+    "description": "The last country the user was from"
+  },
+  {
+    "name": "geo_region",
+    "type": "STRING",
+    "description": "The last geo region the user was from"
+  },
+  {
+    "name": "geo_city",
+    "type": "STRING",
+    "description": "The last geo city the user was from"
+  },
+  {
+    "name": "last_traffic_source_medium",
+    "type": "STRING",
+    "description": "The last traffic source medium"
+  },
+  {
+    "name": "last_traffic_source_name",
+    "type": "STRING",
+    "description": "The last traffic source name"
+  },
+  {
+    "name": "last_traffic_source_source",
+    "type": "STRING",
+    "description": "The last traffic source source"
+  },
+  {
+    "name": "first_traffic_source_medium",
+    "type": "STRING",
+    "description": "The first traffic source medium"
+  },
+  {
+    "name": "first_traffic_source_name",
+    "type": "STRING",
+    "description": "The first traffic source name"
+  },
+  {
+    "name": "first_traffic_source_source",
+    "type": "STRING",
+    "description" : "The first traffic source source"
+  },
+  {
+    "name": "active_users_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user was active in the past 8 to 14 days"
+  },
+  {
+    "name": "purchases_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has made a purchase in the past 8 to 14 days"
+  },
+  {
+    "name": "visits_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited the site in the past 8 to 14 days"
+  },
+  {
+    "name": "view_items_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed products pages in the past 8 to 14 days"
+  },
+  {
+    "name": "add_to_carts_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added products to the cart in the past 8 to 14 days"
+  },
+  {
+    "name": "checkouts_past_8_14_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 8 to 14 days"
+  },
+  {
+    "name": "likely_to_churn",
+    "type": "STRING",
+    "description": "Likelihood to churn per user pseudo id"
+  },
+  {
+    "name": "churn_score",
+    "type": "FLOAT",
+    "description": "Churn score per user pseudo id"
+  },
+  {
+    "name": "churn_processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "The timestamp of when the prediction was calculated"
+  },
+  {
+    "name": "churn_feature_date",
+    "type": "DATE",
+    "description": "Date in which the churn propensity was calculated"
+  },
+  {
+    "name": "c_p_decile",
+    "type": "INTEGER",
+    "description": "Decile of the churn propensity likelihood per user pseudo id"
+  },
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING",
+    "description": "The user pseudo identifer"
   },
   {
     "name": "auto_segment_processed_timestamp",
-    "type": "TIMESTAMP"
+    "type": "TIMESTAMP",
+    "description": "The timestamp of when the prediction was calculated"
   },
   {
     "name": "Auto_Segment_ID",
-    "type": "STRING"
+    "type": "STRING",
+    "description": "The Auto Segment ID"
   },
   {
-    "name": "homepage",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Apparel_Mens_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Clearance",
-    "type": "INTEGER"
-  },
-  {
-    "name": "basket_html",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Lifestyle_Drinkware",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Stationery_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
-    "name": "signin_html",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_New_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Lifestyle_Bags",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Redesign_Apparel_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
-    "name": "store_html",
-    "type": "INTEGER"
-  },
-  {
-    "name": "Google_Bike_sortci_newest_desc",
-    "type": "INTEGER"
-  },
-  {
-    "name": "store_html_sortci_newest_desc",
-    "type": "INTEGER"
+    "name": "Auto Segment_Distance",
+    "type": "FLOAT",
+    "description": "The segment distance for that user predicted by the auto audience segmentation model"
   }
 ]

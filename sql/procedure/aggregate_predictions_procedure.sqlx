@@ -1,4 +1,4 @@
-  -- Copyright 2023 Google LLC
+-- Copyright 2023 Google LLC
   --
   -- Licensed under the Apache License, Version 2.0 (the "License");
   -- you may not use this file except in compliance with the License.
@@ -29,22 +29,28 @@ DECLARE
   purchase_propensity_dataset, # The dataset ID of the dataset that contains the purchase propensity predictions table.
   audience_segmentation_dataset, # The dataset ID of the dataset that contains the audience segmentation predictions table.
   auto_audience_segmentation_dataset, # The dataset ID of the dataset that contains the auto audience segmentation predictions table.
+  churn_propensity_dataset, # The dataset ID of the dataset that contains the churn propensity predictions table.
   clv_table,
   purchase_propensity_table,
   audience_segmentation_table,
   auto_audience_segmentation_table,
+  churn_propensity_table,
   first_join_common_selections,
   first_query_str,
   clv_selections,
   purchase_selections,
+  churn_propensity_selections,
   first_join_selections,
   second_join_common_selections,
   audience_segmentation_selections,
-  seccond_query_str,
+  second_query_str,
   third_join_common_selections,
   second_join_selections,
   auto_audience_segmentation_selections,
-  third_query_str STRING;
+  third_query_str,
+  fourth_join_common_selections,
+  third_join_selections,
+  fourth_query_str STRING;
 DECLARE
   clv_columns,
   clv_special_columns,
@@ -64,7 +70,13 @@ DECLARE
   auto_audience_segmentation_select_columns,
   auto_audience_segmentation_special_columns,
   third_join_common_columns,
-  second_join_select_columns ARRAY<STRING>;
+  second_join_select_columns,
+  churn_propensity_columns,
+  churn_propensity_select_columns,
+  churn_propensity_special_columns,
+  third_join_columns,
+  third_join_select_columns,
+  fourth_join_common_columns ARRAY<STRING>;
 SET
   project_id = '{{project_id}}';
 -- A procedure that retrieves the column names for a specified BigQuery table.
@@ -100,6 +112,8 @@ SELECT
     `%s.__TABLES__`
   WHERE
     table_id LIKE '%s'
+  AND
+    NOT CONTAINS_SUBSTR(table_id, 'error')
   ORDER BY
     last_modified_time DESC
   LIMIT
@@ -168,7 +182,7 @@ CREATE TEMP FUNCTION
           FROM
             UNNEST(COLUMNS) AS element) ), ',') ));
 
-
+-- Setting all predictions tables naming patterns
 SET
   table_pattern = 'predictions_%_view';
 SET
@@ -178,9 +192,13 @@ SET
 SET
   purchase_propensity_dataset = CONCAT(project_id, '.{{purchase_propensity_dataset}}');
 SET
+  churn_propensity_dataset = CONCAT(project_id, '.{{churn_propensity_dataset}}');
+SET
   audience_segmentation_dataset = CONCAT(project_id, '.{{audience_segmentation_dataset}}');
 SET
   auto_audience_segmentation_dataset = CONCAT(project_id, '.{{auto_audience_segmentation_dataset}}');
+
+-- Getting latest prediction table name
 CALL
   {{dataset_id}}.get_latest_table_by_pattern(clv_dataset,
     clv_table_pattern,
@@ -190,13 +208,19 @@ CALL
     table_pattern,
     purchase_propensity_table);
 CALL
+  {{dataset_id}}.get_latest_table_by_pattern(churn_propensity_dataset,
+    table_pattern,
+    churn_propensity_table);
+CALL
   {{dataset_id}}.get_latest_table_by_pattern(audience_segmentation_dataset,
     'pred_%_view',
     audience_segmentation_table);
 CALL
   {{dataset_id}}.get_latest_table_by_pattern(auto_audience_segmentation_dataset,
-    'predictions_%',
+    'pred_%_view',
     auto_audience_segmentation_table);
+
+-- Getting predictions tables columns for each use case
 CALL
   {{dataset_id}}.get_columns_for_table(clv_table,
     clv_dataset,
@@ -206,6 +230,10 @@ CALL
     purchase_propensity_dataset,
     purchase_propensity_columns);
 CALL
+  {{dataset_id}}.get_columns_for_table(churn_propensity_table,
+    churn_propensity_dataset,
+    churn_propensity_columns);
+CALL
   {{dataset_id}}.get_columns_for_table(audience_segmentation_table,
     audience_segmentation_dataset,
     audience_segmentation_columns);
@@ -214,6 +242,7 @@ CALL
     auto_audience_segmentation_dataset,
     auto_audience_segmentation_columns);
 
+-- Setting special column identifiers for each use case predicition table
 SET
   clv_special_columns = ['prediction',
   'processed_timestamp',
@@ -226,15 +255,25 @@ SET
   'feature_date',
   'user_pseudo_id'];
 SET
+  churn_propensity_special_columns = ['prediction',
+  'prediction_prob',
+  'processed_timestamp',
+  'feature_date',
+  'user_pseudo_id'];
+SET
   audience_segmentation_special_columns = ['NEAREST_CENTROIDS_DISTANCE',
   'prediction',
   'processed_timestamp',
   'feature_date',
   'user_pseudo_id'];
 SET
-  auto_audience_segmentation_special_columns = ['user_id',
+  auto_audience_segmentation_special_columns = ['NEAREST_CENTROIDS_DISTANCE',
+  'user_pseudo_id',
   'feature_timestamp',
   'prediction'];
+
+
+-- Logic for FIRST JOIN between CLTV and purchase propensity predictions
 SET
   clv_select_columns = array_diff(clv_columns,
     clv_special_columns);
@@ -270,9 +309,9 @@ a.processed_timestamp AS ltv_processed_timestamp,
 a.feature_date AS ltv_feature_date,
 NTILE(10) OVER (ORDER BY a.prediction DESC) AS ltv_decile,
 b.prediction AS likely_to_purchase,
-b.prediction_prob AS propensity_score,
-b.processed_timestamp AS propensity_processed_timestamp,
-b.feature_date AS propensity_feature_date,
+b.prediction_prob AS purchase_score,
+b.processed_timestamp AS purchase_processed_timestamp,
+b.feature_date AS purchase_feature_date,
 NTILE(10) OVER (ORDER BY b.prediction_prob DESC) AS p_p_decile,
 %s,
 %s,
@@ -285,8 +324,9 @@ on a.user_pseudo_id=b.user_pseudo_id;
 EXECUTE IMMEDIATE
   first_query_str;
 
+-- Logic for SECOND JOIN LTV, purchase propensity and audience segmentation predictions
 SET
-  first_join_columns = ARRAY_CONCAT(['ltv', 'user_pseudo_id', 'ltv_processed_timestamp', 'ltv_feature_date', 'ltv_decile', 'likely_to_purchase', 'propensity_score', 'propensity_processed_timestamp', 'propensity_feature_date', 'p_p_decile'], first_join_common_columns, clv_select_columns, purchase_propensity_select_columns);
+  first_join_columns = ARRAY_CONCAT(['ltv', 'user_pseudo_id', 'ltv_processed_timestamp', 'ltv_feature_date', 'ltv_decile', 'likely_to_purchase', 'purchase_score', 'purchase_processed_timestamp', 'purchase_feature_date', 'p_p_decile'], first_join_common_columns, clv_select_columns, purchase_propensity_select_columns);
 SET
   audience_segmentation_select_columns = array_diff(audience_segmentation_columns,
     audience_segmentation_special_columns);
@@ -310,7 +350,7 @@ SET
   audience_segmentation_selections = create_columns_select(audience_segmentation_select_columns,
     'd');
 SET
-  seccond_query_str = FORMAT("""
+  second_query_str = FORMAT("""
 CREATE OR REPLACE TEMPORARY TABLE temp2 AS
 SELECT
 %s,
@@ -326,21 +366,23 @@ full outer join `%s` AS d
 on c.user_pseudo_id=d.user_pseudo_id;
 """, first_join_selections, second_join_common_selections, audience_segmentation_selections, audience_segmentation_table);
 EXECUTE IMMEDIATE
-  seccond_query_str;
+  second_query_str;
 
+
+-- Logic for THIRD JOIN between LTV, purchase propensity, audience segmentation and churn propensity predictions
 SET
-  second_join_columns = ARRAY_CONCAT(first_join_select_columns, second_join_common_columns, ['Segment_ID', 'Segment_Distance', 'segment_processed_timestamp', 'segment_feature_date'], audience_segmentation_select_columns);
+  second_join_columns = ARRAY_CONCAT(first_join_select_columns, second_join_common_columns,['Segment_ID', 'Segment_Distance', 'segment_processed_timestamp', 'segment_feature_date'], audience_segmentation_select_columns);
 SET
-  auto_audience_segmentation_select_columns = array_diff(auto_audience_segmentation_columns,
-    auto_audience_segmentation_special_columns);
+  churn_propensity_select_columns = array_diff(churn_propensity_columns,
+    churn_propensity_special_columns);
 SET
   third_join_common_columns = array_common(second_join_columns,
-    auto_audience_segmentation_select_columns);
+    churn_propensity_select_columns);
 SET
   second_join_select_columns = array_diff(second_join_columns,
     third_join_common_columns);
 SET
-  auto_audience_segmentation_select_columns = array_diff(auto_audience_segmentation_select_columns,
+  churn_propensity_select_columns = array_diff(churn_propensity_select_columns,
     third_join_common_columns);
 SET
   third_join_common_selections = create_common_columns_select(third_join_common_columns,
@@ -350,20 +392,67 @@ SET
   second_join_selections = create_columns_select(second_join_select_columns,
     'e');
 SET
-  auto_audience_segmentation_selections = create_columns_select(auto_audience_segmentation_select_columns,
+  churn_propensity_selections = create_columns_select(churn_propensity_select_columns,
     'f');
 SET
   third_query_str = FORMAT("""
-CREATE OR REPLACE TABLE `%s.{{dataset_id}}.{{table_id}}` AS
+CREATE OR REPLACE TEMPORARY TABLE temp3 AS
 SELECT
-e.user_pseudo_id,
 %s,
-f.feature_timestamp AS auto_segment_processed_timestamp,
-f.prediction AS Auto_Segment_ID,
+%s,
+f.prediction AS likely_to_churn,
+f.prediction_prob AS churn_score,
+f.processed_timestamp AS churn_processed_timestamp,
+f.feature_date AS churn_feature_date,
+NTILE(10) OVER (ORDER BY f.prediction_prob DESC) AS c_p_decile,
 %s
-FROM temp2 AS e
+FROM
+  temp2 AS e
 full outer join `%s` AS f
-ON e.user_pseudo_id=f.user_pseudo_id;
-""", project_id, second_join_selections, auto_audience_segmentation_selections, auto_audience_segmentation_table);
+on e.user_pseudo_id=f.user_pseudo_id;
+""", second_join_selections, third_join_common_selections, churn_propensity_selections, churn_propensity_table);
 EXECUTE IMMEDIATE
   third_query_str;
+
+
+-- Logic for FOURTH join between LTV, purchase propensity, churn propensity, audience segmentation, and auto audience segmentation predictions
+SET
+  third_join_columns = ARRAY_CONCAT(second_join_select_columns, third_join_common_columns, ['likely_to_churn', 'churn_score', 'churn_processed_timestamp', 'churn_feature_date', 'c_p_decile'], churn_propensity_select_columns);
+SET
+  auto_audience_segmentation_select_columns = array_diff(auto_audience_segmentation_columns,
+    auto_audience_segmentation_special_columns);
+SET
+  fourth_join_common_columns = array_common(third_join_columns,
+    auto_audience_segmentation_select_columns);
+SET
+  third_join_select_columns = array_diff(third_join_columns,
+    fourth_join_common_columns);
+SET
+  auto_audience_segmentation_select_columns = array_diff(auto_audience_segmentation_select_columns,
+    fourth_join_common_columns);
+SET
+  fourth_join_common_selections = create_common_columns_select(fourth_join_common_columns,
+    'g',
+    'h');
+SET
+  third_join_selections = create_columns_select(third_join_select_columns,
+    'g');
+SET
+  auto_audience_segmentation_selections = create_columns_select(auto_audience_segmentation_select_columns,
+    'h');
+SET
+  fourth_query_str = FORMAT("""
+CREATE OR REPLACE TABLE `%s.{{dataset_id}}.{{table_id}}` AS
+SELECT
+%s,
+%s,
+h.feature_timestamp AS auto_segment_processed_timestamp,
+h.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].CENTROID_ID AS Auto_Segment_ID,
+h.NEAREST_CENTROIDS_DISTANCE[OFFSET(0)].DISTANCE AS Auto_Segment_Distance,
+%s
+FROM temp3 AS g
+full outer join `%s` AS h
+ON g.user_pseudo_id=h.user_pseudo_id;
+""", project_id, third_join_selections, fourth_join_common_selections, auto_audience_segmentation_selections, auto_audience_segmentation_table);
+EXECUTE IMMEDIATE
+  fourth_query_str;

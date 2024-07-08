@@ -2,51 +2,51 @@
   {
     "name": "Dt",
     "type": "DATE",
-    "description": "feature column description"
+    "description": "Date that serves as the basis for the calculation of the features"
   },
   {
     "name": "First_Visits",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of first_visit events aggregated in the past days"
   },
   {
     "name": "Visit_Product_Page",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of view_item events aggregated in the past days"
   },
   {
     "name": "View_Product_Details",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of view_item_detail events aggregared in the past days"
   },
   {
     "name": "Add_Product_to_Cart",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of add_product_to_cart events aggregated in the past days"
   },
   {
     "name": "View_Cart",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of view_cart events aggregated in the past days"
   },
   {
     "name": "Begin_Checkout",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of begin_checkout events aggregated in the past days"
   },
   {
     "name": "Added_Shipping_Info",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of add_shipping_info events aggregated in the past days"
   },
   {
     "name": "Added_Payment_Info",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of added_payment_info events aggregated in the past days"
   },
   {
     "name": "Purchase_Product",
     "type": "INTEGER",
-    "description": "feature column description"
+    "description": "The number of purchase events aggregated in the past days"
   }
 ]

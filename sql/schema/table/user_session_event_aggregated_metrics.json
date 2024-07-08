@@ -1,187 +1,187 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "feature column description"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "feature column description"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "Date that serves as the basis for the calculation of the features"
   },
   {
-    "name": "user_pseudo_id",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "The user pseudo identifier"
   },
   {
-    "name": "engagement_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "engagement_rate",
+      "type": "FLOAT",
+      "description": "The percentage of sessions that were engaged sessions. Engagement rate = engaged sessions / total sessions Engagement rate is the inverse of bounce rate"
   },
   {
-    "name": "engaged_sessions_per_user",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "engaged_sessions_per_user",
+      "type": "INTEGER",
+      "description": "The number of engaged sessions per user"
   },
   {
-    "name": "session_conversion_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "session_conversion_rate",
+      "type": "FLOAT",
+      "description": "The session conversion rate is calculated by dividing the number of sessions with a conversion event by the total number of sessions"
   },
   {
-    "name": "bounces",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "bounces",
+      "type": "INTEGER",
+      "description": "The number of not engaged sessions"
   },
   {
-    "name": "bounce_rate_per_user",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "bounce_rate_per_user",
+      "type": "FLOAT",
+      "description": "The percentage of sessions that were not engaged sessions per user. Bounce rate = not engaged sessions / total sessions Bounce rate is the inverse of engagement rate"
   },
   {
-    "name": "sessions_per_user",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "sessions_per_user",
+      "type": "INTEGER",
+      "description": "The number of sessions per user"
   },
   {
-    "name": "avg_views_per_session",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "avg_views_per_session",
+      "type": "FLOAT",
+      "description": "The average number of views per sessions"
   },
   {
-    "name": "sum_engagement_time_seconds",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "sum_engagement_time_seconds",
+      "type": "FLOAT",
+      "description": "The sum of time that your website was in focus in a user's browser or an app was in the foreground of a user's device in seconds per user"
   },
   {
-    "name": "avg_engagement_time_seconds",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "avg_engagement_time_seconds",
+      "type": "FLOAT",
+      "description": "The average time that your website was in focus in a user's browser or an app was in the foreground of a user's device. Average engagement time = total user engagement durations / number of active users"
   },
   {
-    "name": "new_visits",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "new_visits",
+      "type": "INTEGER",
+      "description": "The number of times your users opened your website for the first time"
   },
   {
-    "name": "returning_visits",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "returning_visits",
+      "type": "INTEGER",
+      "description": "The number of users who have initiated at least one previous session, regardless of whether or not the previous sessions were engaged sessions"
   },
   {
-    "name": "add_to_carts",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts",
+      "type": "INTEGER",
+      "description": "The number of times users added items to their shopping carts"
   },
   {
-    "name": "cart_to_view_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "cart_to_view_rate",
+      "type": "FLOAT",
+      "description": "The number of times users added items to their shopping carts divided by the the number of mobile app screens or web pages your users saw. Repeated views of a single screen or page are counted"
   },
   {
-    "name": "checkouts",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts",
+      "type": "INTEGER",
+      "description": "The number of times users started the checkout process"
   },
   {
-    "name": "ecommerce_purchases",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "ecommerce_purchases",
+      "type": "INTEGER",
+      "description": "The number of purchases on your website or app"
   },
   {
-    "name": "ecommerce_quantity",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "ecommerce_quantity",
+      "type": "INTEGER",
+      "description": "The number of units for an ecommerce event"
   },
   {
-    "name": "ecommerce_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "ecommerce_revenue",
+      "type": "FLOAT",
+      "description": "The sum of revenue from purchases made on your website or app, minus any refunds given. Purchase revenue = purchases + in-app purchases + subscriptions - refund"
   },
   {
-    "name": "item_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "item_revenue",
+      "type": "FLOAT",
+      "description": "The total revenue from items only minus refunds, excluding tax and shipping"
   },
   {
-    "name": "item_quantity",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "item_quantity",
+      "type": "INTEGER",
+      "description": "The number of units for a single item included in ecommerce events"
   },
   {
-    "name": "item_refund_amount",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "item_refund_amount",
+      "type": "FLOAT",
+      "description": "The total amount of money refunded for an item"
   },
   {
-    "name": "item_view_events",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "item_view_events",
+      "type": "INTEGER",
+      "description": "The number of times an item was viewed"
   },
   {
-    "name": "items_clicked_in_promotion",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "items_clicked_in_promotion",
+      "type": "INTEGER",
+      "description": "The number of items that the customer clicked in a promotion"
   },
   {
-    "name": "items_clicked_in_list",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "items_clicked_in_list",
+      "type": "INTEGER",
+      "description": "The number of items that the customer clicked in a list of items"
   },
   {
-    "name": "items_checked_out",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "items_checked_out",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out"
   },
   {
-    "name": "items_added_to_cart",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "items_added_to_cart",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart"
   },
   {
-    "name": "item_list_click_events",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "item_list_click_events",
+      "type": "INTEGER",
+      "description": "The number of times a user clicked on an item from a list of products"
   },
   {
-    "name": "item_list_view_events",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "item_list_view_events",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in list"
   },
   {
-    "name": "purchase_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "purchase_revenue",
+      "type": "FLOAT",
+      "description": "The total revenue from purchases, in-app purchases, subscriptions, and ad revenue. Total revenue = purchases + in-app purchases + subscriptions + ad revenue - refunds"
   },
   {
-    "name": "purchase_to_view_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "purchase_to_view_rate",
+      "type": "FLOAT",
+      "description": "The number of purchases on your website or app divided by the number of mobile app screens or web pages your users saw"
   },
   {
-    "name": "refunds",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "refunds",
+      "type": "FLOAT",
+      "description": "The amount of money refunded"
   },
   {
-    "name": "transactions_per_purchaser",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "transactions_per_purchaser",
+      "type": "FLOAT",
+      "description": "The average number of purchases per buyer for the selected time frame"
   },
   {
-    "name": "user_conversion_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "user_conversion_rate",
+      "type": "FLOAT",
+      "description": "The number of users who performed a conversion action divided by the total number of users"
   },
   {
-    "name": "how_many_purchased_before",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "how_many_purchased_before",
+      "type": "INTEGER",
+      "description": "The number of times the user have purchased before"
   },
   {
-    "name": "has_abandoned_cart",
-    "type": "BOOLEAN",
-    "description": "feature column description"
+      "name": "has_abandoned_cart",
+      "type": "BOOLEAN",
+      "description": "a boolean indicating whether the user has abandoned a cart in the past"
   }
 ]

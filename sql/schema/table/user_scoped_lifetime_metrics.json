@@ -1,137 +1,137 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "feature column description"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "feature column description"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "The date serving as basis for the features calculation"
   },
   {
-    "name": "lifetime_purchasers_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "lifetime_purchasers_users",
+      "type": "INTEGER",
+      "description": "The number of distinct users who have purchases in the lifetime"
   },
   {
-    "name": "lifetime_average_daily_purchasers",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_average_daily_purchasers",
+      "type": "FLOAT",
+      "description": "The average number of purchasers across all the days in the lifetime"
   },
   {
-    "name": "lifetime_active_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "lifetime_active_users",
+      "type": "INTEGER",
+      "description": "The number of distinct users who visited your website or application in the lifetime. An active user is any user who has an engaged session or when Analytics collects: the first_visit event or engagement_time_msec parameter from a website the first_open event or engagement_time_msec parameter from an Android app the first_open or user_engagement event from an iOS app"
   },
   {
-    "name": "lifetime_DAU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_DAU",
+      "type": "FLOAT",
+      "description": "The average number of users who engaged for the calendar day in the lifetime"
   },
   {
-    "name": "lifetime_MAU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_MAU",
+      "type": "FLOAT",
+      "description": "The average number of users who engaged in the last 30 days in the lifetime"
   },
   {
-    "name": "lifetime_WAU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_WAU",
+      "type": "FLOAT",
+      "description": "The average number of users who engaged in the last week in the lifetime"
   },
   {
-    "name": "lifetime_dau_per_mau",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_dau_per_mau",
+      "type": "FLOAT",
+      "description": "Daily Active Users (DAU) / Monthly Active Users (MAU) shows the percentage of users who engaged for the calendar day out of the users who engaged in the last 30 days in the lifetime. A higher ratio suggests good engagement and user retention"
   },
   {
-    "name": "lifetime_dau_per_wau",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_dau_per_wau",
+      "type": "FLOAT",
+      "description": "Daily Active Users (DAU) / Weekly Active Users (WAU) shows the percentage of users who engaged in the last 24 hours out of the users who engaged in the last 7 days in the lifetime. A higher ratio suggests good engagement and user retention"
   },
   {
-    "name": "lifetime_wau_per_mau",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_wau_per_mau",
+      "type": "FLOAT",
+      "description": "Weekly Active Users (DAU) / Monthly Active Users (MAU) shows the percentage of users who engaged in the last 7 days out of the users who engaged in the last 30 days in the lifetime. A higher ratio suggests good engagement and user retention"
   },
   {
-    "name": "lifetime_users_engagement_duration_seconds",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_users_engagement_duration_seconds",
+      "type": "FLOAT",
+      "description": "The average length of time that your app screen was in the foreground or your web page was in focus in seconds in the lifetime"
   },
   {
-    "name": "lifetime_average_engagement_time",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_average_engagement_time",
+      "type": "FLOAT",
+      "description": "The average time that your website was in focus in a user's browser or an app was in the foreground of a user's device in the lifetime. Average engagement time = total user engagement durations / number of active users"
   },
   {
-    "name": "lifetime_average_engagement_time_per_session",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_average_engagement_time_per_session",
+      "type": "FLOAT",
+      "description": "The average engagement time per session in the lifetime"
   },
   {
-    "name": "lifetime_average_sessions_per_user",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_average_sessions_per_user",
+      "type": "FLOAT",
+      "description": "The average number of sessions per user in the lifetime"
   },
   {
-    "name": "lifetime_ARPPU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_ARPPU",
+      "type": "FLOAT",
+      "description": "Average revenue per paying user (ARPPU) is the total purchase revenue per active user who made a purchase in the lifetime"
   },
   {
-    "name": "lifetime_ARPU",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_ARPU",
+      "type": "FLOAT",
+      "description": "Average revenue per active user (ARPU) is the total revenue generated on average from each active user, whether they made a purchase or not in the lifetime. ARPU = (Total ad revenue + purchase revenue + in-app purchase revenue + subscriptions) / Active users"
   },
   {
-    "name": "lifetime_average_daily_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_average_daily_revenue",
+      "type": "FLOAT",
+      "description": "Average daily revenue The average total revenue for a day over the lifetime"
   },
   {
-    "name": "lifetime_max_daily_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_max_daily_revenue",
+      "type": "FLOAT",
+      "description": "The maximum total revenue for a day over the lifetime"
   },
   {
-    "name": "lifetime_min_daily_revenue",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_min_daily_revenue",
+      "type": "FLOAT",
+      "description": "The minimum total revenue for a day over the lifetime"
   },
   {
-    "name": "lifetime_new_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "lifetime_new_users",
+      "type": "INTEGER",
+      "description": "The number of new unique user IDs that logged the first_open or first_visit event in the lifetime. The metric allows you to measure the number of users who interacted with your site or launched your app for the first time"
   },
   {
-    "name": "lifetime_returning_users",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "lifetime_returning_users",
+      "type": "INTEGER",
+      "description": "The number of users who have initiated at least one previous session in the lifetime, regardless of whether or not the previous sessions were engaged sessions"
   },
   {
-    "name": "lifetime_first_time_purchasers",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "lifetime_first_time_purchasers",
+      "type": "INTEGER",
+      "description": "The number of users who made their first purchase in the lifetime."
   },
   {
-    "name": "lifetime_first_time_purchaser_conversion",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_first_time_purchaser_conversion",
+      "type": "FLOAT",
+      "description": "The percentage of active users who made their first purchase in the lifetime. This metric is returned as a fraction; for example, 0.092 means 9.2% of active users were first-time purchasers"
   },
   {
-    "name": "lifetime_first_time_purchasers_per_new_user",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_first_time_purchasers_per_new_user",
+      "type": "FLOAT",
+      "description": "The average number of first-time purchasers per new user in the lifetime"
   },
   {
-    "name": "lifetime_avg_user_conversion_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_avg_user_conversion_rate",
+      "type": "FLOAT",
+      "description": "The average number of converting user per total users in the lifetime"
   },
   {
-    "name": "lifetime_avg_session_conversion_rate",
-    "type": "FLOAT",
-    "description": "feature column description"
+      "name": "lifetime_avg_session_conversion_rate",
+      "type": "FLOAT",
+      "description": "The average number of converting session per total sessions in the lifetime"
   }
 ]

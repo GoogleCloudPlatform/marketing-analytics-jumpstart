@@ -1,287 +1,287 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "feature column description"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "feature column description"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "The date serving as basis for the features calculation"
   },
   {
-    "name": "user_pseudo_id",
-    "type": "STRING",
-    "description": "feature column description"
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "The user pseudo identifier"
   },
   {
-    "name": "active_users_past_1_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_1_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 1 day"
   },
   {
-    "name": "active_users_past_2_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 2nd day"
   },
   {
-    "name": "active_users_past_3_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 3rd day"
   },
   {
-    "name": "active_users_past_4_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 4th day"
   },
   {
-    "name": "active_users_past_5_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 5th day"
   },
   {
-    "name": "active_users_past_6_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_6_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 6th day"
   },
   {
-    "name": "active_users_past_7_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_7_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 7th day"
   },
   {
-    "name": "active_users_past_8_14_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_8_14_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 8 to 14 days"
   },
   {
-    "name": "active_users_past_15_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "active_users_past_15_30_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has been active in the past 15 to 30 days"
   },
   {
-    "name": "purchases_past_1_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_1_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past day"
   },
   {
-    "name": "purchases_past_2_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 2nd day"
   },
   {
-    "name": "purchases_past_3_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 3rd day"
   },
   {
-    "name": "purchases_past_4_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 4th day"
   },
   {
-    "name": "purchases_past_5_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 5th day"
   },
   {
-    "name": "purchases_past_6_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_6_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 6th day"
   },
   {
-    "name": "purchases_past_7_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_7_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 7th day"
   },
   {
-    "name": "purchases_past_8_14_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_8_14_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 8 to 14 days"
   },
   {
-    "name": "purchases_past_15_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "purchases_past_15_30_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has purchased in the past 15 to 30 days"
   },
   {
-    "name": "visits_past_1_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_1_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past day"
   },
   {
-    "name": "visits_past_2_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 2nd day"
   },
   {
-    "name": "visits_past_3_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 3rd day"
   },
   {
-    "name": "visits_past_4_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 4th day"
   },
   {
-    "name": "visits_past_5_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 5th day"
   },
   {
-    "name": "visits_past_6_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_6_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 6th day"
   },
   {
-    "name": "visits_past_7_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_7_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 7th day"
   },
   {
-    "name": "visits_past_8_14_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_8_14_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 8 to 14 days"
   },
   {
-    "name": "visits_past_15_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "visits_past_15_30_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 15 to 30 days"
   },
   {
-    "name": "view_items_past_1_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_1_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past day"
   },
   {
-    "name": "view_items_past_2_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 2nd day"
   },
   {
-    "name": "view_items_past_3_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 3rd day"
   },
   {
-    "name": "view_items_past_4_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 4th day"
   },
   {
-    "name": "view_items_past_5_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 5th day"
   },
   {
-    "name": "view_items_past_6_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_6_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 6th day"
   },
   {
-    "name": "view_items_past_7_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_7_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 7th day"
   },
   {
-    "name": "view_items_past_8_14_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_8_14_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 8 to 14 days"
   },
   {
-    "name": "view_items_past_15_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "view_items_past_15_30_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has viewed items in the past 15 to 30 days"
   },
   {
-    "name": "add_to_carts_past_1_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_1_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past day"
   },
   {
-    "name": "add_to_carts_past_2_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 2nd day"
   },
   {
-    "name": "add_to_carts_past_3_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 3rd day"
   },
   {
-    "name": "add_to_carts_past_4_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 4th day"
   },
   {
-    "name": "add_to_carts_past_5_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 5th day"
   },
   {
-    "name": "add_to_carts_past_6_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_6_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 6th day"
   },
   {
-    "name": "add_to_carts_past_7_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_7_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 7th day"
   },
   {
-    "name": "add_to_carts_past_8_14_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_8_14_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 8 to 14 days"
   },
   {
-    "name": "add_to_carts_past_15_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "add_to_carts_past_15_30_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has added items to cart in the past 15 to 30 days"
   },
   {
-    "name": "checkouts_past_1_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_1_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past day"
   },
   {
-    "name": "checkouts_past_2_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 2nd day"
   },
   {
-    "name": "checkouts_past_3_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 3rd day"
   },
   {
-    "name": "checkouts_past_4_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 4th day"
   },
   {
-    "name": "checkouts_past_5_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 5th day"
   },
   {
-    "name": "checkouts_past_6_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_6_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 6th day"
   },
   {
-    "name": "checkouts_past_7_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_7_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 7th day"
   },
   {
-    "name": "checkouts_past_8_14_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_8_14_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 8 to 14 days"
   },
   {
-    "name": "checkouts_past_15_30_day",
-    "type": "INTEGER",
-    "description": "feature column description"
+      "name": "checkouts_past_15_30_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has checked out in the past 15 to 30 days"
   }
 ]
