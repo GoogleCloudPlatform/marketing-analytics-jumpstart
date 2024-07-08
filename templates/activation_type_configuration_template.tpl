@@ -43,5 +43,5 @@
         "activation_event_name": "maj_churn_propensity_30_15",
         "source_query_template": "${churn_propensity_query_template_gcs_path}",
         "measurement_protocol_payload_template": "${measurement_protocol_payload_template_gcs_path}"
-    },
+    }
 }
