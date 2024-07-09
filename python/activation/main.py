@@ -387,8 +387,10 @@ class TransformToPayload(beam.DoFn):
     
     payload_str = self.payload_template.render(
       client_id=_client_id,
+      user_id=self.generate_user_id_key_value_pair(element),
       event_timestamp=self.date_to_micro(element["inference_date"]),
       event_name=self.event_name,
+      session_id=element['session_id'],
       user_properties=self.generate_user_properties(element),
     )
     result = {}
@@ -429,6 +431,8 @@ class TransformToPayload(beam.DoFn):
     """
     element_copy = element.copy()
     del element_copy['client_id']
+    del element_copy['user_id']
+    del element_copy['session_id']
     del element_copy['inference_date']
     element_copy = {k: v for k, v in element_copy.items() if v}
     return json.dumps(element_copy, cls=DecimalEncoder)
@@ -446,6 +450,8 @@ class TransformToPayload(beam.DoFn):
     """
     element_copy = element.copy()
     del element_copy['client_id']
+    del element_copy['user_id']
+    del element_copy['session_id']
     del element_copy['inference_date']
     user_properties_obj =  {}
     for k, v in element_copy.items():
@@ -454,24 +460,21 @@ class TransformToPayload(beam.DoFn):
     return json.dumps(user_properties_obj, cls=DecimalEncoder)
   
 
-  def generate_event_parameters(self, element):
+  def generate_user_id_key_value_pair(self, element):
     """
-    Generates a JSON string containing the event parameters of the element.
-
+    If the user_id field is not empty generate the key/value string with the user_id.
+    else return empty string
     Args:
       element: The element to be processed.
 
     Returns:
-      A JSON string containing the event parameters of the element.
+      A string containing the key and value with the user_id.
     """
-    element_copy = element.copy()
-    del element_copy['client_id']
-    del element_copy['inference_date']
-    event_parameters_obj =  {}
-    for k, v in element_copy.items():
-      if v:
-        event_parameters_obj[k] = v
-    return json.dumps(event_parameters_obj, cls=DecimalEncoder)
+    user_id = element['user_id']
+    if user_id:
+      return f'"user_id": "{user_id}",'
+    return ""
+
 
 
 
