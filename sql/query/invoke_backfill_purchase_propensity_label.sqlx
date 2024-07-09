@@ -60,18 +60,26 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
       NULL as purchase_day_14,
       NULL as purchase_day_15_30
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
+    -- Performs a cross join with a subquery that generates a date array using GENERATE_DATE_ARRAY
+    -- The date array includes dates from min_date to max_date with a 1-day interval
     CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
+    -- Filters the data to include events where event_name is 'purchase'
     WHERE Users.event_name='purchase'
       AND Users.ga_session_id IS NOT NULL
       AND Users.ecommerce.transaction_id IS NOT NULL 
       AND Users.ecommerce.transaction_id <> '(not set)'
   );
 
-  ## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
+-- Creates a temporary table called future_purchases_per_user to store user purchase data in the future
+-- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
 CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
   SELECT
+    -- Selects user_pseudo_id from the event table and assigns it to column user_pseudo_id
     user_pseudo_id,
+    -- Selects input_date from the dates_interval table and assigns it to column feature_date
     input_date as feature_date,
+    -- This calculation is performed over a window partitioned by user_pseudo_id and input_date
+    -- Repeats the above logic for different day offsets (1 to 14) to calculate future purchase counts for different days
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_1,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 2 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_2,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 3 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_3,
@@ -86,25 +94,35 @@ CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 12 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_12,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 13 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_13,
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_14,
+    -- Calculates the maximum count of distinct ecommerce.transaction_id for events occurring between 15 and 30 days after the input_date (in the future)
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_15_30
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
   CROSS JOIN dates_interval as DI
+     -- Filters events to be within the date range defined by input_date and end_date from dates_interval
     WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
     AND E.event_name='purchase'
     AND E.ga_session_id IS NOT NULL
     AND E.ecommerce.transaction_id IS NOT NULL 
     AND E.ecommerce.transaction_id <> '(not set)'
     AND D.device_os IS NOT NULL
+    -- Groups the result by user_pseudo_id and feature_date
     GROUP BY user_pseudo_id, feature_date
 );
 
+-- Inserts data into the target table
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 SELECT DISTINCT
+  -- Selects the current timestamp and assigns it to the column processed_timestamp
   CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- Selects the feature_date from the all_users_possible_purchases table and assigns it to the column feature_date
   A.feature_date,
+  -- Selects the user_pseudo_id from the all_users_possible_purchases table and assigns it to the column user_pseudo_id
   A.user_pseudo_id,
+  -- Uses the LEAST function to get the minimum value between the coalesced value of purchase_day_1 and 1
+  -- COALESCE is used to handle null values, replacing them with 0
+  -- This pattern is repeated for purchase_day_1 to purchase_day_15_30 to populate the respective columns
   LEAST(COALESCE(B.purchase_day_1, 0), 1) AS purchase_day_1,
   LEAST(COALESCE(B.purchase_day_2, 0), 1) AS purchase_day_2,
   LEAST(COALESCE(B.purchase_day_3, 0), 1) AS purchase_day_3,
@@ -121,6 +139,7 @@ SELECT DISTINCT
   LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
   LEAST(COALESCE(B.purchase_day_15_30, 0), 1) AS purchase_day_15_30
 FROM all_users_possible_purchases AS A
+-- Performs a left join with the future_purchases_per_user table (aliased as B) using user_pseudo_id and feature_date
 LEFT JOIN future_purchases_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id AND B.feature_date = A.feature_date
 ;
