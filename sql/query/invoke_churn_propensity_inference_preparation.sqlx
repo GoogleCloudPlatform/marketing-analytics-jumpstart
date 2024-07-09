@@ -12,8 +12,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- The SQL code you provided is a simple script that sets a variable to 
--- the current date and then passes that date as an argument to a stored procedure.
+-- The SQL code sets a variable to the current date and then passes 
+-- that date as an argument to a stored procedure.
 
 DECLARE inference_date DATE DEFAULT NULL;
 SET inference_date = CURRENT_DATE();

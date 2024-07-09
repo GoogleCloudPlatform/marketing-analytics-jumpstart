@@ -1772,6 +1772,8 @@ bigquery:
       validation_split_end_number: 8
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
     # This is a stored procedure that CALLs the Audience Segmentation Training Preparation stored procedure.
     invoke_audience_segmentation_training_preparation:
       project_id: "${project_id}"

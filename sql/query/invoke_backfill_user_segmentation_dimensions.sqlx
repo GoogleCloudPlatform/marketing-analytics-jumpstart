@@ -15,6 +15,10 @@
 DECLARE min_date DATE;
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- This code snippet essentially prepares a set of date intervals within the dates_interval temporary table. 
+-- These intervals are used to segment data for analysis in subsequent parts of the code. 
+-- The min_date variable ensures that the analysis starts from a specific point in time, and the 
+-- interval_end_date parameter controls the length of each interval.
 CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
@@ -24,6 +28,8 @@ CREATE OR REPLACE TEMP TABLE dates_interval as (
     ORDER BY input_date DESC
 );
 
+-- This table is designed to capture various user-level dimensions (attributes) for each distinct user and date combination. 
+-- It uses window functions (LAST_VALUE, FIRST_VALUE) to determine the most recent occurrence of certain events within a given date range.
 CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   SELECT DISTINCT
   DI.input_date as feature_date,
@@ -62,7 +68,9 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   AND D.device_os IS NOT NULL
 );
 
--- All users in the platform
+-- This table is designed to provide a combination pair of all users and 
+-- their associated dates, filtered for events within the defined date intervals 
+-- and with valid sessions.
 CREATE OR REPLACE TEMP TABLE events_users as (
   SELECT DISTINCT
   Users.user_pseudo_id,
@@ -74,13 +82,18 @@ CREATE OR REPLACE TEMP TABLE events_users as (
   AND ga_session_id IS NOT NULL
 );
 
-
+-- This code snippet performs a complex aggregation and insertion operation. It combines data from two temporary tables, 
+-- calculates various user-level dimensions, and inserts the aggregated results into a target table. The use of window functions, 
+-- approximate aggregation, and careful joining ensures that the query is efficient and produces meaningful insights from the data.
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+  -- The DISTINCT keyword ensures that only unique rows are inserted, eliminating any potential duplicates.
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
   EU.feature_date,
   EU.user_pseudo_id,
   MAX(EU.user_id) as user_id,
+  -- The query then selects several user dimensions from the user_dimensions_event_session_scoped table (aliased as UDESS), 
+  -- using MAX() to get the most recent value for each dimension within the user and date group
   MAX(UDESS.user_ltv_revenue) as user_ltv_revenue,
   MAX(UDESS.device_category) as device_category,
   MAX(UDESS.device_mobile_brand_name) as device_mobile_brand_name,
@@ -88,11 +101,14 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   MAX(UDESS.device_os) as device_os,
   MAX(UDESS.device_language) as device_language,
   MAX(UDESS.device_web_browser) as device_web_browser,
+  -- For geographical dimensions, the query uses APPROX_TOP_COUNT(..., 1)[OFFSET(0)].value to get the most frequent value 
+  -- within the user and date group. This is an approximate aggregation function that's more efficient for large datasets
   APPROX_TOP_COUNT(UDESS.geo_sub_continent, 1)[OFFSET(0)].value as geo_sub_continent,
   APPROX_TOP_COUNT(UDESS.geo_country, 1)[OFFSET(0)].value as geo_country,
   APPROX_TOP_COUNT(UDESS.geo_region, 1)[OFFSET(0)].value as geo_region,
   APPROX_TOP_COUNT(UDESS.geo_city, 1)[OFFSET(0)].value as geo_city,
   APPROX_TOP_COUNT(UDESS.geo_metro, 1)[OFFSET(0)].value as geo_metro,
+  -- The query selects both the last and first values for traffic source dimensions.
   MAX(UDESS.last_traffic_source_medium) as last_traffic_source_medium,
   MAX(UDESS.last_traffic_source_name) as last_traffic_source_name,
   MAX(UDESS.last_traffic_source_source) as last_traffic_source_source,

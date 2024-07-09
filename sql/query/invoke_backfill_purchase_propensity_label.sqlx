@@ -12,25 +12,38 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- Declares a variable to store the maximum date for analysis
 DECLARE max_date DATE;
+-- Declares a variable to store the minimum date for analysis
 DECLARE min_date DATE;
+-- Sets the max_date variable to the latest event_date minus a specified number of days ({{interval_max_date}}) from the 'event' table
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+-- Sets the min_date variable to the earliest event_date plus a specified number of days ({{interval_min_date}}) from the 'event' table
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- Creates a temporary table called dates_interval to store distinct event dates and their corresponding end dates
 CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
+    -- Selects the distinct event_date and assigns it to the column input_date
     event_date as input_date,
+    -- Calculates the end date by adding a specified number of days ({{interval_end_date}}) to the input_date
     DATE_ADD(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+  -- Filters the events to include only those within the defined date range (between min_date and max_date)
   WHERE event_date BETWEEN min_date AND max_date
     ORDER BY input_date DESC
 );
 
-## All users in the platform
+-- All users in the platform
+-- Creates a temporary table called all_users_possible_purchases to store user purchase data
 CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
     SELECT DISTINCT
+      -- Selects the user_pseudo_id from the 'event' table and assigns it to the column user_pseudo_id
       Users.user_pseudo_id,
+      -- Selects the event_date from the date array generated using GENERATE_DATE_ARRAY and assigns it to the column feature_date
       DI.event_date as feature_date,
+      -- Creates a series of columns (purchase_day_1 to purchase_day_15_30) and initializes them with NULL values
+      -- These columns will be populated later with purchase data for specific days
       NULL as purchase_day_1,
       NULL as purchase_day_2,
       NULL as purchase_day_3,
