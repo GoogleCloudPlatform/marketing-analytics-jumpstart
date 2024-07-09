@@ -12,8 +12,10 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-DECLARE inference_date DATE DEFAULT NULL;
+-- The SQL code you provided is a simple script that sets a variable to 
+-- the current date and then passes that date as an argument to a stored procedure.
 
+DECLARE inference_date DATE DEFAULT NULL;
 SET inference_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY);
 
 CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(inference_date);

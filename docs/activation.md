@@ -15,6 +15,7 @@ MAJ automatically creates the following custom events and user properties corres
 | Customer Lifetime Value  | `maj_cltv_180_30` |	`cltv_decile` |
 | Demographic Audience Segmentation | `maj_audience_segmentation_15` |	`a_s_prediction` |
 | Interest based Audience Segmentation | `maj_auto_audience_segmentation_15` |	`a_a_s_prediction` |
+| Churn Propensity | `maj_churn_propensity_30_15` |	`c_p_prediction`<br>`c_p_decile` |
 
 For each use case, a corresponding SQL query template dictates how prediction values are selected and processed for activation:
 
@@ -24,8 +25,20 @@ For each use case, a corresponding SQL query template dictates how prediction va
 | Customer Lifetime Value  | [cltv_query_template.sqlx](../templates/activation_query/cltv_query_template.sqlx) |
 | Demographic Audience Segmentation | [audience_segmentation_query_template.sqlx](../templates/activation_query/audience_segmentation_query_template.sqlx) |
 | Interest based Audience Segmentation | [auto_audience_segmentation_query_template.sqlx](../templates/activation_query/auto_audience_segmentation_query_template.sqlx) |
+| Churn Propensity | [churn_propensity_query_template.sqlx](../templates/activation_query/churn_propensity_query_template.sqlx)|
 
 The [activation configuration](../templates/activation_type_configuration_template.tpl) file links the GA4 custom events with their corresponding query templates and [GA4 Measurement Protocol payload template](../templates/app_payload_template.jinja2)
+
+The payload have the following keys set based on the [payload reference documentation](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference#payload_post_body):
+
+| Key |	Value |
+| -------- | --------- |
+| `client_id` | `user_pseudo_id` from the last GA4 event |
+| `user_id` | `user_id` from the last GA4 event and is only set if the field is not empty |
+| `timestamp_micros` | 1 micro second before `event_timestamp` of the last GA4 event |
+| `consent` | Allow sending user data from the request's events and user properties to Google for advertising purposes and personalized advertising for the user. |
+| `user_properties` | [GA4 Custom User Properties](#activation-process-overview) specific for each use case |
+| `event` | [GA4 Custom Event](#activation-process-overview) specific for each use case and `session_id` from the last GA4 event as [Event-scoped custom parameters](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference#custom_parameters) |
 
 The activation pipeline reads the activation configuration to dynamically determine the templates to use for the specific use case it is processing.
 
@@ -60,6 +73,24 @@ For example:
 
 By the end of the ML prediction process, a triggering event containing the path to the prediction table is sent to Pub/Sub, which automatically initiates the activation process on the prediction results.
 You can also manually trigger the activation pipeline by sending the message through the [Pub/Sub console](https://console.cloud.google.com/cloudpubsub/topic/detail/activation-trigger?mods=logs_tg_staging&tab=messages&modal=publishmessage)
+
+## Activating predictions on new models
+
+The following changes will enable your system to send activation data (presumably related to a new model prediction) to Google Analytics 4 using Measurement Protocol and User Data Import. This is done through a Dataflow job, which is a way to process large datasets in a scalable and distributed manner. For the sake of this exercise, let's pretend we want to activate on a churn propensity model prediction.
+
+**Modify Files:**
+- `infrastructure/terraform/modules/activation/main.tf` (Terraform): New terraform resources are defined and the `activation_type_configuration` is updated.
+  - New Data Object: Adds a new Terraform data object to load a template file called `churn_propensity_query_template_file`. This file likely contains a SQL query used to fetch data relevant to churn propensity from your feature store.
+  - New Bucket Object: Creates a new object in your Google Cloud Storage bucket to hold the rendered version of the `churn_propensity_query_template_file`.
+  - Configuration Update: Modifies the activation_type_configuration template to include the path to the newly created churn propensity query template in GCS. This ensures the Dataflow job can access the query.
+- `python/ga4_setup/setup.py` (Python): 
+  - New Custom Dimension: Creates new custom dimensions for the Churn Propensity use case. The new dimensions must match with the values keys being sent via Measurement Protocol. In this case, the GA4 Custom User Properties (c_p_prediction, c_p_decile).
+
+**New Files:**
+- `templates/activation_query/churn_propensity_query_template.sqlx` (Templated SQL): This query template aims to combine churn propensity predictions from {{source_table}} with user information from a table containing recent events. It calculates churn deciles, consolidates user IDs, and potentially adjusts event timestamps for consistency. The use of variables and placeholders makes it adaptable for different prediction sources and datasets.
+- `templates/activation_user_import/churn_propensity_csv_export.sqlx` (Templated SQL): This script takes churn propensity predictions from a BigQuery table, prepares a temporary table with specific columns and calculations, and then exports this data to a CSV file in a GCS bucket. The use of dynamic SQL allows for flexibility in specifying the source prediction table.
+
+**Note:** There is no need to modify the Dataflow job to use the new queries and send activation data to Google Analytics 4.
 
 ## Activation using User Data Import
 GA4 [user-data import](https://support.google.com/analytics/answer/10071143?hl=en) is a file based batch import manually initiated through the GA4 console. Do the following steps for the user-data import.

@@ -1,0 +1,27 @@
+[
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP",
+    "description": "The timestamp of when the data was processed"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE",
+    "description": "The date used as base date for calculation"
+  },
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING",
+    "description": "The user pseudo identifier"
+  },
+  {
+    "name": "churned",
+    "type": "INTEGER",
+    "description": "A boolean indicating whether the user has churned in the past days"
+  },
+  {
+    "name": "bounced",
+    "type": "INTEGER",
+    "description": "A boolean indicating whether the user has bounced in the past days"
+  }
+]

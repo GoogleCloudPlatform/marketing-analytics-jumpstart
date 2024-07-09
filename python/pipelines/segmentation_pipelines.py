@@ -20,9 +20,8 @@ from pipelines.components.bigquery.component import (
     bq_select_best_kmeans_model, bq_clustering_predictions, 
     bq_flatten_kmeans_prediction_table, bq_evaluate)
 from pipelines.components.pubsub.component import send_pubsub_activation_msg
-
-from pipelines.components.bigquery.component import (
-    bq_clustering_exec)
+from pipelines.components.python.component import hyper_parameter_tuning_scikit_audience_model
+from pipelines.components.bigquery.component import (bq_clustering_exec)
 
 # This is the Vertex AI Pipeline definition for Audience Segmentation Traning pipelines.
 # This pipeline will be compiled, uploaded and scheduled by a terraform resource in the folder `infrastructure/terraform/modules/pipelines/pipelines.tf`.
@@ -30,34 +29,36 @@ from pipelines.components.bigquery.component import (
 @dsl.pipeline()
 def training_pl(
     project_id: str,
+    dataset: str,
     location: str,
     
-    model_dataset_id: str,
     model_name_bq_prefix: str,
     vertex_model_name: str,
 
     training_data_bq_table: str,
     exclude_features: list,
 
-    km_num_clusters: int,
-    km_init_method: str,
-    #km_init_col: str = "",
+    p_wiggle: int,
+    columns_to_skip: int,
+
     km_distance_type: str,
-    km_standardize_features: str,
-    km_max_interations: int,
     km_early_stop: str,
-    km_min_rel_progress: float,
-    km_warm_start: str
+    km_warm_start: str,
+    
+    use_split_column: str,
+    use_hparams_tuning: str
     
 
 ):
     """
     This function defines the Vertex AI Pipeline for Audience Segmentation Training.
+    Model type is KMEANS which uses k-means clustering for data segmentation; for example, 
+    identifying customer segments. K-means is an unsupervised learning technique, so model training does not require labels or split data for training or evaluation.
 
     Args:
         project_id (str): The Google Cloud project ID.
         location (str): The Google Cloud region where the pipeline will be deployed.
-        model_dataset_id (str): The BigQuery dataset ID where the model will be stored.
+        dataset (str): The BigQuery dataset ID where the model will be stored.
         model_name_bq_prefix (str): The prefix for the BQML model name.
         vertex_model_name (str): The name of the Vertex AI model.
         training_data_bq_table (str): The BigQuery table containing the training data.
@@ -72,24 +73,32 @@ def training_pl(
         km_warm_start (str): Whether to use warm start during training.
     """
 
+    # Runs hyperparameter tuning to find the best number of segments
+    hp_params = hyper_parameter_tuning_scikit_audience_model(
+        location=location,
+        project_id=project_id,
+        dataset=dataset,
+        training_table=training_data_bq_table,
+        p_wiggle=p_wiggle,
+        columns_to_skip=columns_to_skip,
+        use_split_column=use_split_column,
+    )
+
     # Train BQML clustering model and uploads to Vertex AI Model Registry
     bq_model = bq_clustering_exec(
         project_id= project_id,
         location= location,
-        model_dataset_id= model_dataset_id,
+        model_dataset_id= dataset,
         model_name_bq_prefix= model_name_bq_prefix,
         vertex_model_name= vertex_model_name,
         training_data_bq_table= training_data_bq_table,
         exclude_features=exclude_features,
-        km_num_clusters= km_num_clusters,
-        km_init_method= km_init_method,
-        #km_init_col: str = "",
+        model_parameters = hp_params.outputs["model_parameters"],
         km_distance_type= km_distance_type,
-        km_standardize_features= km_standardize_features,
-        km_max_interations= km_max_interations,
         km_early_stop= km_early_stop,
-        km_min_rel_progress= km_min_rel_progress,
-        km_warm_start= km_warm_start
+        km_warm_start= km_warm_start,
+        use_split_column= use_split_column,
+        use_hparams_tuning= use_hparams_tuning
     )
     
     # Evaluate the BQ model
@@ -135,7 +144,7 @@ def prediction_pl(
     """
 
     # Get the best candidate model according to the parameters.
-    purchase_propensity_label = bq_select_best_kmeans_model(
+    segmentation_model = bq_select_best_kmeans_model(
         project_id=project_id,
         location=location,
         model_prefix=model_name_bq_prefix,
@@ -147,7 +156,7 @@ def prediction_pl(
 
     # Submits a BigQuery job to generate the predictions using the `bigquery_source` and prediction dataset.
     predictions_op = bq_clustering_predictions(
-        model = purchase_propensity_label.outputs['elected_model'],
+        model = segmentation_model.outputs['elected_model'],
         project_id = project_id,
         location = location,
         bigquery_source = bigquery_source,

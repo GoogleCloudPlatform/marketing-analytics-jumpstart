@@ -54,12 +54,14 @@ class ActivationOptions(GoogleCloudOptions):
       use_api_validation: A boolean flag indicating whether to use the Measurement Protocol API validation for debugging instead of sending the events.
       activation_type: The activation use case, which can be one of the following values:
         - audience-segmentation-15
+        - auto-audience-segmentation-15
         - cltv-180-180
         - cltv-180-90
         - cltv-180-30
         - purchase-propensity-30-15
         - purchase-propensity-15-15
         - purchase-propensity-15-7
+        - churn-propensity-30-15
       activation_type_configuration: The GCS path to the configuration file for all activation types.
     """
 
@@ -100,12 +102,14 @@ class ActivationOptions(GoogleCloudOptions):
       help='''
       Specifies the activation use case, currently supported values are:
         audience-segmentation-15
+        auto-audience-segmentation-15
         cltv-180-180
         cltv-180-90
         cltv-180-30
         purchase-propensity-30-15
         purchase-propensity-15-15
         purchase-propensity-15-7
+        churn-propensity-30-15
       ''',
       required=True
     )
@@ -383,8 +387,10 @@ class TransformToPayload(beam.DoFn):
     
     payload_str = self.payload_template.render(
       client_id=_client_id,
+      user_id=self.generate_user_id_key_value_pair(element),
       event_timestamp=self.date_to_micro(element["inference_date"]),
       event_name=self.event_name,
+      session_id=element['session_id'],
       user_properties=self.generate_user_properties(element),
     )
     result = {}
@@ -425,6 +431,8 @@ class TransformToPayload(beam.DoFn):
     """
     element_copy = element.copy()
     del element_copy['client_id']
+    del element_copy['user_id']
+    del element_copy['session_id']
     del element_copy['inference_date']
     element_copy = {k: v for k, v in element_copy.items() if v}
     return json.dumps(element_copy, cls=DecimalEncoder)
@@ -442,6 +450,8 @@ class TransformToPayload(beam.DoFn):
     """
     element_copy = element.copy()
     del element_copy['client_id']
+    del element_copy['user_id']
+    del element_copy['session_id']
     del element_copy['inference_date']
     user_properties_obj =  {}
     for k, v in element_copy.items():
@@ -450,24 +460,21 @@ class TransformToPayload(beam.DoFn):
     return json.dumps(user_properties_obj, cls=DecimalEncoder)
   
 
-  def generate_event_parameters(self, element):
+  def generate_user_id_key_value_pair(self, element):
     """
-    Generates a JSON string containing the event parameters of the element.
-
+    If the user_id field is not empty generate the key/value string with the user_id.
+    else return empty string
     Args:
       element: The element to be processed.
 
     Returns:
-      A JSON string containing the event parameters of the element.
+      A string containing the key and value with the user_id.
     """
-    element_copy = element.copy()
-    del element_copy['client_id']
-    del element_copy['inference_date']
-    event_parameters_obj =  {}
-    for k, v in element_copy.items():
-      if v:
-        event_parameters_obj[k] = v
-    return json.dumps(event_parameters_obj, cls=DecimalEncoder)
+    user_id = element['user_id']
+    if user_id:
+      return f'"user_id": "{user_id}",'
+    return ""
+
 
 
 
@@ -536,9 +543,11 @@ def run(argv=None):
   # Get the activation options.
   activation_options = pipeline_options.view_as(ActivationOptions)
   # Load the activation type configuration.
+  logging.info(f"Loading activation type configuration from {activation_options}")
   activation_type_configuration = load_activation_type_configuration(activation_options)
 
   # Build the query to be used to retrieve data from the source table.
+  logging.info(f"Building query to retrieve data from {activation_type_configuration}")
   load_from_source_query = build_query(activation_options, activation_type_configuration)
   logging.info(load_from_source_query)
 

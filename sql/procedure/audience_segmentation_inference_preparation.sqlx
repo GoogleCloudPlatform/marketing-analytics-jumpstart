@@ -41,10 +41,8 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
     MAX(UD.device_mobile_brand_name) OVER(user_segmentation_dimensions_window) AS device_mobile_brand_name,
     MAX(UD.device_mobile_model_name) OVER(user_segmentation_dimensions_window) AS device_mobile_model_name,
     MAX(UD.device_os) OVER(user_segmentation_dimensions_window) AS device_os,
-    MAX(UD.device_os_version) OVER(user_segmentation_dimensions_window) AS device_os_version,
     MAX(UD.device_language) OVER(user_segmentation_dimensions_window) AS device_language,
     MAX(UD.device_web_browser) OVER(user_segmentation_dimensions_window) AS device_web_browser,
-    MAX(UD.device_web_browser_version) OVER(user_segmentation_dimensions_window) AS device_web_browser_version,
     MAX(UD.geo_sub_continent) OVER(user_segmentation_dimensions_window) AS geo_sub_continent,
     MAX(UD.geo_country) OVER(user_segmentation_dimensions_window) AS geo_country,
     MAX(UD.geo_region) OVER(user_segmentation_dimensions_window) AS geo_region,
@@ -118,10 +116,8 @@ CREATE OR REPLACE TEMP TABLE inference_preparation AS (
     UD.device_mobile_brand_name,
     UD.device_mobile_model_name,
     UD.device_os,
-    UD.device_os_version,
     UD.device_language,
     UD.device_web_browser,
-    UD.device_web_browser_version,
     UD.geo_sub_continent,
     UD.geo_country,
     UD.geo_region,
@@ -173,10 +169,8 @@ DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
 --     device_mobile_brand_name:	The brand name of the mobile device used by the user.
 --     device_mobile_model_name:	The model name of the mobile device used by the user.
 --     device_os:	The operating system of the device used by the user.
---     device_os_version:	The version of the operating system used by the user.
 --     device_language:	The language used by the user.
 --     device_web_browser:	The web browser used by the user.
---     device_web_browser_version:	The version of the web browser used by the user.
 --     geo_sub_continent:	The sub-continent of the user's location.
 --     geo_country: The country of the user's location.
 --     geo_region:	The region of the user's location.
@@ -211,10 +205,8 @@ INSERT INTO
     device_mobile_brand_name,
     device_mobile_model_name,
     device_os,
-    device_os_version,
     device_language,
     device_web_browser,
-    device_web_browser_version,
     geo_sub_continent,
     geo_country,
     geo_region,
@@ -250,10 +242,8 @@ SELECT
   device_mobile_brand_name,
   device_mobile_model_name,
   device_os,
-  device_os_version,
   device_language,
   device_web_browser,
-  device_web_browser_version,
   geo_sub_continent,
   geo_country,
   geo_region,
@@ -295,7 +285,6 @@ CREATE OR REPLACE TABLE
       LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_id,
       LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_category,
       LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_mobile_model_name,
-      LAST_VALUE(device_os_version) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_os_version,
       LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_country,
       LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_region,
       LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_city,
@@ -333,7 +322,6 @@ CREATE OR REPLACE VIEW
   user_id,
   device_category,
   device_mobile_model_name,
-  device_os_version,
   geo_country,
   geo_region,
   geo_city,
@@ -370,7 +358,6 @@ SELECT DISTINCT
   user_id,
   device_category,
   device_mobile_model_name,
-  device_os_version,
   geo_country,
   geo_region,
   geo_city,
@@ -402,7 +389,6 @@ FROM (
   user_id,
   device_category,
   device_mobile_model_name,
-  device_os_version,
   geo_country,
   geo_region,
   geo_city,

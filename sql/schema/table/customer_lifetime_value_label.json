@@ -1,32 +1,32 @@
 [
   {
-    "name": "processed_timestamp",
-    "type": "TIMESTAMP",
-    "description": "user_pseudo_id"
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
   },
   {
-    "name": "feature_date",
-    "type": "DATE",
-    "description": "user_pseudo_id"
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "The date serving as basis for the features calculation"
   },
   {
-    "name": "user_pseudo_id",
-    "type": "STRING",
-    "description": "user_pseudo_id"
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "The user pseudo identifier"
   },
   {
-    "name": "pltv_revenue_30_days",
-    "type": "FLOAT",
-    "description": "user_pseudo_id"
+      "name": "pltv_revenue_30_days",
+      "type": "FLOAT",
+      "description": "The predicted user lifetime value revenue in the next 30 days"
   },
   {
-    "name": "pltv_revenue_90_days",
-    "type": "FLOAT",
-    "description": "user_pseudo_id"
+      "name": "pltv_revenue_90_days",
+      "type": "FLOAT",
+      "description": "The predicted user lifetime value revenue in the next 90 days"
   },
   {
-    "name": "pltv_revenue_180_days",
-    "type": "FLOAT",
-    "description": "user_pseudo_id"
+      "name": "pltv_revenue_180_days",
+      "type": "FLOAT",
+      "description": "The predicted user lifetime value revenue in the next 180 days"
   }
 ]

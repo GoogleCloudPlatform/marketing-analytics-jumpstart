@@ -103,3 +103,26 @@ resource "google_bigquery_routine" "export_auto_audience_segmentation_procedure"
     data_type = jsonencode({ "typeKind" : "STRING" })
   }
 }
+
+data "template_file" "churn_propensity_csv_export_query" {
+  template = file("${local.source_root_dir}/templates/activation_user_import/churn_propensity_csv_export.sqlx")
+  vars = {
+    ga4_stream_id = var.ga4_stream_id
+    export_bucket = module.pipeline_bucket.name
+  }
+}
+
+resource "google_bigquery_routine" "export_churn_propensity_procedure" {
+  project         = null_resource.check_bigquery_api.id != "" ? module.project_services.project_id : var.project_id
+  dataset_id      = module.bigquery.bigquery_dataset.dataset_id
+  routine_id      = "export_churn_propensity_predictions"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.template_file.purchase_propensity_csv_export_query.rendered
+  description     = "Export purchase propensity predictions as CSV for GA4 User Data Import"
+  arguments {
+    name      = "prediction_table_name"
+    mode      = "IN"
+    data_type = jsonencode({ "typeKind" : "STRING" })
+  }
+}

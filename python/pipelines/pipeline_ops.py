@@ -227,6 +227,8 @@ def compile_pipeline(
             pipeline_parameters, pipeline_parameters_substitutions)
     logging.info("Pipeline parameters: {}".format(pipeline_parameters))
 
+    #pipeline_parameters.pop('columns_to_skip', None) 
+
     # The function uses the compiler.Compiler() class to compile the pipeline defined by the pipeline_func function. 
     # The compiled pipeline is saved to the template_path file.
     compiler.Compiler().compile(
