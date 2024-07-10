@@ -12,25 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-data "local_file" "config_vars" {
-  filename = var.config_file_path
-}
-
 locals {
-  config_vars                           = yamldecode(data.local_file.config_vars.content)
-  config_bigquery                       = local.config_vars.bigquery
-  feature_store_project_id              = local.config_vars.bigquery.dataset.feature_store.project_id
-  sql_dir                               = var.sql_dir_input
-  poetry_run_alias                      = "${var.poetry_cmd} run"
-  builder_repository_id                 = "marketing-analytics-jumpstart-base-repo"
-  purchase_propensity_project_id        = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.purchase_propensity.project_id : local.feature_store_project_id
-  churn_propensity_project_id           = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.churn_propensity.project_id : local.feature_store_project_id
-  audience_segmentation_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.audience_segmentation.project_id : local.feature_store_project_id
-  auto_audience_segmentation_project_id = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id : local.feature_store_project_id
-  aggregated_vbb_project_id             = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.aggregated_vbb.project_id : local.feature_store_project_id
-  customer_lifetime_value_project_id    = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.customer_lifetime_value.project_id : local.feature_store_project_id
-  aggregate_predictions_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.aggregated_predictions.project_id : local.feature_store_project_id
-  gemini_insights_project_id            = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.gemini_insights.project_id : local.feature_store_project_id
+  sql_dir          = var.sql_dir_input
+  poetry_run_alias = "${var.poetry_cmd} run"
 }
 
 module "project_services" {
@@ -40,7 +24,7 @@ module "project_services" {
   disable_dependent_services  = true
   disable_services_on_destroy = false
 
-  project_id = local.feature_store_project_id
+  project_id = var.project_id
 
   activate_apis = [
     "artifactregistry.googleapis.com",
@@ -114,8 +98,8 @@ resource "null_resource" "check_aiplatform_api" {
 ## Note: The cloud resource nested object has only one output only field - serviceAccountId.
 resource "google_bigquery_connection" "vertex_ai_connection" {
   connection_id = "vertex_ai"
-  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.feature_store_project_id
-  location = local.config_bigquery.region
+  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : var.project_id
+  location = var.data_location
   cloud_resource {}
 } 
 
@@ -128,7 +112,7 @@ resource "google_project_iam_member" "vertex_ai_connection_sa_roles" {
     google_bigquery_connection.vertex_ai_connection
     ]
   
-  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.feature_store_project_id
+  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : var.project_id
   member  = "serviceAccount:${google_bigquery_connection.vertex_ai_connection.cloud_resource[0].service_account_id}"
 
   for_each = toset([

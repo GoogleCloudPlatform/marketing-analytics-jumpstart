@@ -26,8 +26,8 @@ data "local_file" "audience_segmentation_inference_preparation_file" {
 # The procedure is typically invoked before running the Audience Segmentation model to ensure that the input data 
 # is in the correct format and contains the necessary features for accurate predictions.
 resource "google_bigquery_routine" "audience_segmentation_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["audience_segmentation"].dataset_id
   routine_id      = "audience_segmentation_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -54,8 +54,8 @@ data "local_file" "aggregated_value_based_bidding_training_preparation_file" {
 # The procedure is typically invoked before running the Aggregated Value Based Bidding model to ensure that the input data 
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "aggregated_value_based_bidding_training_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
+  project         = var.project_id
+  dataset_id = google_bigquery_dataset.datasets["aggregated_vbb"].dataset_id
   routine_id = "aggregated_value_based_bidding_training_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
@@ -78,8 +78,8 @@ data "local_file" "aggregated_value_based_bidding_explanation_preparation_file" 
 # The procedure is typically invoked before running the Aggregated Value Based Bidding model to ensure that the input data 
 # is in the correct format and contains the necessary features for explanation.
 resource "google_bigquery_routine" "aggregated_value_based_bidding_explanation_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
+  project         = var.project_id
+  dataset_id = google_bigquery_dataset.datasets["aggregated_vbb"].dataset_id
   routine_id = "aggregated_value_based_bidding_explanation_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
@@ -101,8 +101,8 @@ data "local_file" "auto_audience_segmentation_inference_preparation_file" {
 # The procedure is typically invoked before running the Auto Audience Segmentation model to ensure that the input data 
 # is in the correct format and contains the necessary features for prediction.
 resource "google_bigquery_routine" "auto_audience_segmentation_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["auto_audience_segmentation"].dataset_id
   routine_id      = "auto_audience_segmentation_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -128,8 +128,8 @@ data "local_file" "audience_segmentation_training_preparation_file" {
 # The procedure is typically invoked before running the Audience Segmentation model to ensure that the input data 
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "audience_segmentation_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["audience_segmentation"].dataset_id
   routine_id      = "audience_segmentation_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -170,8 +170,8 @@ data "local_file" "auto_audience_segmentation_training_preparation_file" {
 # The procedure is typically invoked before running the Auto Audience Segmentation model to ensure that the input data 
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "auto_audience_segmentation_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.auto_audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["auto_audience_segmentation"].dataset_id
   routine_id      = "auto_audience_segmentation_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -207,8 +207,8 @@ data "local_file" "customer_lifetime_value_inference_preparation_file" {
 # The procedure is typically invoked before running the Customer Lifetime Value model to ensure that the input data 
 # is in the correct format and contains the necessary features for prediction.
 resource "google_bigquery_routine" "customer_lifetime_value_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.customer_lifetime_value.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["customer_lifetime_value"].dataset_id
   routine_id      = "customer_lifetime_value_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -233,8 +233,8 @@ data "local_file" "customer_lifetime_value_label_file" {
 # The procedure is typically invoked before training the Customer Lifetime Value model to ensure that the labeled data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "customer_lifetime_value_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "customer_lifetime_value_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -269,8 +269,8 @@ data "local_file" "customer_lifetime_value_training_preparation_file" {
 # The procedure is typically invoked before training the Customer Lifetime Value model to ensure that the features data 
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "customer_lifetime_value_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.customer_lifetime_value.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["customer_lifetime_value"].dataset_id
   routine_id      = "customer_lifetime_value_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -310,8 +310,8 @@ data "local_file" "purchase_propensity_inference_preparation_file" {
 # The procedure is typically invoked before prediction the Purchase Propensity model to ensure that the features data 
 # is in the correct format and contains the necessary features for prediction.
 resource "google_bigquery_routine" "purchase_propensity_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.purchase_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["purchase_propensity"].dataset_id
   routine_id      = "purchase_propensity_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -336,8 +336,8 @@ data "local_file" "churn_propensity_inference_preparation_file" {
 # The procedure is typically invoked before prediction the Churn Propensity model to ensure that the features data 
 # is in the correct format and contains the necessary features for prediction.
 resource "google_bigquery_routine" "churn_propensity_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["churn_propensity"].dataset_id
   routine_id      = "churn_propensity_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -362,8 +362,8 @@ data "local_file" "purchase_propensity_label_file" {
 # The procedure is typically invoked before training the Purchase Propensity model to ensure that the labeled data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "purchase_propensity_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "purchase_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -398,8 +398,8 @@ data "local_file" "churn_propensity_label_file" {
 # The procedure is typically invoked before training the Churn Propensity model to ensure that the labeled data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "churn_propensity_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "churn_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -434,8 +434,8 @@ data "local_file" "purchase_propensity_training_preparation_file" {
 # The procedure is typically invoked before training the Purchase Propensity model to ensure that the features data 
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "purchase_propensity_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.purchase_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["purchase_propensity"].dataset_id
   routine_id      = "purchase_propensity_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -476,8 +476,8 @@ data "local_file" "churn_propensity_training_preparation_file" {
 # The procedure is typically invoked before training the Churn Propensity model to ensure that the features data 
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "churn_propensity_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["churn_propensity"].dataset_id
   routine_id      = "churn_propensity_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -517,8 +517,8 @@ data "local_file" "user_dimensions_file" {
 # The procedure is typically invoked before training the Purchase Propensity model to ensure that the features data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "user_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -553,8 +553,8 @@ data "local_file" "user_lifetime_dimensions_file" {
 # The procedure is typically invoked before training the Customer Lifetime Value model to ensure that the features data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "user_lifetime_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_lifetime_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -589,8 +589,8 @@ data "local_file" "user_lookback_metrics_file" {
 # The procedure is typically invoked before training the Audience Segmentation model to ensure that the features data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "user_lookback_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_lookback_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -625,8 +625,8 @@ data "local_file" "user_rolling_window_lifetime_metrics_file" {
 # The procedure is typically invoked before training the Customer Lifetime Value model to ensure that the features data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "user_rolling_window_lifetime_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_rolling_window_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -661,8 +661,8 @@ data "local_file" "user_rolling_window_metrics_file" {
 # The procedure is typically invoked before training the Purchase Propensity model to ensure that the features data 
 # is in the correct format and ready for training.
 resource "google_bigquery_routine" "user_rolling_window_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_rolling_window_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -692,8 +692,8 @@ data "local_file" "user_scoped_lifetime_metrics_file" {
 
 # The user_rolling_window_metrics procedure is designed to prepare the features for the Customer Lifetime Value model.
 resource "google_bigquery_routine" "user_scoped_lifetime_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_scoped_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -723,8 +723,8 @@ data "local_file" "user_scoped_metrics_file" {
 
 # The user_scoped_metrics procedure is designed to prepare the features for the Purchase Propensity model.
 resource "google_bigquery_routine" "user_scoped_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_scoped_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -754,8 +754,8 @@ data "local_file" "user_scoped_segmentation_metrics_file" {
 
 # The user_scoped_segmentation_metrics procedure is designed to prepare the features for the Audience Segmentation model.
 resource "google_bigquery_routine" "user_scoped_segmentation_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_scoped_segmentation_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -785,8 +785,8 @@ data "local_file" "user_segmentation_dimensions_file" {
 
 # The user_segmentation_dimensions procedure is designed to prepare the features for the Audience Segmentation model.
 resource "google_bigquery_routine" "user_segmentation_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_segmentation_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -816,8 +816,8 @@ data "local_file" "user_session_event_aggregated_metrics_file" {
 
 # The user_session_event_aggregated_metrics procedure is designed to prepare the features for the Purchase Propensity model.
 resource "google_bigquery_routine" "user_session_event_aggregated_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "user_session_event_aggregated_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -847,12 +847,27 @@ data "local_file" "aggregate_predictions_procedure_file" {
 
 # The aggregate_last_day_predictions procedure is designed to aggregated the latest predictions from all models.
 resource "google_bigquery_routine" "aggregate_last_day_predictions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.aggregate_predictions_project_id : local.feature_store_project_id
-  dataset_id      = module.aggregated_predictions.bigquery_dataset.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["aggregated_predictions"].dataset_id
   routine_id      = "aggregate_last_day_predictions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.local_file.aggregate_predictions_procedure_file.content
+}
+
+# This resource reads the contents of a local SQL file named user_predictions_aggregation.sql
+data "local_file" "user_predictions_aggregation_file" {
+  filename = "${local.sql_dir}/procedure/user_predictions_aggregation.sql"
+}
+
+# The user_predictions_aggregation procedure is designed to aggregated the latest predictions from all models.
+resource "google_bigquery_routine" "user_predictions_aggregation" {
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["aggregated_predictions"].dataset_id
+  routine_id      = "user_predictions_aggregation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.user_predictions_aggregation_file.content
 }
 
 # This resource reads the contents of a local SQL file named user_behaviour_revenue_insights.sql and 
@@ -864,8 +879,8 @@ data "local_file" "user_behaviour_revenue_insights_file" {
 
 # The user_behaviour_revenue_insights procedure is designed to generate gemini insights. 
 resource "google_bigquery_routine" "user_behaviour_revenue_insights" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
-  dataset_id      = local.config_bigquery.dataset.gemini_insights.name
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["gemini_insights"].dataset_id
   routine_id      = "user_behaviour_revenue_insights"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -893,8 +908,8 @@ data "local_file" "invoke_backfill_customer_lifetime_value_label_file" {
 
 # The invoke_backfill_customer_lifetime_value_label procedure is designed to invoke the backfill query for customer_lifetime_value_label.
 resource "google_bigquery_routine" "invoke_backfill_customer_lifetime_value_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_customer_lifetime_value_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -907,8 +922,8 @@ data "local_file" "invoke_backfill_purchase_propensity_label_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_purchase_propensity_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_purchase_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -921,8 +936,8 @@ data "local_file" "invoke_backfill_churn_propensity_label_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_churn_propensity_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_churn_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -935,8 +950,8 @@ data "local_file" "invoke_backfill_user_dimensions_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -949,8 +964,8 @@ data "local_file" "invoke_backfill_user_lifetime_dimensions_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_lifetime_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_lifetime_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -964,8 +979,8 @@ data "local_file" "invoke_backfill_user_lookback_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_lookback_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_lookback_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -979,8 +994,8 @@ data "local_file" "invoke_backfill_user_rolling_window_lifetime_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_lifetime_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_rolling_window_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -994,8 +1009,8 @@ data "local_file" "invoke_backfill_user_rolling_window_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_rolling_window_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1009,8 +1024,8 @@ data "local_file" "invoke_backfill_user_scoped_lifetime_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_scoped_lifetime_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_scoped_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1023,8 +1038,8 @@ data "local_file" "invoke_backfill_user_scoped_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_scoped_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_scoped_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1037,8 +1052,8 @@ data "local_file" "invoke_backfill_user_scoped_segmentation_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_scoped_segmentation_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_scoped_segmentation_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1051,8 +1066,8 @@ data "local_file" "invoke_backfill_user_segmentation_dimensions_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_segmentation_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_segmentation_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1065,8 +1080,8 @@ data "local_file" "invoke_backfill_user_session_event_aggregated_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_session_event_aggregated_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_backfill_user_session_event_aggregated_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1079,8 +1094,8 @@ data "local_file" "invoke_backfill_user_behaviour_revenue_insights_file" {
 }
 
 resource "google_bigquery_routine" "invoke_backfill_user_behaviour_revenue_insights" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
-  dataset_id      = local.config_bigquery.dataset.gemini_insights.name
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["gemini_insights"].dataset_id
   routine_id      = "invoke_backfill_user_behaviour_revenue_insights"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1102,8 +1117,8 @@ data "local_file" "invoke_customer_lifetime_value_inference_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_customer_lifetime_value_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.customer_lifetime_value.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["customer_lifetime_value"].dataset_id
   routine_id      = "invoke_customer_lifetime_value_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1116,8 +1131,8 @@ data "local_file" "invoke_purchase_propensity_inference_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_purchase_propensity_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.purchase_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["purchase_propensity"].dataset_id
   routine_id      = "invoke_purchase_propensity_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1130,8 +1145,8 @@ data "local_file" "invoke_churn_propensity_inference_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_churn_propensity_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["churn_propensity"].dataset_id
   routine_id      = "invoke_churn_propensity_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1144,8 +1159,8 @@ data "local_file" "invoke_audience_segmentation_inference_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_audience_segmentation_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["audience_segmentation"].dataset_id
   routine_id      = "invoke_audience_segmentation_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1157,8 +1172,8 @@ data "local_file" "invoke_auto_audience_segmentation_inference_preparation_file"
 }
 
 resource "google_bigquery_routine" "invoke_auto_audience_segmentation_inference_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.auto_audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["auto_audience_segmentation"].dataset_id
   routine_id      = "invoke_auto_audience_segmentation_inference_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1170,8 +1185,8 @@ data "local_file" "invoke_auto_audience_segmentation_training_preparation_file" 
 }
 
 resource "google_bigquery_routine" "invoke_auto_audience_segmentation_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.auto_audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.auto_audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["auto_audience_segmentation"].dataset_id
   routine_id      = "invoke_auto_audience_segmentation_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1184,8 +1199,8 @@ data "local_file" "invoke_customer_lifetime_value_training_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_customer_lifetime_value_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.customer_lifetime_value.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["customer_lifetime_value"].dataset_id
   routine_id      = "invoke_customer_lifetime_value_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1198,8 +1213,8 @@ data "local_file" "invoke_purchase_propensity_training_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_purchase_propensity_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.purchase_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["purchase_propensity"].dataset_id
   routine_id      = "invoke_purchase_propensity_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1212,8 +1227,8 @@ data "local_file" "invoke_churn_propensity_training_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_churn_propensity_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.churn_propensity.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["churn_propensity"].dataset_id
   routine_id      = "invoke_churn_propensity_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1226,8 +1241,8 @@ data "local_file" "invoke_audience_segmentation_training_preparation_file" {
 }
 
 resource "google_bigquery_routine" "invoke_audience_segmentation_training_preparation" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.audience_segmentation.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["audience_segmentation"].dataset_id
   routine_id      = "invoke_audience_segmentation_training_preparation"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1241,8 +1256,8 @@ data "local_file" "invoke_aggregated_value_based_bidding_training_preparation_fi
 
 # Terraform resource for invoking the bigquery stored procedure
 resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_training_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
+  project         = var.project_id
+  dataset_id = google_bigquery_dataset.datasets["aggregated_vbb"].dataset_id
   routine_id = "invoke_aggregated_value_based_bidding_training_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
@@ -1256,8 +1271,8 @@ data "local_file" "invoke_aggregated_value_based_bidding_explanation_preparation
 
 # Terraform resource for invoking the bigquery stored procedure
 resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_explanation_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
+  project         = var.project_id
+  dataset_id = google_bigquery_dataset.datasets["aggregated_vbb"].dataset_id
   routine_id = "invoke_aggregated_value_based_bidding_explanation_preparation"
   routine_type = "PROCEDURE"
   language = "SQL"
@@ -1273,8 +1288,8 @@ data "local_file" "invoke_customer_lifetime_value_label_file" {
 }
 
 resource "google_bigquery_routine" "invoke_customer_lifetime_value_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_customer_lifetime_value_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1287,8 +1302,8 @@ data "local_file" "invoke_purchase_propensity_label_file" {
 }
 
 resource "google_bigquery_routine" "invoke_purchase_propensity_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_purchase_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1302,8 +1317,8 @@ data "local_file" "invoke_churn_propensity_label_file" {
 }
 
 resource "google_bigquery_routine" "invoke_churn_propensity_label" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_churn_propensity_label"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1317,8 +1332,8 @@ data "local_file" "invoke_user_dimensions_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1331,8 +1346,8 @@ data "local_file" "invoke_user_lifetime_dimensions_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_lifetime_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_lifetime_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1346,8 +1361,8 @@ data "local_file" "invoke_user_lookback_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_lookback_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_lookback_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1361,8 +1376,8 @@ data "local_file" "invoke_user_rolling_window_lifetime_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_rolling_window_lifetime_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_rolling_window_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1376,8 +1391,8 @@ data "local_file" "invoke_user_rolling_window_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_rolling_window_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_rolling_window_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1391,8 +1406,8 @@ data "local_file" "invoke_user_scoped_lifetime_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_scoped_lifetime_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_scoped_lifetime_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1405,8 +1420,8 @@ data "local_file" "invoke_user_scoped_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_scoped_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_scoped_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1419,8 +1434,8 @@ data "local_file" "invoke_user_scoped_segmentation_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_scoped_segmentation_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_scoped_segmentation_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1433,8 +1448,8 @@ data "local_file" "invoke_user_segmentation_dimensions_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_segmentation_dimensions" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_segmentation_dimensions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1447,8 +1462,8 @@ data "local_file" "invoke_user_session_event_aggregated_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_session_event_aggregated_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
-  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["feature_store"].dataset_id
   routine_id      = "invoke_user_session_event_aggregated_metrics"
   routine_type    = "PROCEDURE"
   language        = "SQL"
@@ -1478,7 +1493,7 @@ resource "null_resource" "check_gemini_model_exists" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! bq --project_id=${local.gemini_insights_project_id} ls -m --format=pretty ${local.gemini_insights_project_id}:${local.config_bigquery.dataset.gemini_insights.name} | grep -i "gemini_1_5_pro" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! bq --project_id=${var.project_id} ls -m --format=pretty ${var.project_id}:${google_bigquery_dataset.datasets["gemini_insights"].dataset_id} | grep -i "gemini_1_5_pro" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 5
       printf "."
@@ -1503,8 +1518,8 @@ data "local_file" "invoke_user_behaviour_revenue_insights_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_behaviour_revenue_insights" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
-  dataset_id      = local.config_bigquery.dataset.gemini_insights.name
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["gemini_insights"].dataset_id
   routine_id      = "invoke_user_behaviour_revenue_insights"
   routine_type    = "PROCEDURE"
   language        = "SQL"

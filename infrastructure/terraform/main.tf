@@ -368,7 +368,6 @@ module "data_store" {
 module "feature_store" {
   # The source is the path to the feature store module.
   source           = "./modules/feature-store"
-  config_file_path = local_file.feature_store_configuration.id != "" ? local_file.feature_store_configuration.filename : ""
   enabled          = var.deploy_feature_store
   # the count determines if the feature store is created or not.
   # If the count is 1, the feature store is created.
@@ -379,6 +378,7 @@ module "feature_store" {
   # The region is the region in which the feature store is created.
   # This is set to the default region in the terraform.tfvars file.
   region           = var.google_default_region
+  data_location    = var.destination_data_location
   # The sql_dir_input is the path to the sql directory.
   # This is set to the path to the sql directory in the feature store module.
   sql_dir_input    = null_resource.generate_sql_queries.id != "" ? "${local.source_root_dir}/sql" : ""

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING"
+  },
+  {
+    "name": "user_id",
+    "type": "STRING"
+  },
+  {
+    "name": "ltv_prediction",
+    "type": "FLOAT"
+  },
+  {
+    "name": "ltv_decile",
+    "type": "INTEGER"
+  },
+  {
+    "name": "ltv_prediction_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "propensity_prediction",
+    "type": "STRING"
+  },
+  {
+    "name": "propensity_score",
+    "type": "FLOAT"
+  },
+  {
+    "name": "propensity_decile",
+    "type": "INTEGER"
+  },
+  {
+    "name": "propensity_prediction_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "segment_prediction",
+    "type": "INTEGER"
+  },
+  {
+    "name": "segment_distance",
+    "type": "FLOAT"
+  },
+  {
+    "name": "segment_prediction_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "auto_segment_prediction",
+    "type": "STRING"
+  },
+  {
+    "name": "auto_segment_prediction_timestamp",
+    "type": "TIMESTAMP"
+  }
+]

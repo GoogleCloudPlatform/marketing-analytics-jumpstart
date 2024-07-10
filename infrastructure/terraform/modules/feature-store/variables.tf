@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable "config_file_path" {
-  type        = string
-  description = "feature store config file"
-}
-
 variable "enabled" {
   type        = bool
   description = "Toogle all resources in module"
@@ -41,4 +36,9 @@ variable "poetry_cmd" {
   description = "alias for poetry command on the current system"
   type        = string
   default     = "poetry"
+}
+
+variable "data_location" {
+  description = "Location of the BigQuery datasets"
+  type        = string
 }

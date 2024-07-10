@@ -1,0 +1,59 @@
+CREATE OR REPLACE FUNCTION `{{project_id}}.{{dataset_id}}.dataset_exists`(dataset_name STRING) 
+RETURNS BOOL AS (( SELECT COUNT(*) > 0 FROM `{{project_id}}`.INFORMATION_SCHEMA.SCHEMATA WHERE schema_name = dataset_name ));
+
+CREATE OR REPLACE FUNCTION `{{project_id}}.{{dataset_id}}.create_update_field_values_str`(
+  fields ARRAY<STRING>,
+  t_alias STRING,
+  s_alias STRING)
+RETURNS STRING AS ((
+  SELECT ARRAY_TO_STRING((
+    SELECT ARRAY( 
+      SELECT CONCAT(t_alias, '.', element, '=', s_alias,'.', element)
+      FROM UNNEST(fields) AS element) ), ',') ));
+
+CREATE OR REPLACE FUNCTION `{{project_id}}.{{dataset_id}}.create_insert_field_values_str`(
+  fields ARRAY<STRING>,
+  t_alias STRING)
+RETURNS STRING AS ((
+  SELECT ARRAY_TO_STRING((
+    SELECT ARRAY( 
+      SELECT CONCAT(t_alias, '.', element)
+      FROM UNNEST(fields) AS element) ), ',') ));
+
+CREATE OR REPLACE PROCEDURE
+  `{{project_id}}.{{dataset_id}}.load_latest_prediction`(
+    use_case_dataset STRING,
+    prediction_table_pattern STRING,
+    prediction_fields STRING,
+    update_fields ARRAY<STRING>)
+BEGIN
+  DECLARE prediction_table_name, value_select_query, update_set_fields, insert_value_fields, insert_source_fields, merge_query STRING;
+  IF `{{project_id}}.{{dataset_id}}.dataset_exists`(use_case_dataset) THEN
+    CALL {{dataset_id}}.get_latest_table_by_pattern(use_case_dataset, prediction_table_pattern, prediction_table_name);
+    IF NOT prediction_table_name = '' THEN
+      SET value_select_query = FORMAT("""
+      CREATE OR REPLACE TEMP TABLE prediction_value_tmp_table AS
+        SELECT
+          user_pseudo_id,
+          user_id,
+          %s
+        FROM `%s`;
+      """, prediction_fields, prediction_table_name);
+      EXECUTE IMMEDIATE value_select_query;
+      SET update_set_fields = `{{project_id}}.{{dataset_id}}.create_update_field_values_str`(update_fields,'T','S');
+      SET insert_value_fields = ARRAY_TO_STRING(update_fields, ',');
+      SET insert_source_fields = `{{project_id}}.{{dataset_id}}.create_insert_field_values_str`(update_fields,'S');
+      SET merge_query = FORMAT("""
+      MERGE `{{project_id}}.{{dataset_id}}.{{table_id}}` T
+      USING prediction_value_tmp_table S
+      ON T.user_pseudo_id = S.user_pseudo_id AND COALESCE(T.user_id, "") = COALESCE(S.user_id, "")
+      WHEN MATCHED THEN UPDATE SET %s
+      WHEN NOT MATCHED THEN INSERT
+      ( user_pseudo_id, user_id, %s )
+      VALUES
+      ( S.user_pseudo_id, S.user_id, %s )
+      """, update_set_fields, insert_value_fields, insert_source_fields);
+      EXECUTE IMMEDIATE merge_query;
+    END IF;
+  END IF;
+END;
