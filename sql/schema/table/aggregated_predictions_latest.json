@@ -698,5 +698,53 @@
     "name": "Auto Segment_Distance",
     "type": "FLOAT",
     "description": "The segment distance for that user predicted by the auto audience segmentation model"
+  },
+  {
+    "name": "homepage",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Clearance",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Apparel_Mens_sortci_newest_desc",
+    "type": "INTEGER"
+  },
+  {
+    "name": "basket_html",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_New_sortci_newest_desc",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Lifestyle_Bags",
+    "type": "INTEGER"
+  },
+  {
+    "name": "store_html",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Lifestyle_Drinkware",
+    "type": "INTEGER"
+  },
+  {
+    "name": "signin_html",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Apparel_sortci_newest_desc",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Apparel_Womens",
+    "type": "INTEGER"
+  },
+  {
+    "name": "Google_Redesign_Stationery_sortci_newest_desc",
+    "type": "INTEGER"
   }
 ]
