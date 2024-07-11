@@ -54,5 +54,21 @@
   {
     "name": "auto_segment_prediction_timestamp",
     "type": "TIMESTAMP"
+  },
+  {
+    "name": "churn_propensity_prediction",
+    "type": "STRING"
+  },
+  {
+    "name": "churn_propensity_score",
+    "type": "FLOAT"
+  },
+  {
+    "name": "churn_propensity_decile",
+    "type": "INTEGER"
+  },
+  {
+    "name": "churn_propensity_prediction_timestamp",
+    "type": "TIMESTAMP"
   }
 ]
