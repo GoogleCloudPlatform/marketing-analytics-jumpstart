@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}(
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(
   'purchase_propensity',
   'predictions_%_view',
   'prediction AS propensity_prediction, prediction_prob AS propensity_score, NTILE(10) OVER (ORDER BY prediction_prob DESC) AS propensity_decile, feature_date AS propensity_feature_date, processed_timestamp AS propensity_prediction_timestamp',
