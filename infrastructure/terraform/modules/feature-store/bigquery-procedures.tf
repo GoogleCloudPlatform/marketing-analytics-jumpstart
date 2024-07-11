@@ -1530,3 +1530,17 @@ resource "google_bigquery_routine" "invoke_user_behaviour_revenue_insights" {
     null_resource.check_gemini_model_exists
   ]
 }
+
+data "local_file" "invoke_load_latest_prediction_file" {
+  filename = "${local.sql_dir}/query/invoke_load_latest_prediction.sql"
+}
+
+resource "google_bigquery_routine" "invoke_load_latest_prediction" {
+  project         = var.project_id
+  dataset_id      = google_bigquery_dataset.datasets["aggregated_predictions"].dataset_id
+  routine_id      = "invoke_load_latest_prediction"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_load_latest_prediction_file.content
+  description     = "Load latest predictions into the user_predictions table for all the use cases"
+}
