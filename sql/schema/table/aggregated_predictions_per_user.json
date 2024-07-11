@@ -16,6 +16,10 @@
     "type": "INTEGER"
   },
   {
+    "name": "ltv_feature_date",
+    "type": "DATE"
+  },
+  {
     "name": "ltv_prediction_timestamp",
     "type": "TIMESTAMP"
   },
@@ -32,6 +36,10 @@
     "type": "INTEGER"
   },
   {
+    "name": "propensity_feature_date",
+    "type": "DATE"
+  },
+  {
     "name": "propensity_prediction_timestamp",
     "type": "TIMESTAMP"
   },
@@ -42,6 +50,10 @@
   {
     "name": "segment_distance",
     "type": "FLOAT"
+  },
+  {
+    "name": "segment_feature_date",
+    "type": "DATE"
   },
   {
     "name": "segment_prediction_timestamp",
@@ -66,6 +78,10 @@
   {
     "name": "churn_propensity_decile",
     "type": "INTEGER"
+  },
+  {
+    "name": "churn_propensity_feature_date",
+    "type": "DATE"
   },
   {
     "name": "churn_propensity_prediction_timestamp",
