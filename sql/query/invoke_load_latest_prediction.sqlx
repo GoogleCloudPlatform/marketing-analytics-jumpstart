@@ -12,35 +12,35 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CALL `{{project_id}}.{{dataset_id}}.{{stored_procedure}}(
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}(
   'purchase_propensity',
   'predictions_%_view',
   'prediction AS propensity_prediction, prediction_prob AS propensity_score, NTILE(10) OVER (ORDER BY prediction_prob DESC) AS propensity_decile, feature_date AS propensity_feature_date, processed_timestamp AS propensity_prediction_timestamp',
   ['propensity_prediction','propensity_score', 'propensity_decile', 'propensity_feature_date', 'propensity_prediction_timestamp']
 );
 
-CALL `{{project_id}}.{{dataset_id}}.{{stored_procedure}}`(
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(
   'customer_lifetime_value',
   'predictions_%_view_final',
   'prediction AS ltv_prediction, NTILE(10) OVER (ORDER BY prediction DESC) AS ltv_decile, feature_date AS ltv_feature_date, processed_timestamp AS ltv_prediction_timestamp',
   ['ltv_prediction','ltv_decile','ltv_feature_date','ltv_prediction_timestamp']
 );
 
-CALL `{{project_id}}.{{dataset_id}}.{{stored_procedure}}`(
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(
   'audience_segmentation',
   'pred_%_view',
   'prediction AS segment_prediction, NEAREST_CENTROIDS_DISTANCE[SAFE_OFFSET(0)].CENTROID_ID AS segment_distance, feature_date AS segment_feature_date, processed_timestamp AS segment_prediction_timestamp',
   ['segment_prediction','segment_distance','segment_feature_date','segment_prediction_timestamp']
 );
 
-CALL `{{project_id}}.{{dataset_id}}.{{stored_procedure}}`(
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(
   'auto_audience_segmentation',
   'predictions_%',
   'prediction AS auto_segment_prediction, feature_timestamp AS auto_segment_prediction_timestamp',
   ['auto_segment_prediction','auto_segment_prediction_timestamp']
 );
 
-CALL `{{project_id}}.{{dataset_id}}.{{stored_procedure}}`(
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(
   'churn_propensity',
   'predictions_%_view',
   'prediction AS churn_propensity_prediction, prediction_prob AS churn_propensity_score, NTILE(10) OVER (ORDER BY prediction_prob DESC) AS churn_propensity_decile, feature_date AS churn_propensity_feature_date, processed_timestamp AS churn_propensity_prediction_timestamp',
