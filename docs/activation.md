@@ -6,6 +6,22 @@ The activation process enriches your Google Analytics 4 (GA4) user profiles with
 The activation process is automated and built on Google Cloud Dataflow for efficient data processing and reliable data delivery into GA4.
 
 This guide details how to monitor the activation process, leverage the enriched user data, and tailor the process to fit your specific requirements.
+## Prerequisites
+The present activation implementation is dependent on the connection between your Google Analytics property and your Google Ads account. For the users in the custom audiences you create in GA4 to be able to synchronize with Google Ads, you must have the following setting:
+1. [Advanced settings to allow for ads personalization on your GA4 property](https://support.google.com/analytics/answer/9626162)
+1. For audiences to be transmitted to Google Ads, Ads personalization must be [enabled on the link](https://support.google.com/analytics/answer/9626162#ads-link) between a Google Analytics property and a Google Ads link
+1. [Consent Mode](https://support.google.com/analytics/answer/9976101) implemented
+
+    If you implement a consent banner requesting permission to store ads or analytics data, users who visit your site or app can choose to opt out. If users opt out of ads data storage, they are ineligible for remarketing campaigns. However, if they have agreed to analytics storage, they may still appear in your Google Analytics 4 reports, but they will not be included in the count for any linked advertising services.
+    - To verify that you have a user base of eligible users for remarketing, you can turn on [GA4 export to BigQuery of User-data](https://support.google.com/analytics/answer/12769371?hl=en).
+    -   In the export table, look for eligible users that allow personalized ads by running the following query:
+        ```sql
+        SELECT pseudo_user_id, privacy_info.is_ads_personalization_allowed
+        FROM `analytics_XXXXXXXXX.pseudonymous_users_*`
+        WHERE privacy_info.is_ads_personalization_allowed = 'true';
+        ```
+To further comprehend the factors affecting the audience synchronization between GA4 and Google Ads, please refer to the following guide: [Audience size differences between Google Analytics and Google Ad](https://support.google.com/analytics/answer/13656908).
+
 ## Activation process overview
 
 MAJ automatically creates the following custom events and user properties corresponding to each supported use case as part of the installation process:
