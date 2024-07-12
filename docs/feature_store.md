@@ -1,7 +1,56 @@
+# Feature Store Guide
 
+## Introduction
 
+The Feature Store component involves leveraging data pipelines that transforms event-level data  into user-level feature metrics and dimensions and combining them into training and inference data to be ingested by all the ML models. The features are stored and managed in BigQuery, and they are ready to be served to different ML models and allow reproducible model training and predictions across different intervals of time.
 
+The Feature Store transformations are implemented in BigQuery [GoogleSQL](https://cloud.google.com/bigquery/docs/introduction-sql) and are orchestrated using Vertex AI [Pipelines](https://cloud.google.com/vertex-ai/docs/pipelines/introduction). The daily features preparation is scheduled and triggered using Vertex AI [Pipelines Scheduler](https://cloud.google.com/vertex-ai/docs/pipelines/schedule-pipeline-run).
 
+This guide details how to deploy and monitor the feature store, manually backfill features for past days, troubleshoot and customize the feature store to meet your specific requirements.
+
+## Solution Architecture
+
+## Who is this solution for?
+
+We heard common stories from customers who were struggling with three frequent objectives:
+
+1. **Marketing teams looking into transforming data to solve marketing analytics use cases without the expertise in the raw data exported by the BigQuery [Data Transfer Services](https://cloud.google.com/bigquery/docs/dts-introduction)**
+- These teams need a tool that can help them to easily and efficiently transform raw data into a format that can be used for analysis.
+- The feature store provides a set of pre-built transformations that can be used to transform raw data into a format that is suitable for marketing analytics use cases.
+
+2. **Data Scientists or Marketing Scientists looking into calculating features having difficulty in finding the right GoogleSQL queries to be used to obtain key metrics and user attributes**
+- These teams need a repository of GoogleSQL queries that can be used to calculate common features.
+- The feature store provides a library of GoogleSQL queries that can be used to calculate common features for marketing analytics use cases. These queries can be easily customized to meet the specific needs of each team.
+
+3. **ML Engineers building automated production ready feature engineering data pipelines having to deal with backfilling and implementing consistent transformations for consolidating data for training and serving purposes**
+- These teams need a platform that can help them to automate the feature engineering process.
+- The feature store provides a platform that can be used to automate the feature engineering process. This platform can help to reduce the time and effort required to build and maintain feature engineering pipelines. Additionally, the feature store provides a mechanism for backfilling features and ensuring that the same transformations are applied to both training and serving data.
+
+## Benefits of this solution
+
+After deploying the Feature Store, Marketing Technology teams get the following benefits:
+
+1. Productionize new features without extensive engineering support
+2. Automate feature computation, backfills, and logging
+3. Share and reuse feature pipelines across teams
+4. Achieve consistency between training and serving data
+5. Monitor the health of feature pipelines in production
+
+## Advantages of the solution
+
+## Feature Store usage by each use case
+
+## Feature Store Design Principles
+
+## What is deployed to Google Cloud?
+
+## Manually Triggering Feature Store
+
+## Manually Backfilling Feature Store
+
+## Customize Features Transformations
+
+## Implement new features into the Feature Store
 
 # Troubleshooting
 

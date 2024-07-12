@@ -17,77 +17,105 @@ SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
 -- Run these once each day.
----- Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU
-
+-- Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU
+-- Create a temporary table called engagement to store user engagement metrics per session.
+-- Metrics included: Engagement time in milliseconds, purchase revenue in USD, flags for sessions with invalid transactions and sessions with valid purchases.
 CREATE OR REPLACE TEMP TABLE engagement as (
 SELECT 
-  user_pseudo_id,
-  ga_session_id as session_id, 
-  MAX(engagement_time_msec) as engagement_time_msec,
-  IFNULL(SUM(ecommerce.purchase_revenue_in_usd),0.0) as purchase_revenue_in_usd,
-  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) as has_invalid_transactions,
-  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) as converted_in_session,
+  user_pseudo_id, -- User ID
+  ga_session_id as session_id, -- Session ID
+  MAX(engagement_time_msec) as engagement_time_msec, -- Maximum engagement time in milliseconds for each session
+  IFNULL(SUM(ecommerce.purchase_revenue_in_usd),0.0) as purchase_revenue_in_usd, -- Total purchase revenue per session, handling null values by replacing them with 0.0
+  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) as has_invalid_transactions, -- Flag sessions with potentially invalid purchase transactions (missing transaction IDs)
+  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) as converted_in_session, -- Flag sessions where a valid purchase occurred
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 ON E.device_type_id = D.device_type_id
 WHERE E.ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
+  -- Filter for events within the defined date range
   AND E.event_date BETWEEN end_date AND input_date
+-- Group the results by user ID and session ID
 GROUP BY user_pseudo_id, session_id
 );
 
+-- Create a temporary table called revenue to store daily revenue metrics.
+-- Metrics included: Sum of purchase revenue per day.
 CREATE OR REPLACE TEMP TABLE revenue as (
 SELECT DISTINCT
   event_date,
+  -- Sum of purchase revenue for each day, handling null values by replacing them with 0.0
   COALESCE(SUM(ecommerce.purchase_revenue_in_usd), 0.0) as sum_revenue_per_day,
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 ON E.device_type_id = D.device_type_id 
 WHERE E.ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
+  -- Filter for events within the defined date range
   AND event_date BETWEEN end_date AND input_date
   AND ecommerce.transaction_id IS NOT NULL
   AND ecommerce.transaction_id <> '(not set)'
+ -- Group the results by event date
 GROUP BY event_date
 );
 
+-- Create a temporary table called users to store daily active user counts.
+-- Metrics included: Average daily active users.
 CREATE OR REPLACE TEMP TABLE users as (
 SELECT 
+  -- Calculate the average daily active users by dividing the count of distinct users with engagement time greater than 0 by the total number of days in the dataset
   SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END), DATE_DIFF(MAX(event_date), MIN(event_date), DAY)) as active_users 
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 ON E.device_type_id = D.device_type_id 
 WHERE D.device_os IS NOT NULL
+  -- Filter for events within the defined date range
   AND event_date BETWEEN end_date AND input_date
 );
 
+-- Create a temporary table called first_purchasers to store the count of first-time purchasers for each date.
+-- Metrics included: Count of first-time purchasers.
 CREATE OR REPLACE TEMP TABLE first_purchasers as (
-  SELECT COUNT(user_pseudo_id) as first_time_purchasers
+  SELECT 
+  -- Count the number of distinct user IDs for first-time purchases
+  COUNT(user_pseudo_id) as first_time_purchasers
   FROM (
       SELECT 
-          user_pseudo_id, event_date, RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
+          user_pseudo_id, event_date, 
+          -- Rank of the purchase event within each user's purchase history
+          RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
       FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
       INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
       ON E.device_type_id = D.device_type_id
+       -- Filter for purchase events
       WHERE event_name IN ('purchase','in_app_purchase')
       AND E.ga_session_id IS NOT NULL
       AND D.device_os IS NOT NULL
+      -- Filter for events within the defined date range
       AND E.event_date BETWEEN end_date AND input_date
+      -- Group by user ID, event date, and event timestamp to rank purchases within each day
       GROUP BY user_pseudo_id, event_date, event_timestamp)
+  -- Filter for events where unique_purchase is 1, indicating the first purchase for that user
   WHERE unique_purchase=1
   );
 
+-- Create a temporary table called new_users_ to store the count of new users for each date.
+-- Metrics included: Count of new users.
 CREATE OR REPLACE TEMP TABLE new_users_ as (
   SELECT 
+  -- Count distinct user IDs associated with the "first_visit" event to get the number of new users
   COUNT(DISTINCT CASE WHEN event_name="first_visit" THEN user_pseudo_id END) as new_users 
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
   WHERE E.ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
+  -- Filter for events within the defined date range
   AND E.event_date BETWEEN end_date AND input_date
   );
 
+-- Create a temporary table called all_user_scoped_metrics to store user-level event details.
+-- Attributes included: User ID, Event date, Event name, Session ID.
 CREATE OR REPLACE TEMP TABLE all_user_scoped_metrics as (
   SELECT
     user_pseudo_id, 
@@ -100,38 +128,42 @@ CREATE OR REPLACE TEMP TABLE all_user_scoped_metrics as (
     WHERE ga_session_id IS NOT NULL
     AND D.device_os IS NOT NULL
     AND event_date BETWEEN end_date AND input_date
+    -- Group the results by user ID, session ID, event date, and event name
     GROUP BY user_pseudo_id, session_id, event_date, event_name
   );
 
+
+-- Create a temporary table called DataForTargetTable to store data for the target table.
+-- Metrics included: Processed timestamp, Feature date, Purchasers users, Average daily purchasers, Active users, DAU, MAU, WAU, DAU/MAU, DAU/WAU, WAU/MAU, Users engagement duration in seconds, Average engagement time, Average engagement time per session, Average sessions per user, ARPPU, ARPU, Average daily revenue, Max daily revenue, Min daily revenue, New users, Returning users, First-time purchasers, First-time purchaser conversion, First-time purchasers per new user, Average user conversion rate, Average session conversion rate.
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT
-    CURRENT_TIMESTAMP() AS processed_timestamp,
-    input_date AS feature_date,
-    COALESCE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),0) AS purchasers_users,
-    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),COUNT(DISTINCT usm.event_date)),0.0) AS average_daily_purchasers,
-    CAST(COALESCE(MAX(active_users),0) AS INT64) AS active_users,
-    COALESCE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT usm.event_date)),0.0) AS DAU,
-    COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), MONTH)),0.0) AS MAU,
-    COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), WEEK)),0.0) AS WAU,
-    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT usm.event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), MONTH))),0.0) AS dau_per_mau,
-    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT usm.event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), WEEK))),0.0) AS dau_per_wau,
-    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), WEEK)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), MONTH))),0.0) AS wau_per_mau,
-    COALESCE(ROUND(SUM(engagement_time_msec)/1000),0) AS users_engagement_duration_seconds,
-    COALESCE(SAFE_DIVIDE(ROUND(SUM(engagement_time_msec)/1000),MAX(active_users)),0.0) AS average_engagement_time,
-    COALESCE(SAFE_DIVIDE((ROUND(SUM(engagement_time_msec)/1000)),COUNT(DISTINCT e.session_id)),0.0) AS average_engagement_time_per_session,
-    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT e.session_id),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS average_sessions_per_user,
-    COALESCE(SAFE_DIVIDE(SUM(sum_revenue_per_day),COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END)),0.0) AS ARPPU,
-    COALESCE(SAFE_DIVIDE(SUM(sum_revenue_per_day),MAX(active_users)),0.0) AS ARPU,
-    COALESCE(SAFE_DIVIDE(SUM(sum_revenue_per_day),COUNT(DISTINCT usm.event_date)),0.0) AS average_daily_revenue,
-    COALESCE(MAX(sum_revenue_per_day),0.0) AS max_daily_revenue,
-    COALESCE(MIN(sum_revenue_per_day),0.0) AS min_daily_revenue,
-    COALESCE(MAX(new_users),0) AS new_users,
-    COALESCE(COUNT(DISTINCT e.user_pseudo_id) - MAX(new_users),0) AS returning_users,
-    COALESCE(MAX(first_time_purchasers),0) AS first_time_purchasers,
-    COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(active_users)),0.0) AS first_time_purchaser_conversion,
-    COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(new_users)),0.0) AS first_time_purchasers_per_new_user,
-    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.user_pseudo_id END),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS avg_user_conversion_rate,
-    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.session_id END),COUNT(DISTINCT e.session_id)),0.0) AS avg_session_conversion_rate,
+    CURRENT_TIMESTAMP() AS processed_timestamp, -- Current timestamp when the query is executed
+    input_date AS feature_date, -- Input date
+    COALESCE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),0) AS purchasers_users, -- Count the number of distinct users who made a valid purchase on the given day
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),COUNT(DISTINCT usm.event_date)),0.0) AS average_daily_purchasers, -- Calculate the average daily purchasers by dividing the total number of purchasers by the number of distinct days in the data
+    CAST(COALESCE(MAX(active_users),0) AS INT64) AS active_users, -- Retrieve the maximum number of active users for the given feature date from the users table
+    COALESCE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT usm.event_date)),0.0) AS DAU, -- Calculate the average daily active users (DAU)
+    COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), MONTH)),0.0) AS MAU, -- Calculate the average monthly active users (MAU)
+    COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), WEEK)),0.0) AS WAU, -- Calculate the average weekly active users (WAU)
+    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT usm.event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), MONTH))),0.0) AS dau_per_mau, -- Calculate the ratio of DAU to MAU
+    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT usm.event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), WEEK))),0.0) AS dau_per_wau, -- Calculate the ratio of DAU to WAU
+    COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), WEEK)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(usm.event_date), MIN(usm.event_date), MONTH))),0.0) AS wau_per_mau, -- Calculate the ratio of WAU to MAU
+    COALESCE(ROUND(SUM(engagement_time_msec)/1000),0) AS users_engagement_duration_seconds, -- Calculate the total engagement time in seconds
+    COALESCE(SAFE_DIVIDE(ROUND(SUM(engagement_time_msec)/1000),MAX(active_users)),0.0) AS average_engagement_time, -- Calculate the average engagement time per active user
+    COALESCE(SAFE_DIVIDE((ROUND(SUM(engagement_time_msec)/1000)),COUNT(DISTINCT e.session_id)),0.0) AS average_engagement_time_per_session, -- Calculate the average engagement time per session
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT e.session_id),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS average_sessions_per_user, -- Calculate the average number of sessions per user
+    COALESCE(SAFE_DIVIDE(SUM(sum_revenue_per_day),COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END)),0.0) AS ARPPU, -- Calculate the average revenue per paying user (ARPPU)
+    COALESCE(SAFE_DIVIDE(SUM(sum_revenue_per_day),MAX(active_users)),0.0) AS ARPU, -- Calculate the average revenue per user (ARPU)
+    COALESCE(SAFE_DIVIDE(SUM(sum_revenue_per_day),COUNT(DISTINCT usm.event_date)),0.0) AS average_daily_revenue, -- Calculate the average daily revenue
+    COALESCE(MAX(sum_revenue_per_day),0.0) AS max_daily_revenue, -- Retrieve the maximum daily revenue from the revenue table
+    COALESCE(MIN(sum_revenue_per_day),0.0) AS min_daily_revenue, -- Retrieve the minimum daily revenue from the revenue table
+    COALESCE(MAX(new_users),0) AS new_users, -- Retrieve the maximum number of new users from the new_users_ table
+    COALESCE(COUNT(DISTINCT e.user_pseudo_id) - MAX(new_users),0) AS returning_users, -- Calculate the number of returning users by subtracting new users from the total distinct users
+    COALESCE(MAX(first_time_purchasers),0) AS first_time_purchasers, -- Retrieve the maximum number of first-time purchasers from the first_purchasers table
+    COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(active_users)),0.0) AS first_time_purchaser_conversion, -- Calculate the first-time purchaser conversion rate
+    COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(new_users)),0.0) AS first_time_purchasers_per_new_user, -- Calculate the first-time purchasers per new user
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.user_pseudo_id END),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS avg_user_conversion_rate, -- Calculate the average user conversion rate
+    COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.session_id END),COUNT(DISTINCT e.session_id)),0.0) AS avg_session_conversion_rate, -- Calculate the average session conversion rate
     FROM all_user_scoped_metrics as usm
     INNER JOIN engagement as e 
       ON e.session_id = usm.session_id AND e.user_pseudo_id = usm.user_pseudo_id
@@ -141,37 +173,40 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
     CROSS JOIN first_purchasers
     CROSS JOIN new_users_;
 
+-- Merge data into the target table based on the feature date.
+-- Update existing rows if matched, otherwise insert new rows.
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
+-- Match based on feature date
 ON I.feature_date = T.feature_date
 WHEN MATCHED THEN
   UPDATE SET 
-    I.processed_timestamp = T.processed_timestamp,
-    I.purchasers_users = T.purchasers_users,
-    I.average_daily_purchasers = T.average_daily_purchasers,
-    I.active_users = T.active_users,
-    I.DAU = T.DAU,
-    I.MAU = T.MAU,
-    I.WAU = T.WAU,
-    I.dau_per_mau = T.dau_per_mau,
-    I.dau_per_wau = T.dau_per_wau,
-    I.wau_per_mau = T.wau_per_mau,
-    I.users_engagement_duration_seconds = T.users_engagement_duration_seconds,
-    I.average_engagement_time = T.average_engagement_time,
-    I.average_engagement_time_per_session = T.average_engagement_time_per_session,
-    I.average_sessions_per_user = T.average_sessions_per_user,
-    I.ARPPU = T.ARPPU,
-    I.ARPU = T.ARPU,
-    I.average_daily_revenue = T.average_daily_revenue,
-    I.max_daily_revenue = T.max_daily_revenue,
-    I.min_daily_revenue = T.min_daily_revenue,
-    I.new_users = T.new_users,
-    I.returning_users = T.returning_users,
-    I.first_time_purchasers = T.first_time_purchasers,
-    I.first_time_purchaser_conversion = T.first_time_purchaser_conversion,
-    I.first_time_purchasers_per_new_user = T.first_time_purchasers_per_new_user,
-    I.avg_user_conversion_rate = T.avg_user_conversion_rate,
-    I.avg_session_conversion_rate = T.avg_session_conversion_rate
+    I.processed_timestamp = T.processed_timestamp, -- Update processed timestamp
+    I.purchasers_users = T.purchasers_users, -- Update purchasers users
+    I.average_daily_purchasers = T.average_daily_purchasers, -- Update average daily purchasers
+    I.active_users = T.active_users, -- Update active users
+    I.DAU = T.DAU, -- Update DAU
+    I.MAU = T.MAU, -- Update MAU
+    I.WAU = T.WAU, -- Update WAU
+    I.dau_per_mau = T.dau_per_mau, -- Update DAU/MAU
+    I.dau_per_wau = T.dau_per_wau, -- Update DAU/WAU
+    I.wau_per_mau = T.wau_per_mau, -- Update WAU/MAU
+    I.users_engagement_duration_seconds = T.users_engagement_duration_seconds, -- Update users engagement duration in seconds
+    I.average_engagement_time = T.average_engagement_time, -- Update average engagement time
+    I.average_engagement_time_per_session = T.average_engagement_time_per_session, -- Update average engagement time per session
+    I.average_sessions_per_user = T.average_sessions_per_user, -- Update average sessions per user
+    I.ARPPU = T.ARPPU, -- Update ARPPU
+    I.ARPU = T.ARPU, -- Update ARPU
+    I.average_daily_revenue = T.average_daily_revenue, -- Update average daily revenue
+    I.max_daily_revenue = T.max_daily_revenue, -- Update max daily revenue
+    I.min_daily_revenue = T.min_daily_revenue, -- Update min daily revenue
+    I.new_users = T.new_users, -- Update new users
+    I.returning_users = T.returning_users, -- Update returning users
+    I.first_time_purchasers = T.first_time_purchasers, -- Update first-time purchasers
+    I.first_time_purchaser_conversion = T.first_time_purchaser_conversion, -- Update first-time purchaser conversion
+    I.first_time_purchasers_per_new_user = T.first_time_purchasers_per_new_user, -- Update first-time purchasers per new user
+    I.avg_user_conversion_rate = T.avg_user_conversion_rate, -- Update average user conversion rate
+    I.avg_session_conversion_rate = T.avg_session_conversion_rate -- Update average session conversion rate
 WHEN NOT MATCHED THEN
   INSERT 
     (processed_timestamp,
@@ -231,4 +266,5 @@ WHEN NOT MATCHED THEN
      T.avg_session_conversion_rate)
 ;
 
+-- Set the rows_added variable to 1, indicating that at least one row was added.
 SET rows_added = 1;

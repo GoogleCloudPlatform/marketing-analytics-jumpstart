@@ -15,39 +15,56 @@
 -- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 
-
+-- Creating daily prompts for the LLM
+-- This code block generates prompts for the LLM based on user behavior and revenue metrics from the user_scoped_metrics table.
+-- The prompts are formatted as text strings that include:
+-- A description of the user's role as a Google Analytics 4 Marketing Analyst.
+-- The objective of the analysis (extracting insights or identifying changes).
+-- The metrics data in JSON format.
+-- Descriptions of the metrics.
 CREATE OR REPLACE TEMP TABLE prompts_per_day AS
 SELECT DISTINCT
+-- Date for which metrics are calculated
 calculation_base_date as feature_date,
 CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to extract important insights from all the user behaviour and revenue metrics calculated for the users. \n",
     "Here are the user behaviour and revenue metrics calculated over the past 30 days from a base date.\n\n",
     "Metrics JSON:\n",
-    TO_JSON_STRING(t),
+    TO_JSON_STRING(t), -- JSON representation of metrics data
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')), -- Descriptions of each metric column
     "\n\n"
 ) as prompt
 FROM (SELECT DISTINCT  feature_date as calculation_base_date, * EXCEPT(processed_timestamp, feature_date) FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics` WHERE feature_date = input_date ORDER BY feature_date DESC) t
 ;
 
-
+-- Creating weekly prompts for the LLM
+-- This code block generates prompts for the LLM based on user behavior and revenue metrics from the user_scoped_metrics table.
+-- The prompts are formatted as text strings that include:
+-- A description of the user's role as a Google Analytics 4 Marketing Analyst.
+-- The objective of the analysis (extracting insights or identifying changes).
+-- The metrics data in JSON format.
+-- Descriptions of the metrics.
 CREATE OR REPLACE TEMP TABLE prompts_per_week AS
 SELECT DISTINCT
+-- Date for which metrics are calculated
 calculation_base_date as feature_date,
+-- ISO week number for the date
 EXTRACT(ISOWEEK FROM t.calculation_base_date) as feature_week_number,
 CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to identify what has changed in these weekly user behaviour and revenue metrics. \n",
     "Here are the user behaviour and revenue metrics calculated over the ISO 8601 week numbers.\n\n",
     "Metrics JSON:\n",
-      STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(ISOWEEK FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),
+      STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(ISOWEEK FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),  -- Aggregated JSON data for the week
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')), -- Descriptions of each metric column
     "\n\n"
 ) as prompt,
 FROM (
 SELECT DISTINCT  
+-- Date for which metrics are calculated
 feature_date as calculation_base_date, 
+-- ISO week number for the date
 EXTRACT(ISOWEEK FROM feature_date) as calculation_base_week_number,
 * EXCEPT(processed_timestamp, feature_date) 
 FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics`
@@ -57,23 +74,33 @@ ORDER BY feature_date DESC) t
 ORDER BY calculation_base_date DESC;
 
 
-
+-- Creating monthly prompts for the LLM
+-- This code block generates prompts for the LLM based on user behavior and revenue metrics from the user_scoped_metrics table.
+-- The prompts are formatted as text strings that include:
+-- A description of the user's role as a Google Analytics 4 Marketing Analyst.
+-- The objective of the analysis (extracting insights or identifying changes).
+-- The metrics data in JSON format.
+-- Descriptions of the metrics.
 CREATE OR REPLACE TEMP TABLE prompts_per_month AS
 SELECT DISTINCT
+-- Date for which metrics are calculated
 calculation_base_date as feature_date,
-EXTRACT(ISOWEEK FROM t.calculation_base_date) as feature_month,
+-- Month number for the date
+EXTRACT(MONTH FROM t.calculation_base_date) as feature_month,
 CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to identify what has changed in these monthly user behaviour and revenue metrics. \n",
     "Here are the user behaviour and revenue daily metrics accumulated over the last month.\n\n",
     "Metrics JSON:\n",
-      STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(MONTH FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),
+      STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(MONTH FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),  -- Aggregated JSON data for the month
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),  -- Descriptions of each metric column
     "\n\n"
 ) as prompt,
 FROM (
 SELECT DISTINCT  
+-- Date for which metrics are calculated
 feature_date as calculation_base_date, 
+-- Month number for the date
 EXTRACT(MONTH FROM feature_date) as calculation_base_week_number,
 * EXCEPT(processed_timestamp, feature_date) 
 FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics` 
@@ -83,29 +110,45 @@ ORDER BY feature_date DESC) t
 ORDER BY calculation_base_date DESC;
 
 
+-- Calling the LLM
+-- It passes the prompts from the temporary tables to the LLM.
+-- It specifies parameters for the LLM, such as the maximum number of output tokens,
+-- whether to flatten JSON output, and temperature.
 CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_daily_gemini_calls AS
 SELECT DISTINCT
+-- Date for which metrics are calculated
 feature_date,
+-- Output of the LLM
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
+  -- The LLM model used
   MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
   (
-    SELECT feature_date, prompt
+    SELECT 
+    -- Date for which metrics are calculated
+    feature_date, 
+    -- The generated prompts for the LLM
+    prompt
     FROM prompts_per_day
+    -- Only prompts for the target date
     WHERE feature_date = input_date
   ),
-  STRUCT(8192 AS max_output_tokens, 
-         TRUE AS flatten_json_output,
-         FALSE AS ground_with_google_search,
-         0.95 AS top_p,
-         40 AS top_k,
-         1 AS temperature));
+  STRUCT(8192 AS max_output_tokens, -- Maximum number of output tokens for the LLM
+         TRUE AS flatten_json_output, -- Whether to flatten the JSON output of the LLM
+         FALSE AS ground_with_google_search, -- Whether to ground the LLM response with Google Search
+         0.95 AS top_p, -- Probability threshold for sampling the next token
+         40 AS top_k, -- Number of top tokens to consider for sampling
+         1 AS temperature -- Temperature parameter for controlling the randomness of the LLM output
+));
 
-
+-- Storing LLM results
+-- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
 MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_daily` I
 USING user_behaviour_revenue_insights_daily_gemini_calls T
+-- Matching based on feature_date
 ON I.feature_date = T.feature_date
 WHEN MATCHED THEN
+  -- Update existing insights for the date
   UPDATE SET 
     I.gemini_insights = T.gemini_insights
 WHEN NOT MATCHED THEN
@@ -119,26 +162,44 @@ WHEN NOT MATCHED THEN
 ;
 
 
+-- Calling the LLM
+-- It passes the prompts from the temporary tables to the LLM.
+-- It specifies parameters for the LLM, such as the maximum number of output tokens,
+-- whether to flatten JSON output, and temperature.
 CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_weekly_gemini_calls AS
 SELECT DISTINCT
+-- Date for which metrics are calculated
 feature_date,
+-- ISO week number for the date
 feature_week_number,
+-- Output of the LLM
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
+  -- The LLM model used
   MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
   (
-    SELECT feature_date, feature_week_number, prompt
+    SELECT 
+    -- Date for which metrics are calculated
+    feature_date, 
+    -- ISO week number for the date
+    feature_week_number, 
+    -- The generated prompts for the LLM
+    prompt
     FROM prompts_per_week
+    -- Only prompts for the target date
     WHERE feature_date = input_date
   ),
-  STRUCT(8192 AS max_output_tokens, 
-         TRUE AS flatten_json_output,
-         FALSE AS ground_with_google_search,
-         0.95 AS top_p,
-         40 AS top_k,
-         1 AS temperature));
+  STRUCT(8192 AS max_output_tokens, -- Maximum number of output tokens for the LLM
+         TRUE AS flatten_json_output, -- Whether to flatten the JSON output of the LLM
+         FALSE AS ground_with_google_search, -- Whether to ground the LLM response with Google Search
+         0.95 AS top_p, -- Probability threshold for sampling the next token
+         40 AS top_k, -- Number of top tokens to consider for sampling
+         1 AS temperature -- Temperature parameter for controlling the randomness of the LLM output
+));
 
 
+-- Storing LLM results
+-- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
 MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_weekly` I
 USING user_behaviour_revenue_insights_weekly_gemini_calls T
 ON I.feature_date = T.feature_date
@@ -158,33 +219,48 @@ WHEN NOT MATCHED THEN
      T.gemini_insights)
 ;
 
-
+-- Calling the LLM
+-- It passes the prompts from the temporary tables to the LLM.
+-- It specifies parameters for the LLM, such as the maximum number of output tokens,
+-- whether to flatten JSON output, and temperature.
 CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_monthly_gemini_calls AS
 SELECT DISTINCT
+-- Date for which metrics are calculated
 feature_date,
+-- Month number for the date
 feature_month,
+-- Output of the LLM
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
+  -- The LLM model used
   MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
   (
-    SELECT feature_date, feature_month, prompt
+    SELECT 
+    feature_date, 
+    feature_month, 
+    -- The generated prompts for the LLM
+    prompt
     FROM prompts_per_month
     WHERE feature_date = input_date
   ),
-  STRUCT(8192 AS max_output_tokens, 
-         TRUE AS flatten_json_output,
-         FALSE AS ground_with_google_search,
-         0.95 AS top_p,
-         40 AS top_k,
-         1 AS temperature));
+  STRUCT(8192 AS max_output_tokens, -- Maximum number of output tokens for the LLM
+         TRUE AS flatten_json_output, -- Whether to flatten the JSON output of the LLM
+         FALSE AS ground_with_google_search, -- Whether to ground the LLM response with Google Search
+         0.95 AS top_p, -- Probability threshold for sampling the next token
+         40 AS top_k, -- Number of top tokens to consider for sampling
+         1 AS temperature -- Temperature parameter for controlling the randomness of the LLM output
+));
 
 
+-- Storing LLM results
+-- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
 MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_monthly` I
 USING user_behaviour_revenue_insights_monthly_gemini_calls T
 ON I.feature_date = T.feature_date
    AND I.feature_month = T.feature_month
 WHEN MATCHED THEN
   UPDATE SET 
+    -- Update existing insights for the month
     I.gemini_insights = T.gemini_insights
 WHEN NOT MATCHED THEN
   INSERT 

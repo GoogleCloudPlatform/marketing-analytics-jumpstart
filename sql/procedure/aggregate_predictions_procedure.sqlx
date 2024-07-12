@@ -299,6 +299,7 @@ SET
 SET
   purchase_selections = create_columns_select(purchase_propensity_select_columns,
     'b');
+-- The list of columns specified in the 
 SET
   first_query_str = FORMAT("""
 CREATE TEMPORARY TABLE temp1 AS

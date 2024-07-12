@@ -2286,6 +2286,11 @@ bigquery:
       insert_table: "churn_propensity_label"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+      # This is the interval of days used to calculate whether the user churned or not.
+      churn_multiplier_days: 30
+      # This is the event used to calculate whether the user churned or not. 
+      # It can be one of (page_view, session_start, user_engagement)
+      user_engagement_event: "user_engagement"
     # This is the stored procedure that collects the features and prepare the examples rows to train a model.
     # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
     # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
