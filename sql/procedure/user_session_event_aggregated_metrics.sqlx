@@ -84,7 +84,7 @@ FROM (
         IFNULL(MAX(S.session_engaged), false) as session_engaged,
         -- The total engagement time in milliseconds for the session.
         SUM(S.total_engagement_time_secs) as engagement_time_msec,
-         -- A flag indicating whether the session was a new visit (true) or not (false).
+        -- A flag indicating whether the session was a new visit (true) or not (false).
         MAX(S.new_visitor) as new_visitor,
         -- A flag indicating whether the session was a returning visit (true) or not (false).
         MAX(S.returning_visitor) as returning_visitor,
@@ -209,9 +209,9 @@ user_pseudo_id,
 feature_date,
 -- The maximum session order for the user on the specified date.
 MAX(session_order) as max_session_order_in_day, 
-- A flag indicating whether the user initiated checkout at least once that day.
+-- A flag indicating whether the user initiated checkout at least once that day.
 CASE WHEN MAX(begun_checkout) >= 1 THEN True ELSE False END as begun_checkout, 
- -- A flag indicating whether the user completed a purchase at least once that day.
+-- A flag indicating whether the user completed a purchase at least once that day.
 CASE WHEN MAX(event_order) >= 2 THEN True ELSE False END as has_purchased  
 FROM (
     -- Subquery to retrieve user activity related to 'begin_checkout' and 'purchase' events.
