@@ -19,32 +19,54 @@ DECLARE lastest_processed_time_um TIMESTAMP;
 -- Setting procedure to lookback from the day before `inference_date`
 SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
+-- Get the latest processed timestamps for user lifetime dimensions
 SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` WHERE feature_date = inference_date LIMIT 1);
+-- Get the latest processed timestamps for user rolling window lifetime metrics
 SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1);
+-- Get the latest processed timestamps for user scoped lifetime metrics
 SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_lifetime_metrics` WHERE feature_date = inference_date LIMIT 1);
 
 CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
+    -- Get the maximum user ID for each user using window function
     MAX(UD.user_id) OVER(user_lifetime_dimensions_window) AS user_id,
     UD.feature_date,
+    -- Get the maximum device category for each user using window function
     MAX(UD.device_category) OVER(user_lifetime_dimensions_window) AS device_category,
+    -- Get the maximum device mobile brand name for each user using window function
     MAX(UD.device_mobile_brand_name) OVER(user_lifetime_dimensions_window) AS device_mobile_brand_name,
+    -- Get the maximum device mobile model name for each user using window function
     MAX(UD.device_mobile_model_name) OVER(user_lifetime_dimensions_window) AS device_mobile_model_name,
+    -- Get the maximum device OS for each user using window function
     MAX(UD.device_os) OVER(user_lifetime_dimensions_window) AS device_os,
+    -- Get the maximum device language for each user using window function
     MAX(UD.device_language) OVER(user_lifetime_dimensions_window) AS device_language,
+    -- Get the maximum device web browser for each user using window function
     MAX(UD.device_web_browser) OVER(user_lifetime_dimensions_window) AS device_web_browser,
+    -- Get the maximum geo sub continent for each user using window function
     MAX(UD.geo_sub_continent) OVER(user_lifetime_dimensions_window) AS geo_sub_continent,
+    -- Get the maximum geo country for each user using window function
     MAX(UD.geo_country) OVER(user_lifetime_dimensions_window) AS geo_country,
+    -- Get the maximum geo region for each user using window function
     MAX(UD.geo_region) OVER(user_lifetime_dimensions_window) AS geo_region,
+    -- Get the maximum geo city for each user using window function
     MAX(UD.geo_city) OVER(user_lifetime_dimensions_window) AS geo_city,
+    -- Get the maximum geo metro for each user using window function
     MAX(UD.geo_metro) OVER(user_lifetime_dimensions_window) AS geo_metro,
+    -- Get the maximum last traffic source medium for each user using window function
     MAX(UD.last_traffic_source_medium) OVER(user_lifetime_dimensions_window) AS last_traffic_source_medium,
+    -- Get the maximum last traffic source name for each user using window function
     MAX(UD.last_traffic_source_name) OVER(user_lifetime_dimensions_window) AS last_traffic_source_name,
+    -- Get the maximum last traffic source source for each user using window function
     MAX(UD.last_traffic_source_source) OVER(user_lifetime_dimensions_window) AS last_traffic_source_source,
+    -- Get the maximum first traffic source medium for each user using window function
     MAX(UD.first_traffic_source_medium) OVER(user_lifetime_dimensions_window) AS first_traffic_source_medium,
+    -- Get the maximum first traffic source name for each user using window function
     MAX(UD.first_traffic_source_name) OVER(user_lifetime_dimensions_window) AS first_traffic_source_name,
+    -- Get the maximum first traffic source source for each user using window function
     MAX(UD.first_traffic_source_source) OVER(user_lifetime_dimensions_window) AS first_traffic_source_source,
+    -- Get the maximum has signed in with user ID for each user using window function
     MAX(UD.has_signed_in_with_user_id) OVER(user_lifetime_dimensions_window) AS has_signed_in_with_user_id
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lifetime_dimensions` UD
@@ -64,41 +86,77 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm as (
   SELECT DISTINCT
     UWM.user_pseudo_id,
     UWM.feature_date,
+    -- Get the maximum active users past 1-30 days for each user using window function
     MAX(UWM.active_users_past_1_30_day) OVER(user_lifetime_rolling_window) AS active_users_past_1_30_day,
+    -- Get the maximum active users past 30-60 days for each user using window function
     MAX(UWM.active_users_past_30_60_day) OVER(user_lifetime_rolling_window) AS active_users_past_30_60_day,
+    -- Get the maximum active users past 60-90 days for each user using window function
     MAX(UWM.active_users_past_60_90_day) OVER(user_lifetime_rolling_window) AS active_users_past_60_90_day,
+    -- Get the maximum active users past 90-120 days for each user using window function
     MAX(UWM.active_users_past_90_120_day) OVER(user_lifetime_rolling_window) AS active_users_past_90_120_day,
+    -- Get the maximum active users past 120-150 days for each user using window function
     MAX(UWM.active_users_past_120_150_day) OVER(user_lifetime_rolling_window) AS active_users_past_120_150_day,
+    -- Get the maximum active users past 150-180 days for each user using window function
     MAX(UWM.active_users_past_150_180_day) OVER(user_lifetime_rolling_window) AS active_users_past_150_180_day,
+    -- Get the maximum purchases past 1-30 days for each user using window function
     MAX(UWM.purchases_past_1_30_day) OVER(user_lifetime_rolling_window) AS purchases_past_1_30_day,
+    -- Get the maximum purchases past 30-60 days for each user using window function
     MAX(UWM.purchases_past_30_60_day) OVER(user_lifetime_rolling_window) AS purchases_past_30_60_day,
+    -- Get the maximum purchases past 60-90 days for each user using window function
     MAX(UWM.purchases_past_60_90_day) OVER(user_lifetime_rolling_window) AS purchases_past_60_90_day,
+    -- Get the maximum purchases past 90-120 days for each user using window function
     MAX(UWM.purchases_past_90_120_day) OVER(user_lifetime_rolling_window) AS purchases_past_90_120_day,
+    -- Get the maximum purchases past 120-150 days for each user using window function
     MAX(UWM.purchases_past_120_150_day) OVER(user_lifetime_rolling_window) AS purchases_past_120_150_day,
+    -- Get the maximum purchases past 150-180 days for each user using window function
     MAX(UWM.purchases_past_150_180_day) OVER(user_lifetime_rolling_window) AS purchases_past_150_180_day,
+    -- Get the maximum visits past 1-30 days for each user using window function
     MAX(UWM.visits_past_1_30_day) OVER(user_lifetime_rolling_window) AS visits_past_1_30_day,
+    -- Get the maximum visits past 30-60 days for each user using window function
     MAX(UWM.visits_past_30_60_day) OVER(user_lifetime_rolling_window) AS visits_past_30_60_day,
+    -- Get the maximum visits past 60-90 days for each user using window function
     MAX(UWM.visits_past_60_90_day) OVER(user_lifetime_rolling_window) AS visits_past_60_90_day,
+    -- Get the maximum visits past 90-120 days for each user using window function
     MAX(UWM.visits_past_90_120_day) OVER(user_lifetime_rolling_window) AS visits_past_90_120_day,
+    -- Get the maximum visits past 120-150 days for each user using window function
     MAX(UWM.visits_past_120_150_day) OVER(user_lifetime_rolling_window) AS visits_past_120_150_day,
+    -- Get the maximum visits past 150-180 days for each user using window function
     MAX(UWM.visits_past_150_180_day) OVER(user_lifetime_rolling_window) AS visits_past_150_180_day,
+    -- Get the maximum view items past 1-30 days for each user using window function
     MAX(UWM.view_items_past_1_30_day) OVER(user_lifetime_rolling_window) AS view_items_past_1_30_day,
+    -- Get the maximum view items past 30-60 days for each user using window function
     MAX(UWM.view_items_past_30_60_day) OVER(user_lifetime_rolling_window) AS view_items_past_30_60_day,
+    -- Get the maximum view items past 60-90 days for each user using window function
     MAX(UWM.view_items_past_60_90_day) OVER(user_lifetime_rolling_window) AS view_items_past_60_90_day,
+    -- Get the maximum view items past 90-120 days for each user using window function
     MAX(UWM.view_items_past_90_120_day) OVER(user_lifetime_rolling_window) AS view_items_past_90_120_day,
+    -- Get the maximum view items past 120-150 days for each user using window function
     MAX(UWM.view_items_past_120_150_day) OVER(user_lifetime_rolling_window) AS view_items_past_120_150_day,
+    -- Get the maximum view items past 150-180 days for each user using window function
     MAX(UWM.view_items_past_150_180_day) OVER(user_lifetime_rolling_window) AS view_items_past_150_180_day,
+    -- Get the maximum add to carts past 1-30 days for each user using window function
     MAX(UWM.add_to_carts_past_1_30_day) OVER(user_lifetime_rolling_window) AS add_to_carts_past_1_30_day,
+    -- Get the maximum add to carts past 30-60 days for each user using window function
     MAX(UWM.add_to_carts_past_30_60_day) OVER(user_lifetime_rolling_window) AS add_to_carts_past_30_60_day,
+    -- Get the maximum add to carts past 60-90 days for each user using window function
     MAX(UWM.add_to_carts_past_60_90_day) OVER(user_lifetime_rolling_window) AS add_to_carts_past_60_90_day,
+    -- Get the maximum add to carts past 90-120 days for each user using window function
     MAX(UWM.add_to_carts_past_90_120_day) OVER(user_lifetime_rolling_window) AS add_to_carts_past_90_120_day,
+    -- Get the maximum add to carts past 120-150 days for each user using window function
     MAX(UWM.add_to_carts_past_120_150_day) OVER(user_lifetime_rolling_window) AS add_to_carts_past_120_150_day,
+    -- Get the maximum add to carts past 150-180 days for each user using window function
     MAX(UWM.add_to_carts_past_150_180_day) OVER(user_lifetime_rolling_window) AS add_to_carts_past_150_180_day,
+    -- Get the maximum checkouts past 1-30 days for each user using window function
     MAX(UWM.checkouts_past_1_30_day) OVER(user_lifetime_rolling_window) AS checkouts_past_1_30_day,
+    -- Get the maximum checkouts past 30-60 days for each user using window function
     MAX(UWM.checkouts_past_30_60_day) OVER(user_lifetime_rolling_window) AS checkouts_past_30_60_day,
+    -- Get the maximum checkouts past 60-90 days for each user using window function
     MAX(UWM.checkouts_past_60_90_day) OVER(user_lifetime_rolling_window) AS checkouts_past_60_90_day,
+    -- Get the maximum checkouts past 90-120 days for each user using window function
     MAX(UWM.checkouts_past_90_120_day) OVER(user_lifetime_rolling_window) AS checkouts_past_90_120_day,
+    -- Get the maximum checkouts past 120-150 days for each user using window function
     MAX(UWM.checkouts_past_120_150_day) OVER(user_lifetime_rolling_window) AS checkouts_past_120_150_day,
+    -- Get the maximum checkouts past 150-180 days for each user using window function
     MAX(UWM.checkouts_past_150_180_day) OVER(user_lifetime_rolling_window) AS checkouts_past_150_180_day
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lifetime_metrics` UWM
@@ -183,6 +241,7 @@ CREATE OR REPLACE TEMP TABLE inference_preparation as (
     AND UWM.feature_date = UD.feature_date
 );
 
+-- Delete all existing rows from the insert table
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
 
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
@@ -307,189 +366,363 @@ feature_date,
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_30` AS(
   SELECT DISTINCT
+  -- The timestamp the row was processed
   CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- The date for which the features are extracted
   feature_date,
+  -- The unique identifier for the user
   user_pseudo_id,
+  -- The user ID, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_id,
+  -- The device category, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_category,
+  -- The mobile device brand name, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_brand_name,
+  -- The mobile device model name, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_model_name,
+  -- The device operating system, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_os,
+  -- The device language, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(device_language) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_language,
+  -- The device web browser, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_web_browser,
+  -- The geo sub-continent, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(geo_sub_continent) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_sub_continent,
+  -- The geo country, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_country,
+  -- The geo region, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_region,
+  -- The geo city, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_city,
+  -- The geo metro, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(geo_metro) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_metro,
+  -- The last traffic source medium, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(last_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_medium,
+  -- The last traffic source name, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(last_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_name,
+  -- The last traffic source source, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(last_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_source,
+  -- The first traffic source medium, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(first_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_medium,
+  -- The first traffic source name, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS  first_traffic_source_name,
+  -- The first traffic source source, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS  first_traffic_source_source,
+  -- Whether the user has signed in with a user ID, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(has_signed_in_with_user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS has_signed_in_with_user_id,
+  -- The number of active users in the past 1-30 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_1_30_day,
+  -- The number of active users in the past 30-60 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_30_60_day,
+  -- The number of active users in the past 60-90 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_60_90_day,
+  -- The number of active users in the past 90-120 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_90_120_day,
+  -- The number of active users in the past 120-150 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_120_150_day,
+  -- The number of active users in the past 150-180 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_150_180_day,
+  -- The number of purchases in the past 1-30 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_1_30_day,
+  -- The number of purchases in the past 30-60 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_30_60_day,
+  -- The number of purchases in the past 60-90 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_60_90_day,
+  -- The number of purchases in the past 90-120 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_90_120_day,
+  -- The number of purchases in the past 120-150 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_120_150_day,
+  -- The number of purchases in the past 150-180 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_150_180_day,
+  -- The number of visits in the past 1-30 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_1_30_day,
+  -- The number of visits in the past 30-60 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_30_60_day,
+  -- The number of visits in the past 60-90 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_60_90_day,
+  -- The number of visits in the past 90-120 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_90_120_day,
+  -- The number of visits in the past 120-150 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_120_150_day,
+  -- The number of visits in the past 150-180 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_150_180_day,
+  -- The number of items viewed in the past 1-30 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_1_30_day,
+  -- The number of items viewed in the past 30-60 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_30_60_day,
+  -- The number of items viewed in the past 60-90 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_60_90_day,
+  -- The number of items viewed in the past 90-120 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_90_120_day,
+  -- The number of items viewed in the past 120-150 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_120_150_day,
+  -- The number of items viewed in the past 150-180 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_150_180_day,
+  -- The number of items added to carts in the past 1-30 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_1_30_day,
+  -- The number of items added to carts in the past 30-60 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_30_60_day,
+  -- The number of items added to carts in the past 60-90 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_60_90_day,
+  -- The number of items added to carts in the past 90-120 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_90_120_day,
+  -- The number of items added to carts in the past 120-150 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_120_150_day,
+  -- The number of items added to carts in the past 150-180 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_150_180_day,
+  -- The number of checkouts in the past 1-30 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_1_30_day,
+  -- The number of checkouts in the past 30-60 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_30_60_day,
+  -- The number of checkouts in the past 60-90 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_60_90_day,
+  -- The number of checkouts in the past 90-120 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_90_120_day,
+  -- The number of checkouts in the past 120-150 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_120_150_day,
+  -- The number of checkouts in the past 150-180 days, taking the latest value for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_90` AS(
   SELECT DISTINCT
+  -- Adding processed_timestamp column with current timestamp
   CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- Adding feature_date column as it is
   feature_date,
+  -- Adding user_pseudo_id column as it is
   user_pseudo_id,
+  -- Selecting the last value of user_id for each user_pseudo_id and feature_date
   LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_id,
+  -- Selecting the last value of device_category for each user_pseudo_id and feature_date
   LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_category,
+  -- Selecting the last value of device_mobile_brand_name for each user_pseudo_id and feature_date
   LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_brand_name,
+  -- Selecting the last value of device_mobile_model_name for each user_pseudo_id and feature_date
   LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_model_name,
+  -- Selecting the last value of device_os for each user_pseudo_id and feature_date
   LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_os,
+  -- Selecting the last value of device_language for each user_pseudo_id and feature_date
   LAST_VALUE(device_language) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_language,
+  -- Selecting the last value of device_web_browser for each user_pseudo_id and feature_date
   LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_web_browser,
+  -- Selecting the last value of geo_sub_continent for each user_pseudo_id and feature_date
   LAST_VALUE(geo_sub_continent) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_sub_continent,
+  -- Selecting the last value of geo_country for each user_pseudo_id and feature_date
   LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_country,
+  -- Selecting the last value of geo_region for each user_pseudo_id and feature_date
   LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_region,
+  -- Selecting the last value of geo_city for each user_pseudo_id and feature_date
   LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_city,
+  -- Selecting the last value of geo_metro for each user_pseudo_id and feature_date
   LAST_VALUE(geo_metro) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_metro,
+  -- Selecting the last value of last_traffic_source_medium for each user_pseudo_id and feature_date
   LAST_VALUE(last_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_medium,
+  -- Selecting the last value of last_traffic_source_name for each user_pseudo_id and feature_date
   LAST_VALUE(last_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_name,
+  -- Selecting the last value of last_traffic_source_source for each user_pseudo_id and feature_date
   LAST_VALUE(last_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_source,
+  -- Selecting the last value of first_traffic_source_medium for each user_pseudo_id and feature_date
   LAST_VALUE(first_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_medium,
-  LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS  first_traffic_source_name,
-  LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS  first_traffic_source_source,
+  -- Selecting the last value of first_traffic_source_name for each user_pseudo_id and feature_date
+  LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_name,
+  -- Selecting the last value of first_traffic_source_source for each user_pseudo_id and feature_date
+  LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_source,
+  -- Selecting the last value of has_signed_in_with_user_id for each user_pseudo_id and feature_date
   LAST_VALUE(has_signed_in_with_user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS has_signed_in_with_user_id,
+  -- Selecting the last value of active_users_past_1_30_day for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_1_30_day,
+  -- Selecting the last value of active_users_past_30_60_day for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_30_60_day,
+  -- Selecting the last value of active_users_past_60_90_day for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_60_90_day,
+  -- Selecting the last value of active_users_past_90_120_day for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_90_120_day,
+  -- Selecting the last value of active_users_past_120_150_day for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_120_150_day,
+  -- Selecting the last value of active_users_past_150_180_day for each user_pseudo_id and feature_date
   LAST_VALUE(active_users_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_150_180_day,
+  -- Selecting the last value of purchases_past_1_30_day for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_1_30_day,
+  -- Selecting the last value of purchases_past_30_60_day for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_30_60_day,
+  -- Selecting the last value of purchases_past_60_90_day for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_60_90_day,
+  -- Selecting the last value of purchases_past_90_120_day for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_90_120_day,
+  -- Selecting the last value of purchases_past_120_150_day for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_120_150_day,
+  -- Selecting the last value of purchases_past_150_180_day for each user_pseudo_id and feature_date
   LAST_VALUE(purchases_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_150_180_day,
+  -- Selecting the last value of visits_past_1_30_day for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_1_30_day,
+  -- Selecting the last value of visits_past_30_60_day for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_30_60_day,
+  -- Selecting the last value of visits_past_60_90_day for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_60_90_day,
+  -- Selecting the last value of visits_past_90_120_day for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_90_120_day,
+  -- Selecting the last value of visits_past_120_150_day for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_120_150_day,
+  -- Selecting the last value of visits_past_150_180_day for each user_pseudo_id and feature_date
   LAST_VALUE(visits_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_150_180_day,
+  -- Selecting the last value of view_items_past_1_30_day for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_1_30_day,
+  -- Selecting the last value of view_items_past_30_60_day for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_30_60_day,
+  -- Selecting the last value of view_items_past_60_90_day for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_60_90_day,
+  -- Selecting the last value of view_items_past_90_120_day for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_90_120_day,
+  -- Selecting the last value of view_items_past_120_150_day for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_120_150_day,
+  -- Selecting the last value of view_items_past_150_180_day for each user_pseudo_id and feature_date
   LAST_VALUE(view_items_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_150_180_day,
+  -- Selecting the last value of add_to_carts_past_1_30_day for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_1_30_day,
+  -- Selecting the last value of add_to_carts_past_30_60_day for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_30_60_day,
+  -- Selecting the last value of add_to_carts_past_60_90_day for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_60_90_day,
+  -- Selecting the last value of add_to_carts_past_90_120_day for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_90_120_day,
+  -- Selecting the last value of add_to_carts_past_120_150_day for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_120_150_day,
+  -- Selecting the last value of add_to_carts_past_150_180_day for each user_pseudo_id and feature_date
   LAST_VALUE(add_to_carts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_150_180_day,
+  -- Selecting the last value of checkouts_past_1_30_day for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_1_30_day,
+  -- Selecting the last value of checkouts_past_30_60_day for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_30_60_day,
+  -- Selecting the last value of checkouts_past_60_90_day for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_60_90_day,
+  -- Selecting the last value of checkouts_past_90_120_day for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_90_120_day,
+  -- Selecting the last value of checkouts_past_120_150_day for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_120_150_day,
+  -- Selecting the last value of checkouts_past_150_180_day for each user_pseudo_id and feature_date
   LAST_VALUE(checkouts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
 
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_180` AS(
   SELECT DISTINCT
+  -- Retrieves the current timestamp when the query is executed.
   CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- The date for which the features are extracted.
   feature_date,
+  -- The unique identifier for the user.
   user_pseudo_id,
+  -- Extracts the last user ID for each user_pseudo_id and feature_date.
   LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_id,
+  -- Extracts the last device category for each user_pseudo_id and feature_date.
   LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_category,
+  -- Extracts the last device mobile brand name for each user_pseudo_id and feature_date.
   LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_brand_name,
+  -- Extracts the last device mobile model name for each user_pseudo_id and feature_date.
   LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_model_name,
+  -- Extracts the last device operating system for each user_pseudo_id and feature_date.
   LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_os,
+  -- Extracts the last device language for each user_pseudo_id and feature_date.
   LAST_VALUE(device_language) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_language,
+  -- Extracts the last device web browser for each user_pseudo_id and feature_date.
   LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_web_browser,
+  -- Extracts the last geo subcontinent for each user_pseudo_id and feature_date.
   LAST_VALUE(geo_sub_continent) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_sub_continent,
+  -- Extracts the last geo country for each user_pseudo_id and feature_date.
   LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_country,
+  -- Extracts the last geo region for each user_pseudo_id and feature_date.
   LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_region,
+  -- Extracts the last geo city for each user_pseudo_id and feature_date.
   LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_city,
+  -- Extracts the last geo metro for each user_pseudo_id and feature_date.
   LAST_VALUE(geo_metro) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_metro,
+  -- Extracts the last traffic source medium for each user_pseudo_id and feature_date.
   LAST_VALUE(last_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_medium,
+  -- Extracts the last traffic source name for each user_pseudo_id and feature_date.
   LAST_VALUE(last_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_name,
+  -- Extracts the last traffic source source for each user_pseudo_id and feature_date.
   LAST_VALUE(last_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_source,
+  -- Extracts the last first traffic source medium for each user_pseudo_id and feature_date.
   LAST_VALUE(first_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_medium,
-  LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS  first_traffic_source_name,
-  LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS  first_traffic_source_source,
+  -- Extracts the last first traffic source name for each user_pseudo_id and feature_date.
+  LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_name,
+  -- Extracts the last first traffic source source for each user_pseudo_id and feature_date.
+  LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_source,
+  -- Extracts the last has_signed_in_with_user_id for each user_pseudo_id and feature_date.
   LAST_VALUE(has_signed_in_with_user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS has_signed_in_with_user_id,
+  -- Extracts the last active_users_past_1_30_day for each user_pseudo_id and feature_date.
   LAST_VALUE(active_users_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_1_30_day,
+  -- Extracts the last active_users_past_30_60_day for each user_pseudo_id and feature_date.
   LAST_VALUE(active_users_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_30_60_day,
+  -- Extracts the last active_users_past_60_90_day for each user_pseudo_id and feature_date.
   LAST_VALUE(active_users_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_60_90_day,
+  -- Extracts the last active_users_past_90_120_day for each user_pseudo_id and feature_date.
   LAST_VALUE(active_users_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_90_120_day,
+  -- Extracts the last active_users_past_120_150_day for each user_pseudo_id and feature_date.
   LAST_VALUE(active_users_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_120_150_day,
+  -- Extracts the last active_users_past_150_180_day for each user_pseudo_id and feature_date.
   LAST_VALUE(active_users_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS active_users_past_150_180_day,
+  -- Extracts the last purchases_past_1_30_day for each user_pseudo_id and feature_date.
   LAST_VALUE(purchases_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_1_30_day,
+  -- Extracts the last purchases_past_30_60_day for each user_pseudo_id and feature_date.
   LAST_VALUE(purchases_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_30_60_day,
+  -- Extracts the last purchases_past_60_90_day for each user_pseudo_id and feature_date.
   LAST_VALUE(purchases_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_60_90_day,
+  -- Extracts the last purchases_past_90_120_day for each user_pseudo_id and feature_date.
   LAST_VALUE(purchases_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_90_120_day,
+  -- Extracts the last purchases_past_120_150_day for each user_pseudo_id and feature_date.
   LAST_VALUE(purchases_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_120_150_day,
+  -- Extracts the last purchases_past_150_180_day for each user_pseudo_id and feature_date.
   LAST_VALUE(purchases_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS purchases_past_150_180_day,
+  -- Extracts the last visits_past_1_30_day for each user_pseudo_id and feature_date.
   LAST_VALUE(visits_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_1_30_day,
+  -- Extracts the last visits_past_30_60_day for each user_pseudo_id and feature_date.
   LAST_VALUE(visits_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_30_60_day,
+  -- Extracts the last visits_past_60_90_day for each user_pseudo_id and feature_date.
   LAST_VALUE(visits_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_60_90_day,
+  -- Extracts the last visits_past_90_120_day for each user_pseudo_id and feature_date.
   LAST_VALUE(visits_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_90_120_day,
+  -- Extracts the last visits_past_120_150_day for each user_pseudo_id and feature_date.
   LAST_VALUE(visits_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_120_150_day,
+  -- Extracts the last visits_past_150_180_day for each user_pseudo_id and feature_date.
   LAST_VALUE(visits_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS visits_past_150_180_day,
+  -- Extracts the last view_items_past_1_30_day for each user_pseudo_id and feature_date.
   LAST_VALUE(view_items_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_1_30_day,
+  -- Extracts the last view_items_past_30_60_day for each user_pseudo_id and feature_date.
   LAST_VALUE(view_items_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_30_60_day,
+  -- Extracts the last view_items_past_60_90_day for each user_pseudo_id and feature_date.
   LAST_VALUE(view_items_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_60_90_day,
+  -- Extracts the last view_items_past_90_120_day for each user_pseudo_id and feature_date.
   LAST_VALUE(view_items_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_90_120_day,
+  -- Extracts the last view_items_past_120_150_day for each user_pseudo_id and feature_date.
   LAST_VALUE(view_items_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_120_150_day,
+  -- Extracts the last view_items_past_150_180_day for each user_pseudo_id and feature_date.
   LAST_VALUE(view_items_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_items_past_150_180_day,
+  -- Extracts the last add_to_carts_past_1_30_day for each user_pseudo_id and feature_date.
   LAST_VALUE(add_to_carts_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_1_30_day,
+  -- Extracts the last add_to_carts_past_30_60_day for each user_pseudo_id and feature_date.
   LAST_VALUE(add_to_carts_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_30_60_day,
+  -- Extracts the last add_to_carts_past_60_90_day for each user_pseudo_id and feature_date.
   LAST_VALUE(add_to_carts_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_60_90_day,
+  -- Extracts the last add_to_carts_past_90_120_day for each user_pseudo_id and feature_date.
   LAST_VALUE(add_to_carts_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_90_120_day,
+  -- Extracts the last add_to_carts_past_120_150_day for each user_pseudo_id and feature_date.
   LAST_VALUE(add_to_carts_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_120_150_day,
+  -- Extracts the last add_to_carts_past_150_180_day for each user_pseudo_id and feature_date.
   LAST_VALUE(add_to_carts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS add_to_carts_past_150_180_day,
+  -- Extracts the last checkouts_past_1_30_day for each user_pseudo_id and feature_date.
   LAST_VALUE(checkouts_past_1_30_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_1_30_day,
+  -- Extracts the last checkouts_past_30_60_day for each user_pseudo_id and feature_date.
   LAST_VALUE(checkouts_past_30_60_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_30_60_day,
+  -- Extracts the last checkouts_past_60_90_day for each user_pseudo_id and feature_date.
   LAST_VALUE(checkouts_past_60_90_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_60_90_day,
+  -- Extracts the last checkouts_past_90_120_day for each user_pseudo_id and feature_date.
   LAST_VALUE(checkouts_past_90_120_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_90_120_day,
+  -- Extracts the last checkouts_past_120_150_day for each user_pseudo_id and feature_date.
   LAST_VALUE(checkouts_past_120_150_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_120_150_day,
+  -- Extracts the last checkouts_past_150_180_day for each user_pseudo_id and feature_date.
   LAST_VALUE(checkouts_past_150_180_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS checkouts_past_150_180_day
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
@@ -680,10 +913,12 @@ SELECT DISTINCT
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
+  -- Sets a row number for each user_pseudo_id ordered by feature_date descending
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_30`
 )
 WHERE
+  -- Filter only for one row for each user_pseudo_id 
   user_row_order = 1;
 
 
@@ -873,10 +1108,12 @@ SELECT DISTINCT
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
+  -- Gets a row number for each user_pseudo_id ordered by feature_date descending
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_90`
 )
 WHERE
+  -- Filters only for one row for each user_pseudo_id 
   user_row_order = 1;
 
 
@@ -1065,8 +1302,10 @@ SELECT DISTINCT
   checkouts_past_90_120_day,
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
+  -- Gets a row number for each user_pseudo_id ordered by feature_date descending
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_inference_180_180`
 )
 WHERE
+  -- Filter only for one row for each user_pseudo_id 
   user_row_order = 1;

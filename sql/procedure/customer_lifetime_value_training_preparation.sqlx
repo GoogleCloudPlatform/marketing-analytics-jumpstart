@@ -17,19 +17,19 @@ DECLARE custom_end_date DATE DEFAULT NULL;
 DECLARE max_date DATE;
 DECLARE min_date DATE;
 
-# custom_start_date: The start date of the data to be used for training.
-# custom_end_date: The end date of the data to be used for training.
+-- custom_start_date: The start date of the data to be used for training.
+-- custom_end_date: The end date of the data to be used for training.
 SET custom_start_date = PARSE_DATE("%Y-%m-%d", {{custom_start_date}});
 SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
 
-# max_date: The maximum date of the data that is available for training.
-# min_date: The minimum date of the data that is available for training.
+-- max_date: The maximum date of the data that is available for training.
+-- min_date: The minimum date of the data that is available for training.
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 180 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 180 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
-# The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
-# If either parameter is not valid, the procedure sets the corresponding date to the maximum or
-# minimum date of the available data.
+-- The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
+-- If either parameter is not valid, the procedure sets the corresponding date to the maximum or
+-- minimum date of the available data.
 IF (custom_start_date IS NOT NULL OR custom_start_date >= min_date OR custom_start_date <= max_date) 
    AND custom_start_date < custom_end_date THEN
   SET max_date = custom_start_date;
@@ -40,9 +40,9 @@ IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_dat
   SET min_date = custom_end_date;
 END IF;
 
-# The resulting training_preparation_ud table contains a consolidated view of user-specific features, 
-# with the maximum values calculated over the specified time range for each user. 
-# This table can be used as input for further data preparation and modeling tasks.
+-- The resulting training_preparation_ud table contains a consolidated view of user-specific features, 
+-- with the maximum values calculated over the specified time range for each user. 
+-- This table can be used as input for further data preparation and modeling tasks.
 CREATE OR REPLACE TEMP TABLE training_preparation_ud as (
   SELECT DISTINCT
     UD.user_pseudo_id,
@@ -76,9 +76,9 @@ WINDOW
   user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
-# The resulting training_preparation_uwm table contains a consolidated view of user-specific features, 
-# with the maximum values calculated over the specified time range for each user. 
-# This table can be used as input for further data preparation and modeling tasks.
+-- The resulting training_preparation_uwm table contains a consolidated view of user-specific features, 
+-- with the maximum values calculated over the specified time range for each user. 
+-- This table can be used as input for further data preparation and modeling tasks.
 CREATE OR REPLACE TEMP TABLE training_preparation_uwm as (
   SELECT DISTINCT
     UWM.user_pseudo_id,
@@ -129,9 +129,9 @@ WINDOW
 );
 
 
-# The resulting training_preparation_label table contains a consolidated view of user-specific labels, 
-# with the maximum values calculated over the specified time range for each user. 
-# This table can be used as input for further data preparation and modeling tasks.
+-- The resulting training_preparation_label table contains a consolidated view of user-specific labels, 
+-- with the maximum values calculated over the specified time range for each user. 
+-- This table can be used as input for further data preparation and modeling tasks.
 CREATE OR REPLACE TEMP TABLE training_preparation_label as (
   SELECT DISTINCT
     LABEL.user_pseudo_id,
@@ -148,8 +148,8 @@ WINDOW
   customer_lifetime_value_window AS (PARTITION BY LABEL.user_pseudo_id, LABEL.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
-# The resulting training_preparation table contains a consolidated view of user-specific features and labels,
-# to be used as input for further data preparation and modeling tasks.
+-- The resulting training_preparation table contains a consolidated view of user-specific features and labels,
+-- to be used as input for further data preparation and modeling tasks.
 CREATE OR REPLACE TEMP TABLE training_preparation as (
   SELECT DISTINCT
     UD.user_pseudo_id,
@@ -226,8 +226,8 @@ ON
   AND LABEL.feature_date = UD.feature_date
 );
 
-# The DataForTargetTable table adds the data_split column which is used to identify which rows will
-# be used in different splits (TRAIN, VALIDATE, TEST).
+-- The DataForTargetTable table adds the data_split column which is used to identify which rows will
+-- be used in different splits (TRAIN, VALIDATE, TEST).
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   SELECT DISTINCT
   CASE 
@@ -297,12 +297,12 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   pltv_revenue_180_days
   FROM training_preparation);
 
-# Fully overwrites the table which serves as basis for further down specific transformations and filtering.
+-- Fully overwrites the table which serves as basis for further down specific transformations and filtering.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{insert_table}}` AS
 SELECT DISTINCT * FROM DataForTargetTable
 WHERE data_split IS NOT NULL;
 
-# Prepares the non-duplocated features and labels for the CLTV model looking back 180 days to predict 30 days.
+-- Prepares the non-duplocated features and labels for the CLTV model looking back 180 days to predict 30 days.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_30` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp, 
@@ -369,7 +369,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   WHERE pltv_revenue_30_days > 0.0
 );
 
-# Prepares the non-duplocated features and labels for the CLTV model looking back 180 days to predict 90 days.
+-- Prepares the non-duplocated features and labels for the CLTV model looking back 180 days to predict 90 days.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_90` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
@@ -436,7 +436,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   WHERE pltv_revenue_90_days > 0.0
 );
 
-# # Prepares the non-duplocated features and labels for the CLTV model looking back 180 days to predict 180 days.
+-- Prepares the non-duplocated features and labels for the CLTV model looking back 180 days to predict 180 days.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_180` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
@@ -503,7 +503,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.customer_lifetime_value_trai
   WHERE pltv_revenue_180_days > 0.0
 );
 
-# Creates the final view containing input data for the CLTV model looking back 180 days to predict 30 days.
+-- Creates the final view containing input data for the CLTV model looking back 180 days to predict 30 days.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30`
 (processed_timestamp,
   data_split,
@@ -705,11 +705,11 @@ WHERE
   row_order_peruser_perday_persplit = 1
 )
 WHERE
-  #Skipping windows of 30 days, which is the future window size.
+  -- Skipping windows of 30 days, which is the future window size.
   MOD(row_order_peruser_persplit-1, 30) = 0;
 
 
-# Creates the final view containing input data for the CLTV model looking back 180 days to predict 90 days.
+-- Creates the final view containing input data for the CLTV model looking back 180 days to predict 90 days.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_90`
 (processed_timestamp, 
   data_split,
@@ -785,7 +785,7 @@ SELECT DISTINCT
   feature_date,
   user_pseudo_id,
   user_id,
-  #Now, I want to skip rows per user, per split every 15 days.
+  -- Now, I want to skip rows per user, per split every 15 days.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date ASC) AS row_order_peruser_persplit,
   device_category,
   device_mobile_brand_name,
@@ -904,7 +904,7 @@ SELECT DISTINCT
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
   pltv_revenue_90_days,
-  # Number of rows per user, per day, per split. Only one row per user, per day, per slip.
+  -- Number of rows per user, per day, per split. Only one row per user, per day, per slip.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_90`
 )
@@ -912,12 +912,12 @@ WHERE
   row_order_peruser_perday_persplit = 1
 )
 WHERE
-  #Skipping windows of 90 days, which is the future window size.
+  -- Skipping windows of 90 days, which is the future window size.
   MOD(row_order_peruser_persplit-1, 90) = 0;
 
 
-# Creates the final view containing input data for the CLTV model looking back 180 days to predict 180 days.
-  CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_180`
+-- Creates the final view containing input data for the CLTV model looking back 180 days to predict 180 days.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_180`
 (processed_timestamp, 
   data_split,
   user_pseudo_id,
@@ -1111,7 +1111,7 @@ SELECT DISTINCT
   checkouts_past_120_150_day,
   checkouts_past_150_180_day,
   pltv_revenue_180_days,
-  # Number of rows per user, per day, per split. Only one row per user, per day, per slip.
+  -- Number of rows per user, per day, per split. Only one row per user, per day, per slip.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
   FROM `{{project_id}}.{{dataset}}.customer_lifetime_value_training_180_180`
 )
@@ -1123,8 +1123,8 @@ WHERE
   MOD(row_order_peruser_persplit-1, 30) = 0;
 
 
-# Creates the final view containing input data for the CLTV model looking back 180 days to predict 30 days.
-# Consider only the last windows per user. So that we can use only the most recent interactions of users.
+-- Creates the final view containing input data for the CLTV model looking back 180 days to predict 30 days.
+-- Consider only the last windows per user. So that we can use only the most recent interactions of users.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30_last_window`
 (processed_timestamp,
   data_split,
@@ -1320,7 +1320,7 @@ SELECT DISTINCT
 WHERE
   user_row_order = 1;
 
-# Creates the final view containing balanced input data for the CLTV model looking back 180 days to predict 30 days.
+-- Creates the final view containing balanced input data for the CLTV model looking back 180 days to predict 30 days.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_customer_lifetime_value_training_180_30_balanced`
 (data_split,
   user_pseudo_id,

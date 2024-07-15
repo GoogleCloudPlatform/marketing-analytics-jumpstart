@@ -37,6 +37,7 @@ END IF;
 
 CALL `{{project_id}}.{{dataset}}.auto_audience_segmentation_dataset_preparation`(DATE_START, DATE_END, LOOKBACK_DAYS);
 
+-- Create a new table named auto_audience_segmentation_training_15 by selecting all data from the auto_audience_segmentation_full_dataset table.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_training_15`
 AS
 SELECT
@@ -44,11 +45,14 @@ SELECT
 FROM
   `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`
 WHERE
+  -- Filters the data to include only records within the specified date range.
   feature_timestamp >= TIMESTAMP(DATE_START)
   AND feature_timestamp <= TIMESTAMP(DATE_END)
+-- 
 LIMIT {{total_samples}};
 
-CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_training_15`
+-- Create a new view named v_auto_audience_segmentation_training_15 by selecting distinct data from the auto_audience_segmentation_training_15 table.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_training_15`
   OPTIONS(
     friendly_name="v_auto_audience_segmentation_inference_15",
     description="View Auto Audience Segmentation dataset using 15 days lookback.",
@@ -57,6 +61,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation
 AS
 SELECT DISTINCT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_training_15`
 WHERE
+  -- Filters the data to include only records within the specified date range.
   feature_timestamp >= TIMESTAMP(DATE_START)
   AND feature_timestamp <= TIMESTAMP(DATE_END)
 LIMIT {{total_samples}};

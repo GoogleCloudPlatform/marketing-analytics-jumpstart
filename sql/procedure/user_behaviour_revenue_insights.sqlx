@@ -32,10 +32,10 @@ CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to extr
     TO_JSON_STRING(t), -- JSON representation of metrics data
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')), -- Descriptions of each metric column
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{feature_store_project_id}}`.{{feature_store_dataset}}.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')), -- Descriptions of each metric column
     "\n\n"
 ) as prompt
-FROM (SELECT DISTINCT  feature_date as calculation_base_date, * EXCEPT(processed_timestamp, feature_date) FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics` WHERE feature_date = input_date ORDER BY feature_date DESC) t
+FROM (SELECT DISTINCT  feature_date as calculation_base_date, * EXCEPT(processed_timestamp, feature_date) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date = input_date ORDER BY feature_date DESC) t
 ;
 
 -- Creating weekly prompts for the LLM
@@ -57,7 +57,7 @@ CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to iden
       STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(ISOWEEK FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),  -- Aggregated JSON data for the week
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')), -- Descriptions of each metric column
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{feature_store_project_id}}`.{{feature_store_dataset}}.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')), -- Descriptions of each metric column
     "\n\n"
 ) as prompt,
 FROM (
@@ -67,7 +67,7 @@ feature_date as calculation_base_date,
 -- ISO week number for the date
 EXTRACT(ISOWEEK FROM feature_date) as calculation_base_week_number,
 * EXCEPT(processed_timestamp, feature_date) 
-FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics`
+FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics`
 WHERE feature_date BETWEEN DATE_SUB(input_date, INTERVAL 1 WEEK) AND input_date AND
 EXTRACT(ISOWEEK FROM feature_date) IS NOT NULL
 ORDER BY feature_date DESC) t
@@ -93,7 +93,7 @@ CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to iden
       STRING_AGG(TO_JSON_STRING(t)) OVER ( PARTITION BY EXTRACT(MONTH FROM t.calculation_base_date) ORDER BY t.calculation_base_date range between unbounded preceding  and unbounded following),  -- Aggregated JSON data for the month
     "\n\n",
     "Here are a the metrics descriptions:\n",
-    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `marketing-data-engine-demo`.feature_store.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),  -- Descriptions of each metric column
+    (SELECT STRING_AGG(FORMAT("%s (%s): %s", column_name, data_type, description), "\n") FROM `{{feature_store_project_id}}`.{{feature_store_dataset}}.INFORMATION_SCHEMA.COLUMN_FIELD_PATHS WHERE table_name = 'user_scoped_metrics' AND column_name NOT IN ('processed_timestamp', 'feature_date')),  -- Descriptions of each metric column
     "\n\n"
 ) as prompt,
 FROM (
@@ -103,7 +103,7 @@ feature_date as calculation_base_date,
 -- Month number for the date
 EXTRACT(MONTH FROM feature_date) as calculation_base_week_number,
 * EXCEPT(processed_timestamp, feature_date) 
-FROM `marketing-data-engine-demo.feature_store.user_scoped_metrics` 
+FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` 
 WHERE feature_date BETWEEN DATE_SUB(input_date, INTERVAL 1 MONTH) AND input_date AND
 EXTRACT(MONTH FROM feature_date) IS NOT NULL
 ORDER BY feature_date DESC) t
@@ -122,7 +122,7 @@ feature_date,
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
   -- The LLM model used
-  MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`,
   (
     SELECT 
     -- Date for which metrics are calculated
@@ -143,7 +143,7 @@ FROM ML.GENERATE_TEXT(
 
 -- Storing LLM results
 -- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
-MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_daily` I
+MERGE `{{project_id}}.{{dataset}}.{{insert_table_daily}}` I
 USING user_behaviour_revenue_insights_daily_gemini_calls T
 -- Matching based on feature_date
 ON I.feature_date = T.feature_date
@@ -176,7 +176,7 @@ feature_week_number,
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
   -- The LLM model used
-  MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`,
   (
     SELECT 
     -- Date for which metrics are calculated
@@ -200,7 +200,7 @@ FROM ML.GENERATE_TEXT(
 
 -- Storing LLM results
 -- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
-MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_weekly` I
+MERGE `{{project_id}}.{{dataset}}.{{insert_table_weekly}}` I
 USING user_behaviour_revenue_insights_weekly_gemini_calls T
 ON I.feature_date = T.feature_date
    AND I.feature_week_number = T.feature_week_number
@@ -233,7 +233,7 @@ feature_month,
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
   -- The LLM model used
-  MODEL `marketing-data-engine-demo.gemini_insights.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`,
   (
     SELECT 
     feature_date, 
@@ -254,7 +254,7 @@ FROM ML.GENERATE_TEXT(
 
 -- Storing LLM results
 -- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
-MERGE `marketing-data-engine-demo.gemini_insights.user_behaviour_revenue_insights_monthly` I
+MERGE `{{project_id}}.{{dataset}}.{{insert_table_monthly}}` I
 USING user_behaviour_revenue_insights_monthly_gemini_calls T
 ON I.feature_date = T.feature_date
    AND I.feature_month = T.feature_month

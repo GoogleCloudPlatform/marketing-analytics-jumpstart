@@ -2233,8 +2233,8 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168 
-      # This parameter helps you set a maximum number of samples per split.
-      samples_per_split: 100000
+      # This parameter helps you set a maximum number of samples for training.
+      samples_percentage: 10
       custom_start_date: "'2024-01-01'"
       custom_end_date: "NULL"
     # This is the stored procedure that calculates the label column for the Customer Lifetime Value use case.
@@ -2510,6 +2510,8 @@ bigquery:
       name: "user_behaviour_revenue_insights"
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
-      insert_table: "user_behaviour_revenue_insights"
+      insert_table_daily: "user_behaviour_revenue_insights_daily"
+      insert_table_weekly: "user_behaviour_revenue_insights_weekly"
+      insert_table_monthly: "user_behaviour_revenue_insights_monthly"
 
   

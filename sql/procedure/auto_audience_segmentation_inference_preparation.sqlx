@@ -13,16 +13,20 @@
   -- limitations under the License.
   -- Setting procedure to lookback from the day before `inference_date`
 
+-- Declare variables for the inference start date, inference end date, and lookback days.
 DECLARE inference_start_date DATE DEFAULT NULL;
 DECLARE inference_end_date DATE DEFAULT NULL;
 DECLARE lookback_days INT64 DEFAULT NULL;
 
+-- Set the lookback days, inference end date, and inference start date.
 SET lookback_days = {{lookback_days}};
 SET inference_end_date = inference_date;
 SET inference_start_date = DATE_SUB(inference_end_date, INTERVAL lookback_days DAY);
 
+-- Call the auto_audience_segmentation_dataset_preparation procedure.
 CALL `{{project_id}}.{{dataset}}.auto_audience_segmentation_dataset_preparation`(inference_start_date, inference_end_date, lookback_days);
 
+-- Create a new table named auto_audience_segmentation_inference_15 by selecting all data from the auto_audience_segmentation_full_dataset table.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`
 AS
 SELECT
@@ -30,7 +34,8 @@ SELECT
 FROM
   `{{project_id}}.{{dataset}}.auto_audience_segmentation_full_dataset`;
 
-CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
+-- Create a new view named v_auto_audience_segmentation_inference_15 by selecting distinct data from the auto_audience_segmentation_inference_15 table.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_inference_15`
   OPTIONS(
     friendly_name="v_auto_audience_segmentation_inference_15",
     description="View Auto Audience Segmentation dataset using 15 days lookback.",
