@@ -23,7 +23,10 @@ SET lookback_days = {{lookback_days}};
 SET inference_end_date = inference_date;
 SET inference_start_date = DATE_SUB(inference_end_date, INTERVAL lookback_days DAY);
 
--- Call the auto_audience_segmentation_dataset_preparation procedure.
+-- Invoke stored procedure that perform feature engineering, creating new features from existing data to improve the model's performance. 
+-- This involve calculating rolling averages, creating time-based features, and transforming categorical variables.
+-- Aggregate data for each user, summarizing their behavior over the specified LOOKBACK_DAYS period.
+-- Filters the extracted data based on the provided DATE_START and DATE_END parameters, ensuring you're only working with data within the desired time range.
 CALL `{{project_id}}.{{dataset}}.auto_audience_segmentation_dataset_preparation`(inference_start_date, inference_end_date, lookback_days);
 
 -- Create a new table named auto_audience_segmentation_inference_15 by selecting all data from the auto_audience_segmentation_full_dataset table.
@@ -42,4 +45,7 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_auto_audience_segmentation_
     labels=[("org_unit", "development")]
   )
 AS
-SELECT DISTINCT * FROM `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`;
+SELECT 
+  DISTINCT * 
+FROM 
+  `{{project_id}}.{{dataset}}.auto_audience_segmentation_inference_15`;

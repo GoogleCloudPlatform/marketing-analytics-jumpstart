@@ -653,6 +653,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.churn_propensity_inference_3
  LAST_VALUE(checkouts_past_6_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_6_day, -- Get the latest value of checkouts_past_6_day for each user_pseudo_id
  LAST_VALUE(checkouts_past_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_7_day, -- Get the latest value of checkouts_past_7_day for each user_pseudo_id
  LAST_VALUE(checkouts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_8_14_day, -- Get the latest value of checkouts_past_8_14_day for each user_pseudo_id
+ LAST_VALUE(checkouts_past_15_30_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_15_30_day, -- Get the latest value of checkouts_past_15_30_day for each user_pseudo_id
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
 
