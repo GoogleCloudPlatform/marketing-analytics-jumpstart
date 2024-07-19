@@ -74,6 +74,17 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    cd ${SOURCE_ROOT}
    poetry env use python3
    ```
+
+1. Grant IAM permissions to your Account
+    Cloud Build Service Account
+    Dataform Editor
+    List services and read IAM Policies and configs
+    Owner
+    Service Account Admin
+    Service Account User
+    Storage Admin
+    View Service Accounts
+    Viewer
    
 
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
@@ -90,7 +101,7 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
 
 1. Review your Terraform version
 
-    Make sure you have installed 
+    Make sure you have installed your terraform version 1.5.7
 
 1. Run the following script to create a Terraform remote backend. 
 
