@@ -373,7 +373,7 @@ data "external" "ga4_measurement_properties" {
   # The count attribute specifies how many times the external data source should be executed.
   # This means that the external data source will be executed only if either the 
   # var.ga4_measurement_id or var.ga4_measurement_secret variable is not set.
-  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? 1 : 0
+  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null || var.ga4_measurement_id == "" || var.ga4_measurement_secret == "") ? 1 : 0
 
   depends_on = [
     module.project_services
@@ -396,6 +396,10 @@ module "secret_manager" {
       secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
       automatic_replication = true
     },
+  ]
+
+  depends_on = [
+    data.external.ga4_measurement_properties
   ]
 }
 
