@@ -165,7 +165,6 @@ pytest.ini
 # Terraform files
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
 
 # Cloud Function zip
 terraform/*.zip
