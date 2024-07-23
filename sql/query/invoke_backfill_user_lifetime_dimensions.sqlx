@@ -12,45 +12,81 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This SQL code defines a series of temporary tables to calculate and store user engagement metrics based on
+-- rolling window aggregations. These tables are then used to populate a target table with daily user engagement features.
+
 DECLARE max_date DATE;
 DECLARE min_date DATE;
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+-- Sets max_date to the latest event_date from the event table, minus an offset specified by the interval_max_date
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+-- Sets min_date to the earliest event_date from the event table, plus an offset specified by the interval_min_date
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
 
+-- This section determines the date range for analysis and creates a temporary table dates_interval with distinct date intervals.
 CREATE OR REPLACE TEMP TABLE dates_interval as (
-  SELECT DISTINCT 
+  SELECT DISTINCT
+    -- Select each distinct event_date as 'input_date', representing the current date in the analysis
     event_date as input_date,
+    -- Calculate the 'end_date' by subtracting a specified interval from the 'input_date'
     DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+  -- Filter event dates in the specified date range
   WHERE event_date BETWEEN min_date AND max_date
     ORDER BY input_date DESC
 );
 
+-- This code block creates a temporary table "user_dimensions_event_session_scoped" to store user-level dimensions.
+-- It retrieves the latest values for various user attributes based on the event timestamp.
+
 CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   SELECT DISTINCT
+  -- Uses the input_date from the dates_interval table as feature_date, representing the current date in the analysis.
   DI.input_date as feature_date,
+  -- The unique identifier for the user.
   user_pseudo_id,
+  -- The last recorded lifetime value revenue for the user.
   LAST_VALUE(user_ltv_revenue) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS user_ltv_revenue,
+  -- The last recorded traffic source medium for the user.
   LAST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_medium,
+  -- The last recorded traffic source name for the user.
   LAST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_name,
+  -- The last recorded traffic source for the user.
   LAST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS last_traffic_source_source,
+  -- Whether the user is new or existing based on the time difference between the event and their first touch timestamp.
   LAST_VALUE(CASE WHEN (TIMESTAMP_DIFF(event_timestamp, user_first_touch_timestamp, DAY) < 7) OR (user_first_touch_timestamp IS NULL) THEN 'new' ELSE 'existing' END) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS new_or_established_user,
+  -- The last recorded subcontinent for the user.
   LAST_VALUE(L.subcontinent) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_sub_continent,
+  -- The last recorded country for the user.
   LAST_VALUE(L.country) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_country,
+  -- The last recorded region for the user.
   LAST_VALUE(L.region) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_region,
+  -- The last recorded city for the user.
   LAST_VALUE(L.city) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_city,
+  -- The last recorded metro area for the user.
   LAST_VALUE(L.metro) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as geo_metro,
+  -- The first recorded traffic source medium for the user.
   FIRST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_medium,
+  -- The first recorded traffic source name for the user.
   FIRST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_name,
+  -- The first recorded traffic source for the user.
   FIRST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp ASC) AS first_traffic_source_source,
-  MAX(CASE WHEN user_id IS NOT NULL THEN TRUE ELSE FALSE END) OVER(PARTITION BY user_pseudo_id, DI.input_date  ORDER BY event_timestamp ASC) AS has_signed_in_with_user_id,
+  -- Indicates if the user has signed in with a user ID.
+  MAX(CASE WHEN user_id IS NOT NULL THEN TRUE ELSE FALSE END) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp ASC) AS has_signed_in_with_user_id,
+  -- The last recorded device category for the user.
   LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_category,
+  -- The last recorded mobile brand name for the user.
   LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_mobile_brand_name,
+  -- The last recorded mobile model name for the user.
   LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_mobile_model_name,
+  -- The last recorded device operating system for the user.
   LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_os,
+  -- The last recorded device language for the user.
   LAST_VALUE(language) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) AS device_language,
+  -- The last recorded web browser for the user.
   LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_web_browser,
+  -- The last recorded advertising ID for the user's device.
   LAST_VALUE(device_advertising_id) OVER(PARTITION BY user_pseudo_id, DI.input_date ORDER BY event_timestamp DESC) as device_advertising_id
+  -- Joins data from multiple tables based on common keys.
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.traffic_source` as T
   ON E.traffic_source_id = T.traffic_source_id
@@ -59,51 +95,87 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.location` as L
   ON E.location_id = L.location_id
   CROSS JOIN dates_interval as DI
+  -- Filters the data based on specified conditions.
   WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
   AND ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
-  
 );
 
+
+-- This code block creates a temporary table "events_users" that stores distinct user IDs and their corresponding feature dates.
+-- It joins data from the "event" table and a generated date array, filtering for events with valid session IDs.
 -- All users in the platform
 CREATE OR REPLACE TEMP TABLE events_users as (
   SELECT DISTINCT
+  -- The unique identifier for the user.
   Users.user_pseudo_id,
+  -- The user's actual ID (if available).
   Users.user_id,
+  -- The date of the event, used as the feature date.
   DI.event_date as feature_date
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
+  -- Joins data from the "event" table and a generated date array.
   CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
+  -- Filters for events with valid session IDs.
   WHERE ga_session_id IS NOT NULL
 );
 
 
+-- This code block inserts data into the specified table, combining information from the "events_users" table
+-- and the "user_dimensions_event_session_scoped" table.
+-- It aggregates user-level features for each user and date.
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   SELECT DISTINCT
+  -- The current timestamp.
   CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- The feature date.
   EU.feature_date,
+  -- The user's pseudo ID.
   EU.user_pseudo_id,
+  -- The user's actual ID (if available, otherwise NULL).
   MAX(EU.user_id) as user_id,
+  -- The user's lifetime value revenue.
   MAX(UDESS.user_ltv_revenue) as user_ltv_revenue,
+  -- The user's device category.
   MAX(UDESS.device_category) as device_category,
+  -- The user's device's mobile brand name.
   MAX(UDESS.device_mobile_brand_name) as device_mobile_brand_name,
+  -- The user's device's mobile model name.
   MAX(UDESS.device_mobile_model_name) as device_mobile_model_name,
+  -- The user's device's operating system.
   MAX(UDESS.device_os) as device_os,
+  -- The user's device's language setting.
   MAX(UDESS.device_language) as device_language,
+  -- The user's device's web browser.
   MAX(UDESS.device_web_browser) as device_web_browser,
+  -- The most frequent subcontinent associated with the user's activity.
   APPROX_TOP_COUNT(UDESS.geo_sub_continent, 1)[OFFSET(0)].value as geo_sub_continent,
+  -- The most frequent country associated with the user's activity.
   APPROX_TOP_COUNT(UDESS.geo_country, 1)[OFFSET(0)].value as geo_country,
+  -- The most frequent region associated with the user's activity.
   APPROX_TOP_COUNT(UDESS.geo_region, 1)[OFFSET(0)].value as geo_region,
+  -- The most frequent city associated with the user's activity.
   APPROX_TOP_COUNT(UDESS.geo_city, 1)[OFFSET(0)].value as geo_city,
+  -- The most frequent metro area associated with the user's activity.
   APPROX_TOP_COUNT(UDESS.geo_metro, 1)[OFFSET(0)].value as geo_metro,
+  -- The user's last recorded traffic source medium.
   MAX(UDESS.last_traffic_source_medium) as last_traffic_source_medium,
+  -- The user's last recorded traffic source name.
   MAX(UDESS.last_traffic_source_name) as last_traffic_source_name,
+  -- The user's last recorded traffic source.
   MAX(UDESS.last_traffic_source_source) as last_traffic_source_source,
+  -- The user's first recorded traffic source medium.
   MAX(UDESS.first_traffic_source_medium) as first_traffic_source_medium,
+  -- The user's first recorded traffic source name.
   MAX(UDESS.first_traffic_source_name) as first_traffic_source_name,
+  -- The user's first recorded traffic source.
   MAX(UDESS.first_traffic_source_source) as first_traffic_source_source,
+  -- Indicates if the user has ever signed in with a user ID.
   MAX(UDESS.has_signed_in_with_user_id) as has_signed_in_with_user_id
+  -- Joins data from the "events_users" and "user_dimensions_event_session_scoped" tables.
   FROM events_users EU
   INNER JOIN user_dimensions_event_session_scoped UDESS
-  ON EU.user_pseudo_id = UDESS.user_pseudo_id AND EU.feature_date = UDESS.feature_date --AND EU.user_id = UDESS.user_id
+  ON EU.user_pseudo_id = UDESS.user_pseudo_id AND EU.feature_date = UDESS.feature_date
+  -- Groups the results by feature date and user pseudo ID.
   GROUP BY EU.feature_date, EU.user_pseudo_id
 ;

@@ -12,6 +12,10 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This code snippet is a BigQuery stored procedure designed to prepare data for explaining value-based bidding (VBB) results. 
+-- It takes a user-specified date range and extracts relevant data from an aggregated VBB table (aggregated_vbb) to create several tables for reporting purposes.
+
+-- Declaring Variables: The code declares several variables to store dates and table names.
 DECLARE explain_start_date DATE DEFAULT NULL;
 DECLARE explain_end_date DATE DEFAULT NULL;
 DECLARE start_date DATE DEFAULT NULL;
@@ -19,6 +23,8 @@ DECLARE end_date DATE DEFAULT NULL;
 DECLARE max_date DATE;
 DECLARE min_date DATE;
 
+-- Validating User-Specified Dates: The code checks if the user-provided start and end dates are valid and within the range of dates in the aggregated_vbb table. 
+-- If not, it adjusts them to the nearest valid dates.
 -- explain_start_date, explain_end_date: Variables to store the start and end dates for the explanation period.
 -- start_date, end_date: Variables to store the start and end dates specified by the user.
 -- max_date, min_date: Variables to store the maximum and minimum dates in the aggregated_vbb table.
@@ -44,6 +50,7 @@ ELSE
 END IF;
 
 -- Volume of conversions actions table to be used for reporting
+-- Stores the daily volume of different conversion actions (e.g., first visits, product page visits, purchases) within the specified date range.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{volume_table_name}}`
 AS
 SELECT DISTINCT
@@ -59,10 +66,12 @@ SELECT DISTINCT
   Purchase_Product
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+-- Filters the data to include only records within the specified date range.
 WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
 ;
 
 -- Daily aggregated volume of conversions actions table to be used for reporting
+-- Provides the same information as the volume table but with a different structure.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{daily_volume_view_name}}`
 AS
 SELECT DISTINCT
@@ -78,10 +87,12 @@ SELECT DISTINCT
   Purchase_Product
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+-- Filters the data to include only records within the specified date range.
 WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
 ;
 
 -- Weekly aggregated volume of conversions actions table to be used for reporting
+-- Aggregates the conversion actions by week, providing weekly totals for each action.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{weekly_volume_view_name}}`
 AS
 SELECT DISTINCT
@@ -110,6 +121,7 @@ SELECT DISTINCT
   Purchase_Product
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+-- Filters the data to include only records within the specified date range.
 WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
 )
 ;
@@ -128,5 +140,6 @@ SELECT DISTINCT
   CORR(Purchase_Product, Added_Payment_Info) as Added_Payment_Info_corr_Purchase_Product
 FROM
   `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+-- Filters the data to include only records within the specified date range.
 WHERE {{datetime_column}} BETWEEN explain_start_date AND explain_end_date
 ;

@@ -80,7 +80,7 @@ def subscribe(cloud_event):
     'log_db_dataset': log_db_dataset
   }
   flex_template_param = dataflow_v1beta3.LaunchFlexTemplateParameter(
-    job_name=f"activation-pipline-{activation_type.replace('_','-')}-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+    job_name=f"activation-pipeline-{activation_type.replace('_','-')}-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
     container_spec_gcs_path=template_file_gcs_location,
     environment=environment_param,
     parameters=parameters

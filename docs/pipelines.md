@@ -56,9 +56,40 @@ In essence, this architecture provides a streamlined and efficient way to make p
 
 ## Who is this solution for?
 
+We heard common stories from customers who were struggling with three frequent objectives:
+
+1. **Data Scientists and ML Engineers looking into implement an end-to-end production ready, flexible and customizable ML pipelines to train and serve models to solve for common marketing analytics use cases: purchase propensity, customer lifetime value, audience segmentation, churn propensity**
+    - These teams need a framework that can help them to quickly and easily deploy and scale ML models.
+    - The ML Pipeline provides a framework that can be used to build and deploy ML models. This framework can help to reduce the time and effort required to deploy and scale ML models.
+
+2. **Data Scientist establishing thought leadership and guidelines for choosing the machine learning model techniques and the decision making process**
+    - These Data Scientists needs a library that can help them perform feature selection, feature transformation, hyperparameter tuning, model architecture search, model evaluation, model versioning, and select the best model for prediction.
+    - The ML Pipelines provides a library that can be used to evaluate and compare different ML models. This library can help to select the best ML model for a given use case.
+
+3. **ML Engineers building automated production ready MLOps pipelines and processes using features from data extracted from the Marketing Data Warehouse**
+    - These teams need a platform and a library that can help them to automate the deployment and management of ML models.
+    - The ML Pipelines provides reusable components and mechanisms to recompile pipelines that are used to automate the deployment of training and prediction pipelines of the ML models. This platform can help to improve the efficiency and reproducibility of ML models training and prediction.
+
 ## Benefits of this solution
 
+After deploying the ML Pipelines component, Marketing Technology teams get the following benefits:
+
+1. Understand and apply machine learning design principles and MLOps practices using a robust ML platform via Vertex AI.
+2. Ingest features from the Feature Store built in BigQuery and store batch predictions back in BigQuery via native integrations.
+3. Explainability of model performance by providing evaluation metrics and feature importance for further investigation.
+4. Simplified pipelines orchestration and manual reproducibility via an unified ML platform, Vertex AI.
+5. Reusable components to implement new use cases in a shorter time.
+
 ## Advantages of the solution
+
+In comparison to other approaches, ML Pipelines solution offers the following advantages:
+
+* Provide configurations to customize and build parsimonious models by automatic identifying the right number of clusters for the use cases involving clustering techniques
+    * Enabling choosing between statistical, Tree-based, Dense Neural Networks and Attention based modelling techniques.
+* Solve common modelling and deployemnt challenges by providing a quick to deploy library around Vertex AI by mkaing the MLOps processes and tasks easier to be implemented by the adoption of Tabular Workflows and other Vertex AI components including: Templating, scheduler, model metadata, model registry ad integration with BigQuery.
+    * Manage feature engineering, training and inference pipelines via configuration files or via the Vertex AI UI.
+    * Obtaining explainability and transparency on feature importance and model evaluation metrics via the Vertex AI UI.
+* ML Pipelnes expedites modelling time and provide a quicker time to value for more sophisticated production-level predictive and generative ai modelling by establishing a common code foundation in place that enables reuse of pipelines to solve marketing use cases and obtain insights.
 
 ## ML Pipelines used by each Use Case
 
@@ -70,7 +101,7 @@ In essence, this architecture provides a streamlined and efficient way to make p
 
 ## Manually Triggering ML Pipelines
 
-## Customize Custom Training and Prediction Pipelines
+## Customize Training and Prediction Pipelines
 
 ## Customize Tabular Workflows Pipelines
 

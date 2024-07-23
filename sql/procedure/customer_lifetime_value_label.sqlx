@@ -12,66 +12,90 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-# Run these windows aggregations every day. For each date in training and inference date ranges.
-## Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+-- Run these windows aggregations every day. For each date in training and inference date ranges.
+-- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
-## Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
+-- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
 CREATE OR REPLACE TEMP TABLE future_revenue_per_user AS (
   SELECT DISTINCT
+    -- User's unique identifier
     user_pseudo_id,
+    -- Calculate the maximum of today's revenue and user LTV revenue for the same day
     MAX(GREATEST(
+      -- Sum of distinct purchase revenue for the same day
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Maximum of distinct user LTV revenue for the same day
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_today,
+    -- Calculate the maximum revenue for the next 30 days
     MAX(GREATEST(
+      -- Sum of distinct purchase revenue for the next 30 days
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Maximum of distinct user LTV revenue for the next 30 days
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_30,
+    -- Calculate the maximum revenue for the next 90 days
     MAX(GREATEST(
+      -- Sum of distinct purchase revenue for the next 90 days
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Maximum of distinct user LTV revenue for the next 90 days
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_90,
+    -- Calculate the maximum revenue for the next 180 days
     MAX(GREATEST(
+      -- Sum of distinct purchase revenue for the next 180 days
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Maximum of distinct user LTV revenue for the next 180 days
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_180
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
+  -- Filter events within the specified date range
   WHERE event_date BETWEEN input_date AND end_date
+  -- Ensure valid events
   AND E.ga_session_id IS NOT NULL
   AND ecommerce.transaction_id IS NOT NULL 
   AND ecommerce.transaction_id <> '(not set)'
   AND D.device_os IS NOT NULL
+  -- Grouping by user psedup id
   GROUP BY user_pseudo_id
 );
 
-## All users in the platform
+-- All users in the platform
 CREATE OR REPLACE TEMP TABLE events_users_days as (
   SELECT DISTINCT
+  -- User's unique identifier
   Users.user_pseudo_id
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON Users.device_type_id = D.device_type_id
   WHERE Users.ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
+  -- Ensure events fall within the defined date range
   AND Users.event_date BETWEEN input_date AND end_date
 );
 
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
+    -- Current timestamp of the processing
     CURRENT_TIMESTAMP() AS processed_timestamp,
-    input_date as feature_date,
+    -- Date for which the feature is being calculated
+    input_date AS feature_date,
+    -- User's pseudo ID
     A.user_pseudo_id,
-    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_30,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_30_days,
-    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_90,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_90_days,
-    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_180,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_180_days,
+    -- Predicted LTV revenue for the next 30 days
+    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_30, 0.0) - COALESCE(B.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_30_days,
+    -- Predicted LTV revenue for the next 90 days
+    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_90, 0.0) - COALESCE(B.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_90_days,
+    -- Predicted LTV revenue for the next 180 days
+    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_180, 0.0) - COALESCE(B.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_180_days
     FROM events_users_days AS A
     LEFT JOIN future_revenue_per_user AS B
     ON A.user_pseudo_id = B.user_pseudo_id;

@@ -16,47 +16,81 @@
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
+-- Creating a temporary table `dates_interval` to store the start and end dates of the analysis period.
 CREATE OR REPLACE TEMP TABLE dates_interval as (
 SELECT 
-    input_date,
-    end_date
+    input_date, -- The starting date of the analysis period.
+    end_date -- The ending date of the analysis period.
 );
 
 -- What is the user-per-day session-scoped engagement?
+-- Creating a temporary table `engagement_per_day_session_scoped` to store user engagement metrics calculated at a session level and then aggregated to the user-day level.
 CREATE OR REPLACE TEMP TABLE engagement_per_day_session_scoped as (
 SELECT
+     -- The unique identifier of the user.
     user_pseudo_id,
+    -- The date of the analysis.
     feature_date,
+    -- Calculation of the engagement rate for the user on the specified date.
+    -- The engagement rate (ratio of engaged sessions to total sessions).
     SAFE_DIVIDE(
+        -- Number of distinct engaged sessions.
         COUNT(distinct case when session_engaged = true then concat(user_pseudo_id,session_id) end),
+        -- Total number of sessions.
         COUNT(DISTINCT session_id)
     ) AS engagement_rate,
+    -- The number of engaged sessions per user on the specified date.
     COUNT(distinct case when session_engaged = true then concat(user_pseudo_id,session_id) end) as engaged_sessions_per_user,
+    -- Calculation of the session conversion rate for the user on the specified date.
+    -- The session conversion rate for the user on the specified date.
     SAFE_DIVIDE(
+        -- Count of sessions with conversions.
         COUNTIF(session_conversion = true),
+        -- Total number of distinct sessions.
         COUNT(DISTINCT session_id)
     ) AS session_conversion_rate,
+    -- The number of bounced sessions for the user on the specified date.
     COUNT(distinct case when session_engaged = false then concat(user_pseudo_id,session_id) end) as bounces,
+    -- Calculation of the bounce rate for the user on the specified date.
+    -- The total number of sessions per user on the specified date.
     SAFE_DIVIDE(
+        -- Count of bounced sessions.
         COUNT(distinct case when session_engaged = false then concat(user_pseudo_id,session_id) end),
+        -- Total number of distinct sessions.
         COUNT(DISTINCT session_id)
     ) as bounce_rate_per_user,
+    -- The total number of sessions per user on the specified date.
     COUNT(DISTINCT session_id) AS sessions_per_user,
+    -- The average number of page views per session for the user on the specified date.
     IFNULL(AVG(page_views_per_session),0) as avg_views_per_session,
+    -- The total engagement time in seconds for the user on the specified date.
     IFNULL(ROUND(SUM(engagement_time_msec)/1000),0) as sum_engagement_time_seconds,
+     -- The average engagement time in seconds for the user on the specified date.
     IFNULL(ROUND(AVG(engagement_time_msec)/1000),0) as avg_engagement_time_seconds,
+    -- The number of new visits for the user on the specified date.
     COUNTIF(new_visitor = true) as new_visits,
+    -- The number of returning visits for the user on the specified date.
     COUNTIF(returning_visitor = true) as returning_visits
 FROM ( 
+    -- Subquery to retrieve session-level data for each user.
     SELECT
+        -- The unique identifier of the user.
         E.user_pseudo_id,
+        -- The date of the analysis.
         input_date as feature_date,
+        -- The Google Analytics session identifier.
         E.ga_session_id as session_id,
+        -- A flag indicating whether the session was engaged (true) or not (false).
         IFNULL(MAX(S.session_engaged), false) as session_engaged,
+        -- The total engagement time in milliseconds for the session.
         SUM(S.total_engagement_time_secs) as engagement_time_msec,
+        -- A flag indicating whether the session was a new visit (true) or not (false).
         MAX(S.new_visitor) as new_visitor,
+        -- A flag indicating whether the session was a returning visit (true) or not (false).
         MAX(S.returning_visitor) as returning_visitor,
+        -- A flag indicating whether the session resulted in a conversion (true) or not (false).
         MAX(CASE WHEN E.event_name='purchase' AND E.ecommerce.transaction_id IS NOT NULL THEN true ELSE false END) as session_conversion,
+        -- The number of page views within the session.
         COUNTIF(E.event_name='page_view') as page_views_per_session
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
     INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.session` as S
@@ -64,83 +98,133 @@ FROM (
     INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
     ON E.device_type_id = D.device_type_id
     CROSS JOIN dates_interval as DI
+    -- Filtering events within the analysis period.
     WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
         AND E.ga_session_id IS NOT NULL
         AND D.device_os IS NOT NULL
+    -- Grouping by user pseudo identifier, feature date and session
     GROUP BY
         user_pseudo_id,
         feature_date,
         session_id)
+-- Grouping by user pseudo identifier and feature date
 GROUP BY user_pseudo_id, feature_date
 );
 
 -- Has the user purchased before, another day?
+-- Creating a temporary table `returning_customers` to store information about users who have made multiple purchases.
 CREATE OR REPLACE TEMP TABLE returning_customers as (
 SELECT 
+    -- The unique identifier of the user.
     user_pseudo_id, 
+    -- The date of the analysis.
     feature_date, 
+    -- The maximum unique purchase rank for the user on the specified date.
     MAX(unique_purchase) as unique_purchase  
 FROM (
+    -- Subquery to calculate the unique purchase rank for each user.
     SELECT 
+        -- The unique identifier of the user.
         user_pseudo_id, 
+        -- The date of the analysis.
         input_date as feature_date, 
+        -- Ranking purchase events for each user based on event timestamp in ascending order.
         RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
+    -- Joining with the dates_interval table to filter data based on the analysis period.
     CROSS JOIN dates_interval as DI
+    -- Filtering events within the analysis period.
     WHERE event_date BETWEEN DI.end_date AND DI.input_date
+    -- Filtering only purchase events.
     AND event_name = 'purchase'
+     -- Grouping results by user identifier, analysis date, and event timestamp.
     GROUP BY user_pseudo_id, feature_date, event_timestamp
 )
+-- Filtering for users who have made at least two different purchases.
 WHERE unique_purchase >= 2
+-- Grouping final results by user identifier and analysis date.
 GROUP BY user_pseudo_id, feature_date
 );
+
+-- Creating a temporary table `non_returning_customers` to store information about users who have made only one purchase or no purchases at all.
 CREATE OR REPLACE TEMP TABLE non_returning_customers as ( 
 SELECT
+        -- The unique identifier of the user.
         GA.user_pseudo_id,
+        -- The date of the analysis.
         input_date as feature_date
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
 CROSS JOIN dates_interval as DI
+-- Filtering events within the analysis period.
 WHERE event_date BETWEEN DI.end_date AND DI.input_date
+-- Grouping results by user identifier and analysis date.
 GROUP BY user_pseudo_id, feature_date
+-- Filtering out users who have made multiple purchases.
 EXCEPT DISTINCT SELECT user_pseudo_id, feature_date FROM returning_customers as RC
 );
+
+-- Creating a temporary table `combined` to combine returning and non-returning customer data.
 CREATE OR REPLACE TEMP TABLE combined as (
 SELECT 
+    -- The unique identifier of the user.
     user_pseudo_id, 
+    -- The date of the analysis.
     feature_date, 
+    -- The unique purchase rank for the user on the specified date.
     unique_purchase
 FROM returning_customers  
 UNION ALL
 SELECT 
+    -- The unique identifier of the user.
     user_pseudo_id, 
+    -- The date of the analysis.
     feature_date, 
+    -- Assigning a unique_purchase value of -1 to indicate non-returning customers.
     -1
     FROM non_returning_customers 
+-- Grouping final results by user identifier and analysis date.
 GROUP BY user_pseudo_id, feature_date
 );
+
+-- Creating a temporary table `repeated_purchase` to store the count of previous purchases for each user on each day.
 CREATE OR REPLACE TEMP TABLE repeated_purchase as (
 SELECT
+    -- The unique identifier of the user.
     user_pseudo_id,
+    -- The date of the analysis.
     feature_date, 
+    -- Counting previous purchases for each user based on the unique_purchase rank.
     CASE WHEN unique_purchase >= 0 THEN unique_purchase ELSE 0 END AS how_many_purchased_before
 FROM 
     combined
 );
 
 -- Has the user abandoned any cart by day?
+-- Creating a temporary table `returned_cart_to_purchase` to store information about users who initiated the checkout process but didn't complete a purchase.
 CREATE OR REPLACE TEMP TABLE returned_cart_to_purchase as (
 SELECT 
+-- The unique identifier of the user.
 user_pseudo_id, 
+-- The date of the analysis.
 feature_date,
+-- The maximum session order for the user on the specified date.
 MAX(session_order) as max_session_order_in_day, 
+-- A flag indicating whether the user initiated checkout at least once that day.
 CASE WHEN MAX(begun_checkout) >= 1 THEN True ELSE False END as begun_checkout, 
+-- A flag indicating whether the user completed a purchase at least once that day.
 CASE WHEN MAX(event_order) >= 2 THEN True ELSE False END as has_purchased  
 FROM (
+    -- Subquery to retrieve user activity related to 'begin_checkout' and 'purchase' events.
     SELECT 
+        -- The unique identifier of the user.
         GA.user_pseudo_id, 
+        -- The date of the analysis.
         input_date as feature_date,
+        -- The maximum session number for the user on the specified date.
         MAX(S.session_number) as session_order,
+        -- A flag indicating whether the 'begin_checkout' event occurred in the session.
         CASE WHEN MAX(event_name) = 'begin_checkout' THEN 1 ELSE 0 END as begun_checkout,
+        -- Ranking events for each user based on event timestamp in ascending order.
         RANK() OVER (PARTITION BY GA.user_pseudo_id ORDER BY event_timestamp ASC ) AS event_order
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
     INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.session` as S
@@ -148,19 +232,29 @@ FROM (
     INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
     ON GA.device_type_id = D.device_type_id
     CROSS JOIN dates_interval as DI
+    -- Filtering events within the analysis period.
     WHERE event_date BETWEEN DI.end_date AND DI.input_date
+        -- Filtering only 'begin_checkout' and 'purchase' events.
         AND event_name IN ('begin_checkout','purchase')
+        -- Filtering events with valid Google Analytics session identifiers.
         AND GA.ga_session_id IS NOT NULL
+        -- Filtering events with valid device operating systems.
         AND D.device_os IS NOT NULL
+    -- Grouping results by user identifier, analysis date, and event timestamp.
     GROUP BY GA.user_pseudo_id, feature_date, GA.event_timestamp
 )
+-- Grouping final results by user identifier and analysis date.
 GROUP BY user_pseudo_id, feature_date
 );
 
+-- Creating a temporary table `cart_to_purchase` to store a flag indicating whether a user abandoned their cart on a given day.
 CREATE OR REPLACE TEMP TABLE cart_to_purchase AS (
 SELECT
+    -- The unique identifier of the user.
     GA.user_pseudo_id, 
+    -- The date of the analysis.
     input_date as feature_date,
+    -- Determining if a cart was abandoned based on checkout initiation and purchase completion.
     CASE WHEN (MAX(r.begun_checkout) AND NOT MAX(r.has_purchased)) THEN True ELSE False END as has_abandoned_cart,
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` AS GA
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
@@ -168,149 +262,169 @@ INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 CROSS JOIN dates_interval as DI
 LEFT JOIN returned_cart_to_purchase AS r
 ON r.user_pseudo_id = GA.user_pseudo_id AND r.feature_date = DI.input_date
-WHERE event_date BETWEEN DI.end_date AND DI.input_date
-    AND GA.ga_session_id IS NOT NULL
-    AND D.device_os IS NOT NULL
-GROUP BY user_pseudo_id, feature_date
+WHERE event_date BETWEEN DI.end_date AND DI.input_date -- Filtering events within the analysis period.
+    AND GA.ga_session_id IS NOT NULL -- Filtering events with valid Google Analytics session identifiers.
+    AND D.device_os IS NOT NULL -- Filtering events with valid device operating systems.
+GROUP BY user_pseudo_id, feature_date -- Grouping final results by user identifier and analysis date.
 );
 
 -- What is the user-events-per-day event-scoped metrics performance?
+-- Creating a temporary table `user_events_per_day_event_scoped` to store various user-level event metrics calculated on a daily basis.
 CREATE OR REPLACE TEMP TABLE user_events_per_day_event_scoped as (
 SELECT
+    -- The unique identifier of the user.
     user_pseudo_id,
+    -- The date of the analysis.
     feature_date,
-    IFNULL(SUM(add_to_cart_per_session),0) as add_to_carts,
-    IFNULL(SAFE_DIVIDE(
-        SUM(add_to_cart_per_session),
-        SUM(view_item_per_session)
-    ), 0.0) AS cart_to_view_rate, 
-    IFNULL(SUM(checkouts_per_session),0) AS checkouts,
-    IFNULL(SUM(ecommerce_purchases_per_session),0) AS ecommerce_purchases,
-    IFNULL(SUM(ecommerce_quantity_per_session),0) AS ecommerce_quantity,
-    IFNULL(SUM(ecommerce_revenue_per_session),0) AS ecommerce_revenue,
-    --IFNULL(SUM(item_discount_per_session),0) AS item_discount_amount,
-    IFNULL(SUM(item_revenue_per_session),0.0) AS item_revenue,
-    IFNULL(SUM(item_quantity_per_session),0) AS item_quantity,
-    IFNULL(SUM(item_refund_amount_per_session),0.0) AS item_refund_amount,
-    IFNULL(SUM(item_view_events_per_session),0) AS item_view_events,
-    IFNULL(SUM(items_clicked_in_promotion_per_session),0) AS items_clicked_in_promotion,
-    IFNULL(SUM(items_clicked_in_list_per_session),0) AS items_clicked_in_list,
-    IFNULL(SUM(items_checked_out_per_session),0) AS items_checked_out,
-    IFNULL(SUM(items_added_to_cart_per_session),0) AS items_added_to_cart,
-    IFNULL(SUM(item_list_click_events_per_session),0) AS item_list_click_events,
-    IFNULL(SUM(item_list_view_events_per_session),0) AS item_list_view_events,
-    IFNULL(SUM(purchase_revenue_per_session),0.0) AS purchase_revenue,
-    IFNULL(SAFE_DIVIDE(
-        SUM(user_who_purchased_per_session),
-        SUM(user_who_viewed_items_per_session)
-    ), 0.0) AS purchase_to_view_rate,
-    IFNULL(SUM(refunds_per_session),0.0) AS refunds,
-    IFNULL(SAFE_DIVIDE(
-        SUM(transactions_per_session),
-        SUM(purchasers_per_session)
-    ), 0.0) AS transactions_per_purchaser,
-    IFNULL(SAFE_DIVIDE(
-        SUM(ecommerce_purchases_per_session),
-        COUNT(DISTINCT event_timestamp))
-        ,0.0) AS user_conversion_rate
+    IFNULL(SUM(add_to_cart_per_session),0) as add_to_carts, -- The total number of 'add_to_cart' events for the user on the specified date.
+    IFNULL(SAFE_DIVIDE( -- Calculation of the cart to view rate for the user on the specified date.
+        SUM(add_to_cart_per_session), -- The total number of 'add_to_cart' events for the user.
+        SUM(view_item_per_session) -- The total number of 'view_item' events for the user.
+    ), 0.0) AS cart_to_view_rate, -- The cart to view rate (ratio of 'add_to_cart' events to 'view_item' events).
+    IFNULL(SUM(checkouts_per_session),0) AS checkouts, -- The total number of 'begin_checkout' events for the user on the specified date.
+    IFNULL(SUM(ecommerce_purchases_per_session),0) AS ecommerce_purchases, -- The total number of successful 'purchase' events for the user on the specified date.
+    IFNULL(SUM(ecommerce_quantity_per_session),0) AS ecommerce_quantity, -- The total quantity of items purchased by the user on the specified date.
+    IFNULL(SUM(ecommerce_revenue_per_session),0) AS ecommerce_revenue, -- The total revenue generated by the user from 'purchase' events on the specified date.
+    IFNULL(SUM(item_revenue_per_session),0.0) AS item_revenue, -- The total revenue generated from item purchases by the user on the specified date.
+    IFNULL(SUM(item_quantity_per_session),0) AS item_quantity, -- The total quantity of items purchased by the user on the specified date.
+    IFNULL(SUM(item_refund_amount_per_session),0.0) AS item_refund_amount, -- The total refund amount for items purchased by the user on the specified date.
+    IFNULL(SUM(item_view_events_per_session),0) AS item_view_events, -- The total number of 'view_item' events for the user on the specified date.
+    IFNULL(SUM(items_clicked_in_promotion_per_session),0) AS items_clicked_in_promotion, -- The total number of items clicked within promotions by the user on the specified date.
+    IFNULL(SUM(items_clicked_in_list_per_session),0) AS items_clicked_in_list, -- The total number of items clicked within lists by the user on the specified date.
+    IFNULL(SUM(items_checked_out_per_session),0) AS items_checked_out, -- The total number of items checked out by the user on the specified date.
+    IFNULL(SUM(items_added_to_cart_per_session),0) AS items_added_to_cart, -- The total number of items added to the cart by the user on the specified date.
+    IFNULL(SUM(item_list_click_events_per_session),0) AS item_list_click_events, -- The total number of item list click events by the user on the specified date.
+    IFNULL(SUM(item_list_view_events_per_session),0) AS item_list_view_events, -- The total number of item list view events by the user on the specified date.
+    IFNULL(SUM(purchase_revenue_per_session),0.0) AS purchase_revenue, -- The total purchase revenue generated by the user on the specified date.
+    IFNULL(SAFE_DIVIDE( -- Calculation of the purchase to view rate for the user on the specified date.
+        SUM(user_who_purchased_per_session), -- The number of users who made purchases.
+        SUM(user_who_viewed_items_per_session) -- The number of users who viewed items.
+    ), 0.0) AS purchase_to_view_rate, -- The purchase to view rate (ratio of users who purchased to users who viewed items).
+    IFNULL(SUM(refunds_per_session),0.0) AS refunds, -- The total number of refund events for the user on the specified date.
+    IFNULL(SAFE_DIVIDE( -- Calculation of the transactions per purchaser rate for the user on the specified date.
+        SUM(transactions_per_session), -- The total number of transactions for the user on the specified date.
+        SUM(purchasers_per_session) -- The total number of purchasers for the user on the specified date.
+    ), 0.0) AS transactions_per_purchaser, -- The transactions per purchaser rate (ratio of transactions to purchasers).
+    IFNULL(SAFE_DIVIDE( -- Calculation of the user conversion rate for the user on the specified date.
+        SUM(ecommerce_purchases_per_session), -- The total number of successful 'purchase' events for the user on the specified date.
+        COUNT(DISTINCT event_timestamp) -- The total number of distinct events for the user on the specified date.
+    ), 0.0) AS user_conversion_rate -- The user conversion rate (ratio of successful 'purchase' events to total events).
 FROM (
+    -- Subquery to retrieve user event data and calculate metrics for each session.
     SELECT
+        -- The unique identifier of the user.
         user_pseudo_id,
+        -- The date of the analysis.
         input_date as feature_date,
+        -- The timestamp of the event.
         event_timestamp,
+        -- The Google Analytics session identifier.
         ga_session_id as session_id,
+        -- The number of 'add_to_cart' events within the session.
         COUNTIF(event_name='add_to_cart') as add_to_cart_per_session,
-        COUNTIF(event_name='view_item') as view_item_per_session,
-        COUNTIF(event_name='begin_checkout') as checkouts_per_session,
-        COUNTIF(event_name='purchase' AND ecommerce.transaction_id IS NOT NULL) as ecommerce_purchases_per_session,
-        SUM(CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.total_item_quantity ELSE 0 END) as ecommerce_quantity_per_session,
-        SUM(CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.purchase_revenue_in_usd ELSE 0 END) as ecommerce_revenue_per_session,
-        --SUM((select SUM(discount*quantity) from unnest(items) where event_name = 'purchase' AND ecommerce.transaction_id IS NOT NULL AND discount IS NOT NULL)) as item_discount_per_session,
-        SUM((select SUM(item_revenue) from unnest(items) where event_name = 'purchase' AND ecommerce.transaction_id IS NOT NULL AND item_revenue IS NOT NULL)) as item_revenue_per_session,
-        SUM((select SUM(quantity) from unnest(items) where event_name = 'purchase' AND ecommerce.transaction_id IS NOT NULL AND quantity IS NOT NULL)) as item_quantity_per_session,
-        SUM((select item_refund from unnest(items) where event_name = 'purchase' AND ecommerce.transaction_id IS NOT NULL AND item_refund IS NOT NULL)) as item_refund_amount_per_session,
-        COUNTIF(event_name='view_item') as item_view_events_per_session,
-        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='view_item' AND (promotion_id IS NOT NULL OR promotion_name IS NOT NULL))) as items_clicked_in_promotion_per_session,
-        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='click' AND (item_list_id IS NOT NULL OR item_list_name IS NOT NULL))) as items_clicked_in_list_per_session,
-        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='begin_checkout' AND item_id IS NOT NULL)) as items_checked_out_per_session,
-        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='add_to_cart' AND item_id IS NOT NULL)) as items_added_to_cart_per_session,
-        SUM((select COUNT(DISTINCT item_list_id) from unnest(items) where event_name='click' AND (item_list_id IS NOT NULL OR item_list_name IS NOT NULL))) as item_list_click_events_per_session,
-        SUM((select COUNT(DISTINCT item_list_id) from unnest(items) where event_name='view_item_list' AND (item_list_id IS NOT NULL OR item_list_name IS NOT NULL))) as item_list_view_events_per_session,
-        (SUM(CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.purchase_revenue_in_usd ELSE 0.0 END) - SUM(CASE WHEN event_name='refund' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.refund_value_in_usd ELSE 0.0 END)) as purchase_revenue_per_session,
-        COUNT(DISTINCT CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN user_pseudo_id END) as user_who_purchased_per_session,
-        COUNT(DISTINCT CASE WHEN event_name='view_item' THEN user_pseudo_id END) as user_who_viewed_items_per_session,
-        SUM(CASE WHEN event_name='refund' AND ecommerce.transaction_id IS NOT NULL THEN 1 ELSE 0 END) as refunds_per_session,
-        COUNT(DISTINCT CASE WHEN ecommerce.transaction_id IS NOT NULL THEN ecommerce.transaction_id END) as transactions_per_session,
-        COUNT(DISTINCT CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN user_pseudo_id END) as purchasers_per_session,
+        COUNTIF(event_name='view_item') as view_item_per_session, -- The number of 'view_item' events within the session.
+        COUNTIF(event_name='begin_checkout') as checkouts_per_session, -- The number of 'begin_checkout' events within the session.
+        COUNTIF(event_name='purchase' AND ecommerce.transaction_id IS NOT NULL) as ecommerce_purchases_per_session, -- The number of successful 'purchase' events within the session.
+        SUM(CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.total_item_quantity ELSE 0 END) as ecommerce_quantity_per_session, -- The total quantity of items purchased within the session.
+        SUM(CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.purchase_revenue_in_usd ELSE 0 END) as ecommerce_revenue_per_session, -- The total revenue generated from 'purchase' events within the session.
+        SUM((select SUM(item_revenue) from unnest(items) where event_name = 'purchase' AND ecommerce.transaction_id IS NOT NULL AND item_revenue IS NOT NULL)) as item_revenue_per_session, -- The total revenue generated from item purchases within the session.
+        SUM((select SUM(quantity) from unnest(items) where event_name = 'purchase' AND ecommerce.transaction_id IS NOT NULL AND quantity IS NOT NULL)) as item_quantity_per_session, -- The total quantity of items purchased within the session.
+        SUM((select item_refund from unnest(items) where event_name = 'purchase' AND ecommerce.transaction_id IS NOT NULL AND item_refund IS NOT NULL)) as item_refund_amount_per_session, -- The total refund amount for items purchased within the session.
+        COUNTIF(event_name='view_item') as item_view_events_per_session, -- The number of 'view_item' events within the session.
+        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='view_item' AND (promotion_id IS NOT NULL OR promotion_name IS NOT NULL))) as items_clicked_in_promotion_per_session, -- The number of items clicked within promotions within the session.
+        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='click' AND (item_list_id IS NOT NULL OR item_list_name IS NOT NULL))) as items_clicked_in_list_per_session, -- The number of items clicked within lists within the session.
+        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='begin_checkout' AND item_id IS NOT NULL)) as items_checked_out_per_session, -- The number of items checked out within the session.
+        SUM((select COUNT(DISTINCT item_id) from unnest(items) where event_name='add_to_cart' AND item_id IS NOT NULL)) as items_added_to_cart_per_session, -- The number of items added to the cart within the session.
+        SUM((select COUNT(DISTINCT item_list_id) from unnest(items) where event_name='click' AND (item_list_id IS NOT NULL OR item_list_name IS NOT NULL))) as item_list_click_events_per_session, -- The number of item list click events within the session.
+        SUM((select COUNT(DISTINCT item_list_id) from unnest(items) where event_name='view_item_list' AND (item_list_id IS NOT NULL OR item_list_name IS NOT NULL))) as item_list_view_events_per_session, -- The number of item list view events within the session.
+        (SUM(CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.purchase_revenue_in_usd ELSE 0.0 END) - SUM(CASE WHEN event_name='refund' AND ecommerce.transaction_id IS NOT NULL THEN ecommerce.refund_value_in_usd ELSE 0.0 END)) as purchase_revenue_per_session, -- The purchase revenue generated within the session.
+        COUNT(DISTINCT CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN user_pseudo_id END) as user_who_purchased_per_session, -- The number of users who made purchases within the session.
+        COUNT(DISTINCT CASE WHEN event_name='view_item' THEN user_pseudo_id END) as user_who_viewed_items_per_session, -- The number of users who viewed items within the session.
+        SUM(CASE WHEN event_name='refund' AND ecommerce.transaction_id IS NOT NULL THEN 1 ELSE 0 END) as refunds_per_session, -- The number of refund events within the session.
+        COUNT(DISTINCT CASE WHEN ecommerce.transaction_id IS NOT NULL THEN ecommerce.transaction_id END) as transactions_per_session, -- The number of transactions within the session.
+        COUNT(DISTINCT CASE WHEN event_name='purchase' AND ecommerce.transaction_id IS NOT NULL THEN user_pseudo_id END) as purchasers_per_session -- The number of purchasers within the session.
     FROM
         `{{mds_project_id}}.{{mds_dataset}}.event` as E
     INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
         ON E.device_type_id = D.device_type_id
     CROSS JOIN dates_interval as DI
+    -- Filtering events within the analysis period.
     WHERE event_date BETWEEN DI.end_date AND DI.input_date
         AND E.ga_session_id IS NOT NULL
         AND D.device_os IS NOT NULL
+    -- Grouping by user pseudo identifier, session id, feature date, and event timestamp.
     GROUP BY
         E.user_pseudo_id,
         E.ga_session_id,
         feature_date,
         E.event_timestamp)
+    -- Grouping final results by user identifier and analysis date.
     GROUP BY user_pseudo_id, feature_date
 );
 
 -- All users in the platform
+-- Creating a temporary table `events_users_days` to store a distinct list of users who had events on each day.
 CREATE OR REPLACE TEMP TABLE events_users_days as (
 SELECT DISTINCT
-    Users.user_pseudo_id,
-    DI.input_date as feature_date
+    Users.user_pseudo_id, -- The unique identifier of the user.
+    DI.input_date as feature_date -- The date of the analysis.
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
     ON Users.device_type_id = D.device_type_id
 CROSS JOIN dates_interval as DI
+-- Filtering events within the analysis period.
 WHERE event_date BETWEEN DI.end_date AND DI.input_date
     AND Users.ga_session_id IS NOT NULL
     AND D.device_os IS NOT NULL
 );
 
+-- This code block combines data from multiple temporary tables to create a comprehensive view of user behavior and engagement metrics. The resulting data in the target table can be used for various analytical purposes, such as building machine learning models, generating reports, or understanding user segmentation based on their interactions with the platform.
+-- The code utilizes data from several temporary tables, each created and populated in previous steps of the SQL script. These tables are:
+-- events_users_days (EUD): Contains a distinct list of users (user_pseudo_id) and dates (feature_date) representing days when users had events.
+-- engagement_per_day_session_scoped (EPDSS): Stores user engagement metrics calculated at a session level and then aggregated to the user-day level. Metrics include engagement_rate, engaged_sessions_per_user, session_conversion_rate, bounces, etc.
+-- user_events_per_day_event_scoped (UEPDES): Contains user-level event metrics aggregated on a daily basis. Metrics include add_to_carts, cart_to_view_rate, checkouts, ecommerce_purchases, etc.
+-- repeated_purchase (R): Stores information about whether a user has made previous purchases, indicated by the how_many_purchased_before column.
+-- cart_to_purchase (CP): Contains a flag (has_abandoned_cart) indicating whether a user abandoned their cart on a given day.
+-- Inserting combined data from temporary tables into the target table.
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
 SELECT
-    CURRENT_TIMESTAMP() AS processed_timestamp,
-    EUD.feature_date,
-    EUD.user_pseudo_id,
-    EPDSS.engagement_rate,
-    EPDSS.engaged_sessions_per_user,
-    EPDSS.session_conversion_rate,
-    EPDSS.bounces,
-    EPDSS.bounce_rate_per_user,
-    EPDSS.sessions_per_user,
-    EPDSS.avg_views_per_session,
-    EPDSS.sum_engagement_time_seconds,
-    EPDSS.avg_engagement_time_seconds,
-    EPDSS.new_visits,
-    EPDSS.returning_visits,
-    UEPDES.add_to_carts,
-    UEPDES.cart_to_view_rate,
-    UEPDES.checkouts,
-    UEPDES.ecommerce_purchases,
-    UEPDES.ecommerce_quantity,
-    UEPDES.ecommerce_revenue,
-    UEPDES.item_revenue,
-    UEPDES.item_quantity,
-    UEPDES.item_refund_amount,
-    UEPDES.item_view_events,
-    UEPDES.items_clicked_in_promotion,
-    UEPDES.items_clicked_in_list,
-    UEPDES.items_checked_out,
-    UEPDES.items_added_to_cart,
-    UEPDES.item_list_click_events,
-    UEPDES.item_list_view_events,
-    UEPDES.purchase_revenue,
-    UEPDES.purchase_to_view_rate,
-    UEPDES.refunds,
-    UEPDES.transactions_per_purchaser,
-    UEPDES.user_conversion_rate,
-    R.how_many_purchased_before,
-    CP.has_abandoned_cart
+    CURRENT_TIMESTAMP() AS processed_timestamp, -- Timestamp when the data was processed.
+    EUD.feature_date, -- Date for which the metrics are being calculated.
+    EUD.user_pseudo_id, -- User ID.
+    EPDSS.engagement_rate, -- Engagement rate calculated by dividing the count of distinct engaged sessions by the count of all distinct sessions for the user on the day.
+    EPDSS.engaged_sessions_per_user, -- Number of distinct engaged sessions for the user on the day.
+    EPDSS.session_conversion_rate, -- Conversion rate per session for the user on the day.
+    EPDSS.bounces, -- Number of distinct sessions with no engagement (bounces) for the user on the day.
+    EPDSS.bounce_rate_per_user, -- Bounce rate for the user on the day.
+    EPDSS.sessions_per_user, -- Number of sessions for the user on the day.
+    EPDSS.avg_views_per_session, -- Average number of page views per session for the user on the day.
+    EPDSS.sum_engagement_time_seconds, -- Total engagement time for the user on the day, in seconds.
+    EPDSS.avg_engagement_time_seconds, -- Average engagement time for the user on the day, in seconds.
+    EPDSS.new_visits, -- Number of new visits for the user on the day.
+    EPDSS.returning_visits, -- Number of returning visits for the user on the day.
+    UEPDES.add_to_carts, -- Total number of 'add_to_cart' events for the user on the day.
+    UEPDES.cart_to_view_rate, -- Ratio of 'add_to_cart' events to 'view_item' events for the user on the day.
+    UEPDES.checkouts, -- Total number of 'begin_checkout' events for the user on the day.
+    UEPDES.ecommerce_purchases, -- Total number of successful 'purchase' events for the user on the day.
+    UEPDES.ecommerce_quantity, -- Total quantity of items purchased for the user on the day.
+    UEPDES.ecommerce_revenue, -- Total revenue generated from purchases for the user on the day.
+    UEPDES.item_revenue, -- Total revenue from individual items purchased for the user on the day.
+    UEPDES.item_quantity, -- Total quantity of items purchased for the user on the day.
+    UEPDES.item_refund_amount, -- Total amount of refunds for items purchased for the user on the day.
+    UEPDES.item_view_events, -- Total number of 'view_item' events for the user on the day.
+    UEPDES.items_clicked_in_promotion, -- Total number of items clicked from promotions by the user on the day.
+    UEPDES.items_clicked_in_list, -- Total number of items clicked from lists by the user on the day.
+    UEPDES.items_checked_out, -- Total number of items added to checkout by the user on the day.
+    UEPDES.items_added_to_cart, -- Total number of items added to cart by the user on the day.
+    UEPDES.item_list_click_events, -- Total number of clicks on item lists by the user on the day.
+    UEPDES.item_list_view_events, -- Total number of item lists viewed by the user on the day.
+    UEPDES.purchase_revenue, -- Total purchase revenue for the user on the day.
+    UEPDES.purchase_to_view_rate, -- Ratio of 'purchase' events to 'view_item' events for the user on the day.
+    UEPDES.refunds, -- Total number of refunds initiated by the user on the day.
+    UEPDES.transactions_per_purchaser, -- Average number of transactions per purchaser for the user on the day.
+    UEPDES.user_conversion_rate, -- Conversion rate for the user on the day.
+    R.how_many_purchased_before, -- Number of previous purchases by the user before the current day.
+    CP.has_abandoned_cart -- Flag indicating if the user abandoned their cart on the day.
 FROM events_users_days EUD
 INNER JOIN engagement_per_day_session_scoped EPDSS
 ON EUD.user_pseudo_id = EPDSS.user_pseudo_id AND EUD.feature_date = EPDSS.feature_date
@@ -321,6 +435,7 @@ ON R.user_pseudo_id = EPDSS.user_pseudo_id AND R.feature_date = EPDSS.feature_da
 INNER JOIN cart_to_purchase CP
 ON CP.user_pseudo_id = EPDSS.user_pseudo_id AND CP.feature_date = EPDSS.feature_date;
 
+-- Using MERGE to update or insert into the target table
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
 ON I.feature_date = T.feature_date
@@ -441,4 +556,5 @@ WHEN NOT MATCHED THEN
      T.has_abandoned_cart)
 ;
 
+-- Count of unique users added to the target table
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);

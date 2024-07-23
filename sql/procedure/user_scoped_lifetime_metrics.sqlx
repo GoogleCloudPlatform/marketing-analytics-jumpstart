@@ -12,20 +12,30 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-## Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+-- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
-# Run these once each day.
-## Active users, Average daily purchasers, Average engagement time, Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, User engagement, WAU / MAU 
+-- Run these once each day.
+-- Active users, Average daily purchasers, Average engagement time, 
+-- Average engagement time per session, DAU / MAU, DAU / WAU, First time purchasers, 
+-- First-time purchaser conversion, First-time purchasers per new user, Max daily purchasers, 
+-- Min daily purchasers, New users, Returning users, Total purchasers, Total users, User conversion rate, 
+-- User engagement, WAU / MAU 
 CREATE OR REPLACE TEMP TABLE engagement as (
 SELECT 
-    user_pseudo_id,
-  ga_session_id as session_id, 
-  MAX(engagement_time_msec) as engagement_time_msec,
-  IFNULL(SUM(ecommerce.purchase_revenue_in_usd),0.0) as purchase_revenue_in_usd,
-  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) as has_invalid_transactions,
-  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) as converted_in_session,
+  -- User's pseudo ID.
+  user_pseudo_id,
+  -- Google Analytics session ID.
+  ga_session_id AS session_id, 
+  -- Maximum engagement time within each session.
+  MAX(engagement_time_msec) AS engagement_time_msec,
+  -- Total revenue per session, handling null values.
+  IFNULL(SUM(ecommerce.purchase_revenue_in_usd), 0.0) AS purchase_revenue_in_usd,
+  -- Flags sessions with potentially invalid purchase transactions (missing transaction IDs).
+  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ecommerce.transaction_id IS NULL) THEN TRUE ELSE FALSE END) AS has_invalid_transactions,
+  -- Flags sessions where a valid purchase occurred.
+  LOGICAL_OR(CASE WHEN (event_name='purchase' AND ga_session_id IS NOT NULL AND ecommerce.transaction_id IS NOT NULL AND ecommerce.transaction_id <> '(not set)') THEN TRUE ELSE FALSE END) AS converted_in_session,
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 ON E.device_type_id = D.device_type_id
@@ -35,8 +45,10 @@ WHERE E.ga_session_id IS NOT NULL
 GROUP BY user_pseudo_id, session_id
 );
 
+
 CREATE OR REPLACE TEMP TABLE revenue as (
 SELECT 
+  -- Sum of purchase revenue for each day.
   SUM(ecommerce.purchase_revenue_in_usd) as sum_revenue_per_day 
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
@@ -47,8 +59,10 @@ WHERE E.ga_session_id IS NOT NULL
 GROUP BY event_date
 );
 
+
 CREATE OR REPLACE TEMP TABLE users as (
 SELECT 
+  -- Count of distinct active users for each day.
   COUNT(DISTINCT CASE WHEN engagement_time_msec > 0 THEN user_pseudo_id END) as active_users 
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
@@ -57,11 +71,19 @@ WHERE D.device_os IS NOT NULL
   AND event_date BETWEEN end_date AND input_date
 );
 
+
 CREATE OR REPLACE TEMP TABLE first_purchasers as (
-  SELECT COUNT(user_pseudo_id) as first_time_purchasers
+  SELECT 
+    -- Count of first-time purchasers.
+    COUNT(user_pseudo_id) as first_time_purchasers
   FROM (
       SELECT 
-          user_pseudo_id, event_date, RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
+          -- User's pseudo ID.
+          user_pseudo_id,
+          -- Event date.
+          event_date,
+          -- Rank each purchase event for a user based on timestamp.
+          RANK() OVER (PARTITION BY user_pseudo_id ORDER BY event_timestamp ASC) AS unique_purchase
       FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
       INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
       ON E.device_type_id = D.device_type_id
@@ -73,9 +95,11 @@ CREATE OR REPLACE TEMP TABLE first_purchasers as (
   WHERE unique_purchase=1
 );
 
+
 CREATE OR REPLACE TEMP TABLE new_users_ as (
   SELECT 
-  COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
+    -- Count of distinct new users for each day.
+    COUNT(distinct case when event_name="first_visit" then user_pseudo_id end) as new_users 
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
@@ -84,89 +108,148 @@ CREATE OR REPLACE TEMP TABLE new_users_ as (
   AND E.event_date BETWEEN end_date AND input_date
   );
 
+
 CREATE OR REPLACE TEMP TABLE all_user_scoped_metrics as (
   SELECT
+    -- User's pseudo ID.
     user_pseudo_id, 
+    -- Event date.
     event_date, 
+    -- Event name.
     event_name,
-    ga_session_id as session_id,
-    FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-    INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-    ON E.device_type_id = D.device_type_id
-    WHERE ga_session_id IS NOT NULL
-    AND D.device_os IS NOT NULL
-    AND event_date BETWEEN end_date AND input_date
-    GROUP BY user_pseudo_id, session_id, event_date, event_name
+    -- Google Analytics session ID.
+    ga_session_id AS session_id,
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON E.device_type_id = D.device_type_id
+  WHERE ga_session_id IS NOT NULL
+  AND D.device_os IS NOT NULL
+  AND event_date BETWEEN end_date AND input_date
+  GROUP BY user_pseudo_id, session_id, event_date, event_name
   );
 
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT
+    -- Current timestamp when the query is executed.
     CURRENT_TIMESTAMP() AS processed_timestamp,
+    -- Feature date.
     input_date AS feature_date,
+    -- Count of unique users who made a valid purchase on the given day.
     COALESCE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),0) AS lifetime_purchasers_users,
+    -- Average daily purchasers.
     COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END),COUNT(DISTINCT event_date)),0.0) AS lifetime_average_daily_purchasers,
+    -- Maximum number of active users.
     COALESCE(MAX(active_users),0) AS lifetime_active_users,
+    -- Daily active users (DAU).
     COALESCE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),0.0) AS lifetime_DAU,
+    -- Monthly active users (MAU).
     COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH)),0.0) AS lifetime_MAU,
+    -- Weekly active users (WAU).
     COALESCE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK)),0.0) AS lifetime_WAU,
+    -- DAU / MAU ratio.
     COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH))),0.0) AS lifetime_dau_per_mau,
+    -- DAU / WAU ratio.
     COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),COUNT(DISTINCT event_date)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK))),0.0) AS lifetime_dau_per_wau,
+    -- WAU / MAU ratio.
     COALESCE(SAFE_DIVIDE(SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), WEEK)),SAFE_DIVIDE(MAX(active_users),DATE_DIFF(MAX(event_date), MIN(event_date), MONTH))),0.0) AS lifetime_wau_per_mau,
+    -- Total engagement time in seconds.
     COALESCE(ROUND(SUM(engagement_time_msec)/1000),0) AS lifetime_users_engagement_duration_seconds,
+    -- Average engagement time per user.
     COALESCE(SAFE_DIVIDE(ROUND(SUM(engagement_time_msec)/1000),MAX(active_users)),0.0) AS lifetime_average_engagement_time,
+    -- Average engagement time per session.
     COALESCE(SAFE_DIVIDE((ROUND(SUM(engagement_time_msec)/1000)),COUNT(e.session_id)),0.0) AS lifetime_average_engagement_time_per_session,
+    -- Average number of sessions per user.
     COALESCE(SAFE_DIVIDE(COUNT(DISTINCT e.session_id),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS lifetime_average_sessions_per_user,
-    COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END)),0.0) AS lifetime_ARPPU,
-    COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),MAX(active_users)),0.0) AS lifetime_ARPU,
-    COALESCE(SAFE_DIVIDE(SUM(purchase_revenue_in_usd),COUNT(DISTINCT event_date)),0.0) AS lifetime_average_daily_revenue,
+    -- Average revenue per paying user (ARPPU).
+    COALESCE(SAFE_DIVIDE(SUM(e.purchase_revenue_in_usd),COUNT(DISTINCT CASE WHEN (event_name='purchase' AND NOT e.has_invalid_transactions) THEN e.user_pseudo_id END)),0.0) AS lifetime_ARPPU,
+    -- Average revenue per user (ARPU).
+    COALESCE(SAFE_DIVIDE(SUM(e.purchase_revenue_in_usd),MAX(active_users)),0.0) AS lifetime_ARPU,
+    -- Average daily revenue.
+    COALESCE(SAFE_DIVIDE(SUM(e.purchase_revenue_in_usd),COUNT(DISTINCT event_date)),0.0) AS lifetime_average_daily_revenue,
+    -- Maximum daily revenue.
     COALESCE(MAX(sum_revenue_per_day),0.0) AS lifetime_max_daily_revenue,
+    -- Minimum daily revenue.
     COALESCE(MIN(sum_revenue_per_day),0.0) AS lifetime_min_daily_revenue,
+    -- Maximum number of new users.
     COALESCE(MAX(new_users),0) AS lifetime_new_users,
+    -- Number of returning users.
     COALESCE(COUNT(DISTINCT e.user_pseudo_id) - MAX(new_users),0) AS lifetime_returning_users,
+    -- Maximum number of first-time purchasers.
     COALESCE(MAX(first_time_purchasers),0) AS lifetime_first_time_purchasers,
+    -- First-time purchaser conversion rate.
     COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(active_users)),0.0) AS lifetime_first_time_purchaser_conversion,
+    -- First-time purchasers per new user ratio.
     COALESCE(SAFE_DIVIDE(MAX(first_time_purchasers),MAX(new_users)),0.0) AS lifetime_first_time_purchasers_per_new_user,
+    -- Average user conversion rate.
     COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.user_pseudo_id END),COUNT(DISTINCT e.user_pseudo_id)),0.0) AS lifetime_avg_user_conversion_rate,
+    -- Average session conversion rate.
     COALESCE(SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN e.converted_in_session = TRUE THEN e.session_id END),COUNT(DISTINCT e.session_id)),0.0) AS lifetime_avg_session_conversion_rate,
-    FROM all_user_scoped_metrics as usm
-    INNER JOIN engagement as e 
-      ON e.session_id = usm.session_id AND e.user_pseudo_id = usm.user_pseudo_id
-    CROSS JOIN revenue
-    CROSS JOIN users
-    CROSS JOIN first_purchasers
-    CROSS JOIN new_users_;
+  FROM all_user_scoped_metrics as usm
+  INNER JOIN engagement as e 
+    ON e.session_id = usm.session_id AND e.user_pseudo_id = usm.user_pseudo_id
+  CROSS JOIN revenue
+  CROSS JOIN users
+  CROSS JOIN first_purchasers
+  CROSS JOIN new_users_;
+
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
 ON I.feature_date = T.feature_date
 WHEN MATCHED THEN
   UPDATE SET 
+    -- Updates the processed timestamp.
     I.processed_timestamp = T.processed_timestamp,
+    -- Updates the lifetime purchasers users count.
     I.lifetime_purchasers_users = T.lifetime_purchasers_users,
+    -- Updates the lifetime average daily purchasers count.
     I.lifetime_average_daily_purchasers = T.lifetime_average_daily_purchasers,
+    -- Updates the lifetime active users count.
     I.lifetime_active_users = T.lifetime_active_users,
+    -- Updates the lifetime DAU count.
     I.lifetime_DAU = T.lifetime_DAU,
+    -- Updates the lifetime MAU count.
     I.lifetime_MAU = T.lifetime_MAU,
+    -- Updates the lifetime WAU count.
     I.lifetime_WAU = T.lifetime_WAU,
+    -- Updates the lifetime DAU/MAU ratio.
     I.lifetime_dau_per_mau = T.lifetime_dau_per_mau,
+    -- Updates the lifetime DAU/WAU ratio.
     I.lifetime_dau_per_wau = T.lifetime_dau_per_wau,
+    -- Updates the lifetime WAU/MAU ratio.
     I.lifetime_wau_per_mau = T.lifetime_wau_per_mau,
+    -- Updates the lifetime total users engagement duration in seconds.
     I.lifetime_users_engagement_duration_seconds = T.lifetime_users_engagement_duration_seconds,
+    -- Updates the lifetime average engagement time.
     I.lifetime_average_engagement_time = T.lifetime_average_engagement_time,
+    -- Updates the lifetime average engagement time per session.
     I.lifetime_average_engagement_time_per_session = T.lifetime_average_engagement_time_per_session,
+    -- Updates the lifetime average sessions per user.
     I.lifetime_average_sessions_per_user = T.lifetime_average_sessions_per_user,
+    -- Updates the lifetime ARPPU.
     I.lifetime_ARPPU = T.lifetime_ARPPU,
+    -- Updates the lifetime ARPU.
     I.lifetime_ARPU = T.lifetime_ARPU,
+    -- Updates the lifetime average daily revenue.
     I.lifetime_average_daily_revenue = T.lifetime_average_daily_revenue,
+    -- Updates the lifetime maximum daily revenue.
     I.lifetime_max_daily_revenue = T.lifetime_max_daily_revenue,
+    -- Updates the lifetime minimum daily revenue.
     I.lifetime_min_daily_revenue = T.lifetime_min_daily_revenue,
+    -- Updates the lifetime new users count.
     I.lifetime_new_users = T.lifetime_new_users,
+    -- Updates the lifetime returning users count.
     I.lifetime_returning_users = T.lifetime_returning_users,
+    -- Updates the lifetime first-time purchasers count.
     I.lifetime_first_time_purchasers = T.lifetime_first_time_purchasers,
+    -- Updates the lifetime first-time purchaser conversion rate.
     I.lifetime_first_time_purchaser_conversion = T.lifetime_first_time_purchaser_conversion,
+    -- Updates the lifetime first-time purchasers per new user ratio.
     I.lifetime_first_time_purchasers_per_new_user = T.lifetime_first_time_purchasers_per_new_user,
+    -- Updates the lifetime average user conversion rate.
     I.lifetime_avg_user_conversion_rate = T.lifetime_avg_user_conversion_rate,
-    I.lifetime_avg_session_conversion_rate = T.lifetime_avg_session_conversion_rate
+    -- Updates the lifetime average session conversion rate.
+I.lifetime_avg_session_conversion_rate = T.lifetime_avg_session_conversion_rate
 WHEN NOT MATCHED THEN
   INSERT 
     (processed_timestamp,

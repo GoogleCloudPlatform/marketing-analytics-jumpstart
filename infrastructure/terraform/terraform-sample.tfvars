@@ -38,16 +38,23 @@ source_ads_export_data = [
 ]
 
 ####################  FEATURE STORE VARIABLES  #################################
+
 feature_store_project_id = "Project ID where feature store resources will be created"
 
 ####################     ML MODEL VARIABLES    #################################
+
 website_url = "Customer Website URL" # i.e. "https://shop.googlemerchandisestore.com/"
 
 ####################  ACTIVATION VARIABLES  #################################
 
-activation_project_id = "Project ID where activation resources will be created"
-ga4_property_id       = "Google Analytics property id"
-ga4_stream_id         = "Google Analytics data stream id"
+activation_project_id        = "Project ID where activation resources will be created"
+
+####################  GA4 VARIABLES  #################################
+
+ga4_property_id              = "Google Analytics property id"
+ga4_stream_id                = "Google Analytics data stream id"
+ga4_measurement_id           = "Google Analytics measurement id"
+ga4_measurement_secret       = "Google Analytics measurement secret"
 
 ####################  GITHUB VARIABLES  #################################
 
