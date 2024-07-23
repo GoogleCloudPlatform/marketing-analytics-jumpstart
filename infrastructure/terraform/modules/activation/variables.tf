@@ -17,6 +17,11 @@ variable "project_id" {
   description = "Google Cloud Project ID"
 }
 
+variable "project_number" {
+  type        = string
+  description = "Google Cloud Project ID"
+}
+
 variable "location" {
   description = "Pipeline location."
   type        = string
@@ -47,12 +52,14 @@ variable "ga4_measurement_id" {
   description = "Measurement ID in GA4"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "ga4_measurement_secret" {
   description = "Client secret for authenticating to GA4 API"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "ga4_property_id" {
@@ -78,4 +85,9 @@ variable "mds_project_id" {
 variable "mds_dataset_suffix" {
   type        = string
   description = "dataset suffix for MDS"
+}
+
+variable "project_owner_email" {
+  description = "Email address of the project owner."
+  type        = string
 }

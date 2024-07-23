@@ -21,6 +21,8 @@
 -- 4. Create Temporary Tables: The code creates several temporary tables that will be used to store intermediate results.
 -- 5. Execute Queries: The code executes several SQL queries to aggregate the predictions from the different BigQuery tables.
 -- 6. Create Final Table: The code creates a final BigQuery table that contains the aggregated predictions.
+
+-- Declaring Variables: The code starts by declaring a bunch of variables that will hold information about the tables, datasets, and specific columns involved in the aggregation process.
 DECLARE
   project_id,
   table_pattern, #  A pattern used to identify the BigQuery tables that contain the predictions.
@@ -79,6 +81,8 @@ DECLARE
   fourth_join_common_columns ARRAY<STRING>;
 SET
   project_id = '{{project_id}}';
+
+-- Defining Helper Functions: Several helper functions are defined to make the code more readable and reusable
 -- A procedure that retrieves the column names for a specified BigQuery table.
 CREATE OR REPLACE PROCEDURE
   {{dataset_id}}.get_columns_for_table(table_name STRING,
@@ -182,6 +186,13 @@ CREATE TEMP FUNCTION
           FROM
             UNNEST(COLUMNS) AS element) ), ',') ));
 
+-- Gathering Information
+-- Setting Table Patterns: The code defines patterns to identify the BigQuery tables containing predictions for different use cases 
+-- (CLTV, purchase propensity, churn propensity, audience segmentation, and auto audience segmentation).
+-- Getting Dataset IDs: It constructs the dataset IDs for each use case by combining the project ID with the specified dataset names.
+-- Finding Latest Tables: The get_latest_table_by_pattern procedure is called to retrieve the names of the latest prediction tables for each use case.
+-- Retrieving Columns: The get_columns_for_table procedure is called to get the list of columns for each prediction table.
+
 -- Setting all predictions tables naming patterns
 SET
   table_pattern = 'predictions_%_view';
@@ -242,6 +253,11 @@ CALL
     auto_audience_segmentation_dataset,
     auto_audience_segmentation_columns);
 
+-- Preparing for Joins
+-- Identifying Special Columns: The code defines arrays of special columns for each prediction table, which are typically related to prediction results, timestamps, and user IDs.
+-- Selecting Relevant Columns: The code uses the array_diff and array_common functions to carefully select the columns that will be used in the joins.
+-- Creating SQL Expressions: The create_common_columns_select and create_columns_select functions are used to generate SQL expressions for selecting columns from different tables.
+
 -- Setting special column identifiers for each use case predicition table
 SET
   clv_special_columns = ['prediction',
@@ -299,6 +315,9 @@ SET
 SET
   purchase_selections = create_columns_select(purchase_propensity_select_columns,
     'b');
+
+-- First Join: The code joins the CLTV and purchase propensity predictions tables based on the user_pseudo_id column. It creates a temporary table (temp1) to store the results.
+-- The list of columns specified to create the temporary table must be the same for the next join columns (i.e. first_join_columns)
 SET
   first_query_str = FORMAT("""
 CREATE TEMPORARY TABLE temp1 AS
@@ -325,6 +344,7 @@ EXECUTE IMMEDIATE
   first_query_str;
 
 -- Logic for SECOND JOIN LTV, purchase propensity and audience segmentation predictions
+-- The list of columns specified must match the list of columns listed above.
 SET
   first_join_columns = ARRAY_CONCAT(['ltv', 'user_pseudo_id', 'ltv_processed_timestamp', 'ltv_feature_date', 'ltv_decile', 'likely_to_purchase', 'purchase_score', 'purchase_processed_timestamp', 'purchase_feature_date', 'p_p_decile'], first_join_common_columns, clv_select_columns, purchase_propensity_select_columns);
 SET
@@ -349,6 +369,9 @@ SET
 SET
   audience_segmentation_selections = create_columns_select(audience_segmentation_select_columns,
     'd');
+
+-- Second Join: The code joins the results from the first join with the audience segmentation predictions table, again based on user_pseudo_id. It creates another temporary table (temp2).
+-- The list of columns specified to create the temporary table must be the same for the next join columns (i.e. second_join_columns)
 SET
   second_query_str = FORMAT("""
 CREATE OR REPLACE TEMPORARY TABLE temp2 AS
@@ -370,6 +393,7 @@ EXECUTE IMMEDIATE
 
 
 -- Logic for THIRD JOIN between LTV, purchase propensity, audience segmentation and churn propensity predictions
+-- The list of columns specified must match the list of columns listed above.
 SET
   second_join_columns = ARRAY_CONCAT(first_join_select_columns, second_join_common_columns,['Segment_ID', 'Segment_Distance', 'segment_processed_timestamp', 'segment_feature_date'], audience_segmentation_select_columns);
 SET
@@ -394,6 +418,9 @@ SET
 SET
   churn_propensity_selections = create_columns_select(churn_propensity_select_columns,
     'f');
+
+-- Third Join: The code joins the results from the second join with the churn propensity predictions table, again based on user_pseudo_id. It creates a temporary table (temp3).
+-- The list of columns specified to create the temporary table must be the same for the next join columns (i.e. third_join_columns)
 SET
   third_query_str = FORMAT("""
 CREATE OR REPLACE TEMPORARY TABLE temp3 AS
@@ -416,6 +443,7 @@ EXECUTE IMMEDIATE
 
 
 -- Logic for FOURTH join between LTV, purchase propensity, churn propensity, audience segmentation, and auto audience segmentation predictions
+-- The list of columns specified must match the list of columns listed above.
 SET
   third_join_columns = ARRAY_CONCAT(second_join_select_columns, third_join_common_columns, ['likely_to_churn', 'churn_score', 'churn_processed_timestamp', 'churn_feature_date', 'c_p_decile'], churn_propensity_select_columns);
 SET
@@ -440,6 +468,9 @@ SET
 SET
   auto_audience_segmentation_selections = create_columns_select(auto_audience_segmentation_select_columns,
     'h');
+
+-- Fourth Join: The code joins the results from the third join with the auto audience segmentation predictions table, again based on user_pseudo_id. This final join creates the final table with all the aggregated predictions.
+-- This SQL block combines all the predictions from different tables into a single, comprehensive table, ready for further analysis or use in downstream applications.
 SET
   fourth_query_str = FORMAT("""
 CREATE OR REPLACE TABLE `%s.{{dataset_id}}.{{table_id}}` AS
@@ -454,5 +485,7 @@ FROM temp3 AS g
 full outer join `%s` AS h
 ON g.user_pseudo_id=h.user_pseudo_id;
 """, project_id, third_join_selections, fourth_join_common_selections, auto_audience_segmentation_selections, auto_audience_segmentation_table);
+
+-- Executing the Query: The EXECUTE IMMEDIATE statement executes the final query, creating the final table with all the aggregated predictions.
 EXECUTE IMMEDIATE
   fourth_query_str;

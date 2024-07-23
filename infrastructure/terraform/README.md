@@ -32,6 +32,7 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     ```bash
     export PROJECT_ID="[your Google Cloud project id]"
     gcloud config set project $PROJECT_ID
+    gcloud auth application-default set-quota-project $PROJECT_ID
     ```
 
 1. Install or update Python3
@@ -52,8 +53,8 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
 
    If you are installing on in Cloud Shell use the following commands:
-   ```bash
-     curl -sSL https://install.python-poetry.org | python3 -
+   ```shell
+   curl -sSL https://install.python-poetry.org | python3 -
    ```
    Verify that `poetry` is on your $PATH variable:
    ```shell
@@ -73,6 +74,17 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    cd ${SOURCE_ROOT}
    poetry env use python3
    ```
+
+1. Grant IAM permissions to your Account
+    Cloud Build Service Account
+    Dataform Editor
+    List services and read IAM Policies and configs
+    Owner
+    Service Account Admin
+    Service Account User
+    Storage Admin
+    View Service Accounts
+    Viewer
    
 
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
@@ -86,6 +98,10 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     ERROR: (gcloud.auth.application-default.login) User [<ldap>@<company>.com] does not have permission to access projects instance [<gcp_project_ID>:testIamPermissions] (or it may not exist): Cloud Resource Manager API has not been used in project <gcp_project_id> before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=<gcp_project_id> then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
 
     On the next step, the Cloud Resource Manager API will be enabled and, then, your credentials will finally work.
+
+1. Review your Terraform version
+
+    Make sure you have installed your terraform version 1.5.7
 
 1. Run the following script to create a Terraform remote backend. 
 

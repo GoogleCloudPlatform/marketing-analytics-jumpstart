@@ -12,53 +12,71 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- Declare variables to store the maximum and minimum dates for analysis
 DECLARE max_date DATE;
 DECLARE min_date DATE;
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- Set max_date to the latest event_date minus a specified interval
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+-- Set min_date to the earliest event_date plus a specified interval
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+
+-- Create a temporary table to store date intervals for analysis
 CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
+    -- The starting date of the interval
     event_date as input_date,
+    -- The ending date of the interval, calculated by adding a specified number of days to the starting date
     DATE_ADD(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+  -- Filter events based on the defined date range
   WHERE event_date BETWEEN min_date AND max_date
     ORDER BY input_date DESC
 );
 
 
-## All users in the platform
+-- All users in the platform
+-- Create a temporary table to store user IDs for analysis
 CREATE OR REPLACE TEMP TABLE events_users_days as (
   SELECT DISTINCT
+  -- Select the user's pseudo ID
   Users.user_pseudo_id
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON Users.device_type_id = D.device_type_id
+  -- Filter events based on the following conditions
   WHERE Users.ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
+  -- Ensure events fall within the defined date range
   AND Users.event_date BETWEEN min_date AND max_date
 );
 
-## Future User metrics: today future purchases per user, 1-30-day future purchases per user, 1-90-day future purchases per user, 1–180-day future purchases per user
+-- Create a temporary table to store future revenue per user
+-- Future User metrics: today future purchases per user, 1-30-day future purchases per user, 1-90-day future purchases per user, 1–180-day future purchases per user
 CREATE OR REPLACE TEMP TABLE future_revenue_per_user AS (
   SELECT
     user_pseudo_id,
+    -- The date for which the feature is being calculated
     input_date as feature_date,
+    -- Calculate the maximum of today's revenue and user LTV revenue for the same day
     MAX(GREATEST(
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 0 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_today,
+    -- Calculate the maximum revenue for the next 30 days
     MAX(GREATEST(
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_30,
+    -- Calculate the maximum revenue for the next 90 days
     MAX(GREATEST(
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_90,
+    -- Calculate the maximum revenue for the next 180 days
     MAX(GREATEST(
       SUM(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
       MAX(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
@@ -68,6 +86,7 @@ CREATE OR REPLACE TEMP TABLE future_revenue_per_user AS (
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
   CROSS JOIN dates_interval as DI
+  -- Filter based on events within the specified date range, with valid transaction IDs and device operating systems
   WHERE E.event_date BETWEEN input_date AND end_date
   AND E.ga_session_id IS NOT NULL
   AND ecommerce.transaction_id IS NOT NULL 
@@ -76,13 +95,20 @@ CREATE OR REPLACE TEMP TABLE future_revenue_per_user AS (
   GROUP BY user_pseudo_id, feature_date
 );
 
+-- Insert data into the target table
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   SELECT DISTINCT
+    -- Current timestamp of the processing
     CURRENT_TIMESTAMP() AS processed_timestamp,
+    -- Date for which the feature is being calculated
     B.feature_date,
+    -- User's pseudo ID
     A.user_pseudo_id,
+    -- Predicted LTV revenue for the next 30 days
     GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_30,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_30_days,
+    -- Predicted LTV revenue for the next 90 days
     GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_90,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_90_days,
+    -- Predicted LTV revenue for the next 180 days
     GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_180,0.0) - COALESCE(B.user_ltv_revenue_today,0.0), 0.0)) AS pltv_revenue_180_days,
   FROM events_users_days AS A
   LEFT JOIN future_revenue_per_user AS B

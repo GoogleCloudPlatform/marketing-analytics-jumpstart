@@ -17,6 +17,7 @@ DECLARE min_date DATE;
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- This block creates a temporary table named dates_interval. This table will store a range of dates based on the calculated min_date and max_date.
 CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
     event_date as input_date,
@@ -31,10 +32,12 @@ CREATE OR REPLACE TEMP TABLE engagement_per_day_session_scoped as (
   SELECT
     user_pseudo_id,
     feature_date,
+    -- This line calculates the engagement_rate by dividing the count of distinct engaged sessions (where session_engaged is true) by the count of all distinct sessions. SAFE_DIVIDE handles potential division by zero errors.
     SAFE_DIVIDE(
         COUNT(distinct case when session_engaged = true then concat(user_pseudo_id,session_id) end),
         COUNT(DISTINCT session_id)
     ) AS engagement_rate,
+    -- Other metrics are calculated similarly using conditional aggregation and window functions
     COUNT(distinct case when session_engaged = true then concat(user_pseudo_id,session_id) end) as engaged_sessions_per_user,
     SAFE_DIVIDE(
         COUNTIF(session_conversion = true),
@@ -52,6 +55,8 @@ CREATE OR REPLACE TEMP TABLE engagement_per_day_session_scoped as (
     COUNTIF(new_visitor = true) as new_visits,
     COUNTIF(returning_visitor = true) as returning_visits
   FROM ( 
+    -- The metrics are calculated from a subquery that joins the event, session, and device tables. 
+    -- The outer query then groups the results by user_pseudo_id and feature_date.
     SELECT
         E.user_pseudo_id,
         input_date as feature_date,
@@ -79,12 +84,21 @@ CREATE OR REPLACE TEMP TABLE engagement_per_day_session_scoped as (
 );
 
 -- Has the user purchased before, another day?
+-- determine how many times a user has made a purchase before on a given day. 
+-- It identifies returning customers, combines them with non-returning customers, and then calculates the count of 
+-- previous purchases for each user on each day. This information can be valuable for understanding customer 
+-- purchase patterns and segmenting users based on their purchase history.
+--
+-- This block creates a temporary table named returning_customers to store information about users who have made multiple purchases.
 CREATE OR REPLACE TEMP TABLE returning_customers as (
   SELECT 
     user_pseudo_id, 
     feature_date, 
     MAX(unique_purchase) as unique_purchase  
   FROM (
+      -- This subquery calculates the unique_purchase rank for each purchase event. It uses the RANK() window function 
+      -- to assign a rank to each purchase event based on the event_timestamp for each user_pseudo_id. The earliest 
+      -- purchase gets rank 1, the next gets rank 2, and so on.
       SELECT 
           user_pseudo_id, 
           input_date as feature_date, 
@@ -95,9 +109,14 @@ CREATE OR REPLACE TEMP TABLE returning_customers as (
       AND event_name = 'purchase'
       GROUP BY user_pseudo_id, feature_date, event_timestamp
   )
+  --  It retrieves the user_pseudo_id, feature_date, and the maximum value of unique_purchase 
+  -- (which represents the purchase rank for a user) from a subquery. The WHERE unique_purchase >= 2 
+  -- condition filters for users who have made at least two purchases.
   WHERE unique_purchase >= 2
   GROUP BY user_pseudo_id, feature_date
 );
+-- This block creates a temporary table named non_returning_customers to store information about users 
+-- who have made only one purchase or no purchases at all.
 CREATE OR REPLACE TEMP TABLE non_returning_customers as ( 
   SELECT
         GA.user_pseudo_id,
@@ -106,8 +125,11 @@ CREATE OR REPLACE TEMP TABLE non_returning_customers as (
   CROSS JOIN dates_interval as DI
   WHERE event_date BETWEEN DI.end_date AND DI.input_date
   GROUP BY user_pseudo_id, feature_date
+  -- This effectively filters out users who have made multiple purchases, leaving only 
+  -- those with a single purchase or no purchases.
   EXCEPT DISTINCT SELECT user_pseudo_id, feature_date FROM returning_customers as RC
 );
+-- This block creates a temporary table named combined to store the combined data of returning and non-returning customers.
 CREATE OR REPLACE TEMP TABLE combined as (
   SELECT 
     user_pseudo_id, 
@@ -115,6 +137,8 @@ CREATE OR REPLACE TEMP TABLE combined as (
     unique_purchase
   FROM returning_customers  
   UNION ALL
+  -- The second subquery selects data from the non_returning_customers table and assigns a unique_purchase value of -1 to all records. 
+  -- This distinguishes them from returning customers.
   SELECT 
     user_pseudo_id, 
     feature_date, 
@@ -122,24 +146,36 @@ CREATE OR REPLACE TEMP TABLE combined as (
     FROM non_returning_customers 
   GROUP BY user_pseudo_id, feature_date
 );
+-- This block creates a temporary table named repeated_purchase to store the count of previous purchases for each user on each day.
 CREATE OR REPLACE TEMP TABLE repeated_purchase as (
   SELECT
     user_pseudo_id,
     feature_date, 
+    -- If unique_purchase is greater than or equal to 0 (meaning the user is a returning customer), 
+    -- the how_many_purchased_before value is set to the unique_purchase value (representing the number of previous purchases).
+    -- If unique_purchase is less than 0 (meaning the user is a non-returning customer), the how_many_purchased_before value is set to 0.
     CASE WHEN unique_purchase >= 0 THEN unique_purchase ELSE 0 END AS how_many_purchased_before
   FROM 
     combined
 );
 
 -- Has the user abandoned any cart by day?
+-- This block creates a temporary table named returned_cart_to_purchase to store information about users who initiated the checkout process but didn't complete a purchase.
 CREATE OR REPLACE TEMP TABLE returned_cart_to_purchase as (
   SELECT 
   user_pseudo_id, 
   feature_date,
+  -- The highest session number for the user on that day.
   MAX(session_order) as max_session_order_in_day, 
+  -- A flag indicating if the user initiated checkout at least once that day.
   CASE WHEN MAX(begun_checkout) >= 1 THEN True ELSE False END as begun_checkout, 
+  -- A flag indicating if the user completed a purchase at least once that day.
   CASE WHEN MAX(event_order) >= 2 THEN True ELSE False END as has_purchased  
   FROM (
+      -- This subquery retrieves user activity related to 'begin_checkout' and 'purchase' events. It calculates:
+      -- session_order: The session number for each event.
+      -- begun_checkout: A flag indicating if the 'begin_checkout' event occurred in the session.
+      -- event_order: A rank assigned to each event based on the event_timestamp for each user.
       SELECT 
           GA.user_pseudo_id, 
           input_date as feature_date,
@@ -161,7 +197,11 @@ CREATE OR REPLACE TEMP TABLE returned_cart_to_purchase as (
   GROUP BY user_pseudo_id, feature_date
 );
 
+-- This block creates a temporary table named cart_to_purchase to store a flag indicating whether a user abandoned their cart on a given day.
 CREATE OR REPLACE TEMP TABLE cart_to_purchase AS (
+  -- This query joins the event table with the returned_cart_to_purchase table and calculates the has_abandoned_cart flag. 
+  -- It's considered abandoned if a user initiated checkout (begun_checkout is true) but didn't complete a purchase 
+  -- (has_purchased is false) on that day.
   SELECT
     GA.user_pseudo_id, 
     input_date as feature_date,
@@ -179,15 +219,20 @@ CREATE OR REPLACE TEMP TABLE cart_to_purchase AS (
 );
 
 -- What is the user-events-per-day event-scoped metrics performance?
+-- This block creates a temporary table named user_events_per_day_event_scoped to store 
+-- various user-level event metrics calculated on a daily basis.
 CREATE OR REPLACE TEMP TABLE user_events_per_day_event_scoped as (
   SELECT
     user_pseudo_id,
     feature_date,
+    -- Total 'add_to_cart' events for the user on that day.
     IFNULL(SUM(add_to_cart_per_session),0) as add_to_carts,
+    -- Ratio of 'add_to_cart' to 'view_item' events.
     IFNULL(SAFE_DIVIDE(
         SUM(add_to_cart_per_session),
         SUM(view_item_per_session)
     ), 0.0) AS cart_to_view_rate, 
+    -- Total 'begin_checkout' events.
     IFNULL(SUM(checkouts_per_session),0) AS checkouts,
     IFNULL(SUM(ecommerce_purchases_per_session),0) AS ecommerce_purchases,
     IFNULL(SUM(ecommerce_quantity_per_session),0) AS ecommerce_quantity,
@@ -218,6 +263,12 @@ CREATE OR REPLACE TEMP TABLE user_events_per_day_event_scoped as (
         COUNT(DISTINCT event_timestamp))
         ,0.0) AS user_conversion_rate
   FROM (
+    -- This subquery retrieves user event data and calculates metrics for each session, such as:
+    -- add_to_cart_per_session: Count of 'add_to_cart' events.
+    -- view_item_per_session: Count of 'view_item' events.
+    -- checkouts_per_session: Count of 'begin_checkout' events.
+    -- ecommerce_purchases_per_session: Count of successful 'purchase' events.
+    -- Various other metrics related to e-commerce activities, refunds, and item interactions.
     SELECT
         user_pseudo_id,
         input_date as feature_date,
@@ -263,6 +314,8 @@ CREATE OR REPLACE TEMP TABLE user_events_per_day_event_scoped as (
 );
 
 -- All users in the platform
+-- This block creates a temporary table named events_users_days to 
+-- store a distinct list of users who had events on each day.
 CREATE OR REPLACE TEMP TABLE events_users_days as (
   SELECT DISTINCT
     Users.user_pseudo_id,
@@ -276,6 +329,18 @@ CREATE OR REPLACE TEMP TABLE events_users_days as (
     AND D.device_os IS NOT NULL
 );
 
+-- This code snippet combines data from multiple temporary tables to create a 
+-- comprehensive view of user behavior and engagement metrics. The resulting data 
+-- in the target table can be used for various analytical purposes, such as building 
+-- machine learning models, generating reports, or understanding user segmentation based 
+-- on their interactions with the platform.
+--
+-- The code utilizes data from several temporary tables, each created and populated in previous steps of the SQL script. These tables are:
+-- events_users_days (EUD): Contains a distinct list of users (user_pseudo_id) and dates (feature_date) representing days when users had events.
+-- engagement_per_day_session_scoped (EPDSS): Stores user engagement metrics calculated at a session level and then aggregated to the user-day level. Metrics include engagement_rate, engaged_sessions_per_user, session_conversion_rate, bounces, etc.
+-- user_events_per_day_event_scoped (UEPDES): Contains user-level event metrics aggregated on a daily basis. Metrics include add_to_carts, cart_to_view_rate, checkouts, ecommerce_purchases, etc.
+-- repeated_purchase (R): Stores information about whether a user has made previous purchases, indicated by the how_many_purchased_before column.
+-- cart_to_purchase (CP): Contains a flag (has_abandoned_cart) indicating whether a user abandoned their cart on a given day.
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   SELECT
     CURRENT_TIMESTAMP() AS processed_timestamp,

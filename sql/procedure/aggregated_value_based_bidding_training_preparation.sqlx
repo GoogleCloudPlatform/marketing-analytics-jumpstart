@@ -13,15 +13,15 @@
 -- limitations under the License.
 
 
-# During training, due to the lack of enough training samples
-# Training subset is replicated 3 times. This is equivalent to training for more epochs.
-# Since we intend to overfit the ML model to get an accurate representation 
-# of the feature importance, there is no problem in applying this strategy.
-# Validation and test subsets are not replicated.
+-- During training, due to the lack of enough training samples
+-- Training subset is replicated 3 times. This is equivalent to training for more epochs.
+-- Since we intend to overfit the ML model to get an accurate representation 
+-- of the feature importance, there is no problem in applying this strategy.
+-- Validation and test subsets are not replicated.
 
-# This code snippet defines a BigQuery SQL view named {{view_name}} 
-# in the project {{project_id}} and dataset {{dataset}}. 
-# The view is used for training the Aggregated value-based bidding model.
+-- This code snippet defines a BigQuery SQL view named {{view_name}} 
+-- in the project {{project_id}} and dataset {{dataset}}. 
+-- The view is used for training the Aggregated value-based bidding model.
 
 -- The view schema should match with the `transformations-value-based-bidding.json` file.
 -- Taking into consideration the excluded_features as listed in the `config.yaml` file.

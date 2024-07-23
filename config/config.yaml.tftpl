@@ -1772,6 +1772,8 @@ bigquery:
       validation_split_end_number: 8
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
+      mds_project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
     # This is a stored procedure that CALLs the Audience Segmentation Training Preparation stored procedure.
     invoke_audience_segmentation_training_preparation:
       project_id: "${project_id}"
@@ -1974,6 +1976,11 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 30
+      # This is the interval of days used to calculate whether the user churned or not.
+      churn_multiplier_days: 30
+      # This is the event used to calculate whether the user churned or not. 
+      # It can be one of (page_view, session_start, user_engagement)
+      user_engagement_event: "user_engagement"
     # This is a stored procedure that CALLs the User Dimensions Backfill stored procedure.
     invoke_backfill_user_dimensions:
       mds_project_id: "${mds_project_id}"
@@ -2226,8 +2233,8 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168 
-      # This parameter helps you set a maximum number of samples per split.
-      samples_per_split: 100000
+      # This parameter helps you set a maximum number of samples for training.
+      samples_percentage: 10
       custom_start_date: "'2024-01-01'"
       custom_end_date: "NULL"
     # This is the stored procedure that calculates the label column for the Customer Lifetime Value use case.
@@ -2279,6 +2286,11 @@ bigquery:
       insert_table: "churn_propensity_label"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+      # This is the interval of days used to calculate whether the user churned or not.
+      churn_multiplier_days: 30
+      # This is the event used to calculate whether the user churned or not. 
+      # It can be one of (page_view, session_start, user_engagement)
+      user_engagement_event: "usr_engagement"
     # This is the stored procedure that collects the features and prepare the examples rows to train a model.
     # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
     # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
@@ -2498,6 +2510,8 @@ bigquery:
       name: "user_behaviour_revenue_insights"
       feature_store_project_id: "${project_id}"
       feature_store_dataset: "feature_store"
-      insert_table: "user_behaviour_revenue_insights"
+      insert_table_daily: "user_behaviour_revenue_insights_daily"
+      insert_table_weekly: "user_behaviour_revenue_insights_weekly"
+      insert_table_monthly: "user_behaviour_revenue_insights_monthly"
 
   

@@ -4,9 +4,9 @@
 
 The Marketing Data Store efficiently process data, stores and analyzes the marketing data from Google Ads and Google Analytics 4. The Data Store implements the Marketing Data Warehouse Ads Performance and Digital Analytics domains. The Ads Performance domain prepares dimensions and metrics to understand the performance of advertisements on Paid Media channels. The Digital Analytics domain prepares dimensions and metrics to understand the user behaviour and conversion actions on the customer website and mobile app.
 
-The Marketing Data Warehouse domains are implemented using BigQuery [Dataform](https://cloud.google.com/dataform/docs/overview) and are automated by Cloud [Workflows](https://cloud.google.com/workflows/docs/overview). The incremental process is scheduled and triggered using Cloud [Scheduler](https://cloud.google.com/scheduler/docs/overview?hl=en).
+The Marketing Data Warehouse domains are implemented using BigQuery [Dataform](https://cloud.google.com/dataform/docs/overview) and are orchestrated using Cloud [Workflows](https://cloud.google.com/workflows/docs/overview). The incremental process is scheduled and triggered using Cloud [Scheduler](https://cloud.google.com/scheduler/docs/overview?hl=en).
 
-This guide details how to monitor the data store, leverage the enriched user data, and customize the data store to meet your specific requirements.
+This guide details how to deploy and monitor the data store, leverage the enriched user data, troubleashoot and customize the data store to meet your specific requirements.
 
 
 ## Solution Architecture
@@ -30,7 +30,7 @@ We heard common stories from customers who were struggling with two frequent obj
     - They need a solution that is easy to deploy and manage, and that provides a holistic view of their marketing data.
     - The Marketing Data Store provides a pre-built infrastructure that can be easily deployed and used to analyze marketing data.
 
-2. **Marketers leveraging Marketing Analytics models without a consolidated logical data model**.     
+2. **Marketers looking into leverage marketing analytics models without a consolidated logical data model**.     
     - These marketers are already using Marketing Analytics models, but they are struggling with the lack of a consistent data model.
     - This can lead to problems with data quality, governance, and maintenance.
     - The Marketing Data Store provides a logical data model that can be used to build and deploy Marketing Analytics models. This can help to improve data quality, governance, and maintenance.
@@ -40,10 +40,10 @@ We heard common stories from customers who were struggling with two frequent obj
 After deploying the Marketing Data Store, Marketing Technology teams get the following benefits:
 
 1. Understand and apply core data warehousing principles.
-2. Ingest data from Google Marketing data sources via built-in BQ data integrations
+2. Ingest data from Google Marketing data sources via built-in BigQuery data integrations
 3. Build their own BQ data integrations for 3rd party APIs via Dataflow templates 
 4. Build their own BQ data integrations for 1st party data sources regardless of API availability via BQ 5. data ingestion
-6. Gain operational efficiency and marketing insights through a holistic repository of their Marketing Organizations data
+5. Gain operational efficiency and marketing insights through a holistic repository of their Marketing Organizations data
 
 
 ## Advantages of the solution

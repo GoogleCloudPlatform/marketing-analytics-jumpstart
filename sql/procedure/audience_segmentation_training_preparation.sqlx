@@ -47,28 +47,50 @@ END IF;
 --        user segmentation dimensions and user lookback metrics data, respectively.
 --    Filter the data based on the custom_start_date and custom_end_date parameters.
 --    Use window functions to aggregate features over the past 15 days for each user.
+-- The window function is used in conjunction with aggregate functions like MAX to calculate the latest value of a feature for each user on a given date. 
 CREATE OR REPLACE TEMP TABLE training_preparation_ud as (
   SELECT DISTINCT
+    -- The unique identifier for the user.
     UD.user_pseudo_id,
+    -- The user ID.
     MAX(UD.user_id) OVER(user_segmentation_dimensions_window) AS user_id,
+    -- The date for which the features are extracted.
     UD.feature_date,
+    -- The category of the device used by the user.
     MAX(UD.device_category) OVER(user_segmentation_dimensions_window) AS device_category,
+    -- The brand name of the mobile device used by the user.
     MAX(UD.device_mobile_brand_name) OVER(user_segmentation_dimensions_window) AS device_mobile_brand_name,
+    -- The model name of the mobile device used by the user.
     MAX(UD.device_mobile_model_name) OVER(user_segmentation_dimensions_window) AS device_mobile_model_name,
+    -- The operating system of the device used by the user.
     MAX(UD.device_os) OVER(user_segmentation_dimensions_window) AS device_os,
+    -- The language used by the user.
     MAX(UD.device_language) OVER(user_segmentation_dimensions_window) AS device_language,
+    -- The web browser used by the user.
     MAX(UD.device_web_browser) OVER(user_segmentation_dimensions_window) AS device_web_browser,
+    -- The sub-continent of the user's location.
     MAX(UD.geo_sub_continent) OVER(user_segmentation_dimensions_window) AS geo_sub_continent,
+    -- The country of the user's location.
     MAX(UD.geo_country) OVER(user_segmentation_dimensions_window) AS geo_country,
+    -- The region of the user's location.
     MAX(UD.geo_region) OVER(user_segmentation_dimensions_window) AS geo_region,
+    -- The city of the user's location.
     MAX(UD.geo_city) OVER(user_segmentation_dimensions_window) AS geo_city,
+    -- The metropolitan area of the user's location.
     MAX(UD.geo_metro) OVER(user_segmentation_dimensions_window) AS geo_metro,
+    -- The medium used to reach the user's last session.
     MAX(UD.last_traffic_source_medium) OVER(user_segmentation_dimensions_window) AS last_traffic_source_medium,
+    -- The traffic source name used to reach the user's last session.
     MAX(UD.last_traffic_source_name) OVER(user_segmentation_dimensions_window) AS last_traffic_source_name,
+    -- The source of the last traffic source used by the user.
     MAX(UD.last_traffic_source_source) OVER(user_segmentation_dimensions_window) AS last_traffic_source_source,
+    -- The medium of the first traffic source used by the user.
     MAX(UD.first_traffic_source_medium) OVER(user_segmentation_dimensions_window) AS first_traffic_source_medium,
+    -- The name of the first traffic source used by the user.
     MAX(UD.first_traffic_source_name) OVER(user_segmentation_dimensions_window) AS first_traffic_source_name,
+    -- The source of the first traffic source used by the user.
     MAX(UD.first_traffic_source_source) OVER(user_segmentation_dimensions_window) AS first_traffic_source_source,
+    -- A flag indicating whether the user has signed in with a user ID.
     MAX(UD.has_signed_in_with_user_id) OVER(user_segmentation_dimensions_window) AS has_signed_in_with_user_id
 FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` UD
@@ -76,27 +98,46 @@ WHERE
   -- Define the training+validation subset interval
   UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
 WINDOW 
+  --  Window function to aggregate features based on the values of user_pseudo_id and feature_date.
+  --  UNBOUNDED PRECEDING means the window includes all rows from the beginning of the partition (all rows with the same user_pseudo_id and feature_date) up to the current row.
+  -- UNBOUNDED FOLLOWING means the window includes all rows from the current row to the end of the partition.
   user_segmentation_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 
 CREATE OR REPLACE TEMP TABLE training_preparation_uwm as (
   SELECT DISTINCT
+    -- The unique identifier for the user.
     UWM.user_pseudo_id,
+    -- The date for which the features are extracted.
     UWM.feature_date,
+    -- The number of times the user has been active in the past 1 to 7 days for each user.
     MAX(UWM.active_users_past_1_7_day) OVER(user_lookback_metrics_window) AS active_users_past_1_7_day,
+    -- The number of times the user has been active in the past 8-14 days for each user.
     MAX(UWM.active_users_past_8_14_day) OVER(user_lookback_metrics_window) AS active_users_past_8_14_day,
+    -- The number of purchases in the past 1 to 7 days for each user.
     MAX(UWM.purchases_past_1_7_day) OVER(user_lookback_metrics_window) AS purchases_past_1_7_day,
+    -- The number of purchases in the past 8-14 days for each user.
     MAX(UWM.purchases_past_8_14_day) OVER(user_lookback_metrics_window) AS purchases_past_8_14_day,
+    -- The number of visits in the past 1 to 7 days for each user.
     MAX(UWM.visits_past_1_7_day) OVER(user_lookback_metrics_window) AS visits_past_1_7_day,
+    -- The number of visits in the past 8-14 days for each user.
     MAX(UWM.visits_past_8_14_day) OVER(user_lookback_metrics_window) AS visits_past_8_14_day,
+    -- The number of items viewed in the past 1 to 7 days for each user.
     MAX(UWM.view_items_past_1_7_day) OVER(user_lookback_metrics_window) AS view_items_past_1_7_day,
+    -- The number of items viewed in the past 8-14 days for each user.
     MAX(UWM.view_items_past_8_14_day) OVER(user_lookback_metrics_window) AS view_items_past_8_14_day,
+    -- The number of items added to carts in the past 1 to 7 days for each user.
     MAX(UWM.add_to_carts_past_1_7_day) OVER(user_lookback_metrics_window) AS add_to_carts_past_1_7_day,
+    -- The number of items added to carts in the past 8-14 days for each user.
     MAX(UWM.add_to_carts_past_8_14_day) OVER(user_lookback_metrics_window) AS add_to_carts_past_8_14_day,
+    -- The number of checkouts in the past 1 to 7 days for each user.
     MAX(UWM.checkouts_past_1_7_day) OVER(user_lookback_metrics_window) AS checkouts_past_1_7_day,
+    -- The number of checkouts in the past 8-14 days for each user.
     MAX(UWM.checkouts_past_8_14_day) OVER(user_lookback_metrics_window) AS checkouts_past_8_14_day,
+    -- The lifetime value revenue gain in the past 1 to 7 days for each user.
     MAX(UWM.ltv_revenue_past_1_7_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_1_7_day,
+    -- The lifetime value revenue gain in the past 7-15 days for each user.
     MAX(UWM.ltv_revenue_past_7_15_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_7_15_day
 FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` UWM
@@ -104,12 +145,17 @@ WHERE
   -- Define the training+validation subset interval
   UWM.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
 WINDOW 
+  --  Window function to aggregate features based on the values of user_pseudo_id and feature_date.
+  --  UNBOUNDED PRECEDING means the window includes all rows from the beginning of the partition (all rows with the same user_pseudo_id and feature_date) up to the current row.
+  -- UNBOUNDED FOLLOWING means the window includes all rows from the current row to the end of the partition.
   user_lookback_metrics_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 
 -- Create a temporary table training_preparation by joining the 
 -- training_preparation_ud and training_preparation_uwm tables.
+-- The training_preparation table is created to combine user segmentation dimensions data (from training_preparation_ud) with 
+-- user lookback metrics data (from training_preparation_uwm) for each user on each date. This combined data is then used for training a machine learning model to predict user behavior.
 CREATE OR REPLACE TEMP TABLE training_preparation as (
   SELECT DISTINCT
     UD.user_pseudo_id,
@@ -160,38 +206,75 @@ ON
 -- Create a temporary table DataForTargetTable that assigns a data split (TRAIN, VALIDATE, TEST) to each user based on their user_pseudo_id fingerprint.
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   SELECT DISTINCT
+  -- The data_split column is used by the model to attribute the row to one of the subsets.
+  -- The column is calculated using the following functions:
+  -- FARM_FINGERPRINT(user_pseudo_id): This function generates a unique fingerprint for the user_pseudo_id, which is a 64-bit integer.
+  -- MOD(..., 10): This calculates the remainder when the fingerprint is divided by 10.
+  -- ABS(...): This takes the absolute value of the remainder.
   CASE 
+    -- This condition checks if the absolute value of the modulo (remainder) of the FARM_FINGERPRINT of the user_pseudo_id divided by 10 falls between 0 and train_split_end_number. 
+    --  If true, the data_split is assigned the value "TRAIN".
     WHEN (ABS(MOD(FARM_FINGERPRINT(user_pseudo_id), 10)) BETWEEN 0 AND train_split_end_number) THEN "TRAIN" 
+    -- This condition is similar to the previous one, but checks if the absolute remainder falls between train_split_end_number and validation_split_end_number. If true, the data_split is assigned the value "VALIDATE".
     WHEN (ABS(MOD(FARM_FINGERPRINT(user_pseudo_id), 10)) BETWEEN train_split_end_number AND validation_split_end_number) THEN "VALIDATE" 
+    -- This condition checks if the absolute remainder falls between validation_split_end_number and 9. If true, the data_split is assigned the value "TEST".
     WHEN (ABS(MOD(FARM_FINGERPRINT(user_pseudo_id), 10)) BETWEEN validation_split_end_number AND 9) THEN "TEST"
   END as data_split,
+  -- The date for which the features are extracted.
   feature_date,
+  -- The unique identifier for the user.
   user_pseudo_id,
+  -- The user ID.
   user_id,
+  -- The category of the device used by the user.
   device_category,
+  -- The brand name of the mobile device used by the user.
   device_mobile_model_name,
+  --  The country of the user's location.
   geo_country,
+  -- The region of the user's location.
   geo_region,
+  -- The city of the user's location.
   geo_city,
+  -- The medium used to reach the user's last session.
   last_traffic_source_medium,
+  -- The traffic source name used to reach the user's last session.
   last_traffic_source_name,
+  -- The source of the last traffic source used by the user.
   last_traffic_source_source,
+  -- The medium of the first traffic source used by the user.
   first_traffic_source_medium,
+  -- The name of the first traffic source used by the user.
   first_traffic_source_name,
+  -- The source of the first traffic source used by the user.
   first_traffic_source_source,
+  -- The number of active users in the past 1 to 7 days
   active_users_past_1_7_day,
+  -- The number of active users in the past 8-14 days
   active_users_past_8_14_day,
+  -- The number of purchases in the past 1 to 7 days
   purchases_past_1_7_day,
+  -- The number of purchases in the past 8-14 days
   purchases_past_8_14_day,
+  -- The number of visits in the past 1 to 7 days
   visits_past_1_7_day,
+  -- The number of visits in the past 8-14 days
   visits_past_8_14_day,
+  -- The number of items viewed in the past 1 to 7 days
   view_items_past_1_7_day,
+  -- The number of items viewed in the past 8-14 days
   view_items_past_8_14_day,
+  -- The number of items added to carts in the past 1 to 7 days
   add_to_carts_past_1_7_day,
+  -- The number of items added to carts in the past 8-14 days
   add_to_carts_past_8_14_day,
+  -- The number of checkouts in the past 1 to 7 days
   checkouts_past_1_7_day,
+  -- The number of checkouts in the past 8-14 days
   checkouts_past_8_14_day,
+  -- The lifetime value revenue gain in the past 1 to 7 days
   ltv_revenue_past_1_7_day,
+  -- The lifetime value revenue gain in the past 7-15 days
   ltv_revenue_past_7_15_day
   FROM training_preparation);
 
@@ -231,6 +314,9 @@ SELECT DISTINCT * FROM DataForTargetTable
 WHERE data_split IS NOT NULL;
 
 -- Create the final training table audience_segmentation_training_full_dataset by selecting all data from DataForTargetTable.
+-- It uses the LAST_VALUE window function to select the latest value of each feature for each user.
+-- This table is designed to provide a clean and consistent dataset for training the model. By selecting the latest values for each feature, 
+-- it ensures that the model is trained on the most up-to-date information about each user. This helps to improve the accuracy and performance of the model.
 CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_training_15` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
@@ -268,6 +354,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_traini
 
 -- Create a view v_audience_segmentation_training_15 that selects the latest values for each feature from the audience_segmentation_training_full_dataset table.
 -- This view is used by the Vertex AI pipeline to train the Audience Segmentation model.
+-- In essence, this code snippet creates a view that selects the latest values of all features for each user within each data split (TRAIN, VALIDATE, TEST), applying a random sampling to the data.
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_audience_segmentation_training_15`
 (processed_timestamp,
   data_split,
@@ -366,11 +453,13 @@ FROM (
   checkouts_past_8_14_day,
   ltv_revenue_past_1_7_day,
   ltv_revenue_past_7_15_day,
-  ROW_NUMBER() OVER (PARTITION BY data_split ORDER BY RAND()) AS rn,
+  -- Row number attributted to user in a data_split ordered by feature_date descending.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM
-    `{{project_id}}.{{dataset}}.audience_segmentation_training_15`)
+    `{{project_id}}.{{dataset}}.audience_segmentation_training_15`) TABLESAMPLE SYSTEM ({{samples_percentage}} PERCENT)
 WHERE
-  user_row_order = 1 AND
-  -- samples_per_split variable determines the number of samples to be included in each data split (TRAIN, VALIDATE, TEST).
-  rn <= {{samples_per_split}};
+  -- Filters only for the last row example in each data split per user.
+  user_row_order = 1;
+
+  -- Droping table from BigQuery temporary storage
+DROP TABLE training_preparation;

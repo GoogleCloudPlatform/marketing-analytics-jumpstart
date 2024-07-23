@@ -20,41 +20,63 @@ SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 -- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
 CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
   SELECT
+    -- User's unique identifier
     user_pseudo_id,
+    -- The date for which future purchases are being calculated
     input_date as event_date,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 1 day after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_1,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 2 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 2 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_2,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 3 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 3 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_3,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 4 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 4 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_4,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 5 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 5 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_5,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 6 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 6 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_6,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 7 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 7 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_7,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 8 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 8 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_8,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 9 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 9 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_9,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 10 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 10 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_10,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 11 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 11 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_11,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 12 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 12 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_12,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 13 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 13 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_13,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase 14 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_14,
+    -- Calculates the maximum count of distinct transactions for users who made a purchase between 15 and 30 days after `input_date`
     MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) BETWEEN 15 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchase_day_15_30
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
     ON E.device_type_id = D.device_type_id
+  -- Filters events to be within the date range defined by input_date and end_date from dates_interval
   WHERE event_date BETWEEN input_date AND end_date
+    -- Filter event with event name purchase
     AND LOWER(E.event_name) IN ('purchase')
     AND E.ga_session_id IS NOT NULL
     AND E.ecommerce.transaction_id IS NOT NULL 
     AND E.ecommerce.transaction_id <> '(not set)'
     AND D.device_os IS NOT NULL
-  GROUP BY 
-    user_pseudo_id
+  -- Grouping by user pseudo ids
+  GROUP BY user_pseudo_id
 );
 
 -- All users in the platform
 CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
   SELECT DISTINCT
+    -- User's unique identifier
     Users.user_pseudo_id,
+    -- The event date for which purchases are being considered
     Days.event_date as event_date,
+    -- Placeholder columns for purchase counts in future days
     NULL as purchase_day_1,
     NULL as purchase_day_2,
     NULL as purchase_day_3,
@@ -72,6 +94,7 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
     NULL as purchase_day_15_30
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
   CROSS JOIN 
+  -- Generates a list of dates for the current date (`input_date`)
   (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
   WHERE Days.event_date = input_date
     AND Users.event_name='purchase'
@@ -83,36 +106,58 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
 
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
 SELECT DISTINCT
+  -- Timestamp when the data was processed
   CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- The date for which purchases are being considered
   A.event_date as feature_date,
+  -- User's unique identifier
   A.user_pseudo_id,
+  -- The maximum of 0 and the purchase count for day 1 (if it exists)
   LEAST(COALESCE(B.purchase_day_1, 0), 1) AS purchase_day_1,
+  -- The maximum of 0 and the purchase count for day 2 (if it exists)
   LEAST(COALESCE(B.purchase_day_2, 0), 1) AS purchase_day_2,
+  -- The maximum of 0 and the purchase count for day 3 (if it exists)
   LEAST(COALESCE(B.purchase_day_3, 0), 1) AS purchase_day_3,
+  -- The maximum of 0 and the purchase count for day 4 (if it exists)
   LEAST(COALESCE(B.purchase_day_4, 0), 1) AS purchase_day_4,
+  -- The maximum of 0 and the purchase count for day 5 (if it exists)
   LEAST(COALESCE(B.purchase_day_5, 0), 1) AS purchase_day_5,
+  -- The maximum of 0 and the purchase count for day 6 (if it exists)
   LEAST(COALESCE(B.purchase_day_6, 0), 1) AS purchase_day_6,
+  -- The maximum of 0 and the purchase count for day 7 (if it exists)
   LEAST(COALESCE(B.purchase_day_7, 0), 1) AS purchase_day_7,
+  -- The maximum of 0 and the purchase count for day 8 (if it exists)
   LEAST(COALESCE(B.purchase_day_8, 0), 1) AS purchase_day_8,
+  -- The maximum of 0 and the purchase count for day 9 (if it exists)
   LEAST(COALESCE(B.purchase_day_9, 0), 1) AS purchase_day_9,
+  -- The maximum of 0 and the purchase count for day 10 (if it exists)
   LEAST(COALESCE(B.purchase_day_10, 0), 1) AS purchase_day_10,
+  -- The maximum of 0 and the purchase count for day 11 (if it exists)
   LEAST(COALESCE(B.purchase_day_11, 0), 1) AS purchase_day_11,
+  -- The maximum of 0 and the purchase count for day 12 (if it exists)
   LEAST(COALESCE(B.purchase_day_12, 0), 1) AS purchase_day_12,
+  -- The maximum of 0 and the purchase count for day 13 (if it exists)
   LEAST(COALESCE(B.purchase_day_13, 0), 1) AS purchase_day_13,
+  -- The maximum of 0 and the purchase count for day 14 (if it exists)
   LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
+  -- The maximum of 0 and the purchase count for days 15-30 (if it exists)
   LEAST(COALESCE(B.purchase_day_15_30, 0), 1) AS purchase_day_15_30
 FROM all_users_possible_purchases AS A
 LEFT JOIN future_purchases_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id
 ;
 
+-- Updates or inserts data into the target table
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
 ON I.feature_date = T.feature_date 
   AND I.user_pseudo_id = T.user_pseudo_id
 WHEN MATCHED THEN
+  -- Updates existing records
   UPDATE SET 
+    -- Updates the processed timestamp
     I.processed_timestamp = T.processed_timestamp,
+    -- Updates purchase counts for each day
     I.purchase_day_1 = T.purchase_day_1,
     I.purchase_day_2 = T.purchase_day_2,
     I.purchase_day_3 = T.purchase_day_3,
@@ -129,6 +174,7 @@ WHEN MATCHED THEN
     I.purchase_day_14 = T.purchase_day_14,
     I.purchase_day_15_30 = T.purchase_day_15_30
 WHEN NOT MATCHED THEN
+  -- Inserts new records
   INSERT 
     (processed_timestamp,
      feature_date,

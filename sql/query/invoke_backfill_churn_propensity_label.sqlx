@@ -12,67 +12,92 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- 
-
+-- This SQL code identifies churned and bounced users based on their engagement patterns. 
+-- Declare variables to store the maximum and minimum dates for analysis
 DECLARE max_date DATE;
 DECLARE min_date DATE;
+-- Declare a variable to define the time multiplier for churn identification
 DECLARE CHURN_MULTIPLIER_DAYS INT64;
 
+-- Set the maximum date for analysis, considering an offset from the latest event date
 SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+-- Set the minimum date for analysis, considering an offset from the earliest event date
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET CHURN_MULTIPLIER_DAYS = 30;
+-- Set the churn multiplier in days
+SET CHURN_MULTIPLIER_DAYS = {{churn_multiplier_days}};
 
+-- Create a temporary table 'dates_interval' to store distinct event dates and their corresponding end dates
 CREATE OR REPLACE TEMP TABLE dates_interval as (
 SELECT DISTINCT 
+  -- Select each distinct event date as 'input_date', representing the current date in the analysis
   event_date as input_date,
+  -- Calculate the 'end_date' by adding a specified interval to the 'input_date'
   DATE_ADD(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
 FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+-- Filter event dates within the specified date range
 WHERE event_date BETWEEN min_date AND max_date
   ORDER BY input_date DESC
 );
 
+-- Create a temporary table 'all_possible_users' to store all distinct users and their potential feature dates
 -- All users in the platform
 CREATE OR REPLACE TEMP TABLE all_possible_users as (
 SELECT DISTINCT
+  -- User's pseudo ID
   Users.user_pseudo_id,
+  -- Event date as the feature date
   DI.event_date as feature_date,
+  -- Placeholder for churned status (to be populated later)
   NULL as churned,
+  -- Placeholder for bounced status (to be populated later)
   NULL as bounced,
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
+-- Cross join with a generated date array to include all possible dates for each user
 CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
-WHERE LOWER(Users.event_name) IN ('user_engagement') -- page_view, session_start, user_engagement
+-- Filter for specific engagement events and valid session IDs
+WHERE LOWER(Users.event_name) IN ('{{user_engagement_event}}') -- page_view, session_start, user_engagement
       AND Users.ga_session_id IS NOT NULL
   );
 
+-- Create a temporary table 'first_and_last_touch_per_user' to store the first and last event timestamps for each user
 -- Calculating the first and last touch for each user.
 CREATE OR REPLACE TEMP TABLE first_and_last_touch_per_user AS (
 SELECT DISTINCT
+  -- User's pseudo ID
   user_pseudo_id,
+  -- Event date as the feature date
   input_date as feature_date,
+  -- Minimum event timestamp as the user's first event
   MIN(event_timestamp) AS user_first_event,
+  -- Maximum event timestamp as the user's last event
   MAX(event_timestamp) AS user_last_event
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
 CROSS JOIN dates_interval as DI
+-- Filter for events within the specified date range, engagement events, valid session IDs, and non-null device operating systems
 WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
-  AND LOWER(E.event_name) IN ('user_engagement') -- page_view, session_start, user_engagement
+  AND LOWER(E.event_name) IN ('{{user_engagement_event}}') -- page_view, session_start, user_engagement
   AND E.ga_session_id IS NOT NULL
   AND D.device_os IS NOT NULL
+-- Group by user ID and feature date
 GROUP BY 
   user_pseudo_id, feature_date
 );
 
--- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
+-- Create a temporary table 'future_churn_per_user' to identify churned and bounced users
 CREATE OR REPLACE TEMP TABLE future_churn_per_user AS (
 SELECT DISTINCT
   user_pseudo_id,
   feature_date,
+  -- Determine churned status: 1 if last event is within the churn multiplier days from the first event, otherwise 0
   -- churned = 1 if last_event within X days of event, else 0
-IF (user_last_event < TIMESTAMP_ADD(user_first_event, INTERVAL CHURN_MULTIPLIER_DAYS DAY), 1, 0) AS churned,
--- bounced = 1 if last_touch within 10 min, else 0
-IF (user_last_event <= TIMESTAMP_ADD(user_first_event, INTERVAL 10 MINUTE), 1, 0) AS bounced,
+  IF (user_last_event < TIMESTAMP_ADD(user_first_event, INTERVAL CHURN_MULTIPLIER_DAYS DAY), 1, 0) AS churned,
+  -- Determine bounced status: 1 if last touch is within 10 minutes of the first event, otherwise 0
+  -- bounced = 1 if last_touch within 10 min, else 0
+  IF (user_last_event <= TIMESTAMP_ADD(user_first_event, INTERVAL 10 MINUTE), 1, 0) AS bounced,
 FROM first_and_last_touch_per_user
+-- Grouping by user ID, first event timestamp, last event timestamp, and feature date
 GROUP BY
   user_pseudo_id, 
   user_first_event,
@@ -80,12 +105,16 @@ GROUP BY
   feature_date
 );
 
+-- Insert data into the target table, combining user information with churn and bounce status
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
 SELECT DISTINCT
+  -- Current timestamp as the processing timestamp
   CURRENT_TIMESTAMP() AS processed_timestamp,
   A.feature_date,
   A.user_pseudo_id,
+  -- Churned status, defaulting to 0 if null
   LEAST(COALESCE(B.churned, 0), 1) AS churned,
+  -- Bounced status, defaulting to 0 if null
   LEAST(COALESCE(B.bounced, 0), 1) AS bounced,
 FROM all_possible_users AS A
 LEFT JOIN future_churn_per_user AS B

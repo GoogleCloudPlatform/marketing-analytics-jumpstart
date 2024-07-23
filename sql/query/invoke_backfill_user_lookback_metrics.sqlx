@@ -12,123 +12,171 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This SQL code defines a series of temporary tables to calculate and store user engagement metrics based on
+-- rolling window aggregations. These tables are then used to populate a target table with daily user engagement features.
+
 DECLARE min_date DATE;
+-- Sets min_date to the earliest event_date from the event table, plus an offset specified by the interval_min_date
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- This section determines the date range for analysis and creates a temporary table dates_interval with distinct date intervals.
 CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
+    -- Select each distinct event_date as 'input_date', representing the current date in the analysis
     event_date as input_date,
+    -- Calculate the 'end_date' by subtracting a specified interval from the 'input_date'
     DATE_SUB(event_date, INTERVAL {{interval_end_date}} DAY) as end_date
   FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+  -- Filter event dates greater than or equal to min_date
   WHERE event_date >= min_date
     ORDER BY input_date DESC
 );
 
-##All users metrics: 7-day active users, 8–14-day active users
+
+-- Run these windows aggregations every day. For each date in training and inference date ranges.
+-- All users metrics: 7-day active users, 8–14-day active users
 CREATE OR REPLACE TEMP TABLE rolling_active_users AS (
 SELECT
   user_pseudo_id,
+  -- Date for which the feature is being calculated
   input_date as feature_date,
+  -- Number of distinct days the user was active in the past 1-7 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_1_7_day,
+  -- Number of distinct days the user was active in the past 8-14 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id, input_date) AS active_users_past_8_14_day
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
+-- Filter events in the specified date range
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+-- Consider only active users
 AND engagement_time_msec > 0
+-- Grouping by user_pseudo_id and feature_date
 GROUP BY user_pseudo_id, feature_date
 );
 
-## Past User metrics: 1-day purchase per user, 7-day purchases per user, 8-14-day purchases per user
+-- Past User metrics: 1-day purchase per user, 7-day purchases per user, 8-14-day purchases per user
 CREATE OR REPLACE TEMP TABLE rolling_purchases_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
+  -- Number of distinct purchase transactions the user made in the past 1-7 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_1_7_day,
+  -- Number of distinct purchase transactions the user made in the past 8-14 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchases_past_8_14_day
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
+-- Filter events in the specified date range
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+-- Consider only purchase events with valid transactions
 AND event_name='purchase'
 AND ga_session_id IS NOT NULL
 AND ecommerce.transaction_id IS NOT NULL 
 AND ecommerce.transaction_id <> '(not set)'
+-- Grouping by user_pseudo_id and feature_date
 GROUP BY user_pseudo_id, feature_date
 );
 
-## Past User metrics: 1-day visits per user, 7-day visits per user, 8-14-day visits per user
+-- Past User metrics: 1-day visits per user, 7-day visits per user, 8-14-day visits per user
 CREATE OR REPLACE TEMP TABLE rolling_visits_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
+  -- Number of distinct visits the user made in the past 1-7 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 1 AND 7 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_1_7_day,
+  -- Number of distinct visits the user made in the past 8-14 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 8 AND 14 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS visits_past_8_14_day
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
+-- Filter events in the specified date range
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND ga_session_id IS NOT NULL
+-- Grouping by user_pseudo_id and feature_date
 GROUP BY user_pseudo_id, feature_date
 );
 
-## Past User metrics: 1-day view_item per user, 7-day view_item per user, 8-14-day view_item per user
+-- Past User metrics: 1-day view_item per user, 7-day view_item per user, 8-14-day view_item per user
 CREATE OR REPLACE TEMP TABLE rolling_view_item_past_days AS (
 SELECT
   user_pseudo_id,
   input_date as feature_date,
+  -- Number of times the user viewed items in the past 1-7 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_1_7_day,
+  -- Number of times the user viewed items in the past 8-14 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_items_past_8_14_day
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
+-- Filter events in the specified date range
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+-- Consider only view_item events
 AND event_name='view_item'
 AND ga_session_id IS NOT NULL
+-- Grouping by user_pseudo_id and feature_date
 GROUP BY user_pseudo_id, feature_date
 );
 
-## Past User metrics: 1-day add_to_cart per user, 7-day add_to_cart per user, 8-14-day add_to_cart per user
+-- Past User metrics: 1-day add_to_cart per user, 7-day add_to_cart per user, 8-14-day add_to_cart per user
 CREATE OR REPLACE TEMP TABLE rolling_add_to_cart_past_days AS (
 SELECT
   user_pseudo_id,
+  -- Date for which the feature is being calculated
   input_date as feature_date,
+  -- Number of times the user added items to cart in the past 1-7 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_1_7_day,
+  -- Number of times the user added items to cart in the past 8-14 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS add_to_carts_past_8_14_day
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
+-- Filter events in the specified date range
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+-- Consider only add_to_cart events
 AND event_name='add_to_cart'
 AND ga_session_id IS NOT NULL
+-- Grouping by user_pseudo_id and feature_date
 GROUP BY user_pseudo_id, feature_date
 );
 
-## Past User metrics: 1-day checkout per user, 7-day checkout per user, 8-14-day checkout per user
+-- Past User metrics: 1-day checkout per user, 7-day checkout per user, 8-14-day checkout per user
 CREATE OR REPLACE TEMP TABLE rolling_checkout_past_days AS (
 SELECT
+  -- User identifier 
   user_pseudo_id,
+  -- Date for which the feature is being calculated
   input_date as feature_date,
+  -- Number of times the user checked out in the past 1-7 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_1_7_day,
+  -- Number of times the user checked out in the past 8-14 days.
   MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 8 AND 14 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS checkouts_past_8_14_day
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
+-- Filter events in the specified date range
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
+-- Consider only begin_checkout events
 AND event_name='begin_checkout'
 AND ga_session_id IS NOT NULL
+-- Grouping by user_pseudo_id and feature_date
 GROUP BY user_pseudo_id, feature_date
 );
 
-## Past revenue metrics
+-- Past revenue metrics
 CREATE OR REPLACE TEMP TABLE rolling_revenue_per_user AS (
 SELECT DISTINCT
+  -- User identifier 
   user_pseudo_id,
+  -- Date for which the feature is being calculated
   input_date as feature_date,
+  -- Maximum lifetime value revenue for the user on the same day (past 0 days)
   MAX(GREATEST(
     SUM(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 0 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
     MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 0 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
           )) 
         OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_past_0_day,
+  -- Maximum lifetime value revenue for the user in the past 1-7 days
   MAX(GREATEST(
     SUM(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
     MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 7 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
           )) 
         OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_past_1_7_day,
+  -- Maximum lifetime value revenue for the user in the past 1-15 days
   MAX(GREATEST(
     SUM(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 15 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
     MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 15 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
@@ -136,47 +184,80 @@ SELECT DISTINCT
         OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_past_1_15_day
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
 CROSS JOIN dates_interval as DI
+-- Filter events in the specified date range
 WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
 AND E.ga_session_id IS NOT NULL
 AND ecommerce.transaction_id IS NOT NULL 
 AND ecommerce.transaction_id <> '(not set)'
+-- Grouping by user_pseudo_id and feature_date
 GROUP BY user_pseudo_id, feature_date
 );
 
 -- All users in the platform
+-- This code snippet creates a temporary table that contains a distinct list of user pseudo IDs
+-- and their corresponding feature dates, filtering for events with valid session IDs, device operating systems,
+-- and falling within the specified date range.
 CREATE OR REPLACE TEMP TABLE events_users as (
 SELECT DISTINCT
+  -- User identifier 
   Users.user_pseudo_id,
+  -- Date for which the feature is being calculated
   DI.input_date as feature_date
 FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
 ON Users.device_type_id = D.device_type_id 
 CROSS JOIN dates_interval as DI
 WHERE Users.ga_session_id IS NOT NULL
+-- Filter events in the specified date range
 AND Users.event_date BETWEEN DI.end_date AND DI.input_date
 AND D.device_os IS NOT NULL
 );
 
+-- This code block inserts data into a table, combining information from the events_users
+-- table and several temporary tables containing rolling window features. The resulting
+-- data represents user-level features for each user and date, capturing their past activity
+-- within different time windows.
+-- This code is part of a larger process for building a machine learning model that predicts
+-- user behavior based on their past activity. The features generated by this code can be used
+-- as input to the model, helping it learn patterns and make predictions.
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   SELECT DISTINCT
+    -- Timestamp indicating when the data was processed
     CURRENT_TIMESTAMP() AS processed_timestamp,
+    -- Date for which the features are calculated
     EUD.feature_date,
+    -- User identifier 
     EUD.user_pseudo_id,
+    -- Number of distinct days the user was active in the past 1-7 days
     COALESCE(active_users_past_1_7_day,0) AS active_users_past_1_7_day,
+    -- Number of distinct days the user was active in the past 8-14 days
     COALESCE(active_users_past_8_14_day,0) AS active_users_past_8_14_day,
+    -- Number of distinct purchase transactions the user made in the past 1-7 days
     COALESCE(purchases_past_1_7_day,0) AS purchases_past_1_7_day,
+    -- Number of distinct purchase transactions the user made in the past 8-14 days
     COALESCE(purchases_past_8_14_day,0) AS purchases_past_8_14_day,
+    -- Number of distinct visits the user made in the past 1-7 days
     COALESCE(visits_past_1_7_day,0) AS visits_past_1_7_day,
+    -- Number of distinct visits the user made in the past 8-14 days
     COALESCE(visits_past_8_14_day,0) AS visits_past_8_14_day,
+    -- Number of times the user viewed items in the past 1-7 days
     COALESCE(view_items_past_1_7_day,0) AS view_items_past_1_7_day,
+    -- Number of times the user viewed items in the past 8-14 days
     COALESCE(view_items_past_8_14_day,0) AS view_items_past_8_14_day,
+    -- Number of times the user added items to cart in the past 1-7 days
     COALESCE(add_to_carts_past_1_7_day,0) AS add_to_carts_past_1_7_day,
+    -- Number of times the user added items to cart in the past 8-14 days
     COALESCE(add_to_carts_past_8_14_day,0) AS add_to_carts_past_8_14_day,
+    -- Number of times the user checked out in the past 1-7 days
     COALESCE(checkouts_past_1_7_day,0) AS checkouts_past_1_7_day,
+    -- Number of times the user checked out in the past 8-14 days
     COALESCE(checkouts_past_8_14_day,0) AS checkouts_past_8_14_day,
+    -- Difference in lifetime value revenue between the past 1-7 days and the past 0 days
     GREATEST(0.0, COALESCE(COALESCE(G.user_ltv_revenue_past_1_7_day,0.0) - COALESCE(G.user_ltv_revenue_past_0_day,0.0), 0.0)) AS ltv_revenue_past_1_7_day,
+    -- Difference in lifetime value revenue between the past 1-15 days and the past 1-7 days
     GREATEST( 0.0, COALESCE(COALESCE(G.user_ltv_revenue_past_1_15_day,0.0) - COALESCE(G.user_ltv_revenue_past_1_7_day,0.0), 0.0)) AS ltv_revenue_past_7_15_day,
     FROM events_users AS EUD
+    -- This performs a full outer join, which combines all rows from both tables, including those that don't have matching values.
     FULL OUTER JOIN rolling_active_users AS A
     ON EUD.user_pseudo_id = A.user_pseudo_id AND EUD.feature_date = A.feature_date
     FULL OUTER JOIN rolling_purchases_past_days AS B
@@ -191,5 +272,6 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
     ON EUD.user_pseudo_id = F.user_pseudo_id AND EUD.feature_date = F.feature_date
     FULL OUTER JOIN rolling_revenue_per_user AS G
     ON EUD.user_pseudo_id = G.user_pseudo_id AND EUD.feature_date = G.feature_date
+    -- This filters the results to include only rows where the user_pseudo_id is not null.
     WHERE EUD.user_pseudo_id IS NOT NULL
 ;

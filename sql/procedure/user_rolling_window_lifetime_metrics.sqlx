@@ -16,141 +16,244 @@
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
   
-# Run these windows aggregations every day. For each date in training and inference date ranges.
-##All users metrics: 7-day active users, 8–30-day active users, 31-90-day active users 
+-- Run these windows aggregations every day. For each date in training and inference date ranges.
+-- All users metrics: 7-day active users, 8–30-day active users, 31-90-day active users 
 CREATE OR REPLACE TEMP TABLE rolling_active_users AS (
   SELECT
+    -- User's unique identifier
     user_pseudo_id,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_1_30_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 60 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_30_60_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 90 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_60_90_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 120 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_90_120_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 150 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_120_150_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 WHEN TRUE THEN event_date END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_150_180_day
+    -- Number of times the user was active in the past 1 to 30 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 THEN event_date
+    END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_1_30_day,
+    -- Number of times the user was active in the past 31 to 60 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 60 THEN event_date
+    END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_30_60_day,
+    -- Number of times the user was active in the past 61 to 90 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 90 THEN event_date
+    END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_60_90_day,
+    -- Number of times the user was active in the past 91 to 120 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 120 THEN event_date
+    END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_90_120_day,
+    -- Number of times the user was active in the past 121 to 150 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 150 THEN event_date
+    END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_120_150_day,
+    -- Number of times the user was active in the past 151 to 180 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 THEN event_date
+    END)) OVER(PARTITION BY user_pseudo_id) AS active_users_past_150_180_day
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  -- Filters events to be within the defined date range
   WHERE E.event_date BETWEEN end_date AND input_date
+  -- Consider only events with engagement time greater than 0 milliseconds
   AND E.engagement_time_msec > 0
+  -- Group the results by user pseudo ID
   GROUP BY E.user_pseudo_id
 );
 
-## Past User metrics: 1-day purchase per user, 2-7-day purchases per user, 8-14-day purchases per user, 15-30-day purchases per user, 31–90-day purchases per user
+-- Past User metrics: 1-day purchase per user, 2-7-day purchases per user, 8-14-day purchases per user, 15-30-day purchases per user, 31–90-day purchases per user
 CREATE OR REPLACE TEMP TABLE rolling_purchases_per_user AS (
   SELECT
+    -- User's unique identifier
     user_pseudo_id,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_1_30_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 60 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_30_60_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 90 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_60_90_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 120 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_90_120_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 150 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_120_150_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_150_180_day
+    -- Number of purchases made by the user in the past 1 to 30 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 THEN ecommerce.transaction_id
+    END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_1_30_day,
+    -- Number of purchases made by the user in the past 31 to 60 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 60 THEN ecommerce.transaction_id
+    END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_30_60_day,
+    -- Number of purchases made by the user in the past 61 to 90 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 90 THEN ecommerce.transaction_id
+    END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_60_90_day,
+    -- Number of purchases made by the user in the past 91 to 120 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 120 THEN ecommerce.transaction_id
+    END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_90_120_day,
+    -- Number of purchases made by the user in the past 121 to 150 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 150 THEN ecommerce.transaction_id
+    END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_120_150_day,
+    -- Number of purchases made by the user in the past 151 to 180 days
+    MAX(COUNT(DISTINCT CASE
+    WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 THEN ecommerce.transaction_id
+    END)) OVER(PARTITION BY user_pseudo_id) AS purchases_past_150_180_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  -- Filters events to be within the defined date range
   WHERE event_date BETWEEN end_date AND input_date
+  -- Consider only events with event name 'purchase'
   AND event_name='purchase'
   AND ga_session_id IS NOT NULL
   AND ecommerce.transaction_id IS NOT NULL 
   AND ecommerce.transaction_id <> '(not set)'
+  -- Group the results by user pseudo ID
   GROUP BY user_pseudo_id
 );
 
-## Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user
+-- Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user
 CREATE OR REPLACE TEMP TABLE rolling_visits_per_user AS (
   SELECT
-    user_pseudo_id,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 1 AND 31 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_1_30_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 31 AND 61 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_30_60_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 61 AND 91 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_60_90_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 91 AND 121 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_90_120_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 121 AND 151 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_120_150_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  BETWEEN 151 AND 181 WHEN TRUE THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_150_180_day
+   -- User's unique identifier
+  user_pseudo_id,
+  -- Number of visits made by the user in the past 1 to 30 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_1_30_day,
+  -- Number of visits made by the user in the past 31 to 60 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 60 THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_30_60_day,
+  -- Number of visits made by the user in the past 61 to 90 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 90 THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_60_90_day,
+  -- Number of visits made by the user in the past 91 to 120 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 120 THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_90_120_day,
+  -- Number of visits made by the user in the past 121 to 150 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 150 THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_120_150_day,
+  -- Number of visits made by the user in the past 151 to 180 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 THEN ga_session_id END)) OVER(PARTITION BY user_pseudo_id) AS visits_past_150_180_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  -- Filters events to be within the defined date range
   WHERE event_date BETWEEN end_date AND input_date
   AND ga_session_id IS NOT NULL
+  -- Group the results by user pseudo ID
   GROUP BY user_pseudo_id
 );
 
-## Past User metrics: 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user
+-- Past User metrics: 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user
 CREATE OR REPLACE TEMP TABLE rolling_view_item_per_user AS (
   SELECT
+    -- User's unique identifier
     user_pseudo_id,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_1_30_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 61 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_30_60_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 91 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_60_90_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 121 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_90_120_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 151 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_120_150_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 181 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_150_180_day
+    -- Number of times the user has viewed items in the past 1 to 30 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_1_30_day,
+    -- Number of times the user has viewed items in the past 31 to 60 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 60 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_30_60_day,
+    -- Number of times the user has viewed items in the past 61 to 90 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 90 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_60_90_day,
+    -- Number of times the user has viewed items in the past 91 to 120 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 120 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_90_120_day,
+    -- Number of times the user has viewed items in the past 121 to 150 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 150 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_120_150_day,
+    -- Number of times the user has viewed items in the past 151 to 180 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS view_items_past_150_180_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  -- Filters events to be within the defined date range
   WHERE event_date BETWEEN end_date AND input_date
+  -- Consider only events with event name 'view_item'
   AND event_name='view_item'
   AND ga_session_id IS NOT NULL
+  -- Group the results by user pseudo ID
   GROUP BY user_pseudo_id
 );
 
-## Past User metrics: 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
+-- Past User metrics: 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
 CREATE OR REPLACE TEMP TABLE rolling_add_to_cart_per_user AS (
   SELECT
+    -- User's unique identifier
     user_pseudo_id,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_1_30_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 61 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_30_60_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 91 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_60_90_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 121 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_90_120_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 151 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_120_150_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 181 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_150_180_day
+    -- Number of times the user has added items to cart in the past 1 to 30 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_1_30_day,
+    -- Number of times the user has added items to cart in the past 31 to 60 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 60 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_30_60_day,
+    -- Number of times the user has added items to cart in the past 61 to 90 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 90 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_60_90_day,
+    -- Number of times the user has added items to cart in the past 91 to 120 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 120 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_90_120_day,
+    -- Number of times the user has added items to cart in the past 121 to 150 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 150 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_120_150_day,
+    -- Number of times the user has added items to cart in the past 151 to 180 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS add_to_carts_past_150_180_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  -- Filters events to be within the defined date range
   WHERE event_date BETWEEN end_date AND input_date
+  -- Consider only events with event name 'add_to_cart'
   AND event_name='add_to_cart'
   AND ga_session_id IS NOT NULL
+  -- Group the results by user pseudo ID
   GROUP BY user_pseudo_id
 );
 
-## Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user, 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user, 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
+-- Past User metrics: 1-day visits per user, 2-7-day visits per user, 7-14-day visits per user, 15-30-day visits per user, 31–90-day visits per user, 1-day view_item per user, 2-7-day view_item per user, 7-14-day view_item per user, 15-30-day view_item per user, 31–90-day view_item per user, 1-day add_to_cart per user, 2-7-day add_to_cart per user, 7-14-day add_to_cart per user, 15-30-day add_to_cart per user, 31–90-day add_to_cart per user, 1-day checkout per user, 2-7-day checkout per user, 7-14-day checkout per user, 15-30-day checkout per user, 31–90-day checkout per user
 CREATE OR REPLACE TEMP TABLE rolling_checkout_per_user AS (
   SELECT
+    -- User's unique identifier
     user_pseudo_id,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_1_30_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 61 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_30_60_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 91 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_60_90_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 121 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_90_120_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 151 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_120_150_day,
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 181 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_150_180_day
+    -- Number of times the user has checked out in the past 1 to 30 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 31 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_1_30_day,
+    -- Number of times the user has checked out in the past 31 to 60 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 31 AND 61 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_30_60_day,
+    -- Number of times the user has checked out in the past 61 to 90 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 61 AND 91 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_60_90_day,
+    -- Number of times the user has checked out in the past 91 to 120 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 91 AND 121 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_90_120_day,
+    -- Number of times the user has checked out in the past 121 to 150 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 121 AND 151 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_120_150_day,
+    -- Number of times the user has checked out in the past 151 to 180 days
+    MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) BETWEEN 151 AND 180 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS checkouts_past_150_180_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  -- Filters events to be within the defined date range
   WHERE event_date BETWEEN end_date AND input_date
+  -- Consider only events with event name 'begin_checkout'
   AND event_name='begin_checkout'
   AND ga_session_id IS NOT NULL
+  -- Group the results by user pseudo ID
   GROUP BY user_pseudo_id
 );
 
 CREATE OR REPLACE TEMP TABLE rolling_revenue_per_user AS (
   SELECT DISTINCT
+    -- User's unique identifier
     user_pseudo_id,
+    -- User's revenue in the past 0 days
     MAX(GREATEST(
+      -- Sum of purchase revenue in the past 0 days
       SUM(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 0 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Max of user's lifetime value (LTV) revenue in the past 0 days
       MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 0 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_past_0_day,
+    -- User's revenue in the past 1 to 30 days
     MAX(GREATEST(
+      -- Sum of purchase revenue in the past 1 to 30 days
       SUM(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Max of user's lifetime value (LTV) revenue in the past 1 to 30 days
       MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 30 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_past_1_30_day,
+    -- User's revenue in the past 1 to 90 days
     MAX(GREATEST(
+      -- Sum of purchase revenue in the past 1 to 90 days
       SUM(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Max of user's lifetime value (LTV) revenue in the past 1 to 90 days
       MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 90 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_past_1_90_day,
+    -- User's revenue in the past 1 to 180 days
     MAX(GREATEST(
+      -- Sum of purchase revenue in the past 1 to 180 days
       SUM(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(ecommerce.purchase_revenue_in_usd,0.0) END), 
+      -- Max of user's lifetime value (LTV) revenue in the past 1 to 180 days
       MAX(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) BETWEEN 1 AND 180 WHEN TRUE THEN IFNULL(user_ltv_revenue,0.0) END)
             )) 
           OVER(PARTITION BY user_pseudo_id) AS user_ltv_revenue_1_180_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  -- Filters events to be within the defined date range
   WHERE E.event_date BETWEEN end_date AND input_date
   AND E.ga_session_id IS NOT NULL
   AND ecommerce.transaction_id IS NOT NULL 
   AND ecommerce.transaction_id <> '(not set)'
+  -- Group the results by user pseudo ID
   GROUP BY user_pseudo_id
 );
 
-## All users in the platform
+-- This SQL code creates a temporary table that contains a distinct list of user pseudo IDs
+-- and their corresponding event dates.
+-- It cross-joins the event table with a distinct list of event dates,
+-- then joins it with the device table based on device type ID,
+-- and applies filters for valid session IDs, device operating systems, and dates within the specified range.
+-- All users in the platform
 CREATE OR REPLACE TEMP TABLE events_users_days as (
   SELECT DISTINCT
   Users.user_pseudo_id,
@@ -160,55 +263,59 @@ CREATE OR REPLACE TEMP TABLE events_users_days as (
   (SELECT DISTINCT event_date FROM `{{mds_project_id}}.{{mds_dataset}}.event`) Days
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON Users.device_type_id = D.device_type_id 
+  -- Filter for non-null session IDs
   WHERE Users.ga_session_id IS NOT NULL
-    AND D.device_os IS NOT NULL
-    AND Days.event_date BETWEEN end_date AND input_date
+  AND D.device_os IS NOT NULL
+  -- Filter for event dates within the defined range
+  AND Days.event_date BETWEEN end_date AND input_date
 );
 
+-- This SQL code creates a temporary table with distinct features for each user and date.
+-- It calculates various rolling window features based on the user's past activity within different time windows.
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
-    CURRENT_TIMESTAMP() AS processed_timestamp,
-    input_date AS feature_date,
-    EUD.user_pseudo_id,
-    COALESCE(active_users_past_1_30_day,0) AS active_users_past_1_30_day,
-    COALESCE(active_users_past_30_60_day,0) AS active_users_past_30_60_day,
-    COALESCE(active_users_past_60_90_day,0) AS active_users_past_60_90_day,
-    COALESCE(active_users_past_90_120_day,0) AS active_users_past_90_120_day,
-    COALESCE(active_users_past_120_150_day,0) AS active_users_past_120_150_day,
-    COALESCE(active_users_past_150_180_day,0) AS active_users_past_150_180_day,
-    COALESCE(purchases_past_1_30_day,0) AS purchases_past_1_30_day,
-    COALESCE(purchases_past_30_60_day,0) AS purchases_past_30_60_day,
-    COALESCE(purchases_past_60_90_day,0) AS purchases_past_60_90_day,
-    COALESCE(purchases_past_90_120_day,0) AS purchases_past_90_120_day,
-    COALESCE(purchases_past_120_150_day,0) AS purchases_past_120_150_day,
-    COALESCE(purchases_past_150_180_day,0) AS purchases_past_150_180_day,
-    COALESCE(visits_past_1_30_day,0) AS visits_past_1_30_day,
-    COALESCE(visits_past_30_60_day,0) AS visits_past_30_60_day,
-    COALESCE(visits_past_60_90_day,0) AS visits_past_60_90_day,
-    COALESCE(visits_past_90_120_day,0) AS visits_past_90_120_day,
-    COALESCE(visits_past_120_150_day,0) AS visits_past_120_150_day,
-    COALESCE(visits_past_150_180_day,0) AS visits_past_150_180_day,
-    COALESCE(view_items_past_1_30_day,0) AS view_items_past_1_30_day,
-    COALESCE(view_items_past_30_60_day,0) AS view_items_past_30_60_day,
-    COALESCE(view_items_past_60_90_day,0) AS view_items_past_60_90_day,
-    COALESCE(view_items_past_90_120_day,0) AS view_items_past_90_120_day,
-    COALESCE(view_items_past_120_150_day,0) AS view_items_past_120_150_day,
-    COALESCE(view_items_past_150_180_day,0) AS view_items_past_150_180_day,
-    COALESCE(add_to_carts_past_1_30_day,0) AS add_to_carts_past_1_30_day,
-    COALESCE(add_to_carts_past_30_60_day,0) AS add_to_carts_past_30_60_day,
-    COALESCE(add_to_carts_past_60_90_day,0) AS add_to_carts_past_60_90_day,
-    COALESCE(add_to_carts_past_90_120_day,0) AS add_to_carts_past_90_120_day,
-    COALESCE(add_to_carts_past_120_150_day,0) AS add_to_carts_past_120_150_day,
-    COALESCE(add_to_carts_past_150_180_day,0) AS add_to_carts_past_150_180_day,
-    COALESCE(checkouts_past_1_30_day,0) AS checkouts_past_1_30_day,
-    COALESCE(checkouts_past_30_60_day,0) AS checkouts_past_30_60_day,
-    COALESCE(checkouts_past_60_90_day,0) AS checkouts_past_60_90_day,
-    COALESCE(checkouts_past_90_120_day,0) AS checkouts_past_90_120_day,
-    COALESCE(checkouts_past_120_150_day,0) AS checkouts_past_120_150_day,
-    COALESCE(checkouts_past_150_180_day,0) AS checkouts_past_150_180_day,
-    GREATEST(0.0, COALESCE(COALESCE(G.user_ltv_revenue_past_1_30_day,0.0) - COALESCE(G.user_ltv_revenue_past_0_day,0.0), 0.0)) AS ltv_revenue_past_1_30_day,
-    GREATEST( 0.0, COALESCE(COALESCE(G.user_ltv_revenue_past_1_90_day,0.0) - COALESCE(G.user_ltv_revenue_past_1_30_day,0.0), 0.0)) AS ltv_revenue_past_30_90_day,
-    GREATEST(0.0, COALESCE(COALESCE(G.user_ltv_revenue_1_180_day,0.0) - COALESCE(G.user_ltv_revenue_past_1_90_day,0.0), 0.0)) AS ltv_revenue_past_90_180_day,
+    CURRENT_TIMESTAMP() AS processed_timestamp, -- Current timestamp
+    input_date AS feature_date, -- Feature date
+    EUD.user_pseudo_id, -- User pseudo ID
+    COALESCE(active_users_past_1_30_day, 0) AS active_users_past_1_30_day, -- Count of active users in the past 1 to 30 days
+    COALESCE(active_users_past_30_60_day, 0) AS active_users_past_30_60_day, -- Count of active users in the past 30 to 60 days
+    COALESCE(active_users_past_60_90_day, 0) AS active_users_past_60_90_day, -- Count of active users in the past 60 to 90 days
+    COALESCE(active_users_past_90_120_day, 0) AS active_users_past_90_120_day, -- Count of active users in the past 90 to 120 days
+    COALESCE(active_users_past_120_150_day, 0) AS active_users_past_120_150_day, -- Count of active users in the past 120 to 150 days
+    COALESCE(active_users_past_150_180_day, 0) AS active_users_past_150_180_day, -- Count of active users in the past 150 to 180 days
+    COALESCE(purchases_past_1_30_day, 0) AS purchases_past_1_30_day, -- Count of purchases made in the past 1 to 30 days
+    COALESCE(purchases_past_30_60_day, 0) AS purchases_past_30_60_day, -- Count of purchases made in the past 30 to 60 days
+    COALESCE(purchases_past_60_90_day, 0) AS purchases_past_60_90_day, -- Count of purchases made in the past 60 to 90 days
+    COALESCE(purchases_past_90_120_day, 0) AS purchases_past_90_120_day, -- Count of purchases made in the past 90 to 120 days
+    COALESCE(purchases_past_120_150_day, 0) AS purchases_past_120_150_day, -- Count of purchases made in the past 120 to 150 days
+    COALESCE(purchases_past_150_180_day, 0) AS purchases_past_150_180_day, -- Count of purchases made in the past 150 to 180 days
+    COALESCE(visits_past_1_30_day, 0) AS visits_past_1_30_day, -- Count of visits in the past 1 to 30 days
+    COALESCE(visits_past_30_60_day, 0) AS visits_past_30_60_day, -- Count of visits in the past 30 to 60 days
+    COALESCE(visits_past_60_90_day, 0) AS visits_past_60_90_day, -- Count of visits in the past 60 to 90 days
+    COALESCE(visits_past_90_120_day, 0) AS visits_past_90_120_day, -- Count of visits in the past 90 to 120 days
+    COALESCE(visits_past_120_150_day, 0) AS visits_past_120_150_day, -- Count of visits in the past 120 to 150 days
+    COALESCE(visits_past_150_180_day, 0) AS visits_past_150_180_day, -- Count of visits in the past 150 to 180 days
+    COALESCE(view_items_past_1_30_day, 0) AS view_items_past_1_30_day, -- Count of view_items in the past 1 to 30 days
+    COALESCE(view_items_past_30_60_day, 0) AS view_items_past_30_60_day, -- Count of view_items in the past 30 to 60 days
+    COALESCE(view_items_past_60_90_day, 0) AS view_items_past_60_90_day, -- Count of view_items in the past 60 to 90 days
+    COALESCE(view_items_past_90_120_day, 0) AS view_items_past_90_120_day, -- Count of view_items in the past 90 to 120 days
+    COALESCE(view_items_past_120_150_day, 0) AS view_items_past_120_150_day, -- Count of view_items in the past 120 to 150 days
+    COALESCE(view_items_past_150_180_day, 0) AS view_items_past_150_180_day, -- Count of view_items in the past 150 to 180 days
+    COALESCE(add_to_carts_past_1_30_day, 0) AS add_to_carts_past_1_30_day, -- Count of add_to_carts in the past 1 to 30 days
+    COALESCE(add_to_carts_past_30_60_day, 0) AS add_to_carts_past_30_60_day, -- Count of add_to_carts in the past 30 to 60 days
+    COALESCE(add_to_carts_past_60_90_day, 0) AS add_to_carts_past_60_90_day, -- Count of add_to_carts in the past 60 to 90 days
+    COALESCE(add_to_carts_past_90_120_day, 0) AS add_to_carts_past_90_120_day, -- Count of add_to_carts in the past 90 to 120 days
+    COALESCE(add_to_carts_past_120_150_day, 0) AS add_to_carts_past_120_150_day, -- Count of add_to_carts in the past 120 to 150 days
+    COALESCE(add_to_carts_past_150_180_day, 0) AS add_to_carts_past_150_180_day, -- Count of add_to_carts in the past 150 to 180 days
+    COALESCE(checkouts_past_1_30_day, 0) AS checkouts_past_1_30_day, -- Count of checkouts in the past 1 to 30 days
+    COALESCE(checkouts_past_30_60_day, 0) AS checkouts_past_30_60_day, -- Count of checkouts in the past 30 to 60 days
+    COALESCE(checkouts_past_60_90_day, 0) AS checkouts_past_60_90_day, -- Count of checkouts in the past 60 to 90 days
+    COALESCE(checkouts_past_90_120_day, 0) AS checkouts_past_90_120_day, -- Count of checkouts in the past 90 to 120 days
+    COALESCE(checkouts_past_120_150_day, 0) AS checkouts_past_120_150_day, -- Count of checkouts in the past 120 to 150 days
+    COALESCE(checkouts_past_150_180_day, 0) AS checkouts_past_150_180_day, -- Count of checkouts in the past 150 to 180 days
+    GREATEST(0.0, COALESCE(COALESCE(G.user_ltv_revenue_past_1_30_day, 0.0) - COALESCE(G.user_ltv_revenue_past_0_day, 0.0), 0.0)) AS ltv_revenue_past_1_30_day, -- LTV revenue in the past 1 to 30 days
+    GREATEST(0.0, COALESCE(COALESCE(G.user_ltv_revenue_past_1_90_day, 0.0) - COALESCE(G.user_ltv_revenue_past_1_30_day, 0.0), 0.0)) AS ltv_revenue_past_30_90_day, -- LTV revenue in the past 30 to 90 days
+    GREATEST(0.0, COALESCE(COALESCE(G.user_ltv_revenue_1_180_day, 0.0) - COALESCE(G.user_ltv_revenue_past_1_90_day, 0.0), 0.0)) AS ltv_revenue_past_90_180_day -- LTV revenue in the past 90 to 180 days
     FROM events_users_days AS EUD
     FULL OUTER JOIN rolling_active_users AS A
     ON EUD.user_pseudo_id = A.user_pseudo_id
@@ -224,54 +331,58 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
     ON EUD.user_pseudo_id = F.user_pseudo_id
     FULL OUTER JOIN rolling_revenue_per_user AS G
     ON EUD.user_pseudo_id = G.user_pseudo_id
+    -- Filter for non-null user IDs
     WHERE EUD.user_pseudo_id IS NOT NULL;
 
+-- This SQL code updates the target table with the calculated user features.
+-- It merges the DataForTargetTable with the existing data in the target table,
+-- updating existing records and inserting new ones as needed.
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
 USING DataForTargetTable T
 ON I.feature_date = T.feature_date
   AND I.user_pseudo_id = T.user_pseudo_id
 WHEN MATCHED THEN
   UPDATE SET 
-    I.processed_timestamp = T.processed_timestamp,
-    I.active_users_past_1_30_day = T.active_users_past_1_30_day,
-    I.active_users_past_30_60_day = T.active_users_past_30_60_day,
-    I.active_users_past_60_90_day = T.active_users_past_60_90_day,
-    I.active_users_past_90_120_day = T.active_users_past_90_120_day,
-    I.active_users_past_120_150_day = T.active_users_past_120_150_day,
-    I.active_users_past_150_180_day = T.active_users_past_150_180_day,
-    I.purchases_past_1_30_day = T.purchases_past_1_30_day,
-    I.purchases_past_30_60_day = T.purchases_past_30_60_day,
-    I.purchases_past_60_90_day = T.purchases_past_60_90_day,
-    I.purchases_past_90_120_day = T.purchases_past_90_120_day,
-    I.purchases_past_120_150_day = T.purchases_past_120_150_day,
-    I.purchases_past_150_180_day = T.purchases_past_150_180_day,
-    I.visits_past_1_30_day = T.visits_past_1_30_day,
-    I.visits_past_30_60_day = T.visits_past_30_60_day,
-    I.visits_past_60_90_day = T.visits_past_60_90_day,
-    I.visits_past_90_120_day = T.visits_past_90_120_day,
-    I.visits_past_120_150_day = T.visits_past_120_150_day,
-    I.visits_past_150_180_day = T.visits_past_150_180_day,
-    I.view_items_past_1_30_day = T.view_items_past_1_30_day,
-    I.view_items_past_30_60_day = T.view_items_past_30_60_day,
-    I.view_items_past_60_90_day = T.view_items_past_60_90_day,
-    I.view_items_past_90_120_day = T.view_items_past_90_120_day,
-    I.view_items_past_120_150_day = T.view_items_past_120_150_day,
-    I.view_items_past_150_180_day = T.view_items_past_150_180_day,
-    I.add_to_carts_past_1_30_day = T.add_to_carts_past_1_30_day,
-    I.add_to_carts_past_30_60_day = T.add_to_carts_past_30_60_day,
-    I.add_to_carts_past_60_90_day = T.add_to_carts_past_60_90_day,
-    I.add_to_carts_past_90_120_day = T.add_to_carts_past_90_120_day,
-    I.add_to_carts_past_120_150_day = T.add_to_carts_past_120_150_day,
-    I.add_to_carts_past_150_180_day = T.add_to_carts_past_150_180_day,
-    I.checkouts_past_1_30_day = T.checkouts_past_1_30_day,
-    I.checkouts_past_30_60_day = T.checkouts_past_30_60_day,
-    I.checkouts_past_60_90_day = T.checkouts_past_60_90_day,
-    I.checkouts_past_90_120_day = T.checkouts_past_90_120_day,
-    I.checkouts_past_120_150_day = T.checkouts_past_120_150_day,
-    I.checkouts_past_150_180_day = T.checkouts_past_150_180_day,
-    I.ltv_revenue_past_1_30_day = T.ltv_revenue_past_1_30_day,
-    I.ltv_revenue_past_30_90_day = T.ltv_revenue_past_30_90_day,
-    I.ltv_revenue_past_90_180_day = T.ltv_revenue_past_90_180_day
+    I.processed_timestamp = T.processed_timestamp, -- Update processed timestamp
+    I.active_users_past_1_30_day = T.active_users_past_1_30_day, -- Update active users count
+    I.active_users_past_30_60_day = T.active_users_past_30_60_day, -- Update active users count
+    I.active_users_past_60_90_day = T.active_users_past_60_90_day, -- Update active users count
+    I.active_users_past_90_120_day = T.active_users_past_90_120_day, -- Update active users count
+    I.active_users_past_120_150_day = T.active_users_past_120_150_day, -- Update active users count
+    I.active_users_past_150_180_day = T.active_users_past_150_180_day, -- Update active users count
+    I.purchases_past_1_30_day = T.purchases_past_1_30_day, -- Update purchases count
+    I.purchases_past_30_60_day = T.purchases_past_30_60_day, -- Update purchases count
+    I.purchases_past_60_90_day = T.purchases_past_60_90_day, -- Update purchases count
+    I.purchases_past_90_120_day = T.purchases_past_90_120_day, -- Update purchases count
+    I.purchases_past_120_150_day = T.purchases_past_120_150_day, -- Update purchases count
+    I.purchases_past_150_180_day = T.purchases_past_150_180_day, -- Update purchases count
+    I.visits_past_1_30_day = T.visits_past_1_30_day, -- Update visits count
+    I.visits_past_30_60_day = T.visits_past_30_60_day, -- Update visits count
+    I.visits_past_60_90_day = T.visits_past_60_90_day, -- Update visits count
+    I.visits_past_90_120_day = T.visits_past_90_120_day, -- Update visits count
+    I.visits_past_120_150_day = T.visits_past_120_150_day, -- Update visits count
+    I.visits_past_150_180_day = T.visits_past_150_180_day, -- Update visits count
+    I.view_items_past_1_30_day = T.view_items_past_1_30_day, -- Update view_items count
+    I.view_items_past_30_60_day = T.view_items_past_30_60_day, -- Update view_items count
+    I.view_items_past_60_90_day = T.view_items_past_60_90_day, -- Update view_items count
+    I.view_items_past_90_120_day = T.view_items_past_90_120_day, -- Update view_items count
+    I.view_items_past_120_150_day = T.view_items_past_120_150_day, -- Update view_items count
+    I.view_items_past_150_180_day = T.view_items_past_150_180_day, -- Update view_items count
+    I.add_to_carts_past_1_30_day = T.add_to_carts_past_1_30_day, -- Update add_to_carts count
+    I.add_to_carts_past_30_60_day = T.add_to_carts_past_30_60_day, -- Update add_to_carts count
+    I.add_to_carts_past_60_90_day = T.add_to_carts_past_60_90_day, -- Update add_to_carts count
+    I.add_to_carts_past_90_120_day = T.add_to_carts_past_90_120_day, -- Update add_to_carts count
+    I.add_to_carts_past_120_150_day = T.add_to_carts_past_120_150_day, -- Update add_to_carts count
+    I.add_to_carts_past_150_180_day = T.add_to_carts_past_150_180_day, -- Update add_to_carts count
+    I.checkouts_past_1_30_day = T.checkouts_past_1_30_day, -- Update checkouts count
+    I.checkouts_past_30_60_day = T.checkouts_past_30_60_day, -- Update checkouts count
+    I.checkouts_past_60_90_day = T.checkouts_past_60_90_day, -- Update checkouts count
+    I.checkouts_past_90_120_day = T.checkouts_past_90_120_day, -- Update checkouts count
+    I.checkouts_past_120_150_day = T.checkouts_past_120_150_day, -- Update checkouts count
+    I.checkouts_past_150_180_day = T.checkouts_past_150_180_day, -- Update checkouts count
+    I.ltv_revenue_past_1_30_day = T.ltv_revenue_past_1_30_day, -- Update LTV revenue
+    I.ltv_revenue_past_30_90_day = T.ltv_revenue_past_30_90_day, -- Update LTV revenue
+    I.ltv_revenue_past_90_180_day = T.ltv_revenue_past_90_180_day -- Update LTV revenue
 WHEN NOT MATCHED THEN
   INSERT 
     (processed_timestamp,
@@ -361,4 +472,5 @@ WHEN NOT MATCHED THEN
      T.ltv_revenue_past_90_180_day)
 ;
 
+-- This SQL code calculates the number of distinct users added to the target table.
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);

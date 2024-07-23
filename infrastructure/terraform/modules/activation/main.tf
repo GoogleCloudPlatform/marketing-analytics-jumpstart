@@ -37,6 +37,9 @@ locals {
   trigger_function_account_name  = "trigger-function"
   trigger_function_account_email = "${local.app_prefix}-${local.trigger_function_account_name}@${var.project_id}.iam.gserviceaccount.com"
 
+  builder_service_account_name = "build-job"
+  builder_service_account_email = "${local.app_prefix}-${local.builder_service_account_name}@${var.project_id}.iam.gserviceaccount.com"
+
   activation_type_configuration_file              = "${local.source_root_dir}/templates/activation_type_configuration_template.tpl"
   # This is calculating a hash number on the file content to keep track of changes and trigger redeployment of resources 
   # in case the file content changes.
@@ -274,6 +277,31 @@ resource "null_resource" "check_cloudfunctions_api" {
   ]
 }
 
+# This resource executes gcloud commands to check whether the cloudbuild API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_cloudbuild_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "cloudbuild.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 6
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "cloudbuild api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
@@ -335,13 +363,15 @@ module "pipeline_service_account" {
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.pipeline_service_account_name]
-  project_roles = ["${module.project_services.project_id}=>roles/dataflow.admin",
+  project_roles = [
+    "${module.project_services.project_id}=>roles/dataflow.admin",
     "${module.project_services.project_id}=>roles/dataflow.worker",
     "${module.project_services.project_id}=>roles/bigquery.dataEditor",
     "${module.project_services.project_id}=>roles/bigquery.jobUser",
-  "${module.project_services.project_id}=>roles/artifactregistry.writer", ]
-  display_name = "Dataflow worker"
-  description  = "Activation Pipeline Account"
+    "${module.project_services.project_id}=>roles/artifactregistry.writer", 
+  ]
+  display_name = "Dataflow worker Service Account"
+  description  = "Activation Dataflow worker Service Account"
 }
 
 module "trigger_function_account" {
@@ -360,8 +390,8 @@ module "trigger_function_account" {
     "${module.project_services.project_id}=>roles/artifactregistry.reader",
     "${module.project_services.project_id}=>roles/iam.serviceAccountUser",
   ]
-  display_name = "Activation Trigger Account"
-  description  = "Account used to run the activation trigger function"
+  display_name = "Cloud Build Job Service Account"
+  description  = "Service Account used to submit job the cloud build job"
 }
 
 # This an external data that retrieves information about the Google Analytics 4 property using 
@@ -373,7 +403,7 @@ data "external" "ga4_measurement_properties" {
   # The count attribute specifies how many times the external data source should be executed.
   # This means that the external data source will be executed only if either the 
   # var.ga4_measurement_id or var.ga4_measurement_secret variable is not set.
-  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? 1 : 0
+  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null || var.ga4_measurement_id == "" || var.ga4_measurement_secret == "") ? 1 : 0
 
   depends_on = [
     module.project_services
@@ -396,6 +426,10 @@ module "secret_manager" {
       secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
       automatic_replication = true
     },
+  ]
+
+  depends_on = [
+    data.external.ga4_measurement_properties
   ]
 }
 
@@ -429,6 +463,61 @@ module "pipeline_bucket" {
   depends_on = [
     module.pipeline_service_account.email
   ]
+}
+
+# This resource binds the service account to the required roles
+resource "google_project_iam_member" "cloud_build_job_service_account" {
+  depends_on = [
+    module.project_services,
+    null_resource.check_artifactregistry_api,
+    data.google_project.project,
+    #module.build_service_account,
+    ]
+  
+  project = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : var.project_id
+  member  = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
+
+  for_each = toset([
+    "roles/cloudbuild.serviceAgent",
+    "roles/cloudbuild.builds.builder",
+    "roles/cloudbuild.integrations.owner",
+    "roles/logging.logWriter",
+    "roles/logging.admin",
+    "roles/storage.admin",
+    "roles/iam.serviceAccountTokenCreator",
+    "roles/iam.serviceAccountUser",
+    "roles/iam.serviceAccountAdmin",
+    "roles/cloudfunctions.developer",
+    "roles/run.admin",
+    "roles/appengine.appAdmin",
+    "roles/container.developer",
+    "roles/compute.instanceAdmin.v1",
+    "roles/firebase.admin",
+    "roles/cloudkms.cryptoKeyDecrypter",
+    "roles/secretmanager.secretAccessor",
+    "roles/cloudbuild.workerPoolUser",
+    "roles/cloudbuild.serviceAgent",
+    "roles/cloudbuild.builds.editor",
+    "roles/cloudbuild.builds.viewer",
+    "roles/cloudbuild.builds.approver",
+    "roles/cloudbuild.integrations.viewer",
+    "roles/cloudbuild.integrations.editor",
+    "roles/cloudbuild.connectionViewer",
+    "roles/cloudbuild.connectionAdmin",
+    "roles/cloudbuild.readTokenAccessor",
+    "roles/cloudbuild.tokenAccessor",
+    "roles/cloudbuild.workerPoolOwner",
+    "roles/cloudbuild.workerPoolEditor",
+    "roles/cloudbuild.workerPoolViewer",
+    "roles/artifactregistry.admin",
+    "roles/viewer",
+    "roles/owner",
+  ])
+  role = each.key
+}
+
+data "google_project" "project" {
+  project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
 }
 
 # This resource creates a bucket object using as content the measurement_protocol_payload_template_file file.
@@ -554,6 +643,10 @@ module "activation_pipeline_container" {
   create_cmd_triggers = {
     source_contents_hash = local.activation_application_content_hash
   }
+
+  module_depends_on = [
+    google_project_iam_member.cloud_build_job_service_account
+  ]
 }
 
 # This module executes a gcloud command to build a dataflow flex template and uploads it to Dataflow

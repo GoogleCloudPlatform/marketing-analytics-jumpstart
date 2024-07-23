@@ -43,7 +43,23 @@ provider "google" {
 }
 
 data "google_project" "feature_store_project" {
+  provider = google
   project_id = var.feature_store_project_id
+}
+
+data "google_project" "activation_project" {
+  provider = google
+  project_id = var.activation_project_id
+}
+
+data "google_project" "data_processing_project" {
+  provider = google
+  project_id = var.data_processing_project_id
+}
+
+data "google_project" "data_project" {
+  provider = google
+  project_id = var.data_project_id
 }
 
 # The locals block contains hardcoded values that are used in the configuration for the solution.
@@ -420,6 +436,9 @@ module "activation" {
   # The project_id is the project in which the activation function is created.
   # This is set to the activation project ID in the terraform.tfvars file.
   project_id                = var.activation_project_id
+  # The project number of where the activation function is created.
+  # This is retrieved from the activation project id using the google_project data source. 
+  project_number            = data.google_project.activation_project.number
   # The location is the google_default_region variable. 
   # This is set to the default region in the terraform.tfvars file.
   location                  = var.google_default_region
@@ -460,6 +479,10 @@ module "activation" {
   poetry_installed          = null_resource.poetry_install.id
   mds_project_id            = var.data_project_id
   mds_dataset_suffix        = local.mds_dataset_suffix
+
+  # The project_owner_email is set in the terraform.tfvars file. 
+  # An example of a valid email address is "william.mckinley@my-own-personal-domain.com".
+  project_owner_email = var.project_owner_email
 }
 
 

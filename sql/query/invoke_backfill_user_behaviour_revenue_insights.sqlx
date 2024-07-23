@@ -12,7 +12,23 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- This SQL code snippet is designed to generate insights from user behavior and revenue metrics using 
+-- a large language model (LLM) like Gemini.
+-- This code snippet uses an LLM to generate insights from user behavior and revenue metrics, providing a 
+-- more automated and intelligent approach to data analysis.
+-- Key points:
+-- The code leverages the power of LLMs to extract meaningful insights from complex data.
+-- It uses a structured approach to prompt generation, ensuring the LLM receives clear and relevant information.
+-- It stores the LLM results in separate tables for different time granularities (daily, weekly, monthly).
+-- This code is a good example of how to integrate LLMs into data analysis workflows, enabling more sophisticated and insightful analysis.
 
+-- Creating daily prompts for the LLM
+-- This code block generates prompts for the LLM based on user behavior and revenue metrics from the user_scoped_metrics table.
+-- The prompts are formatted as text strings that include:
+-- A description of the user's role as a Google Analytics 4 Marketing Analyst.
+-- The objective of the analysis (extracting insights or identifying changes).
+-- The metrics data in JSON format.
+-- Descriptions of the metrics.
 CREATE OR REPLACE TEMP TABLE prompts_per_day AS
 SELECT DISTINCT
 calculation_base_date as feature_date,
@@ -28,7 +44,13 @@ CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to extr
 FROM (SELECT DISTINCT  feature_date as calculation_base_date, * EXCEPT(processed_timestamp, feature_date) FROM `{{project_id}}.feature_store.user_scoped_metrics` WHERE feature_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND CURRENT_DATE() ORDER BY feature_date DESC) t
 ;
 
-
+-- Creating weekly prompts for the LLM
+-- This code block generates prompts for the LLM based on user behavior and revenue metrics from the user_scoped_metrics table.
+-- The prompts are formatted as text strings that include:
+-- A description of the user's role as a Google Analytics 4 Marketing Analyst.
+-- The objective of the analysis (extracting insights or identifying changes).
+-- The metrics data in JSON format.
+-- Descriptions of the metrics.
 CREATE OR REPLACE TEMP TABLE prompts_per_week AS
 SELECT DISTINCT
 calculation_base_date as feature_date,
@@ -54,11 +76,17 @@ ORDER BY feature_date DESC) t
 ORDER BY calculation_base_date DESC;
 
 
-
+-- Creating monthly prompts for the LLM
+-- This code block generates prompts for the LLM based on user behavior and revenue metrics from the user_scoped_metrics table.
+-- The prompts are formatted as text strings that include:
+-- A description of the user's role as a Google Analytics 4 Marketing Analyst.
+-- The objective of the analysis (extracting insights or identifying changes).
+-- The metrics data in JSON format.
+-- Descriptions of the metrics.
 CREATE OR REPLACE TEMP TABLE prompts_per_month AS
 SELECT DISTINCT
 calculation_base_date as feature_date,
-EXTRACT(ISOWEEK FROM t.calculation_base_date) as feature_month,
+EXTRACT(MONTH FROM t.calculation_base_date) as feature_month,
 CONCAT("You're a Google Analytics 4 Marketing Analyst. Your objective is to identify what has changed in these monthly user behaviour and revenue metrics. \n",
     "Here are the user behaviour and revenue daily metrics accumulated over the last month.\n\n",
     "Metrics JSON:\n",
@@ -79,7 +107,10 @@ EXTRACT(MONTH FROM feature_date) IS NOT NULL
 ORDER BY feature_date DESC) t
 ORDER BY calculation_base_date DESC;
 
-
+-- Calling the LLM
+-- It passes the prompts from the temporary tables to the LLM.
+-- It specifies parameters for the LLM, such as the maximum number of output tokens, 
+-- whether to flatten JSON output, and temperature.
 CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_daily_gemini_calls AS
 SELECT DISTINCT
 feature_date,
@@ -97,7 +128,8 @@ FROM ML.GENERATE_TEXT(
          40 AS top_k,
          1 AS temperature));
 
-
+-- Storing LLM results
+-- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
 MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_daily` I
 USING user_behaviour_revenue_insights_daily_gemini_calls T
 ON I.feature_date = T.feature_date
@@ -114,7 +146,10 @@ WHEN NOT MATCHED THEN
      T.{{dataset}})
 ;
 
-
+-- Calling the LLM
+-- It passes the prompts from the temporary tables to the LLM.
+-- It specifies parameters for the LLM, such as the maximum number of output tokens, 
+-- whether to flatten JSON output, and temperature.
 CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_weekly_gemini_calls AS
 SELECT DISTINCT
 feature_date,
@@ -133,7 +168,8 @@ FROM ML.GENERATE_TEXT(
          40 AS top_k,
          1 AS temperature));
 
-
+-- Storing LLM results
+-- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
 MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_weekly` I
 USING user_behaviour_revenue_insights_weekly_gemini_calls T
 ON I.feature_date = T.feature_date
@@ -153,7 +189,10 @@ WHEN NOT MATCHED THEN
      T.{{dataset}})
 ;
 
-
+-- Calling the LLM
+-- It passes the prompts from the temporary tables to the LLM.
+-- It specifies parameters for the LLM, such as the maximum number of output tokens, 
+-- whether to flatten JSON output, and temperature.
 CREATE OR REPLACE TEMP TABLE user_behaviour_revenue_insights_monthly_gemini_calls AS
 SELECT DISTINCT
 feature_date,
@@ -172,7 +211,8 @@ FROM ML.GENERATE_TEXT(
          40 AS top_k,
          1 AS temperature));
 
-
+-- Storing LLM results
+-- It uses the MERGE statement to update or insert the LLM results into the corresponding tables
 MERGE `{{project_id}}.{{dataset}}.user_behaviour_revenue_insights_monthly` I
 USING user_behaviour_revenue_insights_monthly_gemini_calls T
 ON I.feature_date = T.feature_date

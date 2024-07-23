@@ -31,32 +31,55 @@ SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{featur
 
 
 -- Prepare user segmentation dimensions data: The user_segmentation_dimensions table is queried to extract relevant features for the inference date. 
--- The query uses the user_segmentation_dimensions_window window function to aggregate features over the past 15 days.
+-- The query uses the user_segmentation_dimensions_window window function to collect latest user events
+-- We use the MAX aggregate function to prevent having duplicated rows in the final table.
 CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   SELECT DISTINCT
+    -- The unique identifier for the user. 
     UD.user_pseudo_id,
+    -- The user ID. 
     MAX(UD.user_id) OVER(user_segmentation_dimensions_window) AS user_id,
+    -- The date for which the features are extracted. 
     UD.feature_date,
+    -- The category of the device used by the user. 
     MAX(UD.device_category) OVER(user_segmentation_dimensions_window) AS device_category,
+    -- The brand name of the mobile device used by the user. 
     MAX(UD.device_mobile_brand_name) OVER(user_segmentation_dimensions_window) AS device_mobile_brand_name,
+    -- The model name of the mobile device used by the user. 
     MAX(UD.device_mobile_model_name) OVER(user_segmentation_dimensions_window) AS device_mobile_model_name,
+    -- The operating system of the device used by the user. 
     MAX(UD.device_os) OVER(user_segmentation_dimensions_window) AS device_os,
+    -- The language used by the user. 
     MAX(UD.device_language) OVER(user_segmentation_dimensions_window) AS device_language,
+    -- The web browser used by the user. 
     MAX(UD.device_web_browser) OVER(user_segmentation_dimensions_window) AS device_web_browser,
+    -- The sub-continent of the user's location. 
     MAX(UD.geo_sub_continent) OVER(user_segmentation_dimensions_window) AS geo_sub_continent,
+    -- The country of the user's location. 
     MAX(UD.geo_country) OVER(user_segmentation_dimensions_window) AS geo_country,
+    -- The region of the user's location. 
     MAX(UD.geo_region) OVER(user_segmentation_dimensions_window) AS geo_region,
+    -- The city of the user's location. 
     MAX(UD.geo_city) OVER(user_segmentation_dimensions_window) AS geo_city,
+    -- The metropolitan area of the user's location. 
     MAX(UD.geo_metro) OVER(user_segmentation_dimensions_window) AS geo_metro,
+    -- The medium used to reach the user's last session. 
     MAX(UD.last_traffic_source_medium) OVER(user_segmentation_dimensions_window) AS last_traffic_source_medium,
+    -- The traffic source name used to reach the user's last session. 
     MAX(UD.last_traffic_source_name) OVER(user_segmentation_dimensions_window) AS last_traffic_source_name,
+    -- The source of the last traffic source used by the user. 
     MAX(UD.last_traffic_source_source) OVER(user_segmentation_dimensions_window) AS last_traffic_source_source,
+    -- The medium of the first traffic source used by the user. 
     MAX(UD.first_traffic_source_medium) OVER(user_segmentation_dimensions_window) AS first_traffic_source_medium,
+    -- The name of the first traffic source used by the user. 
     MAX(UD.first_traffic_source_name) OVER(user_segmentation_dimensions_window) AS first_traffic_source_name,
+    -- The source of the first traffic source used by the user. 
     MAX(UD.first_traffic_source_source) OVER(user_segmentation_dimensions_window) AS first_traffic_source_source,
+    -- Whether the user has signed in with a user ID. 
     MAX(UD.has_signed_in_with_user_id) OVER(user_segmentation_dimensions_window) AS has_signed_in_with_user_id
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` UD
+  -- Joining to filter for user which were active in the past 72 hours
   INNER JOIN
   `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
   ON
@@ -64,34 +87,54 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
   WHERE
     -- Define the training+validation subset interval
     UD.feature_date = inference_date
+    -- Filter for the lastest user dimensions attributes aggregated over the past 72 hours
     AND UD.processed_timestamp = lastest_processed_time_ud
   WINDOW 
+    -- Window function to aggregate features for each user
     user_segmentation_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 
 -- Prepare user lookback metrics data: The user_lookback_metrics table is queried to extract relevant features for the inference date. 
--- The query uses the user_lookback_metrics_window window function to aggregate features over the past 15 days.
+-- The query uses the user_lookback_metrics_window window function to collect latest user attribute features over the past 72 hours.
+-- We use the MAX aggregate function to prevent having duplicated rows in the final table.
 CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
   SELECT DISTINCT
+    -- The unique identifier for the user.  
     UWM.user_pseudo_id,
+    -- The date for which the features are extracted. 
     UWM.feature_date,
+    -- The number of active users in the past 1 to 7 days. 
     MAX(UWM.active_users_past_1_7_day) OVER(user_lookback_metrics_window) AS active_users_past_1_7_day,
+    -- The number of active users in the past 8 to 14 days. 
     MAX(UWM.active_users_past_8_14_day) OVER(user_lookback_metrics_window) AS active_users_past_8_14_day,
+    -- The number of purchases in the past 1 to 7 days. 
     MAX(UWM.purchases_past_1_7_day) OVER(user_lookback_metrics_window) AS purchases_past_1_7_day,
+    -- The number of purchases in the past 8 to 14 days. 
     MAX(UWM.purchases_past_8_14_day) OVER(user_lookback_metrics_window) AS purchases_past_8_14_day,
+    -- The number of visits in the past 1 to 7 days. 
     MAX(UWM.visits_past_1_7_day) OVER(user_lookback_metrics_window) AS visits_past_1_7_day,
+    -- The number of visits in the past 8 to 14 days. 
     MAX(UWM.visits_past_8_14_day) OVER(user_lookback_metrics_window) AS visits_past_8_14_day,
+    -- The number of items viewed in the past 1 to 7 days. 
     MAX(UWM.view_items_past_1_7_day) OVER(user_lookback_metrics_window) AS view_items_past_1_7_day,
+    -- The number of items viewed in the past 8 to 14 days. 
     MAX(UWM.view_items_past_8_14_day) OVER(user_lookback_metrics_window) AS view_items_past_8_14_day,
+    -- The number of items added to carts in the past 1 to 7 days. 
     MAX(UWM.add_to_carts_past_1_7_day) OVER(user_lookback_metrics_window) AS add_to_carts_past_1_7_day,
+    -- The number of items added to carts in the past 8 to 14 days. 
     MAX(UWM.add_to_carts_past_8_14_day) OVER(user_lookback_metrics_window) AS add_to_carts_past_8_14_day,
+    -- The number of checkouts in the past 1 to 7 days. 
     MAX(UWM.checkouts_past_1_7_day) OVER(user_lookback_metrics_window) AS checkouts_past_1_7_day,
+    -- The number of checkouts in the past 8 to 14 days. 
     MAX(UWM.checkouts_past_8_14_day) OVER(user_lookback_metrics_window) AS checkouts_past_8_14_day,
+    -- The lifetime value revenue in the past 1 to 7 days. 
     MAX(UWM.ltv_revenue_past_1_7_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_1_7_day,
+    -- The lifetime value revenue in the past 7 to 15 days. 
     MAX(UWM.ltv_revenue_past_7_15_day) OVER(user_lookback_metrics_window) AS ltv_revenue_past_7_15_day
   FROM
     `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` UWM
+  -- Joining to filter for user which were active in the past 72 hours
   INNER JOIN
   `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
   ON
@@ -99,8 +142,10 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
   WHERE
     -- Define the training+validation subset interval
     UWM.feature_date = inference_date
+    -- Filter for the lastest user lookback metrics attributes aggregated over the past 72 hours
     AND UWM.processed_timestamp = lastest_processed_time_uwm
   WINDOW
+    -- Window function to aggregate features for each user
     user_lookback_metrics_window AS (PARTITION BY UWM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
@@ -109,40 +154,75 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwm AS (
 -- This table contains all of the features that will be used for model inference.
 CREATE OR REPLACE TEMP TABLE inference_preparation AS (
   SELECT DISTINCT
+    -- The unique identifier for the user. 
     UD.user_pseudo_id,
+    -- The user ID. 
     UD.user_id,
+    -- The date for which the features are extracted. 
     UD.feature_date,
+    -- The category of the device used by the user. 
     UD.device_category,
+    -- The brand name of the mobile device used by the user. 
     UD.device_mobile_brand_name,
+    -- The model name of the mobile device used by the user. 
     UD.device_mobile_model_name,
+    -- The operating system of the device used by the user. 
     UD.device_os,
+    -- The language used by the user. 
     UD.device_language,
+    -- The web browser used by the user. 
     UD.device_web_browser,
+    -- The sub-continent of the user's location. 
     UD.geo_sub_continent,
+    -- The country of the user's location. 
     UD.geo_country,
+    -- The region of the user's location. 
     UD.geo_region,
+    -- The city of the user's location. 
     UD.geo_city,
+    -- The metropolitan area of the user's location. 
     UD.geo_metro,
+    -- The medium used to reach the user's last session. 
     UD.last_traffic_source_medium,
+    -- The traffic source name used to reach the user's last session. 
     UD.last_traffic_source_name,
+    -- The source of the last traffic source used by the user. 
     UD.last_traffic_source_source,
+    -- The medium of the first traffic source used by the user. 
     UD.first_traffic_source_medium,
+    -- The name of the first traffic source used by the user. 
     UD.first_traffic_source_name,
+    -- The source of the first traffic source used by the user. 
     UD.first_traffic_source_source,
+    -- Whether the user has signed in with a user ID. 
     UD.has_signed_in_with_user_id,
+    -- The number of active users in the past 1 to 7 days. 
     UWM.active_users_past_1_7_day,
+    -- The number of active users in the past 8 to 14 days. 
     UWM.active_users_past_8_14_day,
+    -- The number of purchases in the past 1 to 7 days. 
     UWM.purchases_past_1_7_day,
+    -- The number of purchases in the past 8 to 14 days. 
     UWM.purchases_past_8_14_day,
+    -- The number of visits in the past 1 to 7 days. 
     UWM.visits_past_1_7_day,
+    -- The number of visits in the past 8 to 14 days. 
     UWM.visits_past_8_14_day,
+    -- The number of items viewed in the past 1 to 7 days. 
     UWM.view_items_past_1_7_day,
+    -- The number of items viewed in the past 8 to 14 days. 
     UWM.view_items_past_8_14_day,
+    -- The number of items added to carts in the past 1 to 7 days. 
     UWM.add_to_carts_past_1_7_day,
+    -- The number of items added to carts in the past 8 to 14 days. 
     UWM.add_to_carts_past_8_14_day,
+    -- The number of checkouts in the past 1 to 7 days. 
     UWM.checkouts_past_1_7_day,
+    -- The number of checkouts in the past 8 to 14 days. 
     UWM.checkouts_past_8_14_day,
+    -- The lifetime value revenue in the past 1 to 7 days. 
     UWM.ltv_revenue_past_1_7_day,
+    -- The lifetime value revenue in the past 7 to 15 days. 
     UWM.ltv_revenue_past_7_15_day
   FROM
     inference_preparation_ud UD
@@ -276,37 +356,67 @@ FROM
 
 -- Create the final inference table: The audience_segmentation_inference_15 table is created by selecting the latest values for each feature from the insert_table. 
 -- This table will be used by the model inference pipeline.
+-- We use the LAST_VALUE aggregate function to prevent having duplicated rows in the final table.
 CREATE OR REPLACE TABLE
   `{{project_id}}.{{dataset}}.audience_segmentation_inference_15` AS(
   SELECT DISTINCT
-    CURRENT_TIMESTAMP() AS processed_timestamp,
+      -- The timestamp the row was processed.
+      CURRENT_TIMESTAMP() AS processed_timestamp,
+      -- The date for which the features are extracted.
       feature_date,
+      -- The unique identifier for the user.
       user_pseudo_id,
+      -- The user ID.
       LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_id,
+      -- The category of the device used by the user.
       LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_category,
+      -- The brand name of the mobile device used by the user.
       LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_mobile_model_name,
+      -- The operating system of the device used by the user.
       LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_country,
+      -- The region of the user's location.
       LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_region,
+      -- The city of the user's location.
       LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_city,
+      -- The medium used to reach the user's last session.
       LAST_VALUE(last_traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_medium,
+      -- The traffic source name used to reach the user's last session.
       LAST_VALUE(last_traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_name,
+      -- The source of the last traffic source used by the user.
       LAST_VALUE(last_traffic_source_source) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_source,
+      -- The medium of the first traffic source used by the user.
       LAST_VALUE(first_traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_medium,
+      -- The name of the first traffic source used by the user.
       LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_name,
+      -- The source of the first traffic source used by the user.
       LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_source,
+      -- The number of active users in the past 1 to 7 days.
       LAST_VALUE(active_users_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_1_7_day,
+      -- The number of active users in the past 8 to 14 days.
       LAST_VALUE(active_users_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_8_14_day,
+      -- The number of purchases in the past 1 to 7 days.
       LAST_VALUE(purchases_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_1_7_day,
+      -- The number of purchases in the past 8 to 14 days.
       LAST_VALUE(purchases_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_8_14_day,
+      -- The number of visits in the past 1 to 7 days.
       LAST_VALUE(visits_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_1_7_day,
+      -- The number of visits in the past 8 to 14 days.
       LAST_VALUE(visits_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_8_14_day,
+      -- The number of items viewed in the past 1 to 7 days.
       LAST_VALUE(view_items_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_1_7_day,
+      -- The number of items viewed in the past 8 to 14 days.
       LAST_VALUE(view_items_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_8_14_day,
+      -- The number of items added to carts in the past 1 to 7 days.
       LAST_VALUE(add_to_carts_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_1_7_day,
+      -- The number of items added to carts in the past 8 to 14 days.
       LAST_VALUE(add_to_carts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_8_14_day,
+      -- The number of checkouts in the past 1 to 7 days.
       LAST_VALUE(checkouts_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_1_7_day,
+      -- The number of checkouts in the past 8 to 14 days.
       LAST_VALUE(checkouts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_8_14_day,
+      -- The lifetime value revenue in the past 1 to 7 days.
       LAST_VALUE(ltv_revenue_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_1_7_day,
+      -- The lifetime value revenue in the past 7 to 15 days.
       LAST_VALUE(ltv_revenue_past_7_15_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_7_15_day
   FROM
     `{{project_id}}.{{dataset}}.{{insert_table}}` );
@@ -421,4 +531,5 @@ WHERE
   -- Only the latest row ordered by feature_date descending 
   user_row_order = 1;
 
+-- Droping table from BigQuery temporary storage
 DROP TABLE inference_preparation;
