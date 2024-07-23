@@ -394,52 +394,6 @@ module "trigger_function_account" {
   description  = "Service Account used to submit job the cloud build job"
 }
 
-module "build_service_account" {
-  source     = "terraform-google-modules/service-accounts/google"
-  version    = "~> 3.0"
-  project_id = null_resource.check_cloudbuild_api.id != "" ? module.project_services.project_id : var.project_id
-  prefix     = local.app_prefix
-  names      = [local.builder_service_account_name]
-  project_roles = [
-    "${module.project_services.project_id}=>roles/cloudbuild.serviceAgent",
-    "${module.project_services.project_id}=>roles/cloudbuild.builds.builder",
-    "${module.project_services.project_id}=>roles/cloudbuild.integrations.owner",
-    "${module.project_services.project_id}=>roles/logging.logWriter",
-    "${module.project_services.project_id}=>roles/logging.admin",
-    "${module.project_services.project_id}=>roles/storage.admin",
-    "${module.project_services.project_id}=>roles/iam.serviceAccountTokenCreator",
-    "${module.project_services.project_id}=>roles/iam.serviceAccountUser",
-    "${module.project_services.project_id}=>roles/iam.serviceAccountAdmin",
-    "${module.project_services.project_id}=>roles/cloudfunctions.developer",
-    "${module.project_services.project_id}=>roles/run.admin",
-    "${module.project_services.project_id}=>roles/appengine.appAdmin",
-    "${module.project_services.project_id}=>roles/container.developer",
-    "${module.project_services.project_id}=>roles/compute.instanceAdmin.v1",
-    "${module.project_services.project_id}=>roles/firebase.admin",
-    "${module.project_services.project_id}=>roles/cloudkms.cryptoKeyDecrypter",
-    "${module.project_services.project_id}=>roles/secretmanager.secretAccessor",
-    "${module.project_services.project_id}=>roles/cloudbuild.workerPoolUser",
-    "${module.project_services.project_id}=>roles/cloudbuild.serviceAgent",
-    "${module.project_services.project_id}=>roles/cloudbuild.builds.editor",
-    "${module.project_services.project_id}=>roles/cloudbuild.builds.viewer",
-    "${module.project_services.project_id}=>roles/cloudbuild.builds.approver",
-    "${module.project_services.project_id}=>roles/cloudbuild.integrations.viewer",
-    "${module.project_services.project_id}=>roles/cloudbuild.integrations.editor",
-    "${module.project_services.project_id}=>roles/cloudbuild.connectionViewer",
-    "${module.project_services.project_id}=>roles/cloudbuild.connectionAdmin",
-    "${module.project_services.project_id}=>roles/cloudbuild.readTokenAccessor",
-    "${module.project_services.project_id}=>roles/cloudbuild.tokenAccessor",
-    "${module.project_services.project_id}=>roles/cloudbuild.workerPoolOwner",
-    "${module.project_services.project_id}=>roles/cloudbuild.workerPoolEditor",
-    "${module.project_services.project_id}=>roles/cloudbuild.workerPoolViewer",
-    "${module.project_services.project_id}=>roles/artifactregistry.admin",
-    "${module.project_services.project_id}=>roles/viewer",
-    "${module.project_services.project_id}=>roles/owner",
-  ]
-  display_name = "Cloud Build Job Service Account"
-  description  = "Activation Pipeline Service Account"
-}
-
 # This an external data that retrieves information about the Google Analytics 4 property using 
 # a python command defined in the module ga4_setup.
 # This informatoin can then be used in other parts of the Terraform configuration to access the retrieved information.
@@ -511,47 +465,59 @@ module "pipeline_bucket" {
   ]
 }
 
-data "google_project" "project" {
-  project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
+# This resource binds the service account to the required roles
+resource "google_project_iam_member" "cloud_build_job_service_account" {
+  depends_on = [
+    module.project_services,
+    null_resource.check_artifactregistry_api,
+    data.google_project.project,
+    #module.build_service_account,
+    ]
+  
+  project = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : var.project_id
+  member  = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
+
+  for_each = toset([
+    "roles/cloudbuild.serviceAgent",
+    "roles/cloudbuild.builds.builder",
+    "roles/cloudbuild.integrations.owner",
+    "roles/logging.logWriter",
+    "roles/logging.admin",
+    "roles/storage.admin",
+    "roles/iam.serviceAccountTokenCreator",
+    "roles/iam.serviceAccountUser",
+    "roles/iam.serviceAccountAdmin",
+    "roles/cloudfunctions.developer",
+    "roles/run.admin",
+    "roles/appengine.appAdmin",
+    "roles/container.developer",
+    "roles/compute.instanceAdmin.v1",
+    "roles/firebase.admin",
+    "roles/cloudkms.cryptoKeyDecrypter",
+    "roles/secretmanager.secretAccessor",
+    "roles/cloudbuild.workerPoolUser",
+    "roles/cloudbuild.serviceAgent",
+    "roles/cloudbuild.builds.editor",
+    "roles/cloudbuild.builds.viewer",
+    "roles/cloudbuild.builds.approver",
+    "roles/cloudbuild.integrations.viewer",
+    "roles/cloudbuild.integrations.editor",
+    "roles/cloudbuild.connectionViewer",
+    "roles/cloudbuild.connectionAdmin",
+    "roles/cloudbuild.readTokenAccessor",
+    "roles/cloudbuild.tokenAccessor",
+    "roles/cloudbuild.workerPoolOwner",
+    "roles/cloudbuild.workerPoolEditor",
+    "roles/cloudbuild.workerPoolViewer",
+    "roles/artifactregistry.admin",
+    "roles/viewer",
+    "roles/owner",
+  ])
+  role = each.key
 }
 
-# This module creates a Cloud Storage bucket to be used by the Cloud Build Log Bucket
-module "build_logs_bucket" {
-  source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "~> 3.4.1"
+data "google_project" "project" {
   project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
-  name          = "${local.app_prefix}-logs-${module.project_services.project_id}"
-  location      = var.location
-  # When deleting a bucket, this boolean option will delete all contained objects. 
-  # If false, Terraform will fail to delete buckets which contain objects.
-  force_destroy = true
-
-  lifecycle_rules = [{
-    action = {
-      type = "Delete"
-    }
-    condition = {
-      age            = 365
-      with_state     = "ANY"
-      matches_prefix = var.project_id
-    }
-  }]
-
-  iam_members = [
-    {
-    role   = "roles/storage.admin"
-    member = "serviceAccount:${local.builder_service_account_email}"
-    },
-    {
-    role   = "roles/storage.admin"
-    member = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
-    }
-  ]
-
-  depends_on = [
-    data.google_project.project,
-    module.build_service_account
-  ]
 }
 
 # This resource creates a bucket object using as content the measurement_protocol_payload_template_file file.
@@ -671,7 +637,7 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest --gcs-log-dir=gs://${module.build_logs_bucket.name} ${local.pipeline_source_dir}"
+  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
   destroy_cmd_body = "artifacts docker images delete --project=${module.project_services.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 
   create_cmd_triggers = {
@@ -679,7 +645,7 @@ module "activation_pipeline_container" {
   }
 
   module_depends_on = [
-    module.build_service_account
+    google_project_iam_member.cloud_build_job_service_account
   ]
 }
 

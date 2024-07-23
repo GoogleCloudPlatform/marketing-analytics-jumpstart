@@ -1474,7 +1474,8 @@ resource "null_resource" "create_gemini_model" {
   }
 
   depends_on = [
-    google_bigquery_connection.vertex_ai_connection
+    google_bigquery_connection.vertex_ai_connection,
+    module.gemini_insights.google_bigquery_dataset
   ]
 }
 

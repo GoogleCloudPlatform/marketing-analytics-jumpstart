@@ -159,11 +159,6 @@ variable "activation_project_id" {
   description = "Project ID where activation resources are created"
 }
 
-variable "activation_project_number" {
-  type        = string
-  description = "Project ID where activation resources are created"
-}
-
 variable "ga4_property_id" {
   description = "Google Analytics property id"
   type        = string
