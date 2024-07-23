@@ -1485,227 +1485,7 @@ vertex_ai:
 # This block contains configuration parameters for the BigQuery Datasets, Tables, Queries and Stored Procedures.
 bigquery:
   project_id: "${project_id}"
-  region: "${location}"
-  dataset:
-    # Dataset for the feature engineering tables and procedures.
-    feature_store:
-      project_id: "${project_id}"
-      name: "feature_store"
-      location: "${location}"
-      collation: "und:ci"
-      is_case_insensitive: TRUE
-      description: "Feature Store dataset for Marketing behavioural modeling"
-      friendly_name: "Feature Store"
-      max_time_travel_hours: 168 
-      default_partition_expiration_days: 365
-      default_table_expiration_days: 365
-    # Dataset for the purchase propensity use case.
-    purchase_propensity:
-      name: "purchase_propensity"
-      location: "${location}"
-      project_id: "${project_id}"
-      collation: "und:ci"
-      is_case_insensitive: TRUE
-      description: "Purchase Propensity Use Case dataset for Marketing behavioural modeling"
-      friendly_name: "Purchase Propensity Dataset"
-      max_time_travel_hours: 168
-      default_partition_expiration_days: 365
-      default_table_expiration_days: 365
-    # Dataset for the churn propensity use case.
-    churn_propensity:
-      name: "churn_propensity"
-      location: "${location}"
-      project_id: "${project_id}"
-      collation: "und:ci"
-      is_case_insensitive: TRUE
-      description: "Churn Propensity Use Case dataset for Marketing behavioural modeling"
-      friendly_name: "Churn Propensity Dataset"
-      max_time_travel_hours: 168
-      default_partition_expiration_days: 365
-      default_table_expiration_days: 365
-    # Dataset for the customer lifetime value use case.
-    customer_lifetime_value:
-      project_id: "${project_id}"
-      name: "customer_lifetime_value"
-      location: "${location}"
-      collation: "und:ci"
-      is_case_insensitive: TRUE
-      description: "Customer Lifetime Value Use Case dataset for Marketing behavioural modeling"
-      friendly_name: "Customer Lifetime Value Dataset"
-      max_time_travel_hours: 168
-      default_partition_expiration_days: 365
-      default_table_expiration_days: 365
-    # Dataset for the demographic based audience segmentation use case.
-    audience_segmentation:
-      project_id: "${project_id}"
-      name: "audience_segmentation"
-      location: "${location}"
-      collation: "und:ci"
-      is_case_insensitive: TRUE
-      description: "Audience Segmentation Use Case dataset for Marketing behavioural modeling"
-      friendly_name: "Audience Segmentation Dataset"
-      max_time_travel_hours: 168
-      default_partition_expiration_days: 365
-      default_table_expiration_days: 365
-    # Dataset for the auto audience segmentation (Interests Based Audience Segmentation) use case.
-    auto_audience_segmentation:
-      project_id: "${project_id}"
-      name: "auto_audience_segmentation"
-      location: "${location}"
-      collation: "und:ci"
-      is_case_insensitive: TRUE
-      description: "Auto Audience Segmentation Use Case dataset for Marketing behavioural modeling"
-      friendly_name: "Auto Audience Segmentation Dataset"
-      max_time_travel_hours: 48
-      default_partition_expiration_days: 365
-      default_table_expiration_days: 365
-    # Dataset for the aggregated Value Based Bidding (VBB) use case.
-    aggregated_vbb:
-      project_id: "${project_id}"
-      name: "aggregated_vbb"
-      location: "${location}"
-      collation: "und:ci"
-      is_case_insensitive: TRUE
-      description: "Aggregated VBB Use Case dataset for Marketing behavioural modeling"
-      friendly_name: "Aggregated VBB Dataset"
-      max_time_travel_hours: 48
-      default_partition_expiration_days: 365
-      default_table_expiration_days: 365
-    # Dataset for the aggregated predictions tables and procedures.
-    aggregated_predictions:
-      project_id: "${project_id}"
-      name: "aggregated_predictions"
-      location: "${location}"
-      description: "Dataset with aggregated prediction results from multiple use cases"
-      friendly_name: "Aggregated Predictions Dataset"
-    # Dataset for the gemini insights tables and procedures.
-    gemini_insights:
-      project_id: "${project_id}"
-      name: "gemini_insights"
-      location: "${location}"
-      description: "Dataset with gemini_insights results from multiple use cases"
-      friendly_name: "Gemini Insights Dataset"
-      max_time_travel_hours: 168
-  table:
-    # Table containing the feature engineered dataset that will be used for the Audience Segmentation prediction pipeline.
-    audience_segmentation_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "audience_segmentation"
-      table_name: "audience_segmentation_inference_preparation"
-      location: "${location}"
-      table_description: "Audience Segmentation Inference Preparation table to be used for Model Prediction"
-    # Table containing the feature engineered dataset that will be used for the Customer Lifetime Value prediction pipeline.
-    customer_lifetime_value_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "customer_lifetime_value"
-      table_name: "customer_lifetime_value_inference_preparation"
-      location: "${location}"
-      table_description: "Customer Lifetime Value Inference Preparation table to be used for Model Prediction"
-    # Table containing the feature engineered labels that will be used for the Customer Lifetime Value training pipeline.
-    customer_lifetime_value_label:
-      project_id: "${project_id}"
-      dataset: "customer_lifetime_value"
-      table_name: "customer_lifetime_value_label"
-      location: "${location}"
-      table_description: "Customer Lifetime Value Label table to be used for Model Traning"
-    # Table containing the feature engineered dataset that will be used for the Purchase Propensity prediction pipeline.
-    purchase_propensity_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "purchase_propensity"
-      table_name: "purchase_propensity_inference_preparation"
-      location: "${location}"
-      table_description: "Purchase Propensity Inference Preparation table to be used for Model Prediction"
-    # Table containing the feature engineered dataset that will be used for the Churn Propensity prediction pipeline.
-    churn_propensity_inference_preparation:
-      project_id: "${project_id}"
-      dataset: "churn_propensity"
-      table_name: "churn_propensity_inference_preparation"
-      location: "${location}"
-      table_description: "Purchase Propensity Inference Preparation table to be used for Model Prediction"
-    # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
-    purchase_propensity_label:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "purchase_propensity_label"
-      location: "${location}"
-      table_description: "Purchase Propensity Label table to be used for Model Prediction"
-    # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
-    churn_propensity_label:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "churn_propensity_label"
-      location: "${location}"
-      table_description: "Churn Propensity Label table to be used for Model Prediction"
-    # Table containing the feature engineered dimensions that will be used for the Purchase Propensity training and inference pipeline.
-    user_dimensions:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_dimensions"
-      location: "${location}"
-      table_description: "User Dimensions table as part of the Feature Store for the Purchase Propensity use case"
-    # Table containing the feature engineered dimensions that will be used for the Customer Lifetime Value training and inference pipeline.
-    user_lifetime_dimensions:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_lifetime_dimensions"
-      location: "${location}"
-      table_description: "User Lifetime Dimensions table as part of the Feature Store for the Customer Lifetime Value use case"
-    # Table containing the feature engineered lookback rolling window metrics that will be used for the Audience Segmentation training and inference pipeline.
-    user_lookback_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_lookback_metrics"
-      location: "${location}"
-      table_description: "User Lookback Metrics table as part of the Feature Store"
-    # Table containing the feature engineered rolling window metrics that will be used for the Customer Lifetime Value training and inference pipeline.
-    user_rolling_window_lifetime_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_rolling_window_lifetime_metrics"
-      location: "${location}"
-      table_description: "User Rolling Window Lifetime Metrics table as part of the Feature Store for the Customer Lifetime Value use case" 
-    # Table containing the featured engineered rolling window metrics that will be used for the Purchase Propensity training and inference pipeline.
-    user_rolling_window_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_rolling_window_metrics"
-      location: "${location}"
-      table_description: "User Rolling Window Metrics table as part of the Feature Store for Purchase Propensity use case"
-    # Table containing the feature engineered all users metrics that will be used for the Customer Lifetime Value training and inference pipeline.
-    user_scoped_lifetime_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_scoped_lifetime_metrics"
-      location: "${location}"
-      table_description: "User Scoped Lifetime Metrics table as part of the Feature Store for the Customer Lifetime Value use case"
-    # Table containing the feature engineered all users metrics that will be used for the Purchase Propensity training and inference pipeline.
-    user_scoped_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_scoped_metrics"
-      location: "${location}"
-      table_description: "User Scoped Metrics table as part of the Feature Store for the Purchase Propensity use case"
-    # Table containing the feature engineered all users metrics that will be used for the Audience Segmentation training and inference pipeline.
-    user_scoped_segmentation_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_scoped_segmentation_metrics"
-      location: "${location}"
-      table_description: "User Scoped Segmentation Metrics table as part of the Feature Store for Audience Segmentation use case" 
-    # Table containing the feature engineered user dimensions that will be used for the Audience Segmentation training and inference pipeline.
-    user_segmentation_dimensions:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_segmentation_dimensions"
-      location: "${location}"
-      table_description: "User Segmentation Dimensions table as part of the Feature Store for Audience Segmentation use case"
-    # Table containing the feature engineered user aggregated sessions and events metrics that will be used for the Purchase Propensity training and inference pipeline
-    user_session_event_aggregated_metrics:
-      project_id: "${project_id}"
-      dataset: "feature_store"
-      table_name: "user_session_event_aggregated_metrics"
-      location: "${location}"
-      table_description: "User Session Event Aggregated Metrics table as part of the Feature Store" 
+  region: "${location}" 
   query:
     # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     audience_segmentation_query_template:
@@ -2165,6 +1945,11 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 30
+    # This is a stored procedure that CALLs the Load Latest Prediction stored procedure.
+    invoke_load_latest_prediction:
+      project_id: "${project_id}"
+      dataset: "aggregated_predictions"
+      stored_procedure: "load_latest_prediction"
   # This section sets the parameters for the features, training and inference procedures that insert data into tables and views to be used for
   # training and prediction.
   # There is no strict recommendation on the right parameters that will maximize the models performance, however here are some back of the envelope numbers.
@@ -2492,6 +2277,10 @@ bigquery:
       churn_propensity_dataset: "churn_propensity"
       audience_segmentation_dataset: "audience_segmentation"
       auto_audience_segmentation_dataset: "auto_audience_segmentation"
+    user_predictions_aggregation:
+      project_id: "${project_id}"
+      dataset_id: "aggregated_predictions"
+      table_id: "user_predictions"
     user_behaviour_revenue_insights:
       project_id: "${project_id}"
       dataset: "gemini_insights"
