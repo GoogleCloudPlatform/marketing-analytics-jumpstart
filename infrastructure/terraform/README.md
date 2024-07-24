@@ -201,8 +201,9 @@ To accomplish that, you gonna to plan a few things. First, you need to choose wh
 - **Aggregated Value Based Bidding**: Attributes a numerical value to high value conversion events (user action) in relation to a target conversion event (typically purchase) so that Google Ads can improve the bidding strategy for users that reached these conversion events, as of now.
 - **Demographic Audience Segmentation**: Attributes a cluster segment to an user using demographics data, including geographic location, device, traffic source and windowed user metrics looking XX days back.
 - **Interest based Audience Segmentation**: Attributes a cluster segment to an user using pages navigations data looking XX days back, as of now.
-- **Purchase Propensity**: Predicts a propensity decile and a propensity score (likelihood between 0.0 - 0% and 1.0 - 100%) to an user using demographics data, including geographic location, device, traffic source and windowed user metrics looking XX days back to predict XX days ahead, as of now.
+- **Purchase Propensity**: Predicts a purchase propensity decile and a propensity score (likelihood between 0.0 - 0% and 1.0 - 100%) to an user using demographics data, including geographic location, device, traffic source and windowed user metrics looking XX days back to predict XX days ahead, as of now.
 - **Customer Lifetime Value**: Predicts a lifetime value gain decile and a lifetime value revenue gain in USD (equal of bigger than 0.0) to an user using demographics data, including geographic location, device, traffic source and windowed user metrics looking XX-XXX days back to predict XX days ahead, as of now.
+- **Churn Propensity**: Predicts a churn propensity decile and a propensity score (likelihood between 0.0 - 0% and 1.0 - 100%) to an user using demographics data, including geographic location, device, traffic source and windowed user metrics looking XX days back to predict XX days ahead, as of now.
 
 Second, you need to measure how much data you are going to use to obtain the insights you need. Each one of the use cases above requires data in the following intervals, using as key metrics number of days and unique user events.
 
@@ -211,6 +212,7 @@ Second, you need to measure how much data you are going to use to obtain the ins
 - **Interest based Audience Segmentation**: Minimum 30 days and maximum 1 year. Minimum of 1000 unique user events per day. Note that you don't need more than 1M training examples for the model to perform well, make sure your training table doesn't contain more training examples than you need by applying exclusion clauses (i.e. WHERE, LIMIT clauses).
 - **Purchase Propensity**: Minimum 90 days and maximum 2 years. Minimum of 1000 unique user events per day, of which a minimum of 1 target event per week. Note that you don't need more than 1M training examples for the model to perform well, make sure your training table doesn't contain more training examples than you need by applying exclusion clauses (i.e. WHERE, LIMIT clauses).
 - **Customer Lifetime Value**: Minimum 180 days and maximum 5 years. Minimum of 1000 unique user events per day, of which a minimum of 1 event per week that increases the lifetime value for an user. Note that you don't need more than 1M training examples for the model to perform well, make sure your training table doesn't contain more training examples than you need by applying exclusion clauses (i.e. WHERE, LIMIT clauses).
+- **Churn Propensity**: Minimum 90 days and maximum 2 years. Minimum of 1000 unique user events per day, of which a minimum of 1 target event per week. Note that you don't need more than 1M training examples for the model to perform well, make sure your training table doesn't contain more training examples than you need by applying exclusion clauses (i.e. WHERE, LIMIT clauses).
 
 Finally, the data must be processed by the Marketing Data Store, features must be prepared using the Feature Engineering procedure and the training and inference pipeline must be triggered. For that, open your `config.yaml.tftpl` configuration file and check the `{pipeline-name}.execution.schedule` block to modify the scheduled time for each pipeline you gonna need to orchestrate that enables your use case. Here is a list of pipelines you need for every use case.
 
@@ -219,6 +221,7 @@ Finally, the data must be processed by the Marketing Data Store, features must b
 - **Interest based Audience Segmentation**: feature-creation-auto-audience-segmentation, auto_segmentation.training, auto_segmentation.prediction
 - **Purchase Propensity**: `feature-creation-purchase-propensity`, `propensity.training`, `propensity.prediction`
 - **Customer Lifetime Value**: `feature-creation-customer-ltv`, `propensity_clv.training`, `clv.training`, `clv.prediction`
+- **Churn Propensity**: `feature-creation-churn-propensity`, `churn_propensity.training`, `churn_propensity.prediction`
 
 After you change these configurations, make sure you apply these changes in your deployed resources by re-running terraform.
 
@@ -252,7 +255,16 @@ To manually start the data flow you must perform the following tasks:
 
     ## Backfill audience segmentation tables
     CALL `feature_store.invoke_backfill_user_segmentation_dimensions`();
-    CALL `feature_store.invoke_backfill_user_lookback_metrics`()
+    CALL `feature_store.invoke_backfill_user_lookback_metrics`();
+
+    ## Backfill churn propensity tables
+    ## This use case reuses the user_dimensions and user_rolling_window_metrics, 
+    ## make sure you invoke the backfill for these tables. CALLs are listed above 
+    ## under backfill purchase propensity
+    CALL `feature_store.invoke_backfill_churn_propensity_label`();
+
+    ## Backfill for Gemini Insights
+    CALL `feature_store.invoke_backfill_user_scoped_metrics`();
     ```
 
     **Note:** If you have a considerable amount of data (>XXX GBs of data) in your exported GA4 BigQuery datasets over the last six months, it can take several hours to backfill the feature data so that you can train your ML model. Make sure that the backfill procedures starts without errors before you continue to the next step.

@@ -499,7 +499,7 @@ resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pi
 ###
 
 # This resource is used to compile and upload the Vertex AI pipeline for training the propensity model - purchase propensity use case
-resource "null_resource" "compile_propensity_training_pipelines" {
+resource "null_resource" "compile_purchase_propensity_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
@@ -511,20 +511,20 @@ resource "null_resource" "compile_propensity_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.training -o propensity_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f propensity_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.training -i propensity_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.training -o purchase_propensity_training.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f purchase_propensity_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.training -i purchase_propensity_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
 }
 
 # This resource is used to compile and upload the Vertex AI pipeline for prediction using the propensity model - purchase propensity use case
-resource "null_resource" "compile_propensity_prediction_pipelines" {
+resource "null_resource" "compile_purchase_propensity_prediction_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
-    upstream_resource_dependency = null_resource.compile_propensity_training_pipelines.id
+    upstream_resource_dependency = null_resource.compile_purchase_propensity_training_pipelines.id
   }
 
   # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
@@ -532,9 +532,9 @@ resource "null_resource" "compile_propensity_prediction_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.prediction -o propensity_prediction.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f propensity_prediction.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity.prediction -i propensity_prediction.yaml
+    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.prediction -o purchase_propensity_prediction.yaml
+    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f purchase_propensity_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.prediction -i purchase_propensity_prediction.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -545,7 +545,7 @@ resource "null_resource" "compile_propensity_clv_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
-    upstream_resource_dependency = null_resource.compile_propensity_prediction_pipelines.id
+    upstream_resource_dependency = null_resource.compile_purchase_propensity_prediction_pipelines.id
   }
 
   # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
