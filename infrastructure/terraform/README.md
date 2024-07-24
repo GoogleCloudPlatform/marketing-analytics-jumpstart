@@ -75,25 +75,13 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    poetry env use python3
    ```
 
-1. Grant IAM permissions to your Account
-    Cloud Build Service Account
-    Dataform Editor
-    List services and read IAM Policies and configs
-    Owner
-    Service Account Admin
-    Service Account User
-    Storage Admin
-    View Service Accounts
-    Viewer
-   
-
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
    ```shell
    gcloud auth login
    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
    ```
 
-    **Note:** You will receive an error message informing the Cloud Resource Manager API has not been used/enabled for your project, similar to the following: 
+    **Note:** You may receive an error message informing the Cloud Resource Manager API has not been used/enabled for your project, similar to the following: 
     
     ERROR: (gcloud.auth.application-default.login) User [<ldap>@<company>.com] does not have permission to access projects instance [<gcp_project_ID>:testIamPermissions] (or it may not exist): Cloud Resource Manager API has not been used in project <gcp_project_id> before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com/overview?project=<gcp_project_id> then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
 
@@ -101,7 +89,26 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
 
 1. Review your Terraform version
 
-    Make sure you have installed your terraform version 1.5.7
+    Make sure you have installed terraform version is 1.5.7. We recommend you to use [tfenv](https://github.com/tfutils/tfenv) to manage your terraform version.
+   `Tfenv` is a version manager inspired by rbenv, a Ruby programming language version manager.
+
+    To install `tfenv`, run the following commands:
+
+    ```shell
+    # Install via Homebrew or via Arch User Repository (AUR)
+    # Follow instructions on https://github.com/tfutils/tfenv
+
+    # Now, install the recommended terraform version 
+    tfenv install 1.5.7
+    tfenv use 1.5.7
+    terraform --version
+    ```
+
+    For instance, the output on MacOS should be like:
+    ```shell
+    Terraform v1.5.7
+    on darwin_amd64
+    ```
 
 1. Run the following script to create a Terraform remote backend. 
 

@@ -303,7 +303,8 @@ module "gemini_insights" {
   delete_contents_on_destroy = true
 
   dataset_labels = {
-    version = "prod"
+    version = "prod",
+    dataset_id   = local.config_bigquery.dataset.gemini_insights.name
   }
 
   tables = [for table_id in local.gemini_insights_tables :
@@ -320,4 +321,30 @@ module "gemini_insights" {
     clustering         = [],
     labels             = {},
   }]
+}
+
+# This resource executes gcloud commands to check whether the BigQuery API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_gemini_insights_dataset_exists" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! bq ls --filter labels.dataset_id:${local.config_bigquery.dataset.gemini_insights.name} --max_results 1 --format=json --project_id ${module.gemini_insights.project} && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 6
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "bigquery api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.gemini_insights.google_bigquery_dataset
+  ]
 }
