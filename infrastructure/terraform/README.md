@@ -89,7 +89,26 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
 
 1. Review your Terraform version
 
-    Make sure you have installed your terraform version 1.5.7
+    Make sure you have installed terraform version is 1.5.7. We recommend you to use [tfenv](https://github.com/tfutils/tfenv) to manage your terraform version.
+   `Tfenv` is a version manager inspired by rbenv, a Ruby programming language version manager.
+
+    To install `tfenv`, run the following commands:
+
+    ```shell
+    # Install via Homebrew or via Arch User Repository (AUR)
+    # Follow instructions on https://github.com/tfutils/tfenv
+
+    # Now, install the recommended terraform version 
+    tfenv install 1.5.7
+    tfenv use 1.5.7
+    terraform --version
+    ```
+
+    The output on MacOS should be like:
+    ```shell
+    Terraform v1.5.7
+    on darwin_amd64
+    ```
 
 1. Run the following script to create a Terraform remote backend. 
 
