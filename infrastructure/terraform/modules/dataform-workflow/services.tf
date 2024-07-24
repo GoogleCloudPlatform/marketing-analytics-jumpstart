@@ -33,7 +33,6 @@ module "data_processing_project_services" {
     "bigquerymigration.googleapis.com",
     "bigquerydatatransfer.googleapis.com",
     "secretmanager.googleapis.com",
-    "sourcerepo.googleapis.com",
     "dataform.googleapis.com",
   ]
 }

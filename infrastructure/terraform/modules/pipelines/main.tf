@@ -48,7 +48,6 @@ module "project_services" {
     "bigquery.googleapis.com",
     "bigquerystorage.googleapis.com",
     "storage.googleapis.com",
-    "sourcerepo.googleapis.com",
     "storage-api.googleapis.com",
     "artifactregistry.googleapis.com",
     "aiplatform.googleapis.com",
