@@ -1464,7 +1464,9 @@ data "local_file" "create_gemini_model_file" {
 # This resource executes gcloud commands to run a query that creates a gemini model connected to Vertex AI LLM API.
 resource "null_resource" "create_gemini_model" {
   triggers = {
-    vertex_ai_connection_exists = google_bigquery_connection.vertex_ai_connection.id
+    vertex_ai_connection_exists = google_bigquery_connection.vertex_ai_connection.id,
+    gemini_dataset_exists = module.gemini_insights.bigquery_dataset.id,
+    check_gemini_dataset_listed = null_resource.check_gemini_insights_dataset_exists.id
   }
 
   provisioner "local-exec" {
@@ -1475,7 +1477,8 @@ resource "null_resource" "create_gemini_model" {
 
   depends_on = [
     google_bigquery_connection.vertex_ai_connection,
-    module.gemini_insights.google_bigquery_dataset
+    module.gemini_insights.google_bigquery_dataset,
+    null_resource.check_gemini_insights_dataset_exists
   ]
 }
 

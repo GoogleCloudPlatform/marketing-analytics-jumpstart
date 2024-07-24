@@ -471,7 +471,6 @@ resource "google_project_iam_member" "cloud_build_job_service_account" {
     module.project_services,
     null_resource.check_artifactregistry_api,
     data.google_project.project,
-    #module.build_service_account,
     ]
   
   project = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : var.project_id
@@ -518,6 +517,41 @@ resource "google_project_iam_member" "cloud_build_job_service_account" {
 
 data "google_project" "project" {
   project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
+}
+
+# This module creates a Cloud Storage bucket to be used by the Cloud Build Log Bucket
+module "build_logs_bucket" {
+  source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
+  version       = "~> 3.4.1"
+  project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
+  name          = "${local.app_prefix}-logs-${module.project_services.project_id}"
+  location      = var.location
+  # When deleting a bucket, this boolean option will delete all contained objects. 
+  # If false, Terraform will fail to delete buckets which contain objects.
+  force_destroy = true
+
+  lifecycle_rules = [{
+    action = {
+      type = "Delete"
+    }
+    condition = {
+      age            = 365
+      with_state     = "ANY"
+      matches_prefix = var.project_id
+    }
+  }]
+
+  iam_members = [
+    {
+    role   = "roles/storage.admin"
+    member = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
+    }
+  ]
+
+  depends_on = [
+    data.google_project.project,
+    google_project_iam_member.cloud_build_job_service_account
+  ]
 }
 
 # This resource creates a bucket object using as content the measurement_protocol_payload_template_file file.
@@ -637,7 +671,8 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
+  #create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
+  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest --gcs-log-dir=gs://${module.build_logs_bucket.name} ${local.pipeline_source_dir}"
   destroy_cmd_body = "artifacts docker images delete --project=${module.project_services.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 
   create_cmd_triggers = {
@@ -645,7 +680,7 @@ module "activation_pipeline_container" {
   }
 
   module_depends_on = [
-    google_project_iam_member.cloud_build_job_service_account
+    module.build_logs_bucket
   ]
 }
 
