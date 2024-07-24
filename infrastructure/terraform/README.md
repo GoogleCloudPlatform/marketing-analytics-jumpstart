@@ -75,18 +75,6 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    poetry env use python3
    ```
 
-1. Grant IAM permissions to your Account
-    Cloud Build Service Account
-    Dataform Editor
-    List services and read IAM Policies and configs
-    Owner
-    Service Account Admin
-    Service Account User
-    Storage Admin
-    View Service Accounts
-    Viewer
-   
-
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
    ```shell
    gcloud auth login
