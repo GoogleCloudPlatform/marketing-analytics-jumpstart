@@ -104,7 +104,7 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     terraform --version
     ```
 
-    The output on MacOS should be like:
+    For instance, the output on MacOS should be like:
     ```shell
     Terraform v1.5.7
     on darwin_amd64
