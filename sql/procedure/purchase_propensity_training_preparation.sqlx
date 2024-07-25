@@ -14,18 +14,11 @@
 
 DECLARE custom_start_date DATE DEFAULT NULL;
 DECLARE custom_end_date DATE DEFAULT NULL;
---DECLARE max_date DATE;
---DECLARE min_date DATE;
 
 -- custom_start_date: The start date of the data to be used for training.
 -- custom_end_date: The end date of the data to be used for training.
 SET custom_start_date = PARSE_DATE("%Y-%m-%d", {{custom_start_date}});
 SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
-
--- max_date: The maximum date of the data that is available for training.
--- min_date: The minimum date of the data that is available for training.
---SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
---SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 -- The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
 -- If either parameter is not valid, the procedure sets the corresponding date to the maximum or
