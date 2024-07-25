@@ -626,11 +626,11 @@ vertex_ai:
     ## 9. Run terraform apply
     ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
     ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
-    propensity:
+    purchase_propensity:
       training:
-        name: "propensity-training-pl"
-        job_id_prefix: "propensity-training-pl-"
-        experiment_name: "propensity-training"
+        name: "purchase-propensity-training-pl"
+        job_id_prefix: "purchase-propensity-training-pl-"
+        experiment_name: "purchase-propensity-training"
         # `type` can be "custom" or "tabular-workflows". 
         #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "tabular-workflows"
@@ -644,8 +644,8 @@ vertex_ai:
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
-          root_dir: "gs://${project_id}-pipelines/propensity-training"
-          transformations: "gs://${project_id}-pipelines/propensity-training/transformations_config_{timestamp}.json"
+          root_dir: "gs://${project_id}-pipelines/purchase-propensity-training"
+          transformations: "gs://${project_id}-pipelines/purchase-propensity-training/transformations_config_{timestamp}.json"
           # These are specific data types transformations that will be applied to the dataset.
           custom_transformations: "pipelines/transformations-purchase-propensity.json"
           train_budget_milli_node_hours: 100 # 1000 = 1 hour 
@@ -723,9 +723,9 @@ vertex_ai:
           - will_purchase
         pipeline_parameters_substitutions: null 
       prediction:
-        name: "propensity-prediction-pl"
-        job_id_prefix: "propensity-prediction-pl-"
-        experiment_name: "propensity-prediction"
+        name: "purchase-propensity-prediction-pl"
+        job_id_prefix: "purchase-propensity-prediction-pl-"
+        experiment_name: "purchase-propensity-prediction"
         # `type` can be "custom" or "tabular-workflows". 
         #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
         type: "custom"
@@ -738,7 +738,7 @@ vertex_ai:
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${cloud_region}"
-          job_name_prefix: "propensity-prediction-pl-"
+          job_name_prefix: "purchase-propensity-prediction-pl-"
           # The Purchase Propensity model name to be used for prediction
           model_display_name: "purchase-propensity-model" 
           model_metric_name: "logLoss"
