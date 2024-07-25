@@ -14,8 +14,8 @@
 
 DECLARE custom_start_date DATE DEFAULT NULL;
 DECLARE custom_end_date DATE DEFAULT NULL;
-DECLARE max_date DATE;
-DECLARE min_date DATE;
+--DECLARE max_date DATE;
+--DECLARE min_date DATE;
 
 -- custom_start_date: The start date of the data to be used for training.
 -- custom_end_date: The end date of the data to be used for training.
@@ -24,20 +24,20 @@ SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
 
 -- max_date: The maximum date of the data that is available for training.
 -- min_date: The minimum date of the data that is available for training.
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+--SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+--SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 -- The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
 -- If either parameter is not valid, the procedure sets the corresponding date to the maximum or
 -- minimum date of the available data.
-IF (custom_start_date IS NOT NULL OR custom_start_date >= min_date OR custom_start_date <= max_date) 
+IF custom_start_date IS NOT NULL AND custom_start_date >= start_date AND custom_start_date <= end_date 
    AND custom_start_date < custom_end_date THEN
-  SET min_date = custom_start_date;
+  SET start_date = custom_start_date;
 END IF;
 
-IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_date >= min_date) 
+IF custom_end_date IS NOT NULL AND custom_end_date <= end_date AND custom_end_date >= start_date 
    AND custom_end_date > custom_start_date THEN
-  SET max_date = custom_end_date;
+  SET end_date = custom_end_date;
 END IF;
 
 -- This is a temp table consolidating user_dimensions over the dates intervals.
@@ -91,7 +91,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` UD
 WHERE
   -- Filter feature dates according to the defined date interval
-  UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  UD.feature_date BETWEEN start_date AND end_date
 WINDOW 
   user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
@@ -215,7 +215,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` UWM
 WHERE
   -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
-  UWM.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  UWM.feature_date BETWEEN start_date AND end_date
 WINDOW 
   user_rolling_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
@@ -244,7 +244,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.purchase_propensity_label` LABEL
 WHERE
   -- Define the training subset interval
-  LABEL.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  LABEL.feature_date BETWEEN start_date AND end_date
 WINDOW 
   purchase_propensity_label_window AS (PARTITION BY LABEL.user_pseudo_id, LABEL.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
@@ -255,7 +255,7 @@ CREATE OR REPLACE TEMP TABLE training_preparation as (
     UD.user_pseudo_id,
     UD.user_id,
     UD.feature_date,
-    UD.user_ltv_revenue,
+    COALESCE(UD.user_ltv_revenue, 0.0) AS user_ltv_revenue,
     UD.device_category,
     UD.device_mobile_brand_name,
     UD.device_mobile_model_name,

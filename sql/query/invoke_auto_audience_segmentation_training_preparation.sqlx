@@ -26,6 +26,12 @@ SET DATE_END = (SELECT DATE_SUB(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_pro
 SET DATE_START = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 SET LOOKBACK_DAYS = {{lookback_days}};
 
+-- If DATE_START > maximum event_date OR DATE_END < minimum event_date, then set DATE_START for the max event_date and set DATE_END for the min event_date
+IF DATE_START >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR DATE_END <= (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
+  SET DATE_START = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+  SET DATE_END = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+END IF;
+
 -- This line calls a stored procedure, passing the calculated DATE_START, DATE_END, and LOOKBACK_DAYS as arguments. 
 -- This stored procedure handles the actual data preparation for the machine learning model, using the provided dates 
 -- and lookback period to construct features.

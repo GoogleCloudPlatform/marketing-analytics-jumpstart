@@ -14,8 +14,8 @@
 
 DECLARE custom_start_date DATE DEFAULT NULL;
 DECLARE custom_end_date DATE DEFAULT NULL;
-DECLARE max_date DATE;
-DECLARE min_date DATE;
+--DECLARE max_date DATE;
+--DECLARE min_date DATE;
 
 -- custom_start_date: The start date of the data to be used for training.
 -- custom_end_date: The end date of the data to be used for training.
@@ -24,20 +24,26 @@ SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
 
 -- max_date: The maximum date of the data that is available for training.
 -- min_date: The minimum date of the data that is available for training.
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+--SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+--SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 30 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+
+-- If min_date > maximum event_date OR max_date < minimum event_date, then set min_date for the max event_date and set max_date for the min event_date
+--IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR max_date <= (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
+--  SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+--  SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+--END IF;
 
 -- The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
 -- If either parameter is not valid, the procedure sets the corresponding date to the maximum or
 -- minimum date of the available data.
-IF (custom_start_date IS NOT NULL OR custom_start_date >= min_date OR custom_start_date <= max_date) 
+IF custom_start_date IS NOT NULL AND custom_start_date >= start_date AND custom_start_date <= end_date
    AND custom_start_date < custom_end_date THEN
-  SET min_date = custom_start_date;
+  SET start_date = custom_start_date;
 END IF;
 
-IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_date >= min_date) 
+IF custom_end_date IS NOT NULL AND custom_end_date <= end_date AND custom_end_date >= start_date
    AND custom_end_date > custom_start_date THEN
-  SET max_date = custom_end_date;
+  SET end_date = custom_end_date;
 END IF;
 
 -- This is a temp table consolidating user_dimensions over the dates intervals.
@@ -89,7 +95,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` UD
 WHERE
   -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
-  UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  UD.feature_date BETWEEN start_date AND end_date
 WINDOW 
   user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
@@ -213,7 +219,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` UWM
 WHERE
   -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
-  UWM.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  UWM.feature_date BETWEEN start_date AND end_date
 WINDOW 
   -- Window data into partitions by user_pseudo_id and feature_date taking all rows for aggregation
   user_rolling_window AS (PARTITION BY UWM.user_pseudo_id, UWM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
@@ -232,7 +238,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.churn_propensity_label` LABEL
 WHERE
   -- Define the training subset interval
-  LABEL.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  LABEL.feature_date BETWEEN start_date AND end_date
 WINDOW 
   churned_window AS (PARTITION BY LABEL.user_pseudo_id, LABEL.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
@@ -346,7 +352,7 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
   feature_date,
   user_pseudo_id,
   user_id,
-  user_ltv_revenue,
+  COALESCE(user_ltv_revenue, 0.0) AS user_ltv_revenue,
   device_category,
   device_mobile_brand_name,
   device_mobile_model_name,
@@ -586,6 +592,8 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.churn_propensity_training_30
   -- Gets the latest churned for each user and feature_date.
   LAST_VALUE(churned) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS churned
   FROM `{{project_id}}.{{dataset}}.churn_propensity_training_full_dataset`
+  -- The percentage of rows to be sampled from the source table.
+  TABLESAMPLE SYSTEM ({{table_sampling_percentage}} PERCENT)
 );
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_churn_propensity_training_30_30`
@@ -842,8 +850,6 @@ SELECT DISTINCT
   -- Number of rows per user, per day, per split. Only one row per user, per day, per slip.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit -- Assigns a row number to each user, per day, per split, in descending order of feature_date.
   FROM `{{project_id}}.{{dataset}}.churn_propensity_training_30_30`
-  -- The percentage of rows to be sampled from the source table.
-  TABLESAMPLE SYSTEM ({{table_sampling_percentage}} PERCENT)
 )
 WHERE
   -- Filters to keep only one row per user, per day, per split.
@@ -1285,8 +1291,6 @@ SELECT DISTINCT
   --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, churned ORDER BY feature_date DESC) AS user_row_order
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order -- Assigns a row number to each user based on the feature date, partitioning by user_pseudo_id and data_split. The latest row for each user within the partition is assigned a row number of 1.
   FROM `{{project_id}}.{{dataset}}.churn_propensity_training_30_30`
-  -- Samples a percentage of the table.
-  TABLESAMPLE SYSTEM ({{table_sampling_percentage}} PERCENT)
 )
 WHERE
   -- Only selects the latest row for each user within the partition.

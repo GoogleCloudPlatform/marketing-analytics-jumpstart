@@ -15,8 +15,8 @@
 -- The procedure audience_segmentation_training_preparation prepares data for training the Audience Segmentation model.
 DECLARE custom_start_date DATE DEFAULT NULL;
 DECLARE custom_end_date DATE DEFAULT NULL;
-DECLARE max_date DATE;
-DECLARE min_date DATE;
+--DECLARE max_date DATE;
+--DECLARE min_date DATE;
 
 -- custom_start_date: The start date of the data to be used for training.
 -- custom_end_date: The end date of the data to be used for training.
@@ -25,20 +25,20 @@ SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
 
 -- max_date: The maximum date of the data that is available for training.
 -- min_date: The minimum date of the data that is available for training.
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+--SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+--SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 15 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
 -- The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
 -- If either parameter is not valid, the procedure sets the corresponding date to the maximum or
 -- minimum date of the available data.
-IF (custom_start_date IS NOT NULL OR custom_start_date >= min_date OR custom_start_date <= max_date) 
-   AND custom_start_date < max_date THEN
-  SET min_date = custom_start_date;
+IF custom_start_date IS NOT NULL AND custom_start_date >= start_date AND custom_start_date <= end_date
+   AND custom_start_date < end_date THEN
+  SET start_date = custom_start_date;
 END IF;
 
-IF (custom_end_date IS NOT NULL OR custom_end_date <= max_date OR custom_end_date >= min_date) 
-   AND custom_end_date > min_date THEN
-  SET max_date = custom_end_date;
+IF custom_end_date IS NOT NULL AND custom_end_date <= end_date AND custom_end_date >= start_date 
+   AND custom_end_date > start_date THEN
+  SET end_date = custom_end_date;
 END IF;
 
 
@@ -96,7 +96,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_segmentation_dimensions` UD
 WHERE
   -- Define the training+validation subset interval
-  UD.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  UD.feature_date BETWEEN start_date AND end_date
 WINDOW 
   --  Window function to aggregate features based on the values of user_pseudo_id and feature_date.
   --  UNBOUNDED PRECEDING means the window includes all rows from the beginning of the partition (all rows with the same user_pseudo_id and feature_date) up to the current row.
@@ -143,7 +143,7 @@ FROM
   `{{feature_store_project_id}}.{{feature_store_dataset}}.user_lookback_metrics` UWM
 WHERE
   -- Define the training+validation subset interval
-  UWM.feature_date BETWEEN GREATEST(start_date, min_date) AND LEAST(end_date, max_date)
+  UWM.feature_date BETWEEN start_date AND end_date
 WINDOW 
   --  Window function to aggregate features based on the values of user_pseudo_id and feature_date.
   --  UNBOUNDED PRECEDING means the window includes all rows from the beginning of the partition (all rows with the same user_pseudo_id and feature_date) up to the current row.
@@ -191,8 +191,8 @@ CREATE OR REPLACE TEMP TABLE training_preparation as (
     UWM.add_to_carts_past_8_14_day,
     UWM.checkouts_past_1_7_day,
     UWM.checkouts_past_8_14_day,
-    UWM.ltv_revenue_past_1_7_day,
-    UWM.ltv_revenue_past_7_15_day
+    COALESCE(UWM.ltv_revenue_past_1_7_day, 0.0) AS ltv_revenue_past_1_7_day,
+    COALESCE(UWM.ltv_revenue_past_7_15_day, 0.0) AS ltv_revenue_past_7_15_day,
 FROM
   training_preparation_ud UD
 INNER JOIN
@@ -349,7 +349,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_traini
   LAST_VALUE(checkouts_past_8_14_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_8_14_day,
   LAST_VALUE(ltv_revenue_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_1_7_day,
   LAST_VALUE(ltv_revenue_past_7_15_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_7_15_day
-  FROM `{{project_id}}.{{dataset}}.audience_segmentation_training_full_dataset`
+  FROM `{{project_id}}.{{dataset}}.audience_segmentation_training_full_dataset` TABLESAMPLE SYSTEM ({{samples_percentage}} PERCENT)
 );
 
 -- Create a view v_audience_segmentation_training_15 that selects the latest values for each feature from the audience_segmentation_training_full_dataset table.
@@ -456,7 +456,7 @@ FROM (
   -- Row number attributted to user in a data_split ordered by feature_date descending.
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM
-    `{{project_id}}.{{dataset}}.audience_segmentation_training_15`) TABLESAMPLE SYSTEM ({{samples_percentage}} PERCENT)
+    `{{project_id}}.{{dataset}}.audience_segmentation_training_15`)
 WHERE
   -- Filters only for the last row example in each data split per user.
   user_row_order = 1;
