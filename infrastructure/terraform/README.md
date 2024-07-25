@@ -263,8 +263,9 @@ To manually start the data flow you must perform the following tasks:
     ## under backfill purchase propensity
     CALL `feature_store.invoke_backfill_churn_propensity_label`();
 
-    ## Backfill for Gemini Insights
+    ## Backfill for gemini insights
     CALL `feature_store.invoke_backfill_user_scoped_metrics`();
+    CALL `gemini_insights.invoke_backfill_user_behaviour_revenue_insights`();
     ```
 
     **Note:** If you have a considerable amount of data (>XXX GBs of data) in your exported GA4 BigQuery datasets over the last six months, it can take several hours to backfill the feature data so that you can train your ML model. Make sure that the backfill procedures starts without errors before you continue to the next step.

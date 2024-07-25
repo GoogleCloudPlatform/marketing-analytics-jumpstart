@@ -15,6 +15,11 @@
 DECLARE min_date DATE;
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- If min_date > maximum event_date OR max_date < minimum event_date, then set min_date for the max event_date and set max_date for the min event_date
+IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
+  SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+END IF;
+
 -- This code snippet essentially prepares a set of date intervals within the dates_interval temporary table. 
 -- These intervals are used to segment data for analysis in subsequent parts of the code. 
 -- The min_date variable ensures that the analysis starts from a specific point in time, and the 

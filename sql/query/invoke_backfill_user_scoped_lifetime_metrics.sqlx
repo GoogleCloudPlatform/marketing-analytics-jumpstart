@@ -26,6 +26,12 @@ SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} 
 -- Sets min_date to the earliest event_date from the event table, plus an offset specified by the interval_min_date
 SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
 
+-- If min_date > maximum event_date OR max_date < minimum event_date, then set min_date for the max event_date and set max_date for the min event_date
+IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR max_date <= (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
+  SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+  SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+END IF;
+
 -- This section determines the date range for analysis and creates a temporary table dates_interval with distinct date intervals.
 CREATE OR REPLACE TEMP TABLE dates_interval as (
   SELECT DISTINCT 
