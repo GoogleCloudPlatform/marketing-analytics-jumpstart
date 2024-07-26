@@ -50,6 +50,7 @@ module "dataform-workflow-dev" {
 
   source_ga4_export_project_id          = var.source_ga4_export_project_id
   source_ga4_export_dataset             = var.source_ga4_export_dataset
+  ga4_incremental_processing_days_back  = var.ga4_incremental_processing_days_back
   source_ads_export_data                = var.source_ads_export_data
   destination_bigquery_project_id       = length(var.dev_data_project_id) > 0 ? var.staging_data_project_id : var.data_project_id
   destination_bigquery_dataset_location = length(var.dev_destination_data_location) > 0 ? var.dev_destination_data_location : var.destination_data_location

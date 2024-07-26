@@ -44,6 +44,11 @@ variable "source_ga4_export_dataset" {
   type = string
 }
 
+variable "ga4_incremental_processing_days_back" {
+  type = string
+  default = "3"
+}
+
 variable "source_ads_export_data" {
   type = list(object({
     project      = string
