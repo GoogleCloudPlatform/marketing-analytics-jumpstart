@@ -145,6 +145,12 @@ variable "source_ga4_export_dataset" {
   type        = string
 }
 
+variable "ga4_incremental_processing_days_back" {
+  description = "Past number of days to process GA4 exported data"
+  type = string
+  default = "3"
+}
+
 variable "source_ads_export_data" {
   description = "List of BigQuery's Ads Data Transfer datasets"
   type = list(object({

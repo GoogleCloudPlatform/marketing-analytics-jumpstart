@@ -323,6 +323,7 @@ module "data_store" {
   source_ga4_export_project_id = var.source_ga4_export_project_id
   source_ga4_export_dataset    = var.source_ga4_export_dataset
   source_ads_export_data       = var.source_ads_export_data
+  ga4_incremental_processing_days_back = var.ga4_incremental_processing_days_back
 
   # The data_processing_project_id is set in the terraform.tfvars file.
   # The data_project_id is set in the terraform.tfvars file. 

@@ -52,6 +52,7 @@ main:
               env: ${var.environment}
               ga4_export_project: ${var.source_ga4_export_project_id}
               ga4_export_dataset: ${var.source_ga4_export_dataset}
+              ga4_incremental_processing_days_back: '${var.ga4_incremental_processing_days_back}'
               ads_export_data: '${local.adsDataVariable}'
       result: compilationResult
   - createWorkflowInvocation:
