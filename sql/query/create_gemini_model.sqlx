@@ -12,8 +12,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
+-- https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-create-remote-model#locations_2
+-- You can create remote models over Vertex AI models in all of the regions that support Generative AI APIS, and also in the US and EU multi-regions.
+-- If you choose to use a TPU accelerator when performing supervised tuning of an LLM, you must run your query in the europe-west4 region. 
+-- Your supervised tuning computations also occur in the europe-west4 region, because that's where TPU resources are located.
 
--- Create a {{endpoint_name}} model using a remote connection to us.{{connection_name}}
+-- Create a {{endpoint_name}} model using a remote connection to {{region}}.{{connection_name}}
 CREATE OR REPLACE MODEL `{{project_id}}.{{dataset}}.{{model_name}}`
-REMOTE WITH CONNECTION `{{project_id}}.us.{{connection_name}}`
+REMOTE WITH CONNECTION `{{project_id}}.{{region}}.{{connection_name}}`
 OPTIONS (ENDPOINT = '{{endpoint_name}}');

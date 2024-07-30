@@ -880,6 +880,7 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
             if f == '/' or f == '' or f is None: return 'homepage'
             if f.startswith('/'): f = f[1:]
             if f.endswith('/'): f = f[:-1]
+            if f[0].isdigit(): f = '_' + f
             return re.sub('[^0-9a-zA-Z]+', '_', f)
         
         template = jinja2.Template("""

@@ -204,8 +204,8 @@ vertex_ai:
           location: "${location}"
           dataset: "auto_audience_segmentation"
           feature_table: "page_path_cumulative_traffic"
-          date_start: "2023-01-01"
-          date_end: "2024-04-01"
+          date_start: "2024-01-01"
+          date_end: "2024-07-01"
           mds_project_id: "${mds_project_id}"
           mds_dataset: "${mds_dataset}"
           stored_procedure_name: "auto_audience_segmentation_dataset_preparation"
@@ -216,7 +216,7 @@ vertex_ai:
           #reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)(?:/)$"
           reg_expression: "^${website_url}([-a-zA-Z0-9@:%_+.~#?//=]*)$"
           # Increase the percentual `perc_keep` to include more pages in your segmentation, decrease to exclude pages in your segmentation
-          perc_keep: 35
+          perc_keep: 50
           query_auto_audience_segmentation_inference_preparation: "
             CALL `{auto_audience_segmentation_inference_preparation_procedure_name}`();"
           query_auto_audience_segmentation_training_preparation: "
@@ -556,7 +556,7 @@ vertex_ai:
           # This is the training dataset provided during the training routine.
           # The schema in this table or view must match the schema in the json files.
           # Take into consideration the `excluded_features` list below. They won't be used for training.
-          data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_value_based_bidding_training_full_dataset"
+          data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_value_based_bidding_training"
           data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
           transform_dataflow_max_num_workers: 10
@@ -1728,6 +1728,7 @@ bigquery:
       model_name: "gemini_1_5_pro"
       region: lower("${cloud_region}")
       connection_name: "vertex_ai"
+      region: "${location}"
       endpoint_name: "gemini-1.5-pro-001"
     # This is a stored procedure that CALLs the Aggregated Value Based Bidding Training Preparation stored procedure.
     invoke_aggregated_value_based_bidding_training_preparation:
@@ -2193,7 +2194,8 @@ bigquery:
       name: "aggregated_value_based_bidding_training_preparation"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
-      view_name: "aggregated_value_based_bidding_training_full_dataset"
+      table_name: "aggregated_value_based_bidding_training_full_dataset"
+      view_name: "aggregated_value_based_bidding_training"
       expiration_duration_hours: 168
       # This is the datetime column name.
       datetime_column: "Dt"
@@ -2235,6 +2237,7 @@ bigquery:
       expiration_duration_hours: 168 
       # This parameter helps you set a maximum number of samples for training.
       samples_percentage: 10
+      samples_limit: 10000
       custom_start_date: "'2024-01-01'"
       custom_end_date: "NULL"
     # This is the stored procedure that calculates the label column for the Customer Lifetime Value use case.
@@ -2324,6 +2327,7 @@ bigquery:
       custom_start_date: "'2023-01-01'"
       custom_end_date: "NULL"
       table_sampling_percentage: 1
+      samples_limit: 10000
     # This is the stored procedure that UPSERTs new user dimensions rows daily. 
     # The granularity level is per user per day.
     # These dimensions are used for the Purchase Propensity use case.

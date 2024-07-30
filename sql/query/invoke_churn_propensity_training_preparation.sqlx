@@ -18,6 +18,7 @@
 -- within the specified bounds.
 
 -- Intended start and end dates for training data
+-- Initializing Training Dates
 DECLARE train_start_date DATE DEFAULT NULL;
 DECLARE train_end_date DATE DEFAULT NULL;
 
@@ -42,10 +43,6 @@ IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.
   SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
 END IF;
 
--- Initializing Training Dates
-SET train_start_date = min_date;
-SET train_end_date = max_date;
-
 -- Setting Split Numbers
 -- Sets the train_split_end_number to a user-defined value. This value likely determines the proportion of data used for training.
 SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% for training use number 5. If you want 80% use number 7.
@@ -56,7 +53,7 @@ SET validation_split_end_number = {{validation_split_end_number}};
 SET churners = (SELECT COUNT(DISTINCT user_pseudo_id) 
                 FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.churn_propensity_label`
                 WHERE churned = 1 AND
-                feature_date BETWEEN train_start_date AND train_end_date
+                feature_date BETWEEN min_date AND max_date
                 );
 
 -- Setting Training Dates

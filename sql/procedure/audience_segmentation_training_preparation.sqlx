@@ -343,6 +343,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.audience_segmentation_traini
   LAST_VALUE(ltv_revenue_past_1_7_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_1_7_day,
   LAST_VALUE(ltv_revenue_past_7_15_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS ltv_revenue_past_7_15_day
   FROM `{{project_id}}.{{dataset}}.audience_segmentation_training_full_dataset` TABLESAMPLE SYSTEM ({{samples_percentage}} PERCENT)
+  ORDER BY RAND() LIMIT {{samples_limit}}
 );
 
 -- Create a view v_audience_segmentation_training_15 that selects the latest values for each feature from the audience_segmentation_training_full_dataset table.

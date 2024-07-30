@@ -14,7 +14,7 @@
 
 
 -- During training, due to the lack of enough training samples
--- Training subset is replicated 3 times. This is equivalent to training for more epochs.
+-- Training subset is replicated a few times. This is equivalent to training for more epochs.
 -- Since we intend to overfit the ML model to get an accurate representation 
 -- of the feature importance, there is no problem in applying this strategy.
 -- Validation and test subsets are not replicated.
@@ -38,7 +38,105 @@
 --    Added_Shipping_Info: SUM of times shipping information was added for each Date.
 --    Added_Payment_Info: SUM of times payment information was added for each Date.
 --    Purchase_Product: SUM of purchases made for each Date.
---
+
+DECLARE min_date DATE DEFAULT NULL;
+DECLARE max_date DATE DEFAULT NULL;
+DECLARE MIN_NUMBER_OF_SAMPLES INT64 DEFAULT NULL;
+DECLARE MAX_LOOP_IT INT64 DEFAULT 1;
+DECLARE i INT64 DEFAULT 1;
+
+SET min_date = (SELECT MIN(Dt) FROM `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`);
+SET max_date = (SELECT MAX(Dt) FROM `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`);
+SET MIN_NUMBER_OF_SAMPLES = 1000;
+
+SET MAX_LOOP_IT = (SELECT CAST(CEIL(SAFE_DIVIDE(MIN_NUMBER_OF_SAMPLES, DATE_DIFF(max_date,min_date,DAY))) AS INT64));
+IF MAX_LOOP_IT <= i+1 THEN
+  SET MAX_LOOP_IT = 2;
+END IF;
+
+CREATE OR REPLACE TEMP TABLE ttable AS
+SELECT
+  CAST(NULL AS DATE) AS Dt,
+  CAST(NULL AS INT64) AS First_Visits,
+  CAST(NULL AS INT64) AS Visit_Product_Page,
+  CAST(NULL AS INT64) AS View_Product_Details,
+  CAST(NULL AS INT64) AS Add_Product_to_Cart,
+  CAST(NULL AS INT64) AS View_Cart,
+  CAST(NULL AS INT64) AS Begin_Checkout,
+  CAST(NULL AS INT64) AS Added_Shipping_Info,
+  CAST(NULL AS INT64) AS Added_Payment_Info,
+  CAST(NULL AS INT64) AS Purchase_Product;
+
+WHILE i < MAX_LOOP_IT DO
+    -- overwrite `ttable` with its previous contents union'ed
+    -- with new data results from current loop iteration
+    CREATE OR REPLACE TEMP TABLE ttable AS
+        SELECT
+          Dt,
+          First_Visits,
+          Visit_Product_Page,
+          View_Product_Details,
+          Add_Product_to_Cart,
+          View_Cart,
+          Begin_Checkout,
+          Added_Shipping_Info,
+          Added_Payment_Info,
+          Purchase_Product
+        FROM
+          `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
+        UNION ALL
+        SELECT * FROM ttable;
+
+    SET i = i + 1;
+END WHILE;
+
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{table_name}}` AS (
+SELECT
+  "TRAIN" AS data_split,
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM ttable -- UNION'ed results
+WHERE Dt IS NOT NULL
+UNION ALL
+SELECT
+  "VALIDATE" AS data_split,
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM ttable -- UNION'ed results
+WHERE Dt IS NOT NULL
+UNION ALL
+SELECT
+  "TEST" AS data_split,
+  Dt,
+  First_Visits,
+  Visit_Product_Page,
+  View_Product_Details,
+  Add_Product_to_Cart,
+  View_Cart,
+  Begin_Checkout,
+  Added_Shipping_Info,
+  Added_Payment_Info,
+  Purchase_Product
+FROM ttable -- UNION'ed results
+WHERE Dt IS NOT NULL
+);
+
 -- The view is defined using a series of UNION ALL statements that combine data from 
 -- the aggregated_vbb table in the {{mds_project_id}}.{{mds_dataset}} dataset.
 --    The first three UNION ALL statements select data for the training split. Each statement selects the same data, effectively replicating it three times. This is done to increase the size of the training dataset and potentially improve model performance.
@@ -62,80 +160,5 @@ OPTIONS(
     friendly_name="aggregated_value_based_bidding_training_full_dataset",
     description="View for aggregated value based bidding training dataset. View expires after 7d and should run daily.",
     labels=[("org_unit", "development")]
-) AS
-SELECT
-  "TRAIN" AS data_split,
-  Dt,
-  First_Visits,
-  Visit_Product_Page,
-  View_Product_Details,
-  Add_Product_to_Cart,
-  View_Cart,
-  Begin_Checkout,
-  Added_Shipping_Info,
-  Added_Payment_Info,
-  Purchase_Product
-FROM
-  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
-UNION ALL
-SELECT
-  "TRAIN" AS data_split,
-  Dt,
-  First_Visits,
-  Visit_Product_Page,
-  View_Product_Details,
-  Add_Product_to_Cart,
-  View_Cart,
-  Begin_Checkout,
-  Added_Shipping_Info,
-  Added_Payment_Info,
-  Purchase_Product
-FROM
-  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
-UNION ALL
-SELECT
-  "TRAIN" AS data_split,
-  Dt,
-  First_Visits,
-  Visit_Product_Page,
-  View_Product_Details,
-  Add_Product_to_Cart,
-  View_Cart,
-  Begin_Checkout,
-  Added_Shipping_Info,
-  Added_Payment_Info,
-  Purchase_Product
-FROM
-  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
-UNION ALL
-SELECT
-  "VALIDATE" AS data_split,
-  Dt,
-  First_Visits,
-  Visit_Product_Page,
-  View_Product_Details,
-  Add_Product_to_Cart,
-  View_Cart,
-  Begin_Checkout,
-  Added_Shipping_Info,
-  Added_Payment_Info,
-  Purchase_Product
-FROM
-  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
-WHERE {{datetime_column}} BETWEEN '{{eval_start_date}}' AND '{{eval_end_date}}'
-UNION ALL
-SELECT
-  "TEST" AS data_split,
-  Dt,
-  First_Visits,
-  Visit_Product_Page,
-  View_Product_Details,
-  Add_Product_to_Cart,
-  View_Cart,
-  Begin_Checkout,
-  Added_Shipping_Info,
-  Added_Payment_Info,
-  Purchase_Product
-FROM
-  `{{mds_project_id}}.{{mds_dataset}}.aggregated_vbb`
-WHERE {{datetime_column}} BETWEEN '{{eval_start_date}}' AND '{{eval_end_date}}';
+) AS 
+SELECT * FROM `{{project_id}}.{{dataset}}.{{table_name}}`;
