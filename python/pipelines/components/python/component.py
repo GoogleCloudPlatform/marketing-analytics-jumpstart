@@ -44,7 +44,7 @@ def train_scikit_cluster_model(
     bucket_name: str,
     model_name: str,
     p_wiggle: int = 10,
-    min_num_clusters: int = 3,
+    min_num_clusters: int = 2,
     columns_to_skip: int = 3,
     timeout: Optional[float] = 1800
 ) -> None:
@@ -109,10 +109,16 @@ def train_scikit_cluster_model(
         query=f"""SELECT * FROM `{project_id}.{dataset}.{training_table}`"""
         ).to_dataframe()
 
+     # Remove columns
+    training_dataset_df = training_dataset_df[training_dataset_df.columns[columns_to_skip:]]
+    # Drop duplicates
+    # Since we have found out many duplicates, we decided to drop all the duplicates 
+    # to allow the model better learn the features distribution and segment accordingly
+    training_dataset_df = training_dataset_df.drop_duplicates()
+
     # Skipping the first n columns
-    features = list(training_dataset_df.columns[columns_to_skip:])
-    min_num_clusters = 3
-    max_num_clusters = len(features)
+    features = list(training_dataset_df.columns)
+    max_num_clusters = min(len(features), training_dataset_df.shape[0], 10)
 
     def _create_model(params):
         model = Pipeline([
@@ -147,9 +153,13 @@ def train_scikit_cluster_model(
         labels = model.predict(training_dataset_df)
 
         return silhouette_score(
-            model.named_steps['transform'].transform(training_dataset_df),
-            labels, metric='euclidean',
-            sample_size=int(len(training_dataset_df) * 0.1) if int(len(training_dataset_df) * 0.1) < 10_000 else 10_000,
+            X=model.named_steps['transform'].transform(training_dataset_df),
+            labels=labels, 
+            metric='euclidean',
+            # By default, we're setting sample size to the whole training dataset since we're looking for accurate scores
+            # However, if the codes takes a long time to calculate the silhouette score, assuming training size is
+            # bigger than 10000, then set a limit on the number of samples to 10000
+            sample_size=None if int(len(training_dataset_df)) < 10_000 else 10_000,
             random_state=42
         ), params['n_clusters']
     
@@ -314,17 +324,26 @@ def hyper_parameter_tuning_scikit_audience_model(
         filter_clause = f"""TRUE"""
 
     training_dataset_df = client.query(
-        query=f"""SELECT * FROM `{training_table}` WHERE {filter_clause}"""
+        query=f"""SELECT * FROM `{training_table}` WHERE {filter_clause} ORDER BY RAND()"""
         ).to_dataframe()
+    
+     # Remove columns
+    training_dataset_df = training_dataset_df[training_dataset_df.columns[columns_to_skip:]]
+    # Drop duplicates
+    # Since we have found out many duplicates, we decided to drop all the duplicates 
+    # to allow the model better learn the features distribution and segment accordingly
+    training_dataset_df = training_dataset_df.drop_duplicates()
+    # Limit number of samples
+    training_dataset_df = training_dataset_df.iloc[:1000]
 
     # Skipping the first n columns
-    features = list(training_dataset_df.columns[columns_to_skip:])
+    features = list(training_dataset_df.columns)
     logging.info(f"Features: {features}")
     logging.info(f"Training dataset shape: {training_dataset_df.shape}")
     logging.info(f"Training dataset dtypes: {training_dataset_df.dtypes}")
 
-    min_num_clusters = 3
-    max_num_clusters = len(features)
+    min_num_clusters = 2
+    max_num_clusters = min(len(features), training_dataset_df.shape[0], 10)
     logging.info(f"min_num_clusters: {min_num_clusters}")
     logging.info(f"max_num_clusters: {max_num_clusters}")
 
@@ -371,13 +390,17 @@ def hyper_parameter_tuning_scikit_audience_model(
         }
 
         model = _create_model(params)
-        model.fit(training_dataset_df[training_dataset_df.columns[columns_to_skip:]])
+        model.fit(training_dataset_df)
         labels = model.predict(training_dataset_df)
 
         return silhouette_score(
-            model.named_steps['transform'].transform(training_dataset_df),
-            labels, metric='euclidean',
-            sample_size=int(len(training_dataset_df) * 0.1) if int(len(training_dataset_df) * 0.1) < 10_000 else 10_000,
+            X=model.named_steps['transform'].transform(training_dataset_df),
+            labels=labels, 
+            metric='euclidean',
+            # By default, we're setting sample size to the whole training dataset since we're looking for accurate scores
+            # However, if the codes takes a long time to calculate the silhouette score, assuming training size is
+            # bigger than 10000, then set a limit on the number of samples to 10000
+            sample_size=None if int(len(training_dataset_df)) < 10_000 else 10_000,
             random_state=42
         ), params['n_clusters']
 

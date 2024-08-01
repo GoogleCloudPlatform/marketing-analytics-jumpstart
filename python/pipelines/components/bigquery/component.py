@@ -165,7 +165,7 @@ def bq_clustering_exec(
         HPARAM_TUNING_OBJECTIVES = 'DAVIES_BOULDIN_INDEX', 
         MODEL_REGISTRY='VERTEX_AI', 
         VERTEX_AI_MODEL_ID='{vertex_model_name}' ) AS (
-            SELECT * {exclude_sql} FROM `{training_data_bq_table}` WHERE {filter_clause}
+            SELECT DISTINCT * {exclude_sql} FROM `{training_data_bq_table}` WHERE {filter_clause}
         )"""
     else:
         query = f"""CREATE OR REPLACE MODEL 
@@ -180,7 +180,7 @@ def bq_clustering_exec(
         WARM_START={km_warm_start}, 
         MODEL_REGISTRY='VERTEX_AI', 
         VERTEX_AI_MODEL_ID='{vertex_model_name}' ) AS (
-            SELECT * {exclude_sql} FROM `{training_data_bq_table}` WHERE {filter_clause}
+            SELECT DISTINCT * {exclude_sql} FROM `{training_data_bq_table}` WHERE {filter_clause}
         )"""
 
     client = bigquery.Client(
@@ -188,6 +188,7 @@ def bq_clustering_exec(
         location=location
     )
     
+    logging.info(f"BQML Model Training Query: {query}")
     query_job = client.query(
         query=query,
         location=location
@@ -880,6 +881,7 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
             if f == '/' or f == '' or f is None: return 'homepage'
             if f.startswith('/'): f = f[1:]
             if f.endswith('/'): f = f[:-1]
+            if f[0].isdigit(): f = '_' + f
             return re.sub('[^0-9a-zA-Z]+', '_', f)
         
         template = jinja2.Template("""

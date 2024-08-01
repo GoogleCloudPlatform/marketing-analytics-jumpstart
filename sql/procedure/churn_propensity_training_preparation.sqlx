@@ -581,6 +581,7 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.churn_propensity_training_30
   FROM `{{project_id}}.{{dataset}}.churn_propensity_training_full_dataset`
   -- The percentage of rows to be sampled from the source table.
   TABLESAMPLE SYSTEM ({{table_sampling_percentage}} PERCENT)
+  ORDER BY RAND() LIMIT {{samples_limit}}
 );
 
 CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_churn_propensity_training_30_30`
