@@ -411,7 +411,9 @@ def hyper_parameter_tuning_scikit_audience_model(
     study.optimize(_objective,
                 n_trials=125,
                 show_progress_bar=True,
-                n_jobs=-1
+                n_jobs=1,
+                timeout=timeout,
+                gc_after_trial=True
     )
 
     best_trials = sorted([(t.number, t.values[0], t.values[1], t.params) for t in study.best_trials], key=lambda x: x[1], reverse=True)
