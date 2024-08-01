@@ -24,6 +24,8 @@ resource "google_project_iam_member" "email-role" {
   project = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
 }
 
+# Check the Dataform Service Account Access Requirements for more information
+# https://cloud.google.com/dataform/docs/required-access
 locals {
   dataform_sa = "service-${data.google_project.data_processing.number}@gcp-sa-dataform.iam.gserviceaccount.com"
 }
