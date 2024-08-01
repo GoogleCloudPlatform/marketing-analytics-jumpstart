@@ -31,20 +31,18 @@ DECLARE purchasers INT64 DEFAULT NULL;
 -- Used to store the maximum and minimum event dates from the source data.
 DECLARE max_date DATE;
 DECLARE min_date DATE;
+SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
 
 -- Determining Maximum and Minimum Dates
-SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
-SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+SET train_end_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET train_start_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
 
--- If min_date > maximum event_date OR max_date < minimum event_date, then set min_date for the max event_date and set max_date for the min event_date
-IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR max_date <= (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
-  SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
-  SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+-- If train_start_date > maximum event_date OR train_end_date < minimum event_date, then set train_start_date for the min event_date and set train_end_date for the max event_date
+IF train_start_date >= max_date OR train_end_date <= min_date THEN
+  SET train_start_date = min_date;
+  SET train_end_date = max_date;
 END IF;
-
--- Initializing Training Dates
-SET train_start_date = min_date;
-SET train_end_date = max_date;
 
 -- Setting Split Numbers
 -- Sets the train_split_end_number to a user-defined value. This value determines the proportion of data used for training.
@@ -59,9 +57,11 @@ SET purchasers = (SELECT COUNT(DISTINCT user_pseudo_id)
                 WHERE event_date BETWEEN train_start_date AND train_end_date
                 );
 
+-- If there are purchasers no changes to the train_start_date and train_end_date
+-- Else, expand the interval, hopefully a purchaser will be in the interval
 IF purchasers > 0 THEN
-    SET train_start_date =  GREATEST(train_start_date, min_date);
-    SET train_end_date = LEAST(train_end_date, max_date);
+    SET train_start_date =  train_start_date;
+    SET train_end_date = train_end_date;
 ELSE
     SET train_start_date =  min_date;
     SET train_end_date = max_date;

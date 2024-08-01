@@ -1075,7 +1075,7 @@ SELECT DISTINCT
   checkouts_past_7_day,
   checkouts_past_8_14_day,
   will_purchase,
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS user_row_order
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_15_15`
 )
 WHERE
@@ -1311,7 +1311,7 @@ SELECT DISTINCT
   checkouts_past_7_day,
   checkouts_past_8_14_day,
   will_purchase,
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS user_row_order
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_15_7`
 )
 WHERE
@@ -1412,8 +1412,8 @@ SELECT DISTINCT
   user_pseudo_id,
   data_split,
   feature_date,
-  #Now, I want to skip rows per user, per split every 15 days.
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date ASC) AS row_order_peruser_persplit,
+  -- Now, I want to skip rows per user, per split every 15 days.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date ASC) AS row_order_peruser_persplit,
   user_id,
   user_ltv_revenue,
   device_category,
@@ -1571,7 +1571,7 @@ SELECT DISTINCT
   checkouts_past_15_30_day,
   will_purchase,
   -- Number of rows per user, per day, per split. Only one row per user, per day, per slip.
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split, will_purchase ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_15`
 )
 WHERE
@@ -1828,8 +1828,8 @@ SELECT DISTINCT
   checkouts_past_8_14_day,
   checkouts_past_15_30_day,
   will_purchase,
-  --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
+  --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_15`
 )
 WHERE
@@ -2298,8 +2298,8 @@ SELECT DISTINCT
   data_split,
   user_pseudo_id,
   feature_date,
-  #Now, I want to skip rows per user, per split every 15 days.
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date ASC) AS row_order_peruser_persplit,
+  --Now, I want to skip rows per user, per split every 15 days.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date ASC) AS row_order_peruser_persplit,
   user_id,
   user_ltv_revenue,
   device_category,
@@ -2457,7 +2457,7 @@ SELECT DISTINCT
   checkouts_past_15_30_day,
   will_purchase,
   -- Number of rows per user, per day, per split. Only one row per user, per day, per slip.
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split, will_purchase ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_30`
 )
 WHERE
@@ -2893,8 +2893,8 @@ SELECT DISTINCT
   checkouts_past_8_14_day,
   checkouts_past_15_30_day,
   will_purchase,
-  --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
-  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
+  --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_30`
 )
 WHERE
