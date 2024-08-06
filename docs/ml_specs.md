@@ -6,17 +6,17 @@ This document details the features and models used in the training, prediction a
 ### GA4 events tagging requirement
 The out-of-box ML driven use cases requires the following events tagged in the Google Analytics 4 (GA4) property, exported to BigQuery using the GA4 BigQuery Export. The export has to be set to run daily.
 
-| Event |	Event Type | Doc Ref. |
-| -------- | ------- | --------- |
-| purchase | Ecommerce Measurement event |	https://developers.google.com/analytics/devguides/collection/ga4/set-up-ecommerce |
-| view_item | Ecommerce Measurement event |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
-| view_item_list | Ecommerce Measurement event |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
-| add_to_cart | Ecommerce Measurement event |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
-| begin_checkout | Ecommerce Measurement event |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
-| refund | Ecommerce Measurement event |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
-| first_visit | Automatically collected event |	https://support.google.com/analytics/answer/9234069?hl=en |
-| page_view | Automatically collected event |	https://support.google.com/analytics/answer/9234069?hl=en |
-| click | Automatically collected event |	https://support.google.com/analytics/answer/9234069?hl=en |
+| Event |	Event Type | Requirement | Doc Ref. |
+| -------- | ------- | ------- | --------- |
+| purchase | Ecommerce Measurement event | Required |	https://developers.google.com/analytics/devguides/collection/ga4/set-up-ecommerce |
+| view_item | Ecommerce Measurement event | Required |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
+| view_item_list | Ecommerce Measurement event | Optional |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
+| add_to_cart | Ecommerce Measurement event | Required |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
+| begin_checkout | Ecommerce Measurement event | Required |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
+| refund | Ecommerce Measurement event | Optional |	https://developers.google.com/analytics/devguides/collection/ga4/ecommerce |
+| first_visit | Automatically collected event | Required |	https://support.google.com/analytics/answer/9234069?hl=en |
+| page_view | Automatically collected event | Required |	https://support.google.com/analytics/answer/9234069?hl=en |
+| click | Automatically collected event | Optional |	https://support.google.com/analytics/answer/9234069?hl=en |
 
 ## GA4 User identifiers
 The Marketing Analytics Jumpstart solution uses Google Analytics 4 user pseudo IDs as the primary identifier for users. It also includes the user IDs as well. Google Analytics 4 uses User-ID to associate identifiers with individual users, enabling you to connect their behavior across sessions, devices, and platforms. [User-ID - Analytics Help](https://support.google.com/analytics/answer/9355972?hl=en) You can use User-ID to create remarketing audiences and join Analytics data with first-party data, such as CRM data. [Best practices for User-ID - Analytics Help](https://support.google.com/analytics/answer/12675187?hl=en) The User-ID feature is designed for use with Google Analytics technologies and must comply with the Analytics SDK/User-ID Feature Policy. Remember that User IDs sent to Google Analytics must be shorter than 256 characters. [Measure activity across platforms with User-ID - Analytics Help](https://support.google.com/analytics/answer/9213390?hl=en)
