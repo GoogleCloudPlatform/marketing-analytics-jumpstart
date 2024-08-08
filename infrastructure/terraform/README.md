@@ -54,7 +54,13 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
 
    If you are installing on in Cloud Shell use the following commands:
    ```shell
-   curl -sSL https://install.python-poetry.org | python3 -
+   pipx install poetry
+   ```
+   If you don't have pipx installed - follow the [Pipx installation guide](https://pipx.pypa.io/stable/installation/)
+   ```shell
+   sudo apt update
+   sudo apt install pipx
+   pipx ensurepath
    ```
    Verify that `poetry` is on your $PATH variable:
    ```shell
