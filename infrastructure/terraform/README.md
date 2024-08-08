@@ -172,6 +172,13 @@ Because a Cloud Shell session is ephemeral, your Cloud Shell session could termi
 
  **Note:** The prerequisites for running this script are that you have set all the variable values in the TF variables file `$TERRAFORM_RUN_DIR}/terraform.tfvars` and have applied the terraform configuration once before.
 
+Reset your Google Cloud Project ID variables:
+
+    ```bash
+    export PROJECT_ID="[your Google Cloud project id]"
+    gcloud config set project $PROJECT_ID
+    ```
+
 Follow the authentication workflow, since your credentials expires daily:
 
    ```bash
@@ -179,6 +186,7 @@ Follow the authentication workflow, since your credentials expires daily:
    gcloud auth login
    # Authenticate your application default login to Google Cloud with the right scopes for Terraform to run
    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+   gcloud auth application-default set-quota-project $PROJECT_ID
    ```
 
 To resume working on a new terminal session run the following commands:
@@ -188,6 +196,7 @@ To resume working on a new terminal session run the following commands:
   SOURCE_ROOT="${HOME}/marketing-analytics-jumpstart"
   cd ${SOURCE_ROOT}
   TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
+  export PATH="$HOME/.local/bin:$PATH" 
   # Resume the terminal session using values stored on Terraform outputs
   ./scripts/session-resume.sh
   ```
