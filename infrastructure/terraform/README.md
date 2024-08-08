@@ -38,7 +38,6 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     ```bash
     export PROJECT_ID="[your Google Cloud project id]"
     gcloud config set project $PROJECT_ID
-    gcloud auth application-default set-quota-project $PROJECT_ID
     ```
 
 1. Install or update Python3
@@ -91,6 +90,7 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    ```shell
    gcloud auth login
    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+   gcloud auth application-default set-quota-project $PROJECT_ID
    ```
 
     **Note:** You may receive an error message informing the Cloud Resource Manager API has not been used/enabled for your project, similar to the following: 
