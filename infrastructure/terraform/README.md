@@ -10,6 +10,12 @@ from [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
 or a Linux machine or a Mac with `gcloud` command installed. The instructions provided are for the Cloud Shell
 installation.
 
+**Note:** Before installing via Cloud Shell, make sure you have a clean persistent disk in your Cloud Shell. You should 
+have plenty of disk space before continuing the installation.
+![Cloud Shell Disk Space](../../docs/images/cloud_shell_clean_state.png)
+
+If that is not your case, following the Cloud Shell documentation to [reset your Cloud Shell](https://cloud.google.com/shell/docs/resetting-cloud-shell)
+
 ## Installation Guide
 Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
