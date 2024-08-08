@@ -44,7 +44,7 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     Install a compatible version of Python 3.8-3.10 and set the CLOUDSDK_PYTHON environment variable to point to it.
 
     ```bash
-    apt-get install python3.10
+    sudo apt-get install python3.10
     CLOUDSDK_PYTHON=python3.10
     ```
     If you are installing on a Mac:
