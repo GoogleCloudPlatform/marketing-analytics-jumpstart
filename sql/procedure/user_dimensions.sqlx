@@ -103,48 +103,48 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
     -- User's pseudo ID
     EU.user_pseudo_id,
     -- User's ID (if available)
-    MAX(EU.user_id) AS user_id,
+    MAX(COALESCE(EU.user_id, '')) AS user_id,
     -- User's lifetime value revenue
-    MAX(UDESS.user_ltv_revenue) AS user_ltv_revenue,
+    MAX(COALESCE(UDESS.user_ltv_revenue, 0.0)) AS user_ltv_revenue,
     -- User's device category
-    MAX(UDESS.device_category) AS device_category,
+    MAX(COALESCE(UDESS.device_category, '')) AS device_category,
     -- User's device mobile brand name
-    MAX(UDESS.device_mobile_brand_name) AS device_mobile_brand_name,
+    MAX(COALESCE(UDESS.device_mobile_brand_name, '')) AS device_mobile_brand_name,
     -- User's device mobile model name
-    MAX(UDESS.device_mobile_model_name) AS device_mobile_model_name,
+    MAX(COALESCE(UDESS.device_mobile_model_name, '')) AS device_mobile_model_name,
     -- User's device operating system
-    MAX(UDESS.device_os) AS device_os,
+    MAX(COALESCE(UDESS.device_os, '')) AS device_os,
     -- User's device language
-    MAX(UDESS.device_language) AS device_language,
+    MAX(COALESCE(UDESS.device_language, '')) AS device_language,
     -- User's device web browser
-    MAX(UDESS.device_web_browser) AS device_web_browser,
+    MAX(COALESCE(UDESS.device_web_browser, '')) AS device_web_browser,
     -- User's most frequent geographical subcontinent
-    APPROX_TOP_COUNT(UDESS.geo_sub_continent, 1)[OFFSET(0)].value AS geo_sub_continent,
+    APPROX_TOP_COUNT(COALESCE(UDESS.geo_sub_continent, ''), 1)[OFFSET(0)].value AS geo_sub_continent,
     -- User's most frequent geographical country
-    APPROX_TOP_COUNT(UDESS.geo_country, 1)[OFFSET(0)].value AS geo_country,
+    APPROX_TOP_COUNT(COALESCE(UDESS.geo_country, ''), 1)[OFFSET(0)].value AS geo_country,
     -- User's most frequent geographical region
-    APPROX_TOP_COUNT(UDESS.geo_region, 1)[OFFSET(0)].value AS geo_region,
+    APPROX_TOP_COUNT(COALESCE(UDESS.geo_region, ''), 1)[OFFSET(0)].value AS geo_region,
     -- User's most frequent geographical city
-    APPROX_TOP_COUNT(UDESS.geo_city, 1)[OFFSET(0)].value AS geo_city,
+    APPROX_TOP_COUNT(COALESCE(UDESS.geo_city, ''), 1)[OFFSET(0)].value AS geo_city,
     -- User's most frequent geographical metro area
-    APPROX_TOP_COUNT(UDESS.geo_metro, 1)[OFFSET(0)].value AS geo_metro,
+    APPROX_TOP_COUNT(COALESCE(UDESS.geo_metro, ''), 1)[OFFSET(0)].value AS geo_metro,
     -- User's last traffic source medium
-    MAX(UDESS.last_traffic_source_medium) AS last_traffic_source_medium,
+    MAX(COALESCE(UDESS.last_traffic_source_medium, '')) AS last_traffic_source_medium,
     -- User's last traffic source name
-    MAX(UDESS.last_traffic_source_name) AS last_traffic_source_name,
+    MAX(COALESCE(UDESS.last_traffic_source_name, '')) AS last_traffic_source_name,
     -- User's last traffic source
-    MAX(UDESS.last_traffic_source_source) AS last_traffic_source_source,
+    MAX(COALESCE(UDESS.last_traffic_source_source, '')) AS last_traffic_source_source,
     -- User's first traffic source medium
-    MAX(UDESS.first_traffic_source_medium) AS first_traffic_source_medium,
+    MAX(COALESCE(UDESS.first_traffic_source_medium, '')) AS first_traffic_source_medium,
     -- User's first traffic source name
-    MAX(UDESS.first_traffic_source_name) AS first_traffic_source_name,
+    MAX(COALESCE(UDESS.first_traffic_source_name, '')) AS first_traffic_source_name,
     -- User's first traffic source
-    MAX(UDESS.first_traffic_source_source) AS first_traffic_source_source,
+    MAX(COALESCE(UDESS.first_traffic_source_source, '')) AS first_traffic_source_source,
     -- Flag indicating if the user has signed in with a user ID
-    MAX(UDESS.has_signed_in_with_user_id) AS has_signed_in_with_user_id
+    MAX(COALESCE(UDESS.has_signed_in_with_user_id, FALSE)) AS has_signed_in_with_user_id
   FROM events_users EU
-  INNER JOIN user_dimensions_event_session_scoped UDESS
-  ON EU.user_pseudo_id = UDESS.user_pseudo_id --AND EU.user_id = UDESS.user_id
+  LEFT JOIN user_dimensions_event_session_scoped UDESS
+  ON EU.user_pseudo_id = UDESS.user_pseudo_id
   GROUP BY input_date, EU.user_pseudo_id
 ;
 
