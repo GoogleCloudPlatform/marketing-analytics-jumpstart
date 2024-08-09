@@ -97,7 +97,8 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
   -- Generates a list of dates for the current date (`input_date`)
   (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
   WHERE Days.event_date = input_date
-    AND Users.event_name='purchase'
+    -- Filter event with event name purchase
+    -- AND Users.event_name='purchase'
     AND Users.ga_session_id IS NOT NULL
     AND Users.ecommerce.transaction_id IS NOT NULL 
     AND Users.ecommerce.transaction_id <> '(not set)'

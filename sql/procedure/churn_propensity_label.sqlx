@@ -86,7 +86,7 @@ CREATE OR REPLACE TEMP TABLE all_possible_users as (
   -- Filter for events on the specific input date
   WHERE Days.event_date = input_date
     -- Filter for user engagement events
-    AND LOWER(Users.event_name) IN ('{{user_engagement_event}}')
+    -- AND LOWER(Users.event_name) IN ('{{user_engagement_event}}')
     -- Filter for events with valid session IDs
     AND Users.ga_session_id IS NOT NULL
 );
@@ -107,9 +107,6 @@ SELECT DISTINCT
 FROM all_possible_users AS A
 LEFT JOIN future_churn_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id
-    -- Join only if churn and bounce status are not null
-    AND B.churned IS NOT NULL
-    AND B.bounced IS NOT NULL
 ;
 
 -- Use MERGE statement to update existing records and insert new ones in the target table
