@@ -10,6 +10,12 @@ from [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google
 or a Linux machine or a Mac with `gcloud` command installed. The instructions provided are for the Cloud Shell
 installation.
 
+**Note:** Before installing via Cloud Shell, make sure you have a clean persistent disk in your Cloud Shell. You should 
+have plenty of disk space before continuing the installation.
+![Cloud Shell Disk Space](../../docs/images/cloud_shell_clean_state.png)
+
+If that is not your case, following the Cloud Shell documentation to [reset your Cloud Shell](https://cloud.google.com/shell/docs/resetting-cloud-shell).
+
 ## Installation Guide
 Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
@@ -32,14 +38,13 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     ```bash
     export PROJECT_ID="[your Google Cloud project id]"
     gcloud config set project $PROJECT_ID
-    gcloud auth application-default set-quota-project $PROJECT_ID
     ```
 
 1. Install or update Python3
     Install a compatible version of Python 3.8-3.10 and set the CLOUDSDK_PYTHON environment variable to point to it.
 
     ```bash
-    apt-get install python3.10
+    sudo apt-get install python3.10
     CLOUDSDK_PYTHON=python3.10
     ```
     If you are installing on a Mac:
@@ -85,6 +90,7 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
    ```shell
    gcloud auth login
    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+   gcloud auth application-default set-quota-project $PROJECT_ID
    ```
 
     **Note:** You may receive an error message informing the Cloud Resource Manager API has not been used/enabled for your project, similar to the following: 
@@ -166,6 +172,13 @@ Because a Cloud Shell session is ephemeral, your Cloud Shell session could termi
 
  **Note:** The prerequisites for running this script are that you have set all the variable values in the TF variables file `$TERRAFORM_RUN_DIR}/terraform.tfvars` and have applied the terraform configuration once before.
 
+Reset your Google Cloud Project ID variables:
+
+    ```shell
+    export PROJECT_ID="[your Google Cloud project id]"
+    gcloud config set project $PROJECT_ID
+    ```
+
 Follow the authentication workflow, since your credentials expires daily:
 
    ```bash
@@ -173,6 +186,7 @@ Follow the authentication workflow, since your credentials expires daily:
    gcloud auth login
    # Authenticate your application default login to Google Cloud with the right scopes for Terraform to run
    gcloud auth application-default login --quiet --scopes="openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/sqlservice.login,https://www.googleapis.com/auth/analytics,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics.provision,https://www.googleapis.com/auth/analytics.readonly,https://www.googleapis.com/auth/accounts.reauth"
+   gcloud auth application-default set-quota-project $PROJECT_ID
    ```
 
 To resume working on a new terminal session run the following commands:
@@ -182,6 +196,7 @@ To resume working on a new terminal session run the following commands:
   SOURCE_ROOT="${HOME}/marketing-analytics-jumpstart"
   cd ${SOURCE_ROOT}
   TERRAFORM_RUN_DIR=${SOURCE_ROOT}/infrastructure/terraform
+  export PATH="$HOME/.local/bin:$PATH" 
   # Resume the terminal session using values stored on Terraform outputs
   ./scripts/session-resume.sh
   ```
