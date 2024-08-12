@@ -2071,6 +2071,8 @@ bigquery:
       stored_procedure: "user_behaviour_revenue_insights"
     # This is a stored procedure that CALLs the User Lifetime Value Label stored procedure.
     invoke_customer_lifetime_value_label:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "customer_lifetime_value_label"
@@ -2079,6 +2081,8 @@ bigquery:
       interval_input_date: 180
     # This is a stored procedure that CALLs the Purchase Propensity Label stored procedure.
     invoke_purchase_propensity_label:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "purchase_propensity_label"
@@ -2087,6 +2091,8 @@ bigquery:
       interval_input_date: 15
     # This is a stored procedure that CALLs the Purchase Propensity Label stored procedure.
     invoke_churn_propensity_label:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
       project_id: "${project_id}"
       dataset: "feature_store"
       stored_procedure: "churn_propensity_label"
