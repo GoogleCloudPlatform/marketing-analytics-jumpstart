@@ -253,6 +253,7 @@ data "template_file" "looker_studio_dashboard_url" {
     logs_dataset                   = module.log_export_bigquery.bigquery_dataset.dataset_id
     aggregated_vbb_dataset         = "aggregated_vbb"
     aggregated_predictions_dataset = "aggregated_predictions"
+    gemini_insights_dataset        = "gemini_insights"
     dataform_log_table_id          = local.dataform_log_table_id
     vertex_pipelines_log_table_id  = local.vertex_pipelines_log_table_id
     dataflow_log_table_id          = local.dataflow_log_table_id
