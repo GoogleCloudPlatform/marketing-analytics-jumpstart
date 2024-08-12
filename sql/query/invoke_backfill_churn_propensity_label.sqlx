@@ -27,7 +27,14 @@ SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} 
 SET CHURN_MULTIPLIER_DAYS = {{churn_multiplier_days}};
 
 -- If min_date > maximum event_date OR max_date < minimum event_date, then set min_date for the max event_date and set max_date for the min event_date
-IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR max_date <= (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
+IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR max_date <= (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR min_date >= max_date THEN
+  SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+  SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+END IF;
+
+-- This code block acts as a safeguard to ensure that the min_date and max_date used for further analysis are always within the bounds of the actual data available in the table. 
+-- It prevents situations where calculations might mistakenly consider dates beyond the real data range, which could lead to errors or misleading results.
+IF max_date > (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR min_date < (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
   SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
   SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
 END IF;
