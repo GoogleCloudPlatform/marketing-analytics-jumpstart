@@ -10,6 +10,18 @@ This guide details how to deploy and monitor the feature store, manually backfil
 
 ## Solution Architecture
 
+![data store architecture](images/feature_engineering_architecture.png)
+This architecture diagram describes the feature engineering flow of data in the Feature Store component, from Marketing Data Store to the training and inference tables to be used by the ML pipelines. The Feature Store is fully orchestrated using Vertex AI Pipelines and the data platform adopted is BigQuery. The core components are:
+* **Data Store**: The Marketing Data Store views and tables in the presentation layer. 
+* **Transformation Procedures**:
+    * For Purchase, Churn, CLTV labeling stored procedures: Event-level data is aggregated at the user-level. For each use case, specific metrics are calculated using fixed windows sizes (i.e. number of past days) and used as labels. These labels are attributed for every user in the data store.
+    * For User dimensions stored procedures: Event-level data is aggregated at the user-level. For each use case, generic dimensions such as geo, device, traffic source dimension are consolidated taking in consideration the first and the last events observed for every user in the data store.
+    * For User rolling windows stored procedures: Event-level data is aggregated at the user-level. For each use case, rolling windows metrics are calculated using fixed windows sizes (i.e. number of past days) and used as features. These are calculated for every user in the data store.
+    * For User pages navigation stored procedures: Event-level data is aggregated at the user-level. For the Auto Audience Segmentation use case, rolling windows metrics are calculated using a fixed window size (i.e. number of past days) and used to determine which were the pages most visited in the website in that specific interval of dates. This is calculated for the most visited pages in the website, according to an configuration parameter, for every user in the data store.
+    * For Conversion events stored procedures: Event-level data is aggregated daily. Every event marked as a [key event](https://support.google.com/analytics/answer/9267568) in Google Analytics 4 can be considered in this analysis. These metrics are calculated for every user in the data store. Identify [high-value conversions](https://support.google.com/google-ads/answer/14791574) and lay down a solid foundation for building and measuring data effectively. This will help you tap into the full potential of your first-party (1P) data by aligning with your business objectives.
+* **Backfill Transformation Procedures**: The Feature Store provides backfill procedures that will populate features for every user at every valid past interval to enable you to train your models once you have had enabled the Google Analytics 4 BigQuery Export for enough days depending on your use case. Note that Google Analytics 4 BigQuery Export doesn't offer a backfill option. These procedures will only compute features taking into consideration the date interval available in your Marketing Data Store. 
+* **Use Case Specific Training and Inference Procedures**: Training and inference procedures that can be run at any time immediately before running training or inference pipelines.
+
 ## Who is this solution for?
 
 We heard common stories from customers who were struggling with three frequent objectives:
