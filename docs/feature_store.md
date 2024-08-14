@@ -43,14 +43,37 @@ We heard common stories from customers who were struggling with three frequent o
 After deploying the Feature Store, Marketing Technology teams get the following benefits:
 
 1. Productionize new features without extensive engineering support
-2. Automate feature computation, backfills, and logging
-3. Share and reuse feature pipelines across teams
+2. Automate feature calculation, backfills, and logging
+3. Share and reuse features across teams and use cases
 4. Achieve consistency between training and serving data
 5. Monitor the health of feature pipelines in production
 
 ## Advantages of the solution
 
+In comparison to other approaches, Feature Store solution offers the following advantages:
+
+* Build, share and serve features in petabyte scale using BigQuery as your data and computing layer.
+* Batch feature ingestion: Support ingesting large amounts of historical feature values at high throughput. This enables backfill calculation of features for a larger date interval.
+* Batch feature serving: Support serving large amounts of feature values for generating training and inference datasets.
+* Schedule feature engineering pipelines for different use cases on a very simple manner.
+* Support simple and complex [SQL functions and operators](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators) that allow customers to run feature aggregation based on sliding windows, function calls, conditional expressions, subqueries and [user-defined functions](https://cloud.google.com/bigquery/docs/routines) (UDF) in Javascript.
+* Easy data quality analysis and feature engineering inspection.
+* Troubleshooting and customizations completely done via a friendly web interface, [BigQuery Studio](https://cloud.google.com/bigquery/docs/bigquery-web-ui). Leveraging built-in Gemini insights, lineage, profiling and data quality assertions. 
+
 ## Feature Store usage by each use case
+
+The Feature Store pre-built calculations and pipelines already implemented and used by each Use Case are listed below:
+
+| Use Case |	Feature Store Pipeline | Stored Procedures | Vertex AI Pipeline Component | Notes |
+| -------- | ------- | ---- | ---- | --- |
+| Purchase Propensity | [purchase_propensity_feature_engineering_pipeline](../python/pipelines/feature_engineering_pipelines.py) | [purchase_propensity_label](../sql/procedure/purchase_propensity_label.sqlx) <br> [user_dimensions](../sql/procedure/user_dimensions.sqlx) <br> [user_rolling_window_metrics](../sql/procedure/user_rolling_window_metrics.sqlx) <br> [purchase_propensity_training_preparation](../sql/procedure/purchase_propensity_training_preparation.sqlx) <br> [purchase_propensity_inference_preparation](../sql/procedure/purchase_propensity_inference_preparation.sqlx) |	[bq_stored_procedure_exec](../python/pipelines/components/bigquery/component.py) | In the pipeline, we actually use the stored procedures with the `invoke_` prefix to the stored procedures names |
+| Churn Propensity | [churn_propensity_feature_engineering_pipeline](../python/pipelines/feature_engineering_pipelines.py) | [churn_propensity_label](../sql/procedure/churn_propensity_label.sqlx) <br> [user_dimensions](../sql/procedure/user_dimensions.sqlx) <br> [user_rolling_window_metrics](../sql/procedure/user_rolling_window_metrics.sqlx) <br> [churn_propensity_training_preparation](../sql/procedure/churn_propensity_training_preparation.sqlx) <br> [churn_propensity_inference_preparation](../sql/procedure/churn_propensity_inference_preparation.sqlx) | [bq_stored_procedure_exec](../python/pipelines/components/bigquery/component.py) | In the pipeline, we actually use the stored procedures with the `invoke_` prefix to the stored procedures names |
+| Customer Lifetime Value  | [customer_lifetime_value_feature_engineering_pipeline](../python/pipelines/feature_engineering_pipelines.py) | [customer_lifetime_value_label](../sql/procedure/customer_lifetime_value_label.sqlx) <br> [user_lifetime_dimensions](../sql/procedure/user_lifetime_dimensions.sqlx) <br> [user_rolling_window_lifetime_metrics](../sql/procedure/user_rolling_window_lifetime_metrics.sqlx) <br> [customer_lifetime_value_training_pipeline](../sql/procedure/customer_lifetime_value_training_preparation.sqlx) <br> [customer_lifetime_value_inference_pipeline](../sql/procedure/customer_lifetime_value_inference_preparation.sqlx) |	[bq_stored_procedure_exec](../python/pipelines/feature_engineering_pipelines.py) | In the pipeline, we actually use the stored procedures with the `invoke_` prefix to the stored procedures names |
+| Demographic Audience Segmentation | [audience_segmentation_feature_engineering_pipeline](../python/pipelines/feature_engineering_pipelines.py) | [user_segmentation_dimensions](../sql/procedure/user_segmentation_dimensions.sqlx) <br> [user_lookback_metrics](../sql/procedure/user_lookback_metrics.sqlx) <br> [audience_segmentation_training_preparation]() <br> [audience_segmentation_inference_preparation]() | [bq_stored_procedure_exec](../python/pipelines/feature_engineering_pipelines.py) | In the pipeline, we actually use the stored procedures with the `invoke_` prefix to the stored procedures names |
+| Interest based Audience Segmentation | [auto_audience_segmentation_feature_engineering_pipeline](../python/pipelines/feature_engineering_pipelines.py) | [auto_audience_segmentation_training_preparation](../sql/procedure/auto_audience_segmentation_training_preparation.sqlx) <br> [auto_audience_segmentation_inference_preparation](../sql/procedure/auto_audience_segmentation_inference_preparation.sqlx) | [bq_dynamic_query_exec_output](../python/pipelines/feature_engineering_pipelines.py) <br> [bq_dynamic_stored_procedure_exec_output_full_dataset_preparation](../python/pipelines/feature_engineering_pipelines.py) <br> [bq_stored_procedure_exec](../python/pipelines/feature_engineering_pipelines.py) | In the pipeline, we actually use the stored procedures with the `invoke_` prefix to the stored procedures names |
+| Aggregated Value Based Bidding | [aggregated_value_based_bidding_feature_engineering_pipeline](../python/pipelines/feature_engineering_pipelines.py) | [aggregated_value_based_bidding_training_preparation](../sql/procedure/aggregated_value_based_bidding_training_preparation.sqlx) <br> [aggregated_value_based_bidding_explanation_preparation](../sql/procedure/aggregated_value_based_bidding_explanation_preparation.sqlx) | [bq_stored_procedure_exec](../python/pipelines/feature_engineering_pipelines.py) | In the pipeline, we actually use the stored procedures with the `invoke_` prefix to the stored procedures names |
+| Reporting Preparation | [reporting_preparation_pl](../python/pipelines/feature_engineering_pipelines.py) | [aggregate_predictions](../sql/procedure/aggregate_predictions_procedure.sqlx) | [bq_stored_procedure_exec](../python/pipelines/feature_engineering_pipelines.py) | This is not a feature engineering pipeline, this is a pipeline that aggregates all the latest prediction tables from the models into a single table for reporting purposes |
+| Gemini Insights | [gemini_insights_pl](../python/pipelines/feature_engineering_pipelines.py) | [user_scoped_metrics](../sql/procedure/user_scoped_metrics.sqlx) <br> [user_behaviour_revenue_insights](../sql/procedure/user_behaviour_revenue_insights.sqlx) | [bq_stored_procedure_exec](../python/pipelines/feature_engineering_pipelines.py) | This is not a feature engineering pipeline, this is a pipeline that generate gemini insights on user behaviour and revenue metrics aggregated daily, weekly and monthly |
 
 ## Feature Store Design Principles
 
