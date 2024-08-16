@@ -47,7 +47,7 @@ In addition to that, there is a `tasks.py` file which implements python invoke t
 
 
 ## High Level Architecture
-![](https://i.imgur.com/5D3WPEb.png)
+![High Level Architecture](docs/images/reference_architecture.png)
 
 The provided architecture diagram depicts the high-level architecture of the Marketing Analytics Jumpstart solution. Let's break down the components:
 
@@ -66,13 +66,14 @@ The provided architecture diagram depicts the high-level architecture of the Mar
 * Vertex AI Pipelines: These pipelines handle the training, prediction, and explanation of various machine learning models.
 * Tabular Workflow End-to-End AutoML: This approach automates the model training process for tasks like purchase propensity and customer lifetime value prediction.
 * Custom Training and Prediction Pipelines: These pipelines are used for the auto audience segmentation training and prediction; and for the aggregated value based bidding model explanation.
+* Gemini Insights: This leverages the Gemini 1.5 Vertex AI LLM API to provide insights on user behaviour and revenue. Gemini is connected directly to BigQuery and the insights are provided via a Looker Studio report.
 
 5. Activation Application:
 * Dataflow: This tool processes the model predictions and sends them to Google Analytics 4 via the Measurement Protocol API.
 * User-level Predictions: These predictions are used to enhance your Google Analytics 4 data with insights about user behavior and purchase likelihood.
 
 6. Dashboards:
-* Looker Studio: This tool provides interactive dashboards for visualizing the performance of your Google Ads campaigns, user behavior in Google Analytics 4, and the results of the machine learning models.
+* Looker Studio: This tool provides interactive dashboards for visualizing the performance of your Google Ads campaigns, user behavior in Google Analytics 4, LLM inisghts and the results of the machine learning models.
 
 7. Monitoring:
 * Dataform Jobs: These jobs are monitored for errors to ensure the data transformation process runs smoothly.
@@ -105,7 +106,9 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 
 
 ## Installation
-Please follow the step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
+Please follow the step by step installation guide with Google Cloud Shell.
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
 **Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
 

@@ -328,7 +328,6 @@ def churn_propensity_feature_engineering_pipeline(
         timeout=timeout).set_display_name('churn_propensity_inference_preparation').after(*phase_1)
     
 
-
 @dsl.pipeline()
 def customer_lifetime_value_feature_engineering_pipeline(
     project_id: str,

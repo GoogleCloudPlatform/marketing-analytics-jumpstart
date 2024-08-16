@@ -80,6 +80,19 @@ After deploying the ML Pipelines component, Marketing Technology teams get the f
 4. Simplified pipelines orchestration and manual reproducibility via an unified ML platform, Vertex AI.
 5. Reusable components to implement new use cases in a shorter time.
 
+## Benefits of Tabular Workflows
+
+The following are some of the benefits of Tabular Workflow for End-to-End AutoML :
+
+* Supports large datasets that are multiple TB in size and have up to 1000 columns.
+* Allows you to improve stability and lower training time by limiting the search space of architecture types or skipping architecture search.
+* Allows you to improve training speed by manually selecting the hardware used for training and architecture search.
+* Allows you to reduce model size and improve latency with distillation or by changing the ensemble size.
+* Each AutoML component can be inspected in a powerful pipelines graph interface that lets you see the transformed data tables, evaluated model architectures, and many more details.
+* Each AutoML component gets extended flexibility and transparency, such as being able to customize parameters, hardware, view process status, logs, and more.
+
+For more details, visit the Tabular Workflows End-to-End official [documentation](https://cloud.google.com/vertex-ai/docs/tabular-data/tabular-workflows/overview).
+
 ## Advantages of the solution
 
 In comparison to other approaches, ML Pipelines solution offers the following advantages:
@@ -90,6 +103,27 @@ In comparison to other approaches, ML Pipelines solution offers the following ad
     * Manage feature engineering, training and inference pipelines via configuration files or via the Vertex AI UI.
     * Obtaining explainability and transparency on feature importance and model evaluation metrics via the Vertex AI UI.
 * ML Pipelnes expedites modelling time and provide a quicker time to value for more sophisticated production-level predictive and generative ai modelling by establishing a common code foundation in place that enables reuse of pipelines to solve marketing use cases and obtain insights.
+
+## Advantages of Tabular Workflows
+
+In comparison to other approaches, Tabular Workflow offers customers with the following advantages: 
+
+* Easy to use Tabular Transformers-based models for custom propensity use cases: 
+
+    Tabular Workflow for TabNet is a pipeline that you can use to train classification or regression models. TabNet uses sequential attention to choose which features to reason from at each decision step. This promotes interpretability and more efficient learning because the learning capacity is used for the most salient features.
+
+* Easy to use Click-Through-Rate models for custom recommender systems (ecommerce product recommendation, ads recommendation):
+
+    Tabular Workflow for Wide & Deep is a pipeline that you can use to train classification or regression models. Wide & Deep jointly trains wide linear models and deep neural networks. It combines the benefits of memorization and generalization. In some online experiments, the results showed that Wide & Deep significantly increased Google store application acquisitions compared with wide-only and deep-only models.
+
+* Easy to use Time series Forecasting models for demand forecasting use cases. Check modelling [methods](https://cloud.google.com/vertex-ai/docs/tabular-data/forecasting-parameters#training-methods) :
+
+    * Time series Dense Encoder (TiDE): Optimized dense DNN-based encoder-decoder model. Great model quality with fast training and inference, especially for long contexts and horizons. Learn [more](https://arxiv.org/abs/2304.08424). 
+    * Temporal Fusion Transformer (TFT): Attention-based DNN model designed to produce high accuracy and interpretability by aligning the model with the general multi-horizon forecasting task. Learn [more](https://ai.googleblog.com/2021/12/interpretable-deep-learning-for-time.html).
+    * AutoML (L2L): A good choice for a wide range of use cases. Learn [more](https://ai.googleblog.com/2020/12/using-automl-for-time-series-forecasting.html).
+    * Seq2Seq+: A good choice for experimentation. The algorithm is likely to converge faster than AutoML because its architecture is simpler and it uses a smaller search space. Our experiments find that Seq2Seq+ performs well with a small time budget and on datasets smaller than 1 GB in size.
+    * Prophet: Designed for a single time series. Vertex AI aggregates data by time series ID and trains a Prophet model for each time series. The model training pipeline performs hyperparameter tuning using grid search and Prophet's built-in backtesting logic. Learn [more](https://cloud.google.com/vertex-ai/docs/tabular-data/forecasting-prophet).
+    * ARIMA+: BigQuery ML ARIMA_PLUS attempts to decompose each time series into trends, seasons, and holidays, producing a forecast using the aggregation of these models' predictions. One of the many differences, however, is that BQML ARIMA+ uses ARIMA to model the trend component, while Prophet attempts to fit a curve using a piecewise logistic or linear model. Learn [more](https://cloud.google.com/vertex-ai/docs/tabular-data/forecasting-arima/overview).
 
 ## ML Pipelines used by each Use Case
 
