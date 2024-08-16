@@ -77,15 +77,95 @@ The Feature Store pre-built calculations and pipelines already implemented and u
 
 ## Feature Store Design Principles
 
+When building the Feature Store, the following principles are considered:
+
+1. **ML Use-Cases compatible.**
+At a minimum, the feature store must provide a set of appropriate features to deploy the existing Marketing Analytics use-cases. Our assumption is that the user-centric analytics dimensions and metrics present in the [Google Analytics 4 reports](https://support.google.com/analytics/table/13948007?hl=en), are a robust set of features from which we can derive GoogleSQL code to turn those dimensions and metrics into features.
+
+2. **We are designing for the average marketer...** 
+We will not attempt to include all features an organization will have or should have available. We will focus on the most common features based on our conversations with customers. For technical skillset, we can assume intermediate SQL and beginner programming knowledge. We cannot assume data science knowledge.
+
+3. **... but can be extended for the advanced marketer.** 
+The feature store should be extendible so that it can be customized to the marketer's unique business needs and include other features or use-cases that are not in our scope. Teams with an advanced technical skillset will find the solution valuable as a foundation to build on top of. 
+
+4. **Product Sales-centric.**
+Every type of business (Lead Gen, CPG, M&E, Finance, Public Sector, etc.) will dictate a variation of the feature store. For the first version of the feature store, we will focus on a product sales-centric (both ecommerce and brick and mortar) business as that is the vast majority of requests.
+
+6. **Strictly Star Schema.**
+While the solution will leverage BigQuery, this feature store design document will not address any BQ-centric optimization. This optimization may occur in the Execution phase. We remove that constraint to simplify our discussions in this document on the feature store.
+
+7. **Keep Identity Spaces Separate.**
+Per Legal's guidance, Google is not allowed to provide guidance or assistance on stitching together user identity across identity spaces. That guidance and work should be deferred to partners. However, per Design Principle 3, we should not prohibit that from being built. The Marketing Analytics team is of the opinion that identity stitching is best deferred to a partner-driven "Customer Data Platform" conversation. 
+
+8. Follows Feature Store best practices. 
+Feature store is architected based on industry best practices for Feature Stores.
+
 ## What is deployed to Google Cloud?
 
-## Manually Triggering Feature Store
+This section provides a detailed overview of the Google Cloud resources deployed as part of the Feature Store.
+
+| Google Cloud Resource | Resource Name | Resource Link |
+| -------- | ------- | -------- |
+| APIs & Services | Vertex AI API, Cloud Logging API, Artifact Registry API, Compute Engine API, Cloud Monitoring API, BigQuery API, Cloud Build API, Secret Manager API, Cloud Pub/Sub API, Workflows API, Eventarc API, Google Analytics Admin API, Dataform API, Cloud Functions API, Cloud Resource Manager API, Cloud Dataplex API, Cloud Scheduler API, Workflow Executions API, Container Analysis API, Cloud Run Admin API, Looker API | [APIs & Services](images/apis_services.png) |
+| BigQuery Datasets & Tables | marketing_ads_base_prod, marketing_ads_v1_prod, marketing_assertions, marketing_ga4_analysis_prod, marketing_ga4_base_prod, marketing_ga4_feature_prod, marketing_ga4_v1_prod | [BigQuery Datasets](images/feature_store_bigquery_datasets.png) |
+| BigQuery Stored Procedures | aggregate_predictions_procedure <br> aggregated_value_based_bidding_.. <br> audience_segmentation_.. <br> auto_audience_segmentation_.. <br> churn_propensity_.. <br> customer_lifetime_value_.. <br> purchase_propensity_.. <br> user_behaviour_revenue_insights <br> user_dimensions <br> user_lifetime_dimensions <br> user_lookback_metrics <br> user_rolling_window_lifetime_metrics <br> user_rolling_window_metrics <br> .. <br> create_gemini_model <br> invoke_aggregated_value_based_bidding_.. <br> invoke_audience_segmentation_.. <br> invoke_auto_audience_segmentation.. <br> invoke_backfill_.. <br> invoke_churn_propensity_.. <br> invoke_customer_lifetime_value_.. <br> invoke_purchase_propensity_.. <br> invoke_user_behaviour_revenue_insights <br> invoke_user_.. | BigQuery Stored Procedures [1](images/feature_store_procedures.png) [2](images/feature_store_procedures_2.png) [3](images/feature_store_procedures_3.png) [4](images/feature_store_procedures_4.png) [5](images/feature_store_procedures_5.png) [6](images/feature_store_procedures_6.png) [7](images/feature_store_procedures_7.png) [8](images/feature_store_procedures_8.png) |
+| BigQuery Connection | vertex_ai_connection | [BigQuery Connection](images/feature_store_bigquery_connection.png) |
+
+**Note:**
+The BigQuery stored procedures are orchestrated by Vertex AI Pipelines, deploy the ML Pipelines module to have these stored procedures for each use case properly orchestrated and scheduled.
+
+If you cannot find all the resources listed above, there are a few possible reasons.
+- Incomplete Deployment: If the deployment process has not yet completed, some resources may still be in the process of being created.
+- Deployment Errors: If there were errors during the deployment process, some resources may not have been created successfully.
+- Insufficient Permissions: If you do not have the necessary permissions to view all the resources, you may not be able to see them.
+- Insufficient Quotas: If you do not have enough quota to view all the resources, you may not be able to see them. You can request quota increases from [Google Cloud console](https://cloud.google.com/docs/quotas/view-manage).
 
 ## Manually Backfilling Feature Store
 
-## Customize Features Transformations
+On the Google Cloud console, navigate to BigQuery Explorer page. You will see the `feature_store` dataset, expand the `Routines` section and you will find all the stored procedures with the `invoke_backfill_` prefix. To manually trigger an individual stored procedure, click on the three dots, then click `Invoke`. Finally, on the opened tab click the `RUN` button.
+
+Check the Post-Installation instructions on the installation guide to make sure you manually backfill the feature store whenever you've just completed the installation.
+
+## Manually Triggering Feature Store Pipelines
+
+You can trigger your Vertex AI Pipeline to execute your feature engineering workflow at any time, or you can wait until the next day when the Vertex AI Pipeline is going to be executed according to your schedule. There are two components in this solution that requires data for proper installation and functioning. One is the Looker Studio Dashboard, you only deploy the dashboard after you have had executed all the steps in the [Post Installation Instructions](../infrastructure/terraform/README.md#post-installation-instructions) successfully.
+
+![Trigger Feature Store Procedures](images/feature_store_trigger_manually.png)
+
+On the Google Cloud console, navigate to BigQuery Explorer page. You will see the `feature_store` dataset, expand the `Routines` section and you will find all the stored procedures. To manually trigger an individual stored procedure, click on the three dots, then click `Invoke`. Finally, on the opened tab click the `RUN` button.
+
+**Note**: You can directly edit the stored procedures using the BigQuery Studio UI. However, to make persistent changes, apply those changes directly to the code base and redeploy the feature store. 
+
+## Customize Features Store Calculations
+
+To customize the features store calculations, you're going to need to setup your development environment. Start by reading the [LICENSE](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/LICENSE) and [CONTRIBUTING](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/CONTRIBUTING.md) guides for the [Marketing Analytics Jumpstart Dataform](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart) repository. Next, read the GitHub documentation to learn [contributing to a project](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project). As soon as you forked the repository, deploy the feature store using Terraform apply. Make sure the `deploy_feature_store` variable is set to `true`.
+
+```shell
+...
+# Choose which components you still wish to deploy, if unsure leave as "false".
+deploy_activation    = true
+deploy_feature_store = true
+deploy_pipelines     = true
+...
+```
+
+Then, deploy the Marketing Analytics Jumpstart following the [installation guide](../infrastructure/terraform/README.md). 
+
+Once, the Feature Store is deployed and you have backfilled data to it. You can start experimenting running your own custom features calculations, removing features that you don't have data to calculate them, for example.
+
+We recommend you modify the stored procedure using BigQuery Studio UI, by clicking on the stored procedure and click on `EDIT STORED PROCEDURE` button. Once you're don with your changes, click on `SAVE` button.
+
+![BigQuery Studio UI Edit Procedure](images/feature_store_edit_procedure.png)
 
 ## Implement new features into the Feature Store
+
+To implement new features into the Feature Store, once you have setup your development environment. Create new stored procedures, if necessary, validate feature quality using BigQuery Studio UI tools such as Profiling and running other queries.
+
+To add new features to the feature store module, follow these steps:
+1. Create a new `.sqlx` file under the `sql/` folder 
+2. Add specific JINJA templated configuration on a new block in your `config.yaml.tftpl` file
+3. Add a new terraform resource in your [bigquery-procedure.tf](../infrastructure/terraform/modules/feature-store/bigquery-procedures.tf) file
+4. [Optionally] Add a new terraform resource in [bigquery-tables.tf](../infrastructure/terraform/modules/feature-store/bigquery-tables.tf) file, for every table you want it to persistently store data in BigQuery.
 
 # Troubleshooting
 

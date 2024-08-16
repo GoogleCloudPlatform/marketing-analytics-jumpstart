@@ -88,7 +88,7 @@ The data model should be extendible so that it can be customized to the marketer
 The data model should not be Google-centric, and, where possible, be consistent with other Marketing Platforms and products. (Example: Our advertising performance data model, should work with not just Google Ads, but Facebook Ads, Tiktok Ads, Bing Ads, etc.)
 
 5. **Product Sales-centric.**
-Every type of business (Lead Gen, CPG, M&E, Public Sector, etc.) will dictate a variation of the data model. For the first version of the data model, we will focus on a product sales-centric (both ecommerce and brick and mortar) business as that is the vast majority of requests (Kraft, Grammarly, SHI, Mondelez, Diligent, Okta).
+Every type of business (Lead Gen, CPG, M&E, Public Sector, etc.) will dictate a variation of the data model. For the first version of the data model, we will focus on a product sales-centric (both ecommerce and brick and mortar) business as that is the vast majority of requests.
 
 6. **Strictly Star Schema.**
 While the solution will leverage BigQuery, this data model design document will not address any BQ-centric optimization. This optimization may occur in the Execution phase. We remove that constraint to simplify our discussions in this document on the data model.
@@ -172,6 +172,7 @@ dataform_github_repo  = "URL of the GitHub forked repository. Should start with 
 Then, deploy the Marketing Analytics Jumpstart following the [installation guide](../infrastructure/terraform/README.md). 
 
 ![Dataform Installation](images/data_store_create_development_environment.png)
+
 Once you've successfully deployed MAJ, create a development environment and update the `dataform.json` file.
 
 **Note**: The `dataform.json` file configures basic settings required to compile your Dataform project:
