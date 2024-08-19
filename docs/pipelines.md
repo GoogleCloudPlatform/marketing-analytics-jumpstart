@@ -4,26 +4,29 @@
 
 The Machine Learning (ML) pipelines component involves leveraging ML models and building pipelines to automate and orchestrate the training and prediction tasks to obtain the predictive insights to be sent via the Activation Application and to presented in the Reporting dashboards.
 
-## Solution Architecture
+## Overall Solution Architecture
 
-![Feature Engineering pipelines architecture](images/pipelines_feature_engineering_architecture.png)
-This architecture diagram illustrates the process of preparing features for machine learning models. The core components are:
-* **Data Store**: This represents the marketing data store data, present in BigQuery, that comes from Google Analytics 4.
+![Overall ML Pipelines Architecture](images/pipelines_overall_ml_pipeline_architecture.png)
+
+This architecture diagram illustrates the process of training and running prediction for machine learning models. The core components are:
+
 * **Feature Store**: This is a central repository where features used to train the model are stored. It's designed for efficient access and management of features, ensuring consistency and reusability across different ML models. In the feature store, labels, dimensions and metrics are stored in tables in BigQuery.
-* **Training and Inference preparation procedures**: This step involves cleaning, transforming, and enriching the feature data. It might include tasks like handling missing values, removing duplicates, converting data types, scaling values.
-* **Use Cases Tables**: Independent tables and views created for each individual use case containing data ready for training and prediction tasks for that specific date. Model training and inference can be reproduced by re-running this procedures with parameters set for any date in the past.
+* **Training pipeline**: This component involves training a model on Vertex AI using the training data stored in BigQuery tables, evaluating the model using the evaluation data, optionally, obtaining feature importance, and uploading the new model version to the Vertex AI Model Registry. It might include tasks like handling missing values, ranking and selecting features, converting data types, scaling values, running hyperparameter tuning, distilling and more.
+* **Inference pipeline**: This component involves selecting the best model version, running batch prediction using the feature store data, prepare the predictions table and publishing a pub/sub message to trigger the Activation application.
 
 **Benefits of this Architecture**
-* **Data Consistency**: The Feature Store ensures that all models use the same, consistent features, reducing errors and improving model performance.
-* **Feature Reusability**: Features can be reused across multiple models, saving time and effort.
-* **Scalability**: The Feature Store can handle large datasets and complex feature engineering pipelines.
-* **Improved Model Performance**: By providing clean, well-engineered features, the Feature Store helps improve the accuracy and reliability of ML models.
+* **Pipeline Consistency**: The ML pipelines ensures that all models use the same, consistent pipeline steps, reducing errors and enabling troubleshooting model performance.
+* **Reduced time to value**: Models can be deployed and used in production leveraging serverless data and AI platforms, BigQuery and Vertex AI. Without incurring managing and maintaining the typical infrastructure required.
+* **Customization**: Bring your own model, customize the training and inference pipelines and leverage state of the art models, including GenAI models.
 
-In essence, this architecture streamlines the data preparation process, making it easier to build and deploy high-quality ML models.
+In essence, this architecture provides a streamlined and efficient way to build and deploy machine learning models for marketing analytics using Google Cloud BigQuery and Vertex AI.
+
+## Implemented Architectures
 
 ![Tabular Workflows pipelines architecture](images/pipelines_tabular_worflows_training_architecture.png)
 
 This architecture diagram illustrates the process of training and deploying ML models using Tabular Workflows. All these stepsand other more are implemented in the Tabular Workflows, its main core components are:
+
 * **Data Source**: This represents the use case prepared training dataset, present in BigQuery, prepared as a result of the feature engineering pipeline.
 * **Model Training**: The prepared data is then used to train a machine learning model. Tabular Workflows supports various model types, including linear regression, logistic regression, and decision trees.
 * **Model Evaluation**: The trained model is evaluated on a separate dataset to assess its performance. This helps determine how well the model generalizes to unseen data.
@@ -37,22 +40,42 @@ This architecture diagram illustrates the process of training and deploying ML m
 * Automated Pipelines: Tabular Workflows automates the entire ML pipeline, from data ingestion to model deployment, reducing manual effort and ensuring consistency.
 * Parametrization and Setting Defaults: Tabular Workflows enables defining default parameters to ensure speed and reproducibility.
 
-In essence, this architecture provides a streamlined and efficient way to build and deploy machine learning models for marketing analytics using Google Cloud's Tabular Workflows.
+![Inference Pipeline Tabular Architecture](images/pipelines_tabular_workflows_predictions_architecture.png)
 
-![Prediction Pipeline Tabular architecture](images/pipelines_tabular_workflows_predictions_architecture.png)
+This architecture diagram illustrates the process of producing predictions, storing them in BigQuery, and triggering the Activation Application. The core components are:
 
-This architecture diagram illustrates the process of producing predictions, storing them in BigQuery, and sending them to the Activation Application. The core components are:
-* **Data Store**: This represents the use case prepared prediction dataset, present in BigQuery, prepared as a result of the feature engineering pipeline.
-* **Select Best Model**:
-* **Select Best Model**:
+* **Data Source**: This represents the use case prepared prediction dataset, in BigQuery, prepared as a result of the feature engineering pipeline.
+* **Select Best Model**: The best performant model version according to an evaluation metric and a threshold is selected to be used in the further steps.
+* **Model Batch Prediction**: The selected model is used for batch prediction using the features prepared for prediction. The predictions results are saved in BigQuery and used in the next steps.
+* **Prepare Predictions**: Transform and prepare the predictions for them to be ready for ingestion by the Activation application.  
+* **Trigger Activation Pipeline**: Send a pub/sub message to trigger the application pipeline providing the prediction table and the use case parameters.
 
 In essence, this architecture provides a streamlined and efficient way to make predictions using Google Cloud's Tabular Workflows, enabling you to leverage your trained models for real-world marketing insights.
 
 ![Customer LTV Prediction Pipeline](images/pipelines_customer_ltv_prediction_pipeline_architecture.png)
 
-![Training pipelines architecture](images/pipelines_bqml_training_architecture.png)
+This architecture diagram illustrates the process of running inference pipeline using Tabular Workflow for a sophisticated process that takes two models predictions into account to produce the desired insights. The key differences are:
+
+* **Select best model version for a purchase propensity and a customer lifetime value revenue regression models**: In this case, select a purchase propensity (classification) and a customer lifetime value (regression) model versions based on a key evaluation metric and thresholds. These models must produce predictions taking into consideration the same look ahead nunber of dates. For instance, a 30 day look ahead trained purchase propensity model and a 30 day look ahead trained customer lifetime value model is selected to provide customer lifetime value insights in the future 30 days.
+* **Union model predictions and apply rule to produce final prediction values**: By taking these two raw predictions as inputs for this step, we can apply a rule that will produce the final prediction value to be stored in the predictions table. In this case, the logic implemented is to attribute 0.0 as final customer lifetime value revenue gain in case the user has a purchase probability lower than a threshold percentage; or else, use the raw prediction from the customer lifetime value model if the purchase probability is higher.
+
+![Training Pipeline BQML architecture](images/pipelines_bqml_training_architecture.png)
+
+This architecture diagram illustrates the process of training and deploying ML models using [BigQuery ML](https://cloud.google.com/bigquery/docs/bqml-introduction) (BQML). All these steps are implemented as Vertex AI Pipeline components that are executed in BigQuery, its main core components are:
+
+* **Ingest data source**: The Feature Store training preparation stored procedures prepares the data to be ingested by the BigQuery ML model. Using a single DML statement, BigQuery trigger the training routine, feeds the data to train the model and at the end uploads the trained model to Vertex AI.
+* **Train and evaluate a BigQuery ML model**: BigQuery trains the Machine Learning model using its compute and data platform.
+* **Upload the model to Vertex AI Model Registry**: The model is available under the BigQuery dataset related to the use case and registered in Vertex AI Model Registry, becoming easy to govern and discover.
 
 ![Prediction Pipeline BQML architecture](images/pipelines_bqml_prediction_pipeline_architecture.png)
+
+This architecture diagram illustrates the process of running the BQML model prediction pipeline. All these steps are implemented as Vertex AI Pipeline components that are executed in BigQuery, its main core components are:
+
+* **Data Source**: The feature inference preparation stored procedure prepares the data to be served as input for batch prediction.
+* **Select best model version**: The model version that performs best according to a defined evaluation metric and a threshold is selected for batch prediction.
+* **Batch prediction**: The raw predictions are produced.
+* **Prepare model for prediction**: The predictions are prepared and saved in BigQuery in a format to be consumed by the Activation application.
+* **Trigger activation application**: A pub/sub message is sent to trigger the Activation application by providing the adequate parameters related to the use case.
 
 ## Who is this solution for?
 
