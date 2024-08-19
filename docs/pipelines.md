@@ -77,6 +77,16 @@ This architecture diagram illustrates the process of running the BQML model pred
 * **Prepare model for prediction**: The predictions are prepared and saved in BigQuery in a format to be consumed by the Activation application.
 * **Trigger activation application**: A pub/sub message is sent to trigger the Activation application by providing the adequate parameters related to the use case.
 
+![Gemini Pipeline architecture](images/pipelines_gemini_architecture.png)
+
+This architecture diagram illustrates the process of running the reporting data preparation and gemini insights pipelines. All these steps are implemented as Vertex AI Pipeline components that are executed in BigQuery, its main core components are:
+
+* **Data sources**: For the aggregated predictions stored procedure, the latest predictions are joined for all users which contains all the use case predictions. This singl table is used as single pane of glass to build reports on Looker.
+* **Aggregate predictions from all use cases**: Dynamically identify the latest predictions table for each use case and prepares the final joined table.
+* **Aggregate daily/weekly/monthly metrics and generate Gemini insights**: Ingest users revenue and behaviour metrics daily features and aggregates them daily, weekly and monthly to prompt Gemini 1.5 via the BigQuery external connection to Vertex AI. 
+* **Store aggregated predictions for all users**: Stores the joined predictions in a BigQuery table for further consumption in Looker reports.
+* **Store generated insights**: Stores the generated insights in BigQuery tables for further consumption in Looker reports. 
+
 ## Who is this solution for?
 
 We heard common stories from customers who were struggling with three frequent objectives:
