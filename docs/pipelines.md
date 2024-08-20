@@ -160,6 +160,18 @@ In comparison to other approaches, Tabular Workflow offers customers with the fo
 
 ## ML Pipelines used by each Use Case
 
+The ML Pipelines already implemented and used by each use case are listed below:
+
+| Use Case | Vertex AI Pipeline | Pipeline Name | BigQuery Dataset | 
+| -------- | ------- | -------------- | ---- |
+| Purchase Propensity | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Churn Propensity | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Customer Lifetime Value | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Demographic Audience Segmentation | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Interest based Audience Segmentation | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Aggregated Value Based Bidding | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+
+
 ## ML Pipelines Desing Principles
 
 ## Deploy ML Pipelines
