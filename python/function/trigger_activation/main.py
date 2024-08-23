@@ -20,6 +20,9 @@ import os
 from datetime import datetime
 from google.cloud import dataflow_v1beta3
 
+from google.api_core.gapic_v1.client_info import ClientInfo
+
+USER_AGENT_ACTIVATION = 'cloud-solutions/marketing-analytics-jumpstart-activation-v1'
 
 @functions_framework.cloud_event
 def subscribe(cloud_event):
@@ -93,7 +96,7 @@ def subscribe(cloud_event):
     location=region,
     launch_parameter=flex_template_param
   )
-  client = dataflow_v1beta3.FlexTemplatesServiceClient()
+  client = dataflow_v1beta3.FlexTemplatesServiceClient(client_info=ClientInfo(user_agent=USER_AGENT_ACTIVATION))
   response = client.launch_flex_template(request=request)
 
   print(response)
