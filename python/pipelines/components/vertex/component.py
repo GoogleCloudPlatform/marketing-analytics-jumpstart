@@ -18,18 +18,6 @@ import os, logging, yaml, toml
 from kfp.dsl import component, Output, Artifact, Model, Input, Metrics, ClassificationMetrics, Dataset
 from ma_components.vertex import VertexModel
 
-from google.api_core.gapic_v1.client_info import ClientInfo
-
-USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
-USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
-USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
-USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
-USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
-USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
-USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
-USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
-USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
-
 pyproject_toml_file_path = os.path.join(os.path.dirname(__file__), '../../../../pyproject.toml')
 config_file_path = os.path.join(os.path.dirname(__file__), '../../../../config/config.yaml')
 
@@ -102,6 +90,19 @@ def elect_best_tabular_model(
     from enum import Enum
     #from google_cloud_pipeline_components.types.artifact_types import VertexModel
     from google.cloud import aiplatform
+
+    from google.api_core.gapic_v1.client_info import ClientInfo
+
+    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
+    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
+    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
+    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
+    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
+    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
+    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
+    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
+    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
+
 
     api_endpoint = "us-central1-aiplatform.googleapis.com"
     # The AI Platform services require regional API endpoints.
@@ -270,6 +271,19 @@ def get_latest_model(
     #from google_cloud_pipeline_components.types.artifact_types import VertexModel
     from google.cloud import aiplatform
 
+    from google.api_core.gapic_v1.client_info import ClientInfo
+
+    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
+    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
+    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
+    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
+    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
+    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
+    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
+    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
+    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
+
+
     api_endpoint = "us-central1-aiplatform.googleapis.com"
     # The AI Platform services require regional API endpoints.
     client_options = {"api_endpoint": api_endpoint}
@@ -393,6 +407,19 @@ def batch_prediction(
     from google.cloud.aiplatform import Model
     from google.cloud import aiplatform
 
+    from google.api_core.gapic_v1.client_info import ClientInfo
+
+    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
+    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
+    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
+    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
+    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
+    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
+    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
+    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
+    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
+
+
     api_endpoint = "us-central1-aiplatform.googleapis.com"
     # The AI Platform services require regional API endpoints.
     client_options = {"api_endpoint": api_endpoint}
@@ -472,6 +499,19 @@ def return_unmanaged_model(
     from google_cloud_pipeline_components.types import artifact_types
     from kfp import dsl
     from google.cloud import aiplatform
+
+    from google.api_core.gapic_v1.client_info import ClientInfo
+
+    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
+    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
+    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
+    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
+    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
+    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
+    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
+    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
+    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
+
 
     api_endpoint = "us-central1-aiplatform.googleapis.com"
     # The AI Platform services require regional API endpoints.
