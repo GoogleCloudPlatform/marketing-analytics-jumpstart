@@ -17,6 +17,18 @@ from kfp.dsl import component, Output, Artifact, Model, Input, Metrics, Dataset
 import os
 import yaml
 
+from google.api_core.gapic_v1.client_info import ClientInfo
+
+USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
+USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
+USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
+USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
+USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
+USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
+USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
+USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
+USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
+
 config_file_path = os.path.join(os.path.dirname(
     __file__), '../../../../config/config.yaml')
 
@@ -56,7 +68,8 @@ def bq_stored_procedure_exec(
 
     client = bigquery.Client(
         project=project,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_FEATURES)
     )
 
     params = []
@@ -185,7 +198,8 @@ def bq_clustering_exec(
 
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_SEGMENTATION_TRAINING)
     )
     
     logging.info(f"BQML Model Training Query: {query}")
@@ -300,7 +314,8 @@ def bq_select_best_kmeans_model(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_SEGMENTATION_PREDICTION)
     )
 
     # TODO(developer): Set dataset_id to the ID of the dataset that contains
@@ -410,7 +425,8 @@ def bq_clustering_predictions(
 
     client = bigquery.Client(
         project=project_id, 
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_SEGMENTATION_PREDICTION)
     )
 
     query = f"""
@@ -463,7 +479,8 @@ def bq_flatten_tabular_binary_prediction_table(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_PROPENSITY_PREDICTION)
     )
 
     # Inspect the metadata set on destination_table and predictions_table
@@ -535,7 +552,8 @@ def bq_flatten_tabular_binary_prediction_table(
     # Reconstruct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=bq_table.location
+        location=bq_table.location,
+        client_info=ClientInfo(user_agent=USER_AGENT_PROPENSITY_PREDICTION)
     )
     query_job = client.query(
         query=query,
@@ -577,7 +595,8 @@ def bq_flatten_tabular_regression_table(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_REGRESSION_PREDICTION)
     )
 
     # Inspect the metadata set on destination_table and predictions_table
@@ -617,7 +636,8 @@ def bq_flatten_tabular_regression_table(
     # Reconstruct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=bq_table.location
+        location=bq_table.location,
+        client_info=ClientInfo(user_agent=USER_AGENT_REGRESSION_PREDICTION)
     )
     query_job = client.query(
         query=query,
@@ -656,7 +676,8 @@ def bq_flatten_kmeans_prediction_table(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_SEGMENTATION_PREDICTION)
     )
 
     # Make an API request.
@@ -747,7 +768,8 @@ def bq_dynamic_query_exec_output(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_SEGMENTATION_TRAINING)
     )
 
     # Construct query template
@@ -856,7 +878,8 @@ def bq_dynamic_stored_procedure_exec_output_full_dataset_preparation(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_SEGMENTATION_TRAINING)
     )
 
     def _create_auto_audience_segmentation_full_dataset_preparation_procedure(
@@ -1004,7 +1027,8 @@ def bq_union_predictions_tables(
     # Construct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=location
+        location=location,
+        client_info=ClientInfo(user_agent=USER_AGENT_REGRESSION_PREDICTION)
     )
 
     # Inspect the metadata set on destination_table and predictions_table
@@ -1127,7 +1151,8 @@ def bq_union_predictions_tables(
     # Reconstruct a BigQuery client object.
     client = bigquery.Client(
         project=project_id,
-        location=bq_table_regression.location
+        location=bq_table_regression.location,
+        client_info=ClientInfo(user_agent=USER_AGENT_REGRESSION_PREDICTION)
     )
     query_job = client.query(
         query=query,
@@ -1166,8 +1191,11 @@ def write_tabular_model_explanation_to_bigquery(
     from google.api_core import exceptions
     import time
 
-    client = bigquery.Client(project=project, 
-                             location=data_location)
+    client = bigquery.Client(
+        project=project, 
+        location=data_location,
+        client_info=ClientInfo(user_agent=USER_AGENT_VBB_EXPLANATION)
+    )
     
     feature_names = model_explanation.metadata['feature_names']
     values = model_explanation.metadata['values']

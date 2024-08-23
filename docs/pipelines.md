@@ -77,6 +77,16 @@ This architecture diagram illustrates the process of running the BQML model pred
 * **Prepare model for prediction**: The predictions are prepared and saved in BigQuery in a format to be consumed by the Activation application.
 * **Trigger activation application**: A pub/sub message is sent to trigger the Activation application by providing the adequate parameters related to the use case.
 
+![Gemini Pipeline architecture](images/pipelines_gemini_architecture.png)
+
+This architecture diagram illustrates the process of running the reporting data preparation and gemini insights pipelines. All these steps are implemented as Vertex AI Pipeline components that are executed in BigQuery, its main core components are:
+
+* **Data sources**: For the aggregated predictions stored procedure, the latest predictions are joined for all users which contains all the use case predictions. This singl table is used as single pane of glass to build reports on Looker.
+* **Aggregate predictions from all use cases**: Dynamically identify the latest predictions table for each use case and prepares the final joined table.
+* **Aggregate daily/weekly/monthly metrics and generate Gemini insights**: Ingest users revenue and behaviour metrics daily features and aggregates them daily, weekly and monthly to prompt Gemini 1.5 via the BigQuery external connection to Vertex AI. 
+* **Store aggregated predictions for all users**: Stores the joined predictions in a BigQuery table for further consumption in Looker reports.
+* **Store generated insights**: Stores the generated insights in BigQuery tables for further consumption in Looker reports. 
+
 ## Who is this solution for?
 
 We heard common stories from customers who were struggling with three frequent objectives:
@@ -149,6 +159,18 @@ In comparison to other approaches, Tabular Workflow offers customers with the fo
     * ARIMA+: BigQuery ML ARIMA_PLUS attempts to decompose each time series into trends, seasons, and holidays, producing a forecast using the aggregation of these models' predictions. One of the many differences, however, is that BQML ARIMA+ uses ARIMA to model the trend component, while Prophet attempts to fit a curve using a piecewise logistic or linear model. Learn [more](https://cloud.google.com/vertex-ai/docs/tabular-data/forecasting-arima/overview).
 
 ## ML Pipelines used by each Use Case
+
+The ML Pipelines already implemented and used by each use case are listed below:
+
+| Use Case | Vertex AI Pipeline | Pipeline Name | BigQuery Dataset | 
+| -------- | ------- | -------------- | ---- |
+| Purchase Propensity | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Churn Propensity | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Customer Lifetime Value | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Demographic Audience Segmentation | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Interest based Audience Segmentation | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+| Aggregated Value Based Bidding | [purchase_propensity_training_pipeline](../python/pipelines/pipeline_ops.py) <br> [purchase_propensity_prediction_pipeline](../python/pipelines/tabular_pipelines.py) | [purchase-propensity-training-pl](images/pipeline_purchase_propensity_training_uploaded.png) <br> [purchase-propensity-prediction-pl](images/pipeline_purchase_propensity_prediction_uploaded.png) | [purchase_propensity](../infrastructure/terraform/modules/feature-store/bigquery-datasets.tf) |
+
 
 ## ML Pipelines Desing Principles
 
