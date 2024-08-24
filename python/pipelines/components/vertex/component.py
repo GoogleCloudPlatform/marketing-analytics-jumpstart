@@ -18,6 +18,7 @@ import os, logging, yaml, toml
 from kfp.dsl import component, Output, Artifact, Model, Input, Metrics, ClassificationMetrics, Dataset
 from ma_components.vertex import VertexModel
 
+
 pyproject_toml_file_path = os.path.join(os.path.dirname(__file__), '../../../../pyproject.toml')
 config_file_path = os.path.join(os.path.dirname(__file__), '../../../../config/config.yaml')
 
@@ -89,33 +90,6 @@ def elect_best_tabular_model(
     from pprint import pformat
     from enum import Enum
     #from google_cloud_pipeline_components.types.artifact_types import VertexModel
-    from google.cloud import aiplatform
-
-    from google.api_core.gapic_v1.client_info import ClientInfo
-
-    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
-    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
-    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
-    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
-    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
-    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
-    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
-    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
-    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
-
-
-    api_endpoint = "us-central1-aiplatform.googleapis.com"
-    # The AI Platform services require regional API endpoints.
-    client_options = {"api_endpoint": api_endpoint}
-    client_options = {"api_endpoint": api_endpoint}
-    # Initialize client that will be used to create and send requests.
-    # This client only needs to be created once, and can be reused for multiple requests.
-    client = aiplatform.gapic.JobServiceClient(
-        client_options=client_options,
-        client_info=ClientInfo(user_agent=USER_AGENT_PROPENSITY_PREDICTION)
-    )
-    del client
-
 
     class MetricsEnum(Enum):
         # classification
@@ -269,33 +243,6 @@ def get_latest_model(
     from pprint import pformat
     from enum import Enum
     #from google_cloud_pipeline_components.types.artifact_types import VertexModel
-    from google.cloud import aiplatform
-
-    from google.api_core.gapic_v1.client_info import ClientInfo
-
-    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
-    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
-    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
-    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
-    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
-    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
-    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
-    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
-    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
-
-
-    api_endpoint = "us-central1-aiplatform.googleapis.com"
-    # The AI Platform services require regional API endpoints.
-    client_options = {"api_endpoint": api_endpoint}
-    client_options = {"api_endpoint": api_endpoint}
-    # Initialize client that will be used to create and send requests.
-    # This client only needs to be created once, and can be reused for multiple requests.
-    client = aiplatform.gapic.JobServiceClient(
-        client_options=client_options,
-        client_info=ClientInfo(user_agent=USER_AGENT_PROPENSITY_PREDICTION)
-    )
-    del client
-
 
     class MetricsEnum(Enum):
         LOG_LOSS = 'logLoss'
@@ -405,33 +352,6 @@ def batch_prediction(
     import logging
     from google.cloud import bigquery
     from google.cloud.aiplatform import Model
-    from google.cloud import aiplatform
-
-    from google.api_core.gapic_v1.client_info import ClientInfo
-
-    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
-    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
-    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
-    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
-    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
-    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
-    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
-    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
-    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
-
-
-    api_endpoint = "us-central1-aiplatform.googleapis.com"
-    # The AI Platform services require regional API endpoints.
-    client_options = {"api_endpoint": api_endpoint}
-    client_options = {"api_endpoint": api_endpoint}
-    # Initialize client that will be used to create and send requests.
-    # This client only needs to be created once, and can be reused for multiple requests.
-    client = aiplatform.gapic.JobServiceClient(
-        client_options=client_options,
-        client_info=ClientInfo(user_agent=USER_AGENT_PROPENSITY_PREDICTION)
-    )
-    del client
-
     model = Model(f"{model.metadata['resourceName']}@{model.metadata['version']}")
     timestamp = str(int(datetime.now().timestamp()))
 
@@ -498,33 +418,6 @@ def return_unmanaged_model(
     from google_cloud_pipeline_components import v1
     from google_cloud_pipeline_components.types import artifact_types
     from kfp import dsl
-    from google.cloud import aiplatform
-
-    from google.api_core.gapic_v1.client_info import ClientInfo
-
-    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
-    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
-    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
-    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
-    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
-    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
-    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
-    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
-    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
-
-
-    api_endpoint = "us-central1-aiplatform.googleapis.com"
-    # The AI Platform services require regional API endpoints.
-    client_options = {"api_endpoint": api_endpoint}
-    client_options = {"api_endpoint": api_endpoint}
-    # Initialize client that will be used to create and send requests.
-    # This client only needs to be created once, and can be reused for multiple requests.
-    client = aiplatform.gapic.JobServiceClient(
-        client_options=client_options,
-        client_info=ClientInfo(user_agent=USER_AGENT_PROPENSITY_PREDICTION)
-    )
-    del client
-
 
     model_uri = f"gs://{bucket_name}/{model_name}"
     model.metadata['containerSpec'] = {
@@ -561,32 +454,6 @@ def get_tabular_model_explanation(
     from google.cloud import aiplatform
     import logging
     import re
-    from google.cloud import aiplatform
-
-    from google.api_core.gapic_v1.client_info import ClientInfo
-
-    USER_AGENT_FEATURES = 'cloud-solutions/marketing-analytics-jumpstart-features-v1'
-    USER_AGENT_PROPENSITY_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-propensity-training-v1'
-    USER_AGENT_PROPENSITY_PREDICTION= 'cloud-solutions/marketing-analytics-jumpstart-propensity-prediction-v1'
-    USER_AGENT_REGRESSION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-regression-training-v1'
-    USER_AGENT_REGRESSION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-regression-prediction-v1'
-    USER_AGENT_SEGMENTATION_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-training-v1'
-    USER_AGENT_SEGMENTATION_PREDICTION = 'cloud-solutions/marketing-analytics-jumpstart-segmentation-prediction-v1'
-    USER_AGENT_VBB_TRAINING = 'cloud-solutions/marketing-analytics-jumpstart-vbb-training-v1'
-    USER_AGENT_VBB_EXPLANATION = 'cloud-solutions/marketing-analytics-jumpstart-vbb-explanation-v1'
-
-
-    api_endpoint = "us-central1-aiplatform.googleapis.com"
-    # The AI Platform services require regional API endpoints.
-    client_options = {"api_endpoint": api_endpoint}
-    client_options = {"api_endpoint": api_endpoint}
-    # Initialize client that will be used to create and send requests.
-    # This client only needs to be created once, and can be reused for multiple requests.
-    client = aiplatform.gapic.JobServiceClient(
-        client_options=client_options,
-        client_info=ClientInfo(user_agent=USER_AGENT_VBB_EXPLANATION)
-    )
-    del client
 
     #Get explanaitions from the AutoML API
     aiplatform.init(project=project, location=location)
