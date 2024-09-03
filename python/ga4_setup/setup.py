@@ -494,13 +494,15 @@ def entry():
   parser = argparse.ArgumentParser()
   parser.add_argument('--ga4_resource', type=str, required=True)
   parser.add_argument('--ga4_property_id', type=str, required=True)
-  parser.add_argument('--ga4_stream_id', type=str, required=True)
+  parser.add_argument('--ga4_stream_id', type=str)
   args = parser.parse_args()
 
   configuration = {
     'property_id': args.ga4_property_id,
-    'stream_id': args.ga4_stream_id
   }
+
+  if args.ga4_stream_id:
+    configuration['stream_id'] = args.ga4_stream_id
 
   # python setup.py --ga4_resource=measurement_properties
   if args.ga4_resource == "measurement_properties":

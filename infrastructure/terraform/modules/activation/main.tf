@@ -319,13 +319,14 @@ module "bigquery" {
 # all required custom events in the Google Analytics 4 property.
 # Check the python file ga4-setup/setup.py for more information.
 resource "null_resource" "create_custom_events" {
+  for_each = toset(var.ga4_stream_id)
   triggers = {
     services_enabled_project = null_resource.check_analyticsadmin_api.id != "" ? module.project_services.project_id : var.project_id
     source_contents_hash     = local.activation_type_configuration_file_content_hash
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
     EOT
     working_dir = local.source_root_dir
   }
@@ -335,6 +336,7 @@ resource "null_resource" "create_custom_events" {
 # all required custom events in the Google Analytics 4 property.
 # Check the python file ga4_setup/setup.py for more information.
 resource "null_resource" "create_custom_dimensions" {
+  for_each = toset(var.ga4_stream_id)
   triggers = {
     services_enabled_project = null_resource.check_analyticsadmin_api.id != "" ? module.project_services.project_id : var.project_id
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
@@ -342,7 +344,7 @@ resource "null_resource" "create_custom_dimensions" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
     EOT
     working_dir = local.source_root_dir
   }
@@ -398,34 +400,44 @@ module "trigger_function_account" {
 # a python command defined in the module ga4_setup.
 # This informatoin can then be used in other parts of the Terraform configuration to access the retrieved information.
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  for_each    = toset(var.ga4_stream_id)
+  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}"]
   working_dir = local.source_root_dir
-  # The count attribute specifies how many times the external data source should be executed.
-  # This means that the external data source will be executed only if either the 
-  # var.ga4_measurement_id or var.ga4_measurement_secret variable is not set.
-  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null || var.ga4_measurement_id == "" || var.ga4_measurement_secret == "") ? 1 : 0
-
   depends_on = [
     module.project_services
   ]
 }
 
 # This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
-module "secret_manager" {
+module "secret_manager_measurement_id" {
   source     = "GoogleCloudPlatform/secret-manager/google"
   version    = "~> 0.1"
   project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
   secrets = [
+    for stream in toset(var.ga4_stream_id) :
     {
-      name                  = "ga4-measurement-id"
-      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_id"] : var.ga4_measurement_id
+      name                  = "ga4-measurement-id-${stream}"
+      secret_data           = data.external.ga4_measurement_properties[stream].result["measurement_id"]
       automatic_replication = true
-    },
+    }
+  ]
+
+  depends_on = [
+    data.external.ga4_measurement_properties
+  ]
+}
+
+module "secret_manager_measurement_secret" {
+  source     = "GoogleCloudPlatform/secret-manager/google"
+  version    = "~> 0.1"
+  project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
+  secrets = [
+    for stream in toset(var.ga4_stream_id) :
     {
-      name                  = "ga4-measurement-secret"
-      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
+      name                  = "ga4-measurement-secret-${stream}"
+      secret_data           = data.external.ga4_measurement_properties[stream].result["measurement_secret"]
       automatic_replication = true
-    },
+    }
   ]
 
   depends_on = [

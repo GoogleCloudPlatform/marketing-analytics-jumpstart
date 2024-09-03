@@ -52,7 +52,7 @@ activation_project_id        = "Project ID where activation resources will be cr
 ####################  GA4 VARIABLES  #################################
 
 ga4_property_id              = "Google Analytics property id"
-ga4_stream_id                = "Google Analytics data stream id"
+ga4_stream_id                = ["Google Analytics data stream id:s"]
 ga4_measurement_id           = "Google Analytics measurement id"
 ga4_measurement_secret       = "Google Analytics measurement secret"
 
