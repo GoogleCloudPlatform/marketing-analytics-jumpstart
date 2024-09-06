@@ -408,6 +408,7 @@ data "external" "ga4_measurement_properties" {
   ]
 }
 
+# This module stores the values ga4-measurement-id and ga4-measurement-secret for each data stream in Google Cloud Secret Manager.
 module "data_stream_secrets" {
   source     = "GoogleCloudPlatform/secret-manager/google"
   version    = "~> 0.1"
@@ -422,43 +423,6 @@ module "data_stream_secrets" {
           "measurement-secret" = data.external.ga4_measurement_properties[stream].result["measurement_secret"]
         }
       )
-      automatic_replication = true
-    }
-  ]
-
-  depends_on = [
-    data.external.ga4_measurement_properties
-  ]
-}
-
-# This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
-module "secret_manager_measurement_id" {
-  source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "~> 0.1"
-  project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
-  secrets = [
-    for stream in toset(var.ga4_stream_id) :
-    {
-      name                  = "ga4-measurement-id-${stream}"
-      secret_data           = data.external.ga4_measurement_properties[stream].result["measurement_id"]
-      automatic_replication = true
-    }
-  ]
-
-  depends_on = [
-    data.external.ga4_measurement_properties
-  ]
-}
-
-module "secret_manager_measurement_secret" {
-  source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "~> 0.1"
-  project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
-  secrets = [
-    for stream in toset(var.ga4_stream_id) :
-    {
-      name                  = "ga4-measurement-secret-${stream}"
-      secret_data           = data.external.ga4_measurement_properties[stream].result["measurement_secret"]
       automatic_replication = true
     }
   ]
