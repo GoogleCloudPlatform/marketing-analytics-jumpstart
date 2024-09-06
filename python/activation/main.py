@@ -141,7 +141,8 @@ def build_query(args, activation_type_configuration):
     The query to be used to retrieve data from the source table.
   """
   return activation_type_configuration['source_query_template'].render(
-    source_table=args.source_table
+    source_table=args.source_table,
+    ga4_data_stream_id=args.ga4_data_stream_id
   )
 
 
