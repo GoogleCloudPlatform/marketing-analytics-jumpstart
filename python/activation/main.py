@@ -119,6 +119,12 @@ class ActivationOptions(GoogleCloudOptions):
       help='GCS path to the configuration file all activation types',
       required=True
     )
+    parser.add_argument(
+      '--ga4_data_stream_id',
+      type=str,
+      help='Data stream for activation',
+      required=True
+    )
 
 
 

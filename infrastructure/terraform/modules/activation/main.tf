@@ -408,6 +408,29 @@ data "external" "ga4_measurement_properties" {
   ]
 }
 
+module "data_stream_secrets" {
+  source     = "GoogleCloudPlatform/secret-manager/google"
+  version    = "~> 0.1"
+  project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
+  secrets = [
+    for stream in var.ga4_stream_id :
+    {
+      name = "ga4-data-stream-${stream}"
+      secret_data = jsonencode(
+        {
+          "measurement-id"     = data.external.ga4_measurement_properties[stream].result["measurement_id"]
+          "measurement-secret" = data.external.ga4_measurement_properties[stream].result["measurement_secret"]
+        }
+      )
+      automatic_replication = true
+    }
+  ]
+
+  depends_on = [
+    data.external.ga4_measurement_properties
+  ]
+}
+
 # This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
 module "secret_manager_measurement_id" {
   source     = "GoogleCloudPlatform/secret-manager/google"
@@ -809,19 +832,17 @@ resource "google_cloudfunctions2_function" "activation_trigger_cf" {
       PIPELINE_TEMP_LOCATION        = "gs://${module.pipeline_bucket.name}/tmp/"
       LOG_DATA_SET                  = module.bigquery.bigquery_dataset.dataset_id
       PIPELINE_WORKER_EMAIL         = module.pipeline_service_account.email
+      GA4_DATA_STREAMS              = join(",", var.ga4_stream_id)
     }
     # Sets the environment variables from the secrets stored on Secret Manager
-    secret_environment_variables {
-      project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
-      key        = "GA4_MEASUREMENT_ID"
-      secret     = split("/", module.secret_manager.secret_names[0])[3]
-      version    = split("/", module.secret_manager.secret_versions[0])[5]
-    }
-    secret_environment_variables {
-      project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
-      key        = "GA4_MEASUREMENT_SECRET"
-      secret     = split("/", module.secret_manager.secret_names[1])[3]
-      version    = split("/", module.secret_manager.secret_versions[1])[5]
+    dynamic "secret_environment_variables" {
+      for_each = var.ga4_stream_id
+      content {
+        project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
+        key        = "GA4_DATA_STREAM_${secret_environment_variables.value}"
+        secret     = split("/", module.data_stream_secrets[secret_environment_variables.value].secret_names[0])[3]
+        version    = split("/", module.data_stream_secrets[secret_environment_variables.value].secret_versions[0])[5]
+      }
     }
   }
   # lifecycle configuration ignores the changes to the source zip file
