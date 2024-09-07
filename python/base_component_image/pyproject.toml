@@ -13,7 +13,7 @@ pip = "23.3"
 kfp = "2.0.0-rc.2"
 #kfp = {version = "2.0.0-b12", allow-prereleases = true}
 #kfp = {version = "2.0.0-b16", allow-prereleases = true}
-kfp-server-api = "2.0.0-rc.1"
+kfp-server-api = "2.3.0"
 #kfp-server-api = "2.0.0.a6"
 #kfp-server-api = "2.0.0b1"
 urllib3 = "1.26.18"
