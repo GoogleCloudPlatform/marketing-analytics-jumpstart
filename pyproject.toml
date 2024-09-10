@@ -38,7 +38,7 @@ google-cloud-pipeline-components = "2.6.0"
 google-auth = "^2.14.1"
 google-cloud-storage = "^2.6.0"
 ## Fixing this error: https://stackoverflow.com/questions/76175487/sudden-importerror-cannot-import-name-appengine-from-requests-packages-urlli
-kfp = "2.0.0-rc.2"
+kfp = "2.9.0"
 #kfp = {version = "2.0.0-b12", allow-prereleases = true}
 #kfp = {version = "2.0.0-b16", allow-prereleases = true}
 kfp-server-api = "2.0.0-rc.1"
