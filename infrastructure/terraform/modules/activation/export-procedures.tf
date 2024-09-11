@@ -15,7 +15,7 @@
 data "template_file" "purchase_propensity_csv_export_query" {
   template = file("${local.source_root_dir}/templates/activation_user_import/purchase_propensity_csv_export.sqlx")
   vars = {
-    ga4_stream_id = var.ga4_stream_id
+    ga4_stream_id = var.ga4_stream_id.0
     export_bucket = module.pipeline_bucket.name
   }
 }
@@ -38,7 +38,7 @@ resource "google_bigquery_routine" "export_purchase_propensity_procedure" {
 data "template_file" "cltv_csv_export_query" {
   template = file("${local.source_root_dir}/templates/activation_user_import/cltv_csv_export.sqlx")
   vars = {
-    ga4_stream_id = var.ga4_stream_id
+    ga4_stream_id = var.ga4_stream_id.0
     export_bucket = module.pipeline_bucket.name
   }
 }
@@ -61,7 +61,7 @@ resource "google_bigquery_routine" "export_cltv_procedure" {
 data "template_file" "audience_segmentation_csv_export_query" {
   template = file("${local.source_root_dir}/templates/activation_user_import/audience_segmentation_csv_export.sqlx")
   vars = {
-    ga4_stream_id = var.ga4_stream_id
+    ga4_stream_id = var.ga4_stream_id.0
     export_bucket = module.pipeline_bucket.name
   }
 }
@@ -84,7 +84,7 @@ resource "google_bigquery_routine" "export_audience_segmentation_procedure" {
 data "template_file" "auto_audience_segmentation_csv_export_query" {
   template = file("${local.source_root_dir}/templates/activation_user_import/auto_audience_segmentation_csv_export.sqlx")
   vars = {
-    ga4_stream_id = var.ga4_stream_id
+    ga4_stream_id = var.ga4_stream_id.0
     export_bucket = module.pipeline_bucket.name
   }
 }
@@ -107,7 +107,7 @@ resource "google_bigquery_routine" "export_auto_audience_segmentation_procedure"
 data "template_file" "churn_propensity_csv_export_query" {
   template = file("${local.source_root_dir}/templates/activation_user_import/churn_propensity_csv_export.sqlx")
   vars = {
-    ga4_stream_id = var.ga4_stream_id
+    ga4_stream_id = var.ga4_stream_id.0
     export_bucket = module.pipeline_bucket.name
   }
 }

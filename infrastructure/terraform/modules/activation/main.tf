@@ -61,6 +61,7 @@ locals {
   # This is calculating a hash number on the files contents to keep track of changes and trigger redeployment of resources 
   # in case any of these files contents changes.
   activation_application_content_hash = sha512(join("", [for f in local.activation_application_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+  ga4_stream_id_set = toset(var.ga4_stream_id)
 }
 
 data "google_project" "activation_project" {
@@ -319,13 +320,14 @@ module "bigquery" {
 # all required custom events in the Google Analytics 4 property.
 # Check the python file ga4-setup/setup.py for more information.
 resource "null_resource" "create_custom_events" {
+  for_each = local.ga4_stream_id_set
   triggers = {
     services_enabled_project = null_resource.check_analyticsadmin_api.id != "" ? module.project_services.project_id : var.project_id
     source_contents_hash     = local.activation_type_configuration_file_content_hash
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
     EOT
     working_dir = local.source_root_dir
   }
@@ -335,6 +337,7 @@ resource "null_resource" "create_custom_events" {
 # all required custom events in the Google Analytics 4 property.
 # Check the python file ga4_setup/setup.py for more information.
 resource "null_resource" "create_custom_dimensions" {
+  for_each = local.ga4_stream_id_set
   triggers = {
     services_enabled_project = null_resource.check_analyticsadmin_api.id != "" ? module.project_services.project_id : var.project_id
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
@@ -342,7 +345,7 @@ resource "null_resource" "create_custom_dimensions" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
     EOT
     working_dir = local.source_root_dir
   }
@@ -398,34 +401,31 @@ module "trigger_function_account" {
 # a python command defined in the module ga4_setup.
 # This informatoin can then be used in other parts of the Terraform configuration to access the retrieved information.
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  for_each    = local.ga4_stream_id_set
+  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}"]
   working_dir = local.source_root_dir
-  # The count attribute specifies how many times the external data source should be executed.
-  # This means that the external data source will be executed only if either the 
-  # var.ga4_measurement_id or var.ga4_measurement_secret variable is not set.
-  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null || var.ga4_measurement_id == "" || var.ga4_measurement_secret == "") ? 1 : 0
-
   depends_on = [
     module.project_services
   ]
 }
 
-# This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
-module "secret_manager" {
+# This module stores the values ga4-measurement-id and ga4-measurement-secret for each data stream in Google Cloud Secret Manager.
+module "data_stream_secrets" {
+  for_each   = local.ga4_stream_id_set
   source     = "GoogleCloudPlatform/secret-manager/google"
   version    = "~> 0.1"
   project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
   secrets = [
     {
-      name                  = "ga4-measurement-id"
-      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_id"] : var.ga4_measurement_id
+      name = "ga4-data-stream-${each.value}"
+      secret_data = jsonencode(
+        {
+          "measurement-id"     = data.external.ga4_measurement_properties[each.value].result["measurement_id"]
+          "measurement-secret" = data.external.ga4_measurement_properties[each.value].result["measurement_secret"]
+        }
+      )
       automatic_replication = true
-    },
-    {
-      name                  = "ga4-measurement-secret"
-      secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
-      automatic_replication = true
-    },
+    }
   ]
 
   depends_on = [
@@ -797,19 +797,17 @@ resource "google_cloudfunctions2_function" "activation_trigger_cf" {
       PIPELINE_TEMP_LOCATION        = "gs://${module.pipeline_bucket.name}/tmp/"
       LOG_DATA_SET                  = module.bigquery.bigquery_dataset.dataset_id
       PIPELINE_WORKER_EMAIL         = module.pipeline_service_account.email
+      GA4_DATA_STREAMS              = join(",", local.ga4_stream_id_set)
     }
     # Sets the environment variables from the secrets stored on Secret Manager
-    secret_environment_variables {
-      project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
-      key        = "GA4_MEASUREMENT_ID"
-      secret     = split("/", module.secret_manager.secret_names[0])[3]
-      version    = split("/", module.secret_manager.secret_versions[0])[5]
-    }
-    secret_environment_variables {
-      project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
-      key        = "GA4_MEASUREMENT_SECRET"
-      secret     = split("/", module.secret_manager.secret_names[1])[3]
-      version    = split("/", module.secret_manager.secret_versions[1])[5]
+    dynamic "secret_environment_variables" {
+      for_each = local.ga4_stream_id_set
+      content {
+        project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
+        key        = "GA4_DATA_STREAM_${secret_environment_variables.value}"
+        secret     = split("/", module.data_stream_secrets[secret_environment_variables.value].secret_names[0])[3]
+        version    = split("/", module.data_stream_secrets[secret_environment_variables.value].secret_versions[0])[5]
+      }
     }
   }
   # lifecycle configuration ignores the changes to the source zip file
