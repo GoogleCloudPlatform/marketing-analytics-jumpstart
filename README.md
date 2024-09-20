@@ -129,6 +129,8 @@ This a list of public websites you can use to learn more about the Google Analyt
 
 | Websites | Description |
 |----------|-------------|
+| [github.com/GoogleCloudPlatform/marketing-analytics-jumpstart-dataform](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart-dataform) | Marketing Analytics Jumpstart Dataform Github Repository |
+| [console.cloud.google.com/marketplace/product/bigquery-data-connectors/google_ads](https://console.cloud.google.com/marketplace/product/bigquery-data-connectors/google_ads) | BigQuery Data Transfer Service for Google Ads |
 | [support.google.com/google-ads/*](https://support.google.com/google-ads/) [support.google.com/analytics/*](https://support.google.com/analytics/) | Google Ads and Google Analytics Support |
 | [support.google.com/looker-studio/*](https://support.google.com/looker-studio/) | Looker Studio Support |
 | [developers.google.com/analytics/*](https://developers.google.com/analytics/) [developers.google.com/google-ads/*](https://developers.google.com/analytics/) | Google Ads and Google Analytics Developers Guides |
