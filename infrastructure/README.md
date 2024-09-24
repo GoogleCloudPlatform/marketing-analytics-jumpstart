@@ -5,10 +5,6 @@
 Marketing Analytics Jumpstart consists of several components - marketing data store (MDS), feature store, ML pipelines,
 the activation pipeline and dashboards. This document describes the sequencing of installing these components.
 
-To facilitate the installation, use this Step by Step Installation Video.
-
-[![Step by Step Installation Video](../docs/images/YoutubeScreenshot.png)](https://youtu.be/JMnsIxTNbE4 "Marketing Analytics Jumpstart Installation Video")
-
 ## Prerequisites
 
 ### Marketing Analytics Data Sources
