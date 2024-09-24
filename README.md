@@ -114,13 +114,18 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 
 
 ## Installation
-Please follow the step by step installation guide with Google Cloud Shell.
+
+To facilitate the installation, use this Step by Step Installation Video.
+
+[![Step by Step Installation Video](../docs/images/YoutubeScreenshot.png)](https://youtu.be/JMnsIxTNbE4 "Marketing Analytics Jumpstart Installation Video")
+
+Please follow this step by step [Installation Guide](./infrastructure/README.md).
+
+Alternatively, follow the step by step installation guide with Google Cloud Shell.
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
 **Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
-
-The detailed installation instructions can be found at the [Installation Guide](./infrastructure/README.md).
 
 
 ## Contributing
