@@ -117,9 +117,9 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 
 To facilitate the installation, use this Step by Step Installation Video.
 
-[![Step by Step Installation Video](../docs/images/YoutubeScreenshot.png)](https://youtu.be/JMnsIxTNbE4 "Marketing Analytics Jumpstart Installation Video")
+[![Step by Step Installation Video](docs/images/YoutubeScreenshot.png)](https://youtu.be/JMnsIxTNbE4 "Marketing Analytics Jumpstart Installation Video")
 
-Please follow this step by step [Installation Guide](./infrastructure/README.md).
+Please follow this [Installation Guide](./infrastructure/README.md) to accompany the video.
 
 Alternatively, follow the step by step installation guide with Google Cloud Shell.
 
