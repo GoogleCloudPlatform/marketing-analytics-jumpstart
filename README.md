@@ -33,7 +33,7 @@ These insights are used to serve as a basis to optimize paid media efforts and i
 * Driving a more personalized experience for your highly valued customers and improve return on ads spend (ROAS) via customer lifetime value
 * Attributing bidding values to specific users according to their journeys through the conversion funnel which Ads platform uses to guide better campaign performance in specific markets
 
-| Use Case | Data Sources | Model | Report | Activation Event | Google Ads Campaign Optimization |
+| Use Case | Data Sources | Model | Looker Report Name | Activation Event | Google Ads Campaign Optimization |
 |-------|-------|-------|--------|--------|--------|
 | Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [maj_audience_segmentation_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L2) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
 | Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [maj_auto_audience_segmentation_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L8) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
