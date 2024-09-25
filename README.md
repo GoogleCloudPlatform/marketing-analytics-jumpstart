@@ -33,6 +33,14 @@ These insights are used to serve as a basis to optimize paid media efforts and i
 * Driving a more personalized experience for your highly valued customers and improve return on ads spend (ROAS) via customer lifetime value
 * Attributing bidding values to specific users according to their journeys through the conversion funnel which Ads platform uses to guide better campaign performance in specific markets
 
+| Use Case | Data Sources | Model | Looker Report Name | Activation Event | Google Ads Campaign Optimization |
+|-------|-------|-------|--------|--------|--------|
+| Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [maj_audience_segmentation_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L2) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [maj_auto_audience_segmentation_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L8) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Customer Lifetime Value | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Customer Lifetime Value | [maj_cltv_180_30](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L23) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Purchase Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Purchase | [maj_purchase_propensity_30_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L28) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Churn Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Churn | [maj_churn_propensity_30_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L43) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | - | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) <br><br> [Bid Adjustment](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) |
 
 ## Repository Structure
 The solution's source code is written in Terraform, Python, SQL, YAML and JSON; and it is organized into five main folders:
@@ -106,13 +114,18 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 
 
 ## Installation
-Please follow the step by step installation guide with Google Cloud Shell.
+
+To facilitate the installation, use this Step by Step Installation Video.
+
+[![Step by Step Installation Video](docs/images/YoutubeScreenshot.png)](https://youtu.be/JMnsIxTNbE4 "Marketing Analytics Jumpstart Installation Video")
+
+Please follow this [Installation Guide](./infrastructure/README.md) to accompany the video.
+
+Alternatively, follow the step by step installation guide with Google Cloud Shell.
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
 **Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
-
-The detailed installation instructions can be found at the [Installation Guide](./infrastructure/README.md).
 
 
 ## Contributing
