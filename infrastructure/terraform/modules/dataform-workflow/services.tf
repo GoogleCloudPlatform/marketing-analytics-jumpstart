@@ -15,7 +15,7 @@
 # https://registry.terraform.io/modules/terraform-google-modules/project-factory/google/latest/submodules/project_services
 module "data_processing_project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "14.1.0"
+  version = "17.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false

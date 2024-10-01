@@ -69,7 +69,7 @@ data "google_project" "activation_project" {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "14.1.0"
+  version = "17.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
@@ -305,7 +305,7 @@ resource "null_resource" "check_cloudbuild_api" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 5.4"
+  version = "8.1.0"
 
   dataset_id                 = local.app_prefix
   dataset_name               = local.app_prefix
@@ -359,7 +359,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "~> 3.0"
+  version    = "4.4.0"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.pipeline_service_account_name]
@@ -376,7 +376,7 @@ module "pipeline_service_account" {
 
 module "trigger_function_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "~> 3.0"
+  version    = "4.4.0"
   project_id = null_resource.check_pubsub_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.trigger_function_account_name]
@@ -413,7 +413,7 @@ data "external" "ga4_measurement_properties" {
 # This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
 module "secret_manager" {
   source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "~> 0.1"
+  version    = "0.4.0"
   project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
   secrets = [
     {
@@ -436,7 +436,7 @@ module "secret_manager" {
 # This module creates a Cloud Storage bucket to be used by the Activation Application
 module "pipeline_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "~> 3.4.1"
+  version       = "6.1.0"
   project_id    = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   name          = "${local.app_prefix}-app-${module.project_services.project_id}"
   location      = var.location
@@ -522,7 +522,7 @@ data "google_project" "project" {
 # This module creates a Cloud Storage bucket to be used by the Cloud Build Log Bucket
 module "build_logs_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "~> 3.4.1"
+  version       = "6.1.0"
   project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
   name          = "${local.app_prefix}-logs-${module.project_services.project_id}"
   location      = var.location
@@ -667,7 +667,7 @@ resource "google_storage_bucket_object" "activation_type_configuration_file" {
 # This module submits a gcloud build to build a docker container image to be used by the Activation Application
 module "activation_pipeline_container" {
   source  = "terraform-google-modules/gcloud/google"
-  version = "3.1.2"
+  version = "3.5.0"
 
   platform = "linux"
 
@@ -687,7 +687,7 @@ module "activation_pipeline_container" {
 # This module executes a gcloud command to build a dataflow flex template and uploads it to Dataflow
 module "activation_pipeline_template" {
   source                = "terraform-google-modules/gcloud/google"
-  version               = "3.1.2"
+  version               = "3.5.0"
   additional_components = ["gsutil"]
 
   platform         = "linux"
@@ -719,7 +719,7 @@ data "archive_file" "activation_trigger_source" {
 # This module creates a Cloud Sorage bucket and sets the trigger_function_account_email as the admin.
 module "function_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "~> 3.4.1"
+  version       = "6.1.0"
   project_id    = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
   name          = "${local.app_prefix}-trigger-${module.project_services.project_id}"
   location      = var.location
@@ -821,7 +821,7 @@ resource "google_cloudfunctions2_function" "activation_trigger_cf" {
 # This modules runs cloud commands that adds an invoker policy binding to a Cloud Function, allowing a specific service account to invoke the function.
 module "add_invoker_binding" {
   source  = "terraform-google-modules/gcloud/google"
-  version = "3.1.2"
+  version = "3.5.0"
 
   platform = "linux"
 
