@@ -2,7 +2,7 @@
 Marketing Analytics Jumpstart consists of an easy, extensible and automated implementation of an end-to-end solution that enables Marketing Technology teams to store, transform, enrich with 1PD and analyze marketing data, and programmatically send predictive events to Google Analytics 4 to support conversion optimization and remarketing campaigns.
 
 ## Developer pre-requisites
-Use Visual Studio Code to develop the solution. Install Gemini Code Assistant, Docker, GitHub, Hashicorp Terraform, Jinja extensions.
+Use Visual Studio Code to develop the solution. Install Gemini Code Assistant, Docker, GitHub, Hashicorp, Terraform, Jinja extensions.
 You should have Python 3, Poetry, Terraform, Git and Docker installed in your developer terminal environment.
 
 ## Preparing development environment
