@@ -56,7 +56,7 @@ variable "project_owner_email" {
 }
 
 variable "dataform_github_repo" {
-  description = "Private Github repo for Dataform."
+  description = "Private GitHub repo for Dataform."
   type        = string
   validation {
     condition     = substr(var.dataform_github_repo, 0, 8) == "https://"
@@ -65,7 +65,7 @@ variable "dataform_github_repo" {
 }
 
 variable "dataform_github_token" {
-  description = "Github token for Dataform repo."
+  description = "GitHub token for Dataform repo."
   type        = string
 }
 

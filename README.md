@@ -110,7 +110,7 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 - [ ] Google Analytics Property Editor or Owner
 - [ ] Google Ads Reader
 - [ ] Project Owner for GCP Project
-- [ ] Github or Gitlab account priviledges for repo creation and access token. [Details](https://cloud.google.com/dataform/docs/connect-repository)
+- [ ] GitHub or GitLab account priviledges for repo creation and access token. [Details](https://cloud.google.com/dataform/docs/connect-repository)
 
 
 ## Installation
@@ -142,7 +142,7 @@ This a list of public websites you can use to learn more about the Google Analyt
 
 | Websites | Description |
 |----------|-------------|
-| [github.com/GoogleCloudPlatform/marketing-analytics-jumpstart-dataform](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart-dataform) | Marketing Analytics Jumpstart Dataform Github Repository |
+| [github.com/GoogleCloudPlatform/marketing-analytics-jumpstart-dataform](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart-dataform) | Marketing Analytics Jumpstart Dataform GitHub Repository |
 | [console.cloud.google.com/marketplace/product/bigquery-data-connectors/google_ads](https://console.cloud.google.com/marketplace/product/bigquery-data-connectors/google_ads) | BigQuery Data Transfer Service for Google Ads |
 | [support.google.com/google-ads/*](https://support.google.com/google-ads/) [support.google.com/analytics/*](https://support.google.com/analytics/) | Google Ads and Google Analytics Support |
 | [support.google.com/looker-studio/*](https://support.google.com/looker-studio/) | Looker Studio Support |

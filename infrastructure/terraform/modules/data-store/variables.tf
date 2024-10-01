@@ -38,12 +38,12 @@ variable "project_owner_email" {
 }
 
 variable "dataform_github_repo" {
-  description = "Private Github repo for Dataform."
+  description = "Private GitHub repo for Dataform."
   type        = string
 }
 
 variable "dataform_github_token" {
-  description = "Github token for Dataform repo."
+  description = "GitHub token for Dataform repo."
   type        = string
 }
 
