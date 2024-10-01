@@ -37,15 +37,15 @@ locals {
   trigger_function_account_name  = "trigger-function"
   trigger_function_account_email = "${local.app_prefix}-${local.trigger_function_account_name}@${var.project_id}.iam.gserviceaccount.com"
 
-  builder_service_account_name = "build-job"
+  builder_service_account_name  = "build-job"
   builder_service_account_email = "${local.app_prefix}-${local.builder_service_account_name}@${var.project_id}.iam.gserviceaccount.com"
 
-  activation_type_configuration_file              = "${local.source_root_dir}/templates/activation_type_configuration_template.tpl"
+  activation_type_configuration_file = "${local.source_root_dir}/templates/activation_type_configuration_template.tpl"
   # This is calculating a hash number on the file content to keep track of changes and trigger redeployment of resources 
   # in case the file content changes.
   activation_type_configuration_file_content_hash = filesha512(local.activation_type_configuration_file)
 
-  app_payload_template_file              = "${local.source_root_dir}/templates/app_payload_template.jinja2"
+  app_payload_template_file = "${local.source_root_dir}/templates/app_payload_template.jinja2"
   # This is calculating a hash number on the file content to keep track of changes and trigger redeployment of resources 
   # in case the file content changes.
   app_payload_template_file_content_hash = filesha512(local.activation_type_configuration_file)
@@ -368,7 +368,7 @@ module "pipeline_service_account" {
     "${module.project_services.project_id}=>roles/dataflow.worker",
     "${module.project_services.project_id}=>roles/bigquery.dataEditor",
     "${module.project_services.project_id}=>roles/bigquery.jobUser",
-    "${module.project_services.project_id}=>roles/artifactregistry.writer", 
+    "${module.project_services.project_id}=>roles/artifactregistry.writer",
   ]
   display_name = "Dataflow worker Service Account"
   description  = "Activation Dataflow worker Service Account"
@@ -403,7 +403,7 @@ data "external" "ga4_measurement_properties" {
   # The count attribute specifies how many times the external data source should be executed.
   # This means that the external data source will be executed only if either the 
   # var.ga4_measurement_id or var.ga4_measurement_secret variable is not set.
-  count       = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null || var.ga4_measurement_id == "" || var.ga4_measurement_secret == "") ? 1 : 0
+  count = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null || var.ga4_measurement_id == "" || var.ga4_measurement_secret == "") ? 1 : 0
 
   depends_on = [
     module.project_services
@@ -435,11 +435,11 @@ module "secret_manager" {
 
 # This module creates a Cloud Storage bucket to be used by the Activation Application
 module "pipeline_bucket" {
-  source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "6.1.0"
-  project_id    = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
-  name          = "${local.app_prefix}-app-${module.project_services.project_id}"
-  location      = var.location
+  source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
+  version    = "6.1.0"
+  project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
+  name       = "${local.app_prefix}-app-${module.project_services.project_id}"
+  location   = var.location
   # When deleting a bucket, this boolean option will delete all contained objects. 
   # If false, Terraform will fail to delete buckets which contain objects.
   force_destroy = true
@@ -471,8 +471,8 @@ resource "google_project_iam_member" "cloud_build_job_service_account" {
     module.project_services,
     null_resource.check_artifactregistry_api,
     data.google_project.project,
-    ]
-  
+  ]
+
   project = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : var.project_id
   member  = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
 
@@ -516,16 +516,16 @@ resource "google_project_iam_member" "cloud_build_job_service_account" {
 }
 
 data "google_project" "project" {
-  project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
+  project_id = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
 }
 
 # This module creates a Cloud Storage bucket to be used by the Cloud Build Log Bucket
 module "build_logs_bucket" {
-  source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "6.1.0"
-  project_id    = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
-  name          = "${local.app_prefix}-logs-${module.project_services.project_id}"
-  location      = var.location
+  source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
+  version    = "6.1.0"
+  project_id = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
+  name       = "${local.app_prefix}-logs-${module.project_services.project_id}"
+  location   = var.location
   # When deleting a bucket, this boolean option will delete all contained objects. 
   # If false, Terraform will fail to delete buckets which contain objects.
   force_destroy = true
@@ -543,8 +543,8 @@ module "build_logs_bucket" {
 
   iam_members = [
     {
-    role   = "roles/storage.admin"
-    member = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
+      role   = "roles/storage.admin"
+      member = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
     }
   ]
 
@@ -657,9 +657,9 @@ data "template_file" "activation_type_configuration" {
 
 # This resource creates a bucket object using as content the activation_type_configuration.json file.
 resource "google_storage_bucket_object" "activation_type_configuration_file" {
-  name           = "${local.configuration_folder}/activation_type_configuration.json"
-  content        = data.template_file.activation_type_configuration.rendered
-  bucket         = module.pipeline_bucket.name
+  name    = "${local.configuration_folder}/activation_type_configuration.json"
+  content = data.template_file.activation_type_configuration.rendered
+  bucket  = module.pipeline_bucket.name
   # Detects md5hash changes to redeploy this file to the GCS bucket.
   detect_md5hash = base64encode("${local.activation_type_configuration_file_content_hash}${local.activation_application_content_hash}")
 }
@@ -718,11 +718,11 @@ data "archive_file" "activation_trigger_source" {
 
 # This module creates a Cloud Sorage bucket and sets the trigger_function_account_email as the admin.
 module "function_bucket" {
-  source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "6.1.0"
-  project_id    = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
-  name          = "${local.app_prefix}-trigger-${module.project_services.project_id}"
-  location      = var.location
+  source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
+  version    = "6.1.0"
+  project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
+  name       = "${local.app_prefix}-trigger-${module.project_services.project_id}"
+  location   = var.location
   # When deleting a bucket, this boolean option will delete all contained objects. 
   # If false, Terraform will fail to delete buckets which contain objects.
   force_destroy = true

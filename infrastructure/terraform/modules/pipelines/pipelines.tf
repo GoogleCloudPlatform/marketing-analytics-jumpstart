@@ -53,8 +53,8 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     module.project_services,
     null_resource.check_aiplatform_api,
     null_resource.wait_for_vertex_pipelines_sa_creation
-    ]
-  
+  ]
+
   project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.service_account.email}"
 
@@ -79,8 +79,8 @@ resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
     module.project_services,
     null_resource.check_aiplatform_api,
     null_resource.wait_for_vertex_pipelines_sa_creation
-    ]
-  
+  ]
+
   project = null_resource.check_bigquery_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.service_account.email}"
 
@@ -130,8 +130,8 @@ resource "google_project_iam_member" "dataflow_worker_sa_roles" {
     module.project_services,
     null_resource.check_dataflow_api,
     null_resource.wait_for_dataflow_worker_sa_creation
-    ]
-  
+  ]
+
   project = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.dataflow_worker_service_account.email}"
 
@@ -151,8 +151,8 @@ resource "google_service_account_iam_member" "dataflow_sa_iam" {
     module.project_services,
     null_resource.check_dataflow_api,
     null_resource.wait_for_dataflow_worker_sa_creation
-    ]
-  
+  ]
+
   service_account_id = "projects/${module.project_services.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.service_account.email}"
@@ -167,7 +167,7 @@ resource "google_storage_bucket" "pipelines_bucket" {
   uniform_bucket_level_access = true
   # The force_destroy attribute specifies whether the bucket should be forcibly destroyed 
   # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
-  force_destroy               = false
+  force_destroy = false
 
   # The lifecycle block allows you to configure the lifecycle of the bucket. 
   # In this case, the ignore_changes attribute is set to all, which means that Terraform 
@@ -187,7 +187,7 @@ resource "google_storage_bucket" "custom_model_bucket" {
   uniform_bucket_level_access = true
   # The force_destroy attribute specifies whether the bucket should be forcibly destroyed 
   # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
-  force_destroy               = false
+  force_destroy = false
 
   # The lifecycle block allows you to configure the lifecycle of the bucket. 
   # In this case, the ignore_changes attribute is set to all, which means that Terraform 
@@ -246,7 +246,7 @@ resource "google_artifact_registry_repository" "pipelines-repo" {
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
   # The format is kubeflow pipelines YAML files.
-  format        = "KFP"
+  format = "KFP"
 
   # The lifecycle block of the google_artifact_registry_repository resource defines a precondition that 
   # checks if the specified region is included in the vertex_pipelines_available_locations list. 
@@ -266,7 +266,7 @@ resource "google_artifact_registry_repository" "pipelines_docker_repo" {
   repository_id = local.artifact_registry_vars.pipelines_docker_repo.name
   description   = "Docker Images Repository"
   # The format is Docker images.
-  format        = "DOCKER"
+  format = "DOCKER"
 }
 
 locals {

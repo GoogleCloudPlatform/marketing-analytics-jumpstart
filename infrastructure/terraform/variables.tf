@@ -147,8 +147,8 @@ variable "source_ga4_export_dataset" {
 
 variable "ga4_incremental_processing_days_back" {
   description = "Past number of days to process GA4 exported data"
-  type = string
-  default = "3"
+  type        = string
+  default     = "3"
 }
 
 variable "source_ads_export_data" {
@@ -238,6 +238,6 @@ variable "feature_store_project_id" {
 
 variable "website_url" {
   description = "Website url to be provided to the auto segmentation model"
-  type = string
-  default = null
+  type        = string
+  default     = null
 }

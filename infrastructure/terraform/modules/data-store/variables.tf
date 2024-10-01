@@ -112,7 +112,7 @@ variable "source_ga4_export_dataset" {
 }
 
 variable "ga4_incremental_processing_days_back" {
-  type = string
+  type    = string
   default = "3"
 }
 
