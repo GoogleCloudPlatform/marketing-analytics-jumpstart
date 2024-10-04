@@ -56,7 +56,7 @@ variable "project_owner_email" {
 }
 
 variable "dataform_github_repo" {
-  description = "Private Github repo for Dataform."
+  description = "Private GitHub repo for Dataform."
   type        = string
   validation {
     condition     = substr(var.dataform_github_repo, 0, 8) == "https://"
@@ -65,7 +65,7 @@ variable "dataform_github_repo" {
 }
 
 variable "dataform_github_token" {
-  description = "Github token for Dataform repo."
+  description = "GitHub token for Dataform repo."
   type        = string
 }
 
@@ -147,8 +147,8 @@ variable "source_ga4_export_dataset" {
 
 variable "ga4_incremental_processing_days_back" {
   description = "Past number of days to process GA4 exported data"
-  type = string
-  default = "3"
+  type        = string
+  default     = "3"
 }
 
 variable "source_ads_export_data" {
@@ -238,6 +238,6 @@ variable "feature_store_project_id" {
 
 variable "website_url" {
   description = "Website url to be provided to the auto segmentation model"
-  type = string
-  default = null
+  type        = string
+  default     = null
 }

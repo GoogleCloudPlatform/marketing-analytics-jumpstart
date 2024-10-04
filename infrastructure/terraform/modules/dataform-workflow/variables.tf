@@ -27,7 +27,7 @@ variable "environment" {
 }
 
 variable "daily_schedule" {
-  type    = string
+  type = string
   # This schedule executes every days, each 2 hours between 5AM and 11PM.
   default = "0 5-23/2 * * *" #"2 5 * * *"
 }
@@ -45,7 +45,7 @@ variable "source_ga4_export_dataset" {
 }
 
 variable "ga4_incremental_processing_days_back" {
-  type = string
+  type    = string
   default = "3"
 }
 
