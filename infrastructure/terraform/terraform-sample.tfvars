@@ -47,19 +47,19 @@ website_url = "Customer Website URL" # i.e. "https://shop.googlemerchandisestore
 
 ####################  ACTIVATION VARIABLES  #################################
 
-activation_project_id        = "Project ID where activation resources will be created"
+activation_project_id = "Project ID where activation resources will be created"
 
 ####################  GA4 VARIABLES  #################################
 
-ga4_property_id              = "Google Analytics property id"
-ga4_stream_id                = "Google Analytics data stream id"
-ga4_measurement_id           = "Google Analytics measurement id"
-ga4_measurement_secret       = "Google Analytics measurement secret"
+ga4_property_id        = "Google Analytics property id"
+ga4_stream_id          = "Google Analytics data stream id"
+ga4_measurement_id     = "Google Analytics measurement id"
+ga4_measurement_secret = "Google Analytics measurement secret"
 
 ####################  GITHUB VARIABLES  #################################
 
-project_owner_email   = "Project owner email"
-dataform_github_repo  = "URL of the GitHub or GitLab repo which contains the Dataform scripts. Should start with https://"
+project_owner_email  = "Project owner email"
+dataform_github_repo = "URL of the GitHub or GitLab repo which contains the Dataform scripts. Should start with https://"
 # Personal access tokens are intended to access GitHub resources on behalf of yourself.
 # Generate a github developer token for the repo above following this link:
 # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic

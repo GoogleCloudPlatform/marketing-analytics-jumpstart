@@ -14,7 +14,7 @@
 
 resource "google_secret_manager_secret" "github-secret" {
   secret_id = "Github_token"
-  project   = null_resource.check_secretmanager_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  project   = null_resource.check_secretmanager_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
 
   replication {
     #automatic = true
@@ -28,7 +28,7 @@ resource "google_secret_manager_secret" "github-secret" {
 }
 
 resource "google_secret_manager_secret_version" "secret-version-github" {
-  secret = google_secret_manager_secret.github-secret.id
+  secret      = google_secret_manager_secret.github-secret.id
   secret_data = var.dataform_github_token
 
   #deletion_policy = "DISABLE"

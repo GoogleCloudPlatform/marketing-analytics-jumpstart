@@ -91,7 +91,6 @@ The activation application uses sensitive information from the Google Analytics 
 * A [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en) and [API secret](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) collected from the Google Analytics UI. In this [article](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) you will find instructions on how to generate the API secret.
 * Editor or Administrator role to the Google Analytics 4 account or property. In this [article](https://support.google.com/analytics/answer/9305587?hl=en#zippy=%2Cgoogle-analytics) you will find instructions on how to setup.
 
-
 ## Installing the MDS, ML pipelines, the feature Store, and the activation pipeline
 
 Once all the prerequisites are met you can install these components using Terraform scripts.
@@ -102,4 +101,3 @@ Follow instructions in [terraform/README.md](terraform/README.md)
 
 Looker Studio Dashboards can be installed by following instructions
 in [../python/lookerstudio/README.md](../python/lookerstudio/README.md)
-
