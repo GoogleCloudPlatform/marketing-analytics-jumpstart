@@ -112,14 +112,14 @@ Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com
     # Follow instructions on https://github.com/tfutils/tfenv
 
     # Now, install the recommended terraform version 
-    tfenv install 1.5.7
-    tfenv use 1.5.7
+    tfenv install 1.9.7
+    tfenv use 1.9.7
     terraform --version
     ```
 
     For instance, the output on MacOS should be like:
     ```shell
-    Terraform v1.5.7
+    Terraform v1.9.7
     on darwin_amd64
     ```
 
