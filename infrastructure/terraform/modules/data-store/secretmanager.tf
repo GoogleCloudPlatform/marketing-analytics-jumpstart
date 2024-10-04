@@ -27,7 +27,7 @@ resource "google_secret_manager_secret" "github-secret" {
 }
 
 resource "google_secret_manager_secret_version" "secret-version-github" {
-  secret      = google_secret_manager_secret.github-secret.name
+  secret      = google_secret_manager_secret.github-secret.secret_id
   secret_data = var.dataform_github_token
 
   #deletion_policy = "DISABLE"
