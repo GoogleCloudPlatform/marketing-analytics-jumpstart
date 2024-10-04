@@ -21,7 +21,7 @@ data "google_project" "data_processing" {
 }
 
 data "google_secret_manager_secret" "github_secret_name" {
-  secret_id = google_secret_manager_secret.github-secret.name
+  secret_id = google_secret_manager_secret.github-secret.secret_id
   project   = var.data_processing_project_id
 }
 
