@@ -54,13 +54,13 @@ data "local_file" "aggregated_value_based_bidding_training_preparation_file" {
 # The procedure is typically invoked before running the Aggregated Value Based Bidding model to ensure that the input data 
 # is in the correct format and contains the necessary features for training.
 resource "google_bigquery_routine" "aggregated_value_based_bidding_training_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
-  routine_id = "aggregated_value_based_bidding_training_preparation"
-  routine_type = "PROCEDURE"
-  language = "SQL"
+  project         = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
+  dataset_id      = module.aggregated_vbb.bigquery_dataset.dataset_id
+  routine_id      = "aggregated_value_based_bidding_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
   definition_body = data.local_file.aggregated_value_based_bidding_training_preparation_file.content
-  description = "Procedure that prepares features for Aggregated VBB model training."
+  description     = "Procedure that prepares features for Aggregated VBB model training."
 }
 
 
@@ -78,13 +78,13 @@ data "local_file" "aggregated_value_based_bidding_explanation_preparation_file" 
 # The procedure is typically invoked before running the Aggregated Value Based Bidding model to ensure that the input data 
 # is in the correct format and contains the necessary features for explanation.
 resource "google_bigquery_routine" "aggregated_value_based_bidding_explanation_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
-  routine_id = "aggregated_value_based_bidding_explanation_preparation"
-  routine_type = "PROCEDURE"
-  language = "SQL"
+  project         = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
+  dataset_id      = module.aggregated_vbb.bigquery_dataset.dataset_id
+  routine_id      = "aggregated_value_based_bidding_explanation_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
   definition_body = data.local_file.aggregated_value_based_bidding_explanation_preparation_file.content
-  description = "Procedure that prepares features for Aggregated VBB model explanation."
+  description     = "Procedure that prepares features for Aggregated VBB model explanation."
 }
 
 # This resource reads the contents of a local SQL file named auto_audience_segmentation_inference_preparation.sql and 
@@ -1242,11 +1242,11 @@ data "local_file" "invoke_aggregated_value_based_bidding_training_preparation_fi
 
 # Terraform resource for invoking the bigquery stored procedure
 resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_training_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
-  routine_id = "invoke_aggregated_value_based_bidding_training_preparation"
-  routine_type = "PROCEDURE"
-  language = "SQL"
+  project         = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
+  dataset_id      = module.aggregated_vbb.bigquery_dataset.dataset_id
+  routine_id      = "invoke_aggregated_value_based_bidding_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
   definition_body = data.local_file.invoke_aggregated_value_based_bidding_training_preparation_file.content
 }
 
@@ -1257,11 +1257,11 @@ data "local_file" "invoke_aggregated_value_based_bidding_explanation_preparation
 
 # Terraform resource for invoking the bigquery stored procedure
 resource "google_bigquery_routine" "invoke_aggregated_value_based_bidding_explanation_preparation" {
-  project = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
-  dataset_id = module.aggregated_vbb.bigquery_dataset.dataset_id
-  routine_id = "invoke_aggregated_value_based_bidding_explanation_preparation"
-  routine_type = "PROCEDURE"
-  language = "SQL"
+  project         = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
+  dataset_id      = module.aggregated_vbb.bigquery_dataset.dataset_id
+  routine_id      = "invoke_aggregated_value_based_bidding_explanation_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
   definition_body = data.local_file.invoke_aggregated_value_based_bidding_explanation_preparation_file.content
 }
 
@@ -1465,12 +1465,12 @@ data "local_file" "create_gemini_model_file" {
 resource "null_resource" "create_gemini_model" {
   triggers = {
     vertex_ai_connection_exists = google_bigquery_connection.vertex_ai_connection.id,
-    gemini_dataset_exists = module.gemini_insights.bigquery_dataset.id,
+    gemini_dataset_exists       = module.gemini_insights.bigquery_dataset.id,
     check_gemini_dataset_listed = null_resource.check_gemini_insights_dataset_exists.id
   }
 
   provisioner "local-exec" {
-    command     = <<-EOT
+    command = <<-EOT
     ${local.poetry_run_alias} bq query --use_legacy_sql=false --max_rows=100 --maximum_bytes_billed=10000000 < ${data.local_file.create_gemini_model_file.filename}
     EOT
   }
@@ -1486,7 +1486,7 @@ resource "null_resource" "create_gemini_model" {
 resource "null_resource" "check_gemini_model_exists" {
   triggers = {
     vertex_ai_connection_exists = google_bigquery_connection.vertex_ai_connection.id
-    gemini_model_created = null_resource.create_gemini_model.id
+    gemini_model_created        = null_resource.create_gemini_model.id
   }
 
   provisioner "local-exec" {

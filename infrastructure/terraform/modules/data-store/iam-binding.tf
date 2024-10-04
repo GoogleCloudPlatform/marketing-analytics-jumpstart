@@ -21,7 +21,7 @@ resource "google_project_iam_member" "email-role" {
   ])
   role    = each.key
   member  = "user:${var.project_owner_email}"
-  project = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  project = null_resource.check_dataform_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
 }
 
 # Check the Dataform Service Account Access Requirements for more information
@@ -62,14 +62,14 @@ resource "google_project_iam_member" "dataform-serviceaccount" {
     google_dataform_repository.marketing-analytics,
     null_resource.check_dataform_api,
     null_resource.wait_for_dataform_sa_creation
-    ]
+  ]
   for_each = toset([
     "roles/secretmanager.secretAccessor",
     "roles/bigquery.jobUser"
   ])
   role    = each.key
   member  = "serviceAccount:${local.dataform_sa}"
-  project = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  project = null_resource.check_dataform_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
 }
 
 // Owner role to BigQuery in the destination data project the Dataform SA.
@@ -79,13 +79,13 @@ resource "google_project_iam_member" "dataform-bigquery-data-owner" {
     google_dataform_repository.marketing-analytics,
     null_resource.check_dataform_api,
     null_resource.wait_for_dataform_sa_creation
-    ]
+  ]
   for_each = toset([
     "roles/bigquery.dataOwner",
   ])
   role    = each.key
   member  = "serviceAccount:${local.dataform_sa}"
-  project = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  project = null_resource.check_dataform_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
 }
 
 // Read access to the GA4 exports
@@ -94,7 +94,7 @@ resource "google_bigquery_dataset_iam_member" "dataform-ga4-export-reader" {
     google_dataform_repository.marketing-analytics,
     null_resource.check_dataform_api,
     null_resource.wait_for_dataform_sa_creation
-    ]
+  ]
   role       = "roles/bigquery.dataViewer"
   member     = "serviceAccount:${local.dataform_sa}"
   project    = var.source_ga4_export_project_id
@@ -107,7 +107,7 @@ resource "google_bigquery_dataset_iam_member" "dataform-ads-export-reader" {
     google_dataform_repository.marketing-analytics,
     null_resource.check_dataform_api,
     null_resource.wait_for_dataform_sa_creation
-    ]
+  ]
   count      = length(var.source_ads_export_data)
   role       = "roles/bigquery.dataViewer"
   member     = "serviceAccount:${local.dataform_sa}"

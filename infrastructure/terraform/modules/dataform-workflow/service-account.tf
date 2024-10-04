@@ -16,8 +16,8 @@ resource "google_service_account" "scheduler" {
   depends_on = [
     module.data_processing_project_services,
     null_resource.check_cloudscheduler_api,
-    ]
-  
+  ]
+
   project      = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   account_id   = "workflow-scheduler-${var.environment}"
   display_name = "Service Account to schedule Dataform workflows in ${var.environment}"
@@ -60,7 +60,7 @@ resource "google_project_iam_member" "scheduler-workflow-invoker" {
     module.data_processing_project_services,
     null_resource.check_cloudscheduler_api,
     null_resource.wait_for_scheduler_sa_creation
-    ]
+  ]
 
   project = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   member  = "serviceAccount:${google_service_account.scheduler.email}"
@@ -71,8 +71,8 @@ resource "google_service_account" "workflow-dataform" {
   depends_on = [
     module.data_processing_project_services,
     null_resource.check_workflows_api,
-    ]
-  
+  ]
+
   project      = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   account_id   = "workflow-dataform-${var.environment}"
   display_name = "Service Account to run Dataform workflows in ${var.environment}"
@@ -110,7 +110,7 @@ resource "google_project_iam_member" "worflow-dataform-dataform-editor" {
     module.data_processing_project_services,
     null_resource.check_dataform_api,
     null_resource.wait_for_workflows_sa_creation
-    ]
+  ]
 
   project = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
   member  = "serviceAccount:${google_service_account.workflow-dataform.email}"

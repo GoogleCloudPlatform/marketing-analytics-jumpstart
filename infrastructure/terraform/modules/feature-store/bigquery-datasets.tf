@@ -14,14 +14,14 @@
 
 # This resource creates a BigQuery dataset called `feature_store`.
 resource "google_bigquery_dataset" "feature_store" {
-  dataset_id                 = local.config_bigquery.dataset.feature_store.name
-  friendly_name              = local.config_bigquery.dataset.feature_store.friendly_name
-  project                    = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : var.project_id
-  description                = local.config_bigquery.dataset.feature_store.description
-  location                   = local.config_bigquery.dataset.feature_store.location
+  dataset_id    = local.config_bigquery.dataset.feature_store.name
+  friendly_name = local.config_bigquery.dataset.feature_store.friendly_name
+  project       = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : var.project_id
+  description   = local.config_bigquery.dataset.feature_store.description
+  location      = local.config_bigquery.dataset.feature_store.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
   # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.feature_store.max_time_travel_hours configuration.
-  max_time_travel_hours      = local.config_bigquery.dataset.feature_store.max_time_travel_hours
+  max_time_travel_hours = local.config_bigquery.dataset.feature_store.max_time_travel_hours
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
   delete_contents_on_destroy = false
@@ -40,14 +40,14 @@ resource "google_bigquery_dataset" "feature_store" {
 
 # This resource creates a BigQuery dataset called `purchase_propensity`.
 resource "google_bigquery_dataset" "purchase_propensity" {
-  dataset_id                 = local.config_bigquery.dataset.purchase_propensity.name
-  friendly_name              = local.config_bigquery.dataset.purchase_propensity.friendly_name
-  project                    = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
-  description                = local.config_bigquery.dataset.purchase_propensity.description
-  location                   = local.config_bigquery.dataset.purchase_propensity.location
+  dataset_id    = local.config_bigquery.dataset.purchase_propensity.name
+  friendly_name = local.config_bigquery.dataset.purchase_propensity.friendly_name
+  project       = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
+  description   = local.config_bigquery.dataset.purchase_propensity.description
+  location      = local.config_bigquery.dataset.purchase_propensity.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
   # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.feature_store.max_time_travel_hours configuration.
-  max_time_travel_hours      = local.config_bigquery.dataset.purchase_propensity.max_time_travel_hours
+  max_time_travel_hours = local.config_bigquery.dataset.purchase_propensity.max_time_travel_hours
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
   delete_contents_on_destroy = false
@@ -66,14 +66,14 @@ resource "google_bigquery_dataset" "purchase_propensity" {
 
 # This resource creates a BigQuery dataset called `churn_propensity`.
 resource "google_bigquery_dataset" "churn_propensity" {
-  dataset_id                 = local.config_bigquery.dataset.churn_propensity.name
-  friendly_name              = local.config_bigquery.dataset.churn_propensity.friendly_name
-  project                    = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
-  description                = local.config_bigquery.dataset.churn_propensity.description
-  location                   = local.config_bigquery.dataset.churn_propensity.location
+  dataset_id    = local.config_bigquery.dataset.churn_propensity.name
+  friendly_name = local.config_bigquery.dataset.churn_propensity.friendly_name
+  project       = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
+  description   = local.config_bigquery.dataset.churn_propensity.description
+  location      = local.config_bigquery.dataset.churn_propensity.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
   # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.feature_store.max_time_travel_hours configuration.
-  max_time_travel_hours      = local.config_bigquery.dataset.churn_propensity.max_time_travel_hours
+  max_time_travel_hours = local.config_bigquery.dataset.churn_propensity.max_time_travel_hours
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
   delete_contents_on_destroy = false
@@ -92,14 +92,14 @@ resource "google_bigquery_dataset" "churn_propensity" {
 
 # This resource creates a BigQuery dataset called `customer_lifetime_value`.
 resource "google_bigquery_dataset" "customer_lifetime_value" {
-  dataset_id                 = local.config_bigquery.dataset.customer_lifetime_value.name
-  friendly_name              = local.config_bigquery.dataset.customer_lifetime_value.friendly_name
-  project                    = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
-  description                = local.config_bigquery.dataset.customer_lifetime_value.description
-  location                   = local.config_bigquery.dataset.customer_lifetime_value.location
+  dataset_id    = local.config_bigquery.dataset.customer_lifetime_value.name
+  friendly_name = local.config_bigquery.dataset.customer_lifetime_value.friendly_name
+  project       = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
+  description   = local.config_bigquery.dataset.customer_lifetime_value.description
+  location      = local.config_bigquery.dataset.customer_lifetime_value.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
   # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.customer_lifetime_value.max_time_travel_hours configuration.
-  max_time_travel_hours      = local.config_bigquery.dataset.customer_lifetime_value.max_time_travel_hours
+  max_time_travel_hours = local.config_bigquery.dataset.customer_lifetime_value.max_time_travel_hours
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
   delete_contents_on_destroy = false
@@ -118,14 +118,14 @@ resource "google_bigquery_dataset" "customer_lifetime_value" {
 
 # This resource creates a BigQuery dataset called `audience_segmentation`.
 resource "google_bigquery_dataset" "audience_segmentation" {
-  dataset_id                 = local.config_bigquery.dataset.audience_segmentation.name
-  friendly_name              = local.config_bigquery.dataset.audience_segmentation.friendly_name
-  project                    = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
-  description                = local.config_bigquery.dataset.audience_segmentation.description
-  location                   = local.config_bigquery.dataset.audience_segmentation.location
+  dataset_id    = local.config_bigquery.dataset.audience_segmentation.name
+  friendly_name = local.config_bigquery.dataset.audience_segmentation.friendly_name
+  project       = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
+  description   = local.config_bigquery.dataset.audience_segmentation.description
+  location      = local.config_bigquery.dataset.audience_segmentation.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
   # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.audience_segmentation.max_time_travel_hours configuration.
-  max_time_travel_hours      = local.config_bigquery.dataset.audience_segmentation.max_time_travel_hours
+  max_time_travel_hours = local.config_bigquery.dataset.audience_segmentation.max_time_travel_hours
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
   delete_contents_on_destroy = false
@@ -144,14 +144,14 @@ resource "google_bigquery_dataset" "audience_segmentation" {
 
 # This resource creates a BigQuery dataset called `auto_audience_segmentation`.
 resource "google_bigquery_dataset" "auto_audience_segmentation" {
-  dataset_id                 = local.config_bigquery.dataset.auto_audience_segmentation.name
-  friendly_name              = local.config_bigquery.dataset.auto_audience_segmentation.friendly_name
-  project                    = null_resource.check_bigquery_api.id != "" ? local.auto_audience_segmentation_project_id : local.feature_store_project_id
-  description                = local.config_bigquery.dataset.auto_audience_segmentation.description
-  location                   = local.config_bigquery.dataset.auto_audience_segmentation.location
+  dataset_id    = local.config_bigquery.dataset.auto_audience_segmentation.name
+  friendly_name = local.config_bigquery.dataset.auto_audience_segmentation.friendly_name
+  project       = null_resource.check_bigquery_api.id != "" ? local.auto_audience_segmentation_project_id : local.feature_store_project_id
+  description   = local.config_bigquery.dataset.auto_audience_segmentation.description
+  location      = local.config_bigquery.dataset.auto_audience_segmentation.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
   # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.auto_audience_segmentation.max_time_travel_hours configuration.
-  max_time_travel_hours      = local.config_bigquery.dataset.auto_audience_segmentation.max_time_travel_hours
+  max_time_travel_hours = local.config_bigquery.dataset.auto_audience_segmentation.max_time_travel_hours
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
   delete_contents_on_destroy = false
@@ -200,7 +200,7 @@ locals {
 
 module "aggregated_vbb" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 5.4"
+  version = "8.1.0"
 
   dataset_id   = local.config_bigquery.dataset.aggregated_vbb.name
   dataset_name = local.config_bigquery.dataset.aggregated_vbb.friendly_name
@@ -216,18 +216,18 @@ module "aggregated_vbb" {
   }
 
   tables = [for table_id in local.aggregated_vbb_tables :
-  {
-    table_id           = table_id
-    schema             = file("../../sql/schema/table/${table_id}.json")
-    # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
-    # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.auto_audience_segmentation.max_time_travel_hours configuration.
-    max_time_travel_hours = local.config_bigquery.dataset.aggregated_vbb.max_time_travel_hours
-    deletion_protection = false
-    time_partitioning  = null,
-    range_partitioning = null,
-    expiration_time    = null,
-    clustering         = [],
-    labels             = {},
+    {
+      table_id = table_id
+      schema   = file("../../sql/schema/table/${table_id}.json")
+      # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
+      # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.auto_audience_segmentation.max_time_travel_hours configuration.
+      max_time_travel_hours = local.config_bigquery.dataset.aggregated_vbb.max_time_travel_hours
+      deletion_protection   = false
+      time_partitioning     = null,
+      range_partitioning    = null,
+      expiration_time       = null,
+      clustering            = [],
+      labels                = {},
   }]
 }
 
@@ -236,13 +236,13 @@ module "aggregated_vbb" {
 # the aggregated predictions generated by the predictions pipelines.
 module "aggregated_predictions" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 5.4"
+  version = "8.1.0"
 
-  dataset_id                 = local.config_bigquery.dataset.aggregated_predictions.name
-  dataset_name               = local.config_bigquery.dataset.aggregated_predictions.friendly_name
-  description                = local.config_bigquery.dataset.aggregated_predictions.description
-  project_id                 = local.config_bigquery.dataset.aggregated_predictions.project_id
-  location                   = local.config_bigquery.dataset.aggregated_predictions.location
+  dataset_id   = local.config_bigquery.dataset.aggregated_predictions.name
+  dataset_name = local.config_bigquery.dataset.aggregated_predictions.friendly_name
+  description  = local.config_bigquery.dataset.aggregated_predictions.description
+  project_id   = local.config_bigquery.dataset.aggregated_predictions.project_id
+  location     = local.config_bigquery.dataset.aggregated_predictions.location
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to true, which means that the contents of the dataset will be deleted when the dataset is destroyed.
   delete_contents_on_destroy = true
@@ -250,7 +250,7 @@ module "aggregated_predictions" {
   # The tables attribute is used to configure the BigQuery table within the dataset
   tables = [
     {
-      table_id           = "latest"
+      table_id = "latest"
       # The schema of the table, defined in a JSON file.
       schema             = file("../../sql/schema/table/aggregated_predictions_latest.json")
       time_partitioning  = null,
@@ -291,7 +291,7 @@ locals {
 
 module "gemini_insights" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "~> 5.4"
+  version = "8.1.0"
 
   dataset_id   = local.config_bigquery.dataset.gemini_insights.name
   dataset_name = local.config_bigquery.dataset.gemini_insights.friendly_name
@@ -303,23 +303,23 @@ module "gemini_insights" {
   delete_contents_on_destroy = true
 
   dataset_labels = {
-    version = "prod",
-    dataset_id   = local.config_bigquery.dataset.gemini_insights.name
+    version    = "prod",
+    dataset_id = local.config_bigquery.dataset.gemini_insights.name
   }
 
   tables = [for table_id in local.gemini_insights_tables :
-  {
-    table_id           = table_id
-    schema             = file("../../sql/schema/table/${table_id}.json")
-    # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
-    # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.gemini_insights.max_time_travel_hours configuration.
-    max_time_travel_hours = local.config_bigquery.dataset.gemini_insights.max_time_travel_hours
-    deletion_protection = false
-    time_partitioning  = null,
-    range_partitioning = null,
-    expiration_time    = null,
-    clustering         = [],
-    labels             = {},
+    {
+      table_id = table_id
+      schema   = file("../../sql/schema/table/${table_id}.json")
+      # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
+      # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.gemini_insights.max_time_travel_hours configuration.
+      max_time_travel_hours = local.config_bigquery.dataset.gemini_insights.max_time_travel_hours
+      deletion_protection   = false
+      time_partitioning     = null,
+      range_partitioning    = null,
+      expiration_time       = null,
+      clustering            = [],
+      labels                = {},
   }]
 }
 
