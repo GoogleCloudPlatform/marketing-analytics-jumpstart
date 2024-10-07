@@ -3,8 +3,13 @@ Marketing Analytics Jumpstart is a terraform automated, quick-to-deploy, customi
 
 Customers are looking to drive revenue and increase media efficiency be identifying, predicting and targeting valuable users through the use of machine learning. However, marketers first have to solve the challenge of having a number of disparate data sources that prevent them from having a holistic view of customers. Marketers also often don't have the expertise and/or resources in their marketing departments to train, run, and activate ML models on paid channels. Without this solution that enables innovation through predictive analytics, marketers are missing opportunities to advance their marketing program and accelerate key goals and objectives (e.g. acquire new customers, improve customer retention, etc).
 
+## Quick Installation ⏰
 
-## Benefits
+Want to quickly install and use it? Follow this [installation notebook](notebooks/quick_installation.ipynb) and use Marketing Analytics Jumpstart in under 30 minutes.
+
+If that was just too fast, continue reading this document to learn more in details.
+
+## Benefits 🫴
 After installing the solution users will get:
 * Scheduled ETL jobs for an extensible logical data model based on the Google Analytics 4 (GA4) and Google Ads (GAds) daily exports
 * Validated feature engineering SQL transformations from event-level data to user-level data for reporting and machine learning models training and prediction
@@ -13,7 +18,7 @@ After installing the solution users will get:
 * Activation application that sends models prediction to GA4 via Measurement Protocol API
 
 
-## Who can benefit from this solution?
+## Who can benefit from this solution? 🙇‍♀️
 This solution is intended for Marketing Technologist teams using GA4 and GAds products. It facilitates efforts to store, transform, analyze marketing data, and programmatically creates audiences segments in Google Ads to support conversion optimization and remarketing campaigns.
 
 | Role | User Journeys | Skillset | Can Deploy? |
@@ -24,7 +29,7 @@ This solution is intended for Marketing Technologist teams using GA4 and GAds pr
 | IT/Data Engineer | Building and maintaining marketing data store transformation jobs. Developing and deploying custom marketing use cases reusing a consistent infrastructure. Integrating 1st party data and Google 3rd party data by extending the marketing data store. | Python, SQL, Google Cloud Platform, Data Engineering | Yes |
 
 
-## Use Cases
+## Use Cases 🖱️
 This solution enables customer to plan and take action on their marketing campaigns by interpreting the insights provided by four common predictive use cases (purchase propensity, customer lifetime value, audience segmentation and aggregated value based bidding) and an operation dashboard that monitors Campaigns, Traffic, User Behavior and Models Performance, using the best of Google Cloud Data and AI products and practices.
 
 These insights are used to serve as a basis to optimize paid media efforts and investments by:
@@ -42,7 +47,7 @@ These insights are used to serve as a basis to optimize paid media efforts and i
 | Churn Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Churn | [maj_churn_propensity_30_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L43) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
 | Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | - | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) <br><br> Bid Adjustment [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
 
-## Repository Structure
+## Repository Structure 🏗️
 The solution's source code is written in Terraform, Python, SQL, YAML and JSON; and it is organized into five main folders:
 * `config/`: This folder contains the configuration file for the solution. This file define the parameters and settings used by the various components of the solution.
 * `docs/`: This folder contains the detailed architecture, design principles, deployment, basic operation and troubleshooting guides for all the solution components
@@ -57,7 +62,7 @@ The solution's source code is written in Terraform, Python, SQL, YAML and JSON; 
 In addition to that, there is a `tasks.py` file which implements python invoke tests who hydrate values to the JINJA template files with the `.sqlx` extension  located in the `sql/` folder that defines the DDL and DML statements for the BigQuery datasets, tables, procedures and queries.
 
 
-## High Level Architecture
+## High Level Architecture 📋
 ![High Level Architecture](docs/images/reference_architecture.png)
 
 The provided architecture diagram depicts the high-level architecture of the Marketing Analytics Jumpstart solution. Let's break down the components:
@@ -93,7 +98,7 @@ The provided architecture diagram depicts the high-level architecture of the Mar
 This high-level architecture demonstrates how Marketing Analytics Jumpstart integrates various Google Cloud services to provide a comprehensive solution for analyzing and activating your marketing data.
 
 
-## Advantages
+## Advantages 🔦
 1. Easy to deploy: Deploy the resources and use cases that you need.
 2. Cost Effective: Pay only for the cost of infrastructure in order to maintain the Data Store, Feature Store and ML Models.
 3. Keep control of your data: This solution runs entirely in your environment and doesn’t transfer data out of your ownership or organization.
@@ -117,7 +122,7 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 
 **Note:** Project Owner for a Google Cloud Project is only required to speed up the deployment process. Consult this [guide]() for a more fine-grained permission list, not including the Owner role, to adhere to your company policies.
 
-## Installation
+## Installation 👷‍♀️
 
 To facilitate the installation, use this Step by Step Installation Video.
 
@@ -132,7 +137,7 @@ Alternatively, follow the step by step installation guide with Google Cloud Shel
 **Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
 
 
-## Contributing
+## Contributing 🤝
 We welcome all feedback and contributions!  Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how
 to publish your contributions.
 
@@ -141,7 +146,7 @@ to publish your contributions.
 This project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 
-## Resources
+## Resources 📚
 This a list of public websites you can use to learn more about the Google Analytics 4, Google Ads, Google Cloud Products we used to build this solution.
 
 | Websites | Description |
