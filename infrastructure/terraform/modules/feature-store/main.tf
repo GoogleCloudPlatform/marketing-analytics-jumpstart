@@ -35,7 +35,7 @@ locals {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "14.1.0"
+  version = "17.0.0"
 
   disable_dependent_services  = true
   disable_services_on_destroy = false
@@ -113,10 +113,10 @@ resource "null_resource" "check_aiplatform_api" {
 ## Note: The cloud resource nested object has only one output only field - serviceAccountId.
 resource "google_bigquery_connection" "vertex_ai_connection" {
   connection_id = "vertex_ai"
-  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.feature_store_project_id
-  location = local.config_bigquery.region
+  project       = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.feature_store_project_id
+  location      = local.config_bigquery.region
   cloud_resource {}
-} 
+}
 
 
 # This resource binds the service account to the required roles
@@ -125,8 +125,8 @@ resource "google_project_iam_member" "vertex_ai_connection_sa_roles" {
     module.project_services,
     null_resource.check_aiplatform_api,
     google_bigquery_connection.vertex_ai_connection
-    ]
-  
+  ]
+
   project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.feature_store_project_id
   member  = "serviceAccount:${google_bigquery_connection.vertex_ai_connection.cloud_resource[0].service_account_id}"
 

@@ -43,22 +43,22 @@ provider "google" {
 }
 
 data "google_project" "feature_store_project" {
-  provider = google
+  provider   = google
   project_id = var.feature_store_project_id
 }
 
 data "google_project" "activation_project" {
-  provider = google
+  provider   = google
   project_id = var.activation_project_id
 }
 
 data "google_project" "data_processing_project" {
-  provider = google
+  provider   = google
   project_id = var.data_processing_project_id
 }
 
 data "google_project" "data_project" {
-  provider = google
+  provider   = google
   project_id = var.data_project_id
 }
 
@@ -66,30 +66,30 @@ data "google_project" "data_project" {
 # The locals block is used to define variables that are used in the configuration.
 locals {
   # The source_root_dir is the root directory of the project.
-  source_root_dir    = "../.."
+  source_root_dir = "../.."
   # The config_file_name is the name of the config file.
-  config_file_name   = "config"
+  config_file_name = "config"
   # The poetry_run_alias is the alias of the poetry command.
-  poetry_run_alias   = "${var.poetry_cmd} run"
+  poetry_run_alias = "${var.poetry_cmd} run"
   # The mds_dataset_suffix is the suffix of the marketing data store dataset.
   mds_dataset_suffix = var.create_staging_environment ? "staging" : var.create_dev_environment ? "dev" : "prod"
   # The project_toml_file_path is the path to the project.toml file.
-  project_toml_file_path    = "${local.source_root_dir}/pyproject.toml"
+  project_toml_file_path = "${local.source_root_dir}/pyproject.toml"
   # The project_toml_content_hash is the hash of the project.toml file.
   # This is used for the triggers of the local-exec provisioner.
   project_toml_content_hash = filesha512(local.project_toml_file_path)
   # The generated_sql_queries_directory_path is the path to the generated sql queries directory.
   generated_sql_queries_directory_path = "${local.source_root_dir}/sql/query"
   # The generated_sql_queries_fileset is the list of files in the generated sql queries directory.
-  generated_sql_queries_fileset        = [for f in fileset(local.generated_sql_queries_directory_path, "*.sqlx") : "${local.generated_sql_queries_directory_path}/${f}"]
+  generated_sql_queries_fileset = [for f in fileset(local.generated_sql_queries_directory_path, "*.sqlx") : "${local.generated_sql_queries_directory_path}/${f}"]
   # The generated_sql_queries_content_hash is the sha512 hash of file sha512 hashes in the generated sql queries directory.
-  generated_sql_queries_content_hash   = sha512(join("", [for f in local.generated_sql_queries_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+  generated_sql_queries_content_hash = sha512(join("", [for f in local.generated_sql_queries_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
   # The generated_sql_procedures_directory_path is the path to the generated sql procedures directory.
   generated_sql_procedures_directory_path = "${local.source_root_dir}/sql/procedure"
   # The generated_sql_procedures_fileset is the list of files in the generated sql procedures directory.
-  generated_sql_procedures_fileset        = [for f in fileset(local.generated_sql_procedures_directory_path, "*.sqlx") : "${local.generated_sql_procedures_directory_path}/${f}"]
+  generated_sql_procedures_fileset = [for f in fileset(local.generated_sql_procedures_directory_path, "*.sqlx") : "${local.generated_sql_procedures_directory_path}/${f}"]
   # The generated_sql_procedures_content_hash is the sha512 hash of file sha512 hashes in the generated sql procedures directory.
-  generated_sql_procedures_content_hash   = sha512(join("", [for f in local.generated_sql_procedures_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+  generated_sql_procedures_content_hash = sha512(join("", [for f in local.generated_sql_procedures_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
 }
 
 
@@ -207,7 +207,7 @@ resource "null_resource" "generate_sql_queries" {
 
 module "initial_project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "14.1.0"
+  version = "17.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
@@ -315,14 +315,14 @@ module "data_store" {
   google_default_region = var.google_default_region
 
   # The dataform_region is set in the terraform.tfvars file. Its default value is "us-central1".
-  dataform_region       = var.dataform_region
+  dataform_region = var.dataform_region
 
   # The source_ga4_export_project_id is set in the terraform.tfvars file. 
   # The source_ga4_export_dataset is set in the terraform.tfvars file. 
   # The source_ads_export_data is set in the terraform.tfvars file.
-  source_ga4_export_project_id = var.source_ga4_export_project_id
-  source_ga4_export_dataset    = var.source_ga4_export_dataset
-  source_ads_export_data       = var.source_ads_export_data
+  source_ga4_export_project_id         = var.source_ga4_export_project_id
+  source_ga4_export_dataset            = var.source_ga4_export_dataset
+  source_ads_export_data               = var.source_ads_export_data
   ga4_incremental_processing_days_back = var.ga4_incremental_processing_days_back
 
   # The data_processing_project_id is set in the terraform.tfvars file.
@@ -331,7 +331,7 @@ module "data_store" {
   data_processing_project_id = var.data_processing_project_id
   data_project_id            = var.data_project_id
   destination_data_location  = var.destination_data_location
- 
+
   # The dataform_github_repo is set in the terraform.tfvars file. 
   # The dataform_github_token is set in the terraform.tfvars file.
   dataform_github_repo  = var.dataform_github_repo
@@ -391,14 +391,14 @@ module "feature_store" {
   # If the count is 1, the feature store is created.
   # If the count is 0, the feature store is not created.
   # This is done to avoid creating the feature store if the `deploy_feature_store` variable is set to false in the terraform.tfvars file.
-  count            = var.deploy_feature_store ? 1 : 0
-  project_id       = var.feature_store_project_id
+  count      = var.deploy_feature_store ? 1 : 0
+  project_id = var.feature_store_project_id
   # The region is the region in which the feature store is created.
   # This is set to the default region in the terraform.tfvars file.
-  region           = var.google_default_region
+  region = var.google_default_region
   # The sql_dir_input is the path to the sql directory.
   # This is set to the path to the sql directory in the feature store module.
-  sql_dir_input    = null_resource.generate_sql_queries.id != "" ? "${local.source_root_dir}/sql" : ""
+  sql_dir_input = null_resource.generate_sql_queries.id != "" ? "${local.source_root_dir}/sql" : ""
 }
 
 
@@ -416,13 +416,13 @@ module "pipelines" {
   # If the count is 1, the pipelines are created.
   # If the count is 0, the pipelines are not created.
   # This is done to avoid creating the pipelines if the `deploy_pipelines` variable is set to false in the terraform.tfvars file.
-  count            = var.deploy_pipelines ? 1 : 0
+  count = var.deploy_pipelines ? 1 : 0
   # The poetry_installed trigger is the ID of the null_resource.poetry_install resource.
-    # This is used to ensure that the poetry command is run before the pipelines module is created.
+  # This is used to ensure that the poetry command is run before the pipelines module is created.
   poetry_installed = null_resource.poetry_install.id
   # The project_id is the project in which the data is stored.
   # This is set to the data project ID in the terraform.tfvars file.
-  mds_project_id   = var.data_project_id
+  mds_project_id = var.data_project_id
 }
 
 
@@ -433,53 +433,53 @@ module "pipelines" {
 # The activation function is created in the `activation_project_id` project.
 module "activation" {
   # The source is the path to the activation module.
-  source                    = "./modules/activation"
+  source = "./modules/activation"
   # The project_id is the project in which the activation function is created.
   # This is set to the activation project ID in the terraform.tfvars file.
-  project_id                = var.activation_project_id
+  project_id = var.activation_project_id
   # The project number of where the activation function is created.
   # This is retrieved from the activation project id using the google_project data source. 
-  project_number            = data.google_project.activation_project.number
+  project_number = data.google_project.activation_project.number
   # The location is the google_default_region variable. 
   # This is set to the default region in the terraform.tfvars file.
-  location                  = var.google_default_region
+  location = var.google_default_region
   # The data_location is the destination_data_location variable. 
   # This is set to the destination data location in the terraform.tfvars file.
-  data_location             = var.destination_data_location
+  data_location = var.destination_data_location
   # The trigger_function_location is the location of the trigger function.
   # The trigger function is used to trigger the activation function.
   # The trigger function is created in the same region as the activation function.
   trigger_function_location = var.google_default_region
   # The poetry_cmd is the poetry_cmd variable.
   # This can be set on the poetry_cmd in the terraform.tfvars file.
-  poetry_cmd                = var.poetry_cmd
+  poetry_cmd = var.poetry_cmd
   # The ga4_measurement_id is the ga4_measurement_id variable.
   # This can be set on the ga4_measurement_id in the terraform.tfvars file.
-  ga4_measurement_id        = var.ga4_measurement_id
+  ga4_measurement_id = var.ga4_measurement_id
   # The ga4_measurement_secret is the ga4_measurement_secret variable.
   # This can be set on the ga4_measurement_secret in the terraform.tfvars file.
-  ga4_measurement_secret    = var.ga4_measurement_secret
+  ga4_measurement_secret = var.ga4_measurement_secret
   # The ga4_property_id is the ga4_property_id variable.
   # This is set on the ga4_property_id in the terraform.tfvars file.
   # The ga4_property_id is the property ID of the GA4 data. 
   # You can find the property ID in the GA4 console.
-  ga4_property_id           = var.ga4_property_id
+  ga4_property_id = var.ga4_property_id
   # The ga4_stream_id is the ga4_stream_id variable.
   # This is set on the ga4_stream_id in the terraform.tfvars file.
   # The ga4_stream_id is the stream ID of the GA4 data.
   # You can find the stream ID in the GA4 console.
-  ga4_stream_id             = var.ga4_stream_id
+  ga4_stream_id = var.ga4_stream_id
   # The count determines if the activation function is created or not.
   # If the count is 1, the activation function is created.
   # If the count is 0, the activation function is not created.
   # This is done to avoid creating the activation function if the `deploy_activation` variable is set 
   # to false in the terraform.tfvars file.
-  count                     = var.deploy_activation ? 1 : 0
+  count = var.deploy_activation ? 1 : 0
   # The poetry_installed is the ID of the null_resource poetry_install
   # This is used to ensure that the poetry command is run before the activation module is created.
-  poetry_installed          = null_resource.poetry_install.id
-  mds_project_id            = var.data_project_id
-  mds_dataset_suffix        = local.mds_dataset_suffix
+  poetry_installed   = null_resource.poetry_install.id
+  mds_project_id     = var.data_project_id
+  mds_dataset_suffix = local.mds_dataset_suffix
 
   # The project_owner_email is set in the terraform.tfvars file. 
   # An example of a valid email address is "william.mckinley@my-own-personal-domain.com".

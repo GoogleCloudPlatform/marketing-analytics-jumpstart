@@ -54,9 +54,9 @@ locals {
 resource "google_dataform_repository" "marketing-analytics" {
   provider = google-beta
   # This is the name of the Dataform Repository created in your project
-  name     = "marketing-analytics"
-  project  = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
-  region   = local.dataform_derived_region
+  name    = "marketing-analytics"
+  project = null_resource.check_dataform_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  region  = local.dataform_derived_region
 
   lifecycle {
     precondition {

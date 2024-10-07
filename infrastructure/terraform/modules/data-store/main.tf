@@ -21,7 +21,7 @@ data "google_project" "data_processing" {
 }
 
 data "google_secret_manager_secret" "github_secret_name" {
-  secret_id = google_secret_manager_secret.github-secret.name
+  secret_id = google_secret_manager_secret.github-secret.secret_id
   project   = var.data_processing_project_id
 }
 
@@ -35,18 +35,18 @@ module "dataform-workflow-dev" {
   # In this case, it's set to var.create_dev_environment ? 1 : 0, which means that 
   # the module will be created only if the var.create_dev_environment variable is set to `true`.
   # Check the terraform.tfvars file for more information.
-  count  = var.create_dev_environment ? 1 : 0
+  count = var.create_dev_environment ? 1 : 0
   # the path to the Terraform module that will be used to create the Dataform workflow environment.
   source = "../dataform-workflow"
 
-  project_id             = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  project_id = null_resource.check_dataform_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
   # The name of the Dataform workflow environment.
-  environment            = "dev"
-  region                 = var.google_default_region
+  environment = "dev"
+  region      = var.google_default_region
   # The ID of the Dataform repository that will be used by the Dataform workflow environment.
   dataform_repository_id = google_dataform_repository.marketing-analytics.id
   # A list of tags that will be used to filter the Dataform files that are included in the Dataform workflow environment.
-  includedTags           = ["ga4"]
+  includedTags = ["ga4"]
 
   source_ga4_export_project_id          = var.source_ga4_export_project_id
   source_ga4_export_dataset             = var.source_ga4_export_dataset
@@ -70,18 +70,18 @@ module "dataform-workflow-staging" {
   # In this case, it's set to var.create_staging_environment ? 1 : 0, which means that 
   # the module will be created only if the var.create_staging_environment variable is set to `true`.
   # Check the terraform.tfvars file for more information.
-  count  = var.create_staging_environment ? 1 : 0
+  count = var.create_staging_environment ? 1 : 0
   # the path to the Terraform module that will be used to create the Dataform workflow environment.
   source = "../dataform-workflow"
 
-  project_id             = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  project_id = null_resource.check_dataform_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
   # The name of the Dataform workflow environment.
-  environment            = "staging"
-  region                 = var.google_default_region
+  environment = "staging"
+  region      = var.google_default_region
   # The ID of the Dataform repository that will be used by the Dataform workflow environment.
   dataform_repository_id = google_dataform_repository.marketing-analytics.id
   # A list of tags that will be used to filter the Dataform files that are included in the Dataform workflow environment.
-  includedTags           = ["ga4"]
+  includedTags = ["ga4"]
 
   source_ga4_export_project_id          = var.source_ga4_export_project_id
   source_ga4_export_dataset             = var.source_ga4_export_dataset
@@ -104,11 +104,11 @@ module "dataform-workflow-prod" {
   # In this case, it's set to var.create_prod_environment ? 1 : 0, which means that 
   # the module will be created only if the var.create_prod_environment variable is set to `true`.
   # Check the terraform.tfvars file for more information.
-  count  = var.create_prod_environment ? 1 : 0
+  count = var.create_prod_environment ? 1 : 0
   # the path to the Terraform module that will be used to create the Dataform workflow environment.
   source = "../dataform-workflow"
 
-  project_id             = null_resource.check_dataform_api.id != "" ?  module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
+  project_id = null_resource.check_dataform_api.id != "" ? module.data_processing_project_services.project_id : data.google_project.data_processing.project_id
   # The name of the Dataform workflow environment.
   environment            = "prod"
   region                 = var.google_default_region

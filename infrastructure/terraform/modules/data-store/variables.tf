@@ -38,12 +38,12 @@ variable "project_owner_email" {
 }
 
 variable "dataform_github_repo" {
-  description = "Private Github repo for Dataform."
+  description = "Private GitHub repo for Dataform."
   type        = string
 }
 
 variable "dataform_github_token" {
-  description = "Github token for Dataform repo."
+  description = "GitHub token for Dataform repo."
   type        = string
 }
 
@@ -112,7 +112,7 @@ variable "source_ga4_export_dataset" {
 }
 
 variable "ga4_incremental_processing_days_back" {
-  type = string
+  type    = string
   default = "3"
 }
 

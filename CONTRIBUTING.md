@@ -35,11 +35,11 @@ for this purpose.
 
 ### Fork this repo.
 
-Follow the typical Github guide on how to [fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+Follow the typical GitHub guide on how to [fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
 
 **Note**: 
 1. To keep track of the new releases, configure git to [sync your fork with this upstream repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo#configuring-git-to-sync-your-fork-with-the-upstream-repository).
-2. Don't submit a Pull Request to this upstream Github repo if you don't want to expose your environment configuration. You're at your own risk at exposing your company data.
+2. Don't submit a Pull Request to this upstream GitHub repo if you don't want to expose your environment configuration. You're at your own risk at exposing your company data.
 3. Observe your fork is also public, you cannot make your own fork a private repo.
 
 ### Complete the installation guide
@@ -48,7 +48,7 @@ Complete the installation guide in a Google Cloud project in which you're develo
 
 ### Configure Continuous Integration recipes
 
-Connect your Github repository by following this [guide](https://cloud.google.com/build/docs/automating-builds/github/connect-repo-github).
+Connect your GitHub repository by following this [guide](https://cloud.google.com/build/docs/automating-builds/github/connect-repo-github).
 
 In your Google Cloud project, configure Cloud Build triggers to be executed when you push code into your branch. Update the Clould build recipes in the `cloudbuild` folder and deploy them.
 
