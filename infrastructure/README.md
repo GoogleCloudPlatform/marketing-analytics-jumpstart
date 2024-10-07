@@ -78,7 +78,7 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    cd ..
    rm -rf marketing-analytics-jumpstart-dataform
    ```
-6. Generate a GitHub personal access token. It will be used by Dataform to access the repository. For details and
+6. Generate a [GitHub personal access token](https://cloud.google.com/dataform/docs/connect-repository#connect-https). It will be used by Dataform to access the repository. For details and
    additional guidance regarding token type, security and require permissions
    see [Dataform documentation](https://cloud.google.com/dataform/docs/connect-repository#create-secret). You don't need
    to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
