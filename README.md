@@ -112,9 +112,10 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 ## Installation Permissions and Privileges
 - [ ] Google Analytics Property Editor or Owner
 - [ ] Google Ads Reader
-- [ ] Project Owner for GCP Project
+- [ ] Project Owner* for a Google Cloud Project
 - [ ] GitHub or GitLab account priviledges for repo creation and access token. [Details](https://cloud.google.com/dataform/docs/connect-repository)
 
+**Note:** Project Owner for a Google Cloud Project is only required to speed up the deployment process. Consult this [guide]() for a more fine-grained permission list, not including the Owner role, to adhere to your company policies.
 
 ## Installation
 
