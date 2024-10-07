@@ -5,7 +5,7 @@ Customers are looking to drive revenue and increase media efficiency be identify
 
 ## Quick Installation ⏰
 
-Want to quickly install and use it? Follow this [installation notebook](notebooks/quick_installation.ipynb) and use Marketing Analytics Jumpstart in under 30 minutes.
+Want to quickly install and use it? Follow this [installation notebook 📔](notebooks/quick_installation.ipynb) and use Marketing Analytics Jumpstart in under 30 minutes.
 
 If that was just too fast, continue reading this document to learn more in details.
 
