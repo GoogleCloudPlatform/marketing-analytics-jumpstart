@@ -36,13 +36,21 @@ The activation application uses sensitive information from the Google Analytics 
 
 ## Data Prerequisites
 
+### Recommended data location
+
 ### Marketing Analytics Data Sources
 
 * Set up Google Analytics 4 Export to Bigquery. Please follow the
-  set-up [documentation](https://support.google.com/analytics/answer/9358801?hl=en). The current version of MDS doesn't
-  use streaming export tables.
+  set-up [documentation](https://support.google.com/analytics/answer/9358801?hl=en). Note that the current version of MDS doesn't
+  support streaming export tables.
+
+  [![Google Analytics 4 BigQuery Export](https://img.youtube.com/vi/u4QlVsNh2Q4/0.jpg)](https://youtube.com/clip/Ugkxo955w1NlF8o5_EZmMdQO7UsxcFxnGt3j?si=zf1X4iEq_8IY_fu2)
+  
+  
 * Set up Google Cloud Data Transfer Service to export Google Ads to Bigquery. Follow
   these [instructions](https://cloud.google.com/bigquery/docs/google-ads-transfer).
+
+  [![Google Analytics 4 BigQuery Export](https://img.youtube.com/vi/svPy0o9r7eI/0.jpg)](https://youtube.com/clip/Ugkx9VT3yyM0GPwDXVVKcBMs2i7qbUmtOH74?si=p6MBZJE32x4EX8bT)
 
 Make sure these exports use the same BigQuery location, either regional or multi-regional one. You can export the data
 into the same project or different projects - the MDS will be able to get the data from multiple projects.
