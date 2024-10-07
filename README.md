@@ -122,6 +122,19 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 
 **Note:** Project Owner for a Google Cloud Project is only required to speed up the deployment process. Consult this [guide]() for a more fine-grained permission list, not including the Owner role, to adhere to your company policies.
 
+## Compute regions and data locations compatibility
+
+This solution is compatible in all the regions as listed in these listings:
+
+|  | Compute Regions |
+|-------|-------|
+https://cloud.google.com/compute/docs/regions-zones#available <br><br> https://cloud.google.com/vertex-ai/docs/general/locations <br><br> https://cloud.google.com/dataflow/docs/resources/locations | "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast3", "asia-south1", "asia-southeast1", "asia-southeast2", "australia-southeast1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west12", "me-central1", "me-central2", "northamerica-northeast1", "southamerica-east1", "us-central1", "us-east1", "us-east4", "us-east5", "us-south1", "us-west1", "us-west2", "us-west4" |
+
+|  | Data Locations |
+|-------|-------|
+https://cloud.google.com/bigquery/docs/locations | "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1",    "australia-southeast2", "europe-central2", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-central2",    "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4" |
+
+
 ## Installation 👷‍♀️
 
 To facilitate the installation, use this Step by Step Installation Video.
