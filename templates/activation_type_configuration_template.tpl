@@ -29,6 +29,11 @@
         "source_query_template": "${purchase_propensity_query_template_gcs_path}",
         "measurement_protocol_payload_template": "${measurement_protocol_payload_template_gcs_path}"
     },
+    "purchase-propensity-vbb-30-15": {
+        "activation_event_name": "maj_purchase_propensity_vbb_30_15",
+        "source_query_template": "${purchase_propensity_vbb_query_template_gcs_path}",
+        "measurement_protocol_payload_template": "${measurement_protocol_payload_template_gcs_path}"
+    },
     "purchase-propensity-15-15": {
         "activation_event_name": "maj_purchase_propensity_15_15",
         "source_query_template": "${purchase_propensity_query_template_gcs_path}",
