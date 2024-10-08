@@ -30,13 +30,13 @@ This solution is intended for Marketing Technologist teams using GA4 and GAds pr
 
 
 ## Use Cases 🖱️
-This solution enables customer to plan and take action on their marketing campaigns by interpreting the insights provided by four common predictive use cases (purchase propensity, customer lifetime value, audience segmentation and aggregated value based bidding) and an operation dashboard that monitors Campaigns, Traffic, User Behavior and Models Performance, using the best of Google Cloud Data and AI products and practices.
+This solution enables customer to plan and take action on their marketing campaigns by interpreting the insights provided by these common predictive use cases and reports that informs Campaigns performance, Traffic, User Behavior and Models Predictions insights, using the best of Google Cloud Data and AI products.
 
 These insights are used to serve as a basis to optimize paid media efforts and investments by:
 * Building audience segments by using all Google first party data to identify user interests and demographic characteristics relevant to the campaign
-* Improving campaign performance by identifying and targeting users deciles most likely to take an action (i.e. purchase, sign-up, churn, abandon a cart, etc)
+* Improving campaign performance by identifying and targeting users deciles most likely to take an action (i.e. purchase, churn, etc)
 * Driving a more personalized experience for your highly valued customers and improve return on ads spend (ROAS) via customer lifetime value
-* Attributing bidding values to specific users according to their journeys through the conversion funnel which Ads platform uses to guide better campaign performance in specific markets
+* Attributing bidding values to specific users according to their journeys through the conversion funnel which Ads platform uses to guide maximize conversions in specific markets
 
 | Use Case | Data Sources | Model | Looker Report Name | Google Ads Campaign Optimization |
 |-------|-------|-------|--------|--------|
