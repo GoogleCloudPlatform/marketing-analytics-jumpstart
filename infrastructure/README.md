@@ -1,4 +1,4 @@
-# Marketing Analytics Jumpstart Installation Guide
+# Marketing Analytics Jumpstart Step-by-Step Installation Guide
 
 ## Overview
 
