@@ -1,11 +1,13 @@
-# Terraform Scripts
+# Installing Terraform Modules
 
-The Terraform scripts in this folder create the infrastructure to start data ingestion
-into BigQuery, create feature store, ML pipelines and Dataflow activation pipeline.
+The Terraform scripts in this folder and subfolders create the infrastructure to start data ingestion
+into BigQuery, create feature store, run ML pipelines and Dataflow activation application.
 
 ## Prerequisites
 
-Make sure the prerequisites listed in the [parent README](../README.md) are met. You can run the script
+Make sure the prerequisites listed in the [parent README](../README.md) are met. 
+
+You can run the script
 from [Cloud Shell](https://cloud.google.com/shell/docs/using-cloud-shelld.google.com/shell/docs/using-cloud-shell)
 or a Linux machine or a Mac with `gcloud` command installed. The instructions provided are for the Cloud Shell
 installation.
@@ -16,10 +18,11 @@ have plenty of disk space before continuing the installation.
 
 If that is not your case, following the Cloud Shell documentation to [reset your Cloud Shell](https://cloud.google.com/shell/docs/resetting-cloud-shell).
 
-## Installation Guide
-Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
+## Manual Installation Guide
 
-**Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
+In this section, you find all the detailed steps required for you to manually install the Marketing Analytics Jumpstart solution. Following this process, you have greater flexibility and customization allowing you to choose which components of the solution you want to use or not.
+
+Also, this method allows you to extend this solution and develop it to satisfy your own needs.
 
 ### Initial Environment Setup
 
