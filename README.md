@@ -3,8 +3,13 @@ Marketing Analytics Jumpstart is a terraform automated, quick-to-deploy, customi
 
 Customers are looking to drive revenue and increase media efficiency be identifying, predicting and targeting valuable users through the use of machine learning. However, marketers first have to solve the challenge of having a number of disparate data sources that prevent them from having a holistic view of customers. Marketers also often don't have the expertise and/or resources in their marketing departments to train, run, and activate ML models on paid channels. Without this solution that enables innovation through predictive analytics, marketers are missing opportunities to advance their marketing program and accelerate key goals and objectives (e.g. acquire new customers, improve customer retention, etc).
 
+## Quick Installation ⏰
 
-## Benefits
+Want to quickly install and use it? Run this [installation notebook 📔](https://colab.sandbox.google.com/github/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/notebooks/quick_installation.ipynb) on Google Colaboratory and leverage Marketing Analytics Jumpstart in under 30 minutes.
+
+If that was just too fast, continue reading this document to learn more in details.
+
+## Benefits 🫴
 After installing the solution users will get:
 * Scheduled ETL jobs for an extensible logical data model based on the Google Analytics 4 (GA4) and Google Ads (GAds) daily exports
 * Validated feature engineering SQL transformations from event-level data to user-level data for reporting and machine learning models training and prediction
@@ -13,7 +18,7 @@ After installing the solution users will get:
 * Activation application that sends models prediction to GA4 via Measurement Protocol API
 
 
-## Who can benefit from this solution?
+## Who can benefit from this solution? 🙇‍♀️
 This solution is intended for Marketing Technologist teams using GA4 and GAds products. It facilitates efforts to store, transform, analyze marketing data, and programmatically creates audiences segments in Google Ads to support conversion optimization and remarketing campaigns.
 
 | Role | User Journeys | Skillset | Can Deploy? |
@@ -24,37 +29,40 @@ This solution is intended for Marketing Technologist teams using GA4 and GAds pr
 | IT/Data Engineer | Building and maintaining marketing data store transformation jobs. Developing and deploying custom marketing use cases reusing a consistent infrastructure. Integrating 1st party data and Google 3rd party data by extending the marketing data store. | Python, SQL, Google Cloud Platform, Data Engineering | Yes |
 
 
-## Use Cases
-This solution enables customer to plan and take action on their marketing campaigns by interpreting the insights provided by four common predictive use cases (purchase propensity, customer lifetime value, audience segmentation and aggregated value based bidding) and an operation dashboard that monitors Campaigns, Traffic, User Behavior and Models Performance, using the best of Google Cloud Data and AI products and practices.
+## Use Cases 🖱️
+This solution enables customer to plan and take action on their marketing campaigns by interpreting the insights provided by these common predictive use cases and reports that informs Campaigns performance, Traffic, User Behavior and Models Predictions insights, using the best of Google Cloud Data and AI products.
 
 These insights are used to serve as a basis to optimize paid media efforts and investments by:
 * Building audience segments by using all Google first party data to identify user interests and demographic characteristics relevant to the campaign
-* Improving campaign performance by identifying and targeting users deciles most likely to take an action (i.e. purchase, sign-up, churn, abandon a cart, etc)
+* Improving campaign performance by identifying and targeting users deciles most likely to take an action (i.e. purchase, churn, etc)
 * Driving a more personalized experience for your highly valued customers and improve return on ads spend (ROAS) via customer lifetime value
-* Attributing bidding values to specific users according to their journeys through the conversion funnel which Ads platform uses to guide better campaign performance in specific markets
+* Attributing bidding values to specific users according to their journeys through the conversion funnel which Ads platform uses to guide maximize conversions in specific markets
 
-| Use Case | Data Sources | Model | Looker Report Name | Activation Event | Google Ads Campaign Optimization |
-|-------|-------|-------|--------|--------|--------|
-| Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [maj_audience_segmentation_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L2) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [maj_auto_audience_segmentation_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L8) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Customer Lifetime Value | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Customer Lifetime Value | [maj_cltv_180_30](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L23) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Purchase Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Purchase | [maj_purchase_propensity_30_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L28) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Churn Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Churn | [maj_churn_propensity_30_15](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/templates/activation_type_configuration_template.tpl#L43) | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | - | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) <br><br> [Bid Adjustment](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) |
+| Use Case | Data Sources | Model | Looker Report Name | Google Ads Campaign Optimization |
+|-------|-------|-------|--------|--------|
+| Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Customer Lifetime Value | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Customer Lifetime Value | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Purchase Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Purchase | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Churn Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Churn | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
 
-## Repository Structure
+## Repository Structure 🏗️
 The solution's source code is written in Terraform, Python, SQL, YAML and JSON; and it is organized into five main folders:
 * `config/`: This folder contains the configuration file for the solution. This file define the parameters and settings used by the various components of the solution.
+* `docs/`: This folder contains the detailed architecture, design principles, deployment, basic operation and troubleshooting guides for all the solution components
 * `infrastructure/terraform/`: This folder contains the Terraform modules, variables and the installation guide to deploy the solution's infrastructure on GCP.
     * `infrastructure/terraform/modules/`: This folder contains the Terraform modules and their corresponding Terraform resources. These modules corresponds to the architectural components broken down in the next section.
+* `notebooks/`: Contains python notebooks to be used in Workshop sessions.
 * `python/`: This folder contains most of the Python code. This code implements the activation application, which sends model predictions to Google Analytics 4; and the custom Vertex AI pipelines, its components and the base component docker image used for feature engineering, training, prediction, and explanation pipelines. It also implements the cloud function that triggers the activation application, and the Google Analytics Admin SDK code that creates the custom dimensions on the GA4 property.
+* `scripts/`: Miscelaneous scripts to support installation and operation of the solution.
 * `sql/`: This folder contains the SQL code and table schemas specified in JSON files. This code implements the stored procedures used to transform and enrich the marketing data, as well as the queries used to invoke the stored procedures and retrieve the data for analysis.
 * `templates/`: This folder contains the templates for generating the Google Analytics 4 Measurement Protocol API payloads used to send model predictions to Google Analytics 4.
 
 In addition to that, there is a `tasks.py` file which implements python invoke tests who hydrate values to the JINJA template files with the `.sqlx` extension  located in the `sql/` folder that defines the DDL and DML statements for the BigQuery datasets, tables, procedures and queries.
 
 
-## High Level Architecture
+## High Level Architecture 📋
 ![High Level Architecture](docs/images/reference_architecture.png)
 
 The provided architecture diagram depicts the high-level architecture of the Marketing Analytics Jumpstart solution. Let's break down the components:
@@ -90,7 +98,7 @@ The provided architecture diagram depicts the high-level architecture of the Mar
 This high-level architecture demonstrates how Marketing Analytics Jumpstart integrates various Google Cloud services to provide a comprehensive solution for analyzing and activating your marketing data.
 
 
-## Advantages
+## Advantages 🔦
 1. Easy to deploy: Deploy the resources and use cases that you need.
 2. Cost Effective: Pay only for the cost of infrastructure in order to maintain the Data Store, Feature Store and ML Models.
 3. Keep control of your data: This solution runs entirely in your environment and doesn’t transfer data out of your ownership or organization.
@@ -109,11 +117,25 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 ## Installation Permissions and Privileges
 - [ ] Google Analytics Property Editor or Owner
 - [ ] Google Ads Reader
-- [ ] Project Owner for GCP Project
+- [ ] Project Owner* for a Google Cloud Project
 - [ ] GitHub or GitLab account priviledges for repo creation and access token. [Details](https://cloud.google.com/dataform/docs/connect-repository)
 
+**Note:** Project Owner for a Google Cloud Project is only required to speed up the deployment process. Consult this [guide]() for a more fine-grained permission list, not including the Owner role, to adhere to your company policies.
 
-## Installation
+## Compute regions and data locations compatibility
+
+This solution is compatible in all the regions as listed in these listings:
+
+|  | Compute Regions |
+|-------|-------|
+https://cloud.google.com/compute/docs/regions-zones#available <br><br> https://cloud.google.com/vertex-ai/docs/general/locations <br><br> https://cloud.google.com/dataflow/docs/resources/locations | "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast3", "asia-south1", "asia-southeast1", "asia-southeast2", "australia-southeast1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west12", "me-central1", "me-central2", "northamerica-northeast1", "southamerica-east1", "us-central1", "us-east1", "us-east4", "us-east5", "us-south1", "us-west1", "us-west2", "us-west4" |
+
+|  | Data Locations |
+|-------|-------|
+https://cloud.google.com/bigquery/docs/locations | "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1",    "australia-southeast2", "europe-central2", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-central2",    "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4" |
+
+
+## Step by Step Installation 👷‍♀️
 
 To facilitate the installation, use this Step by Step Installation Video.
 
@@ -128,7 +150,7 @@ Alternatively, follow the step by step installation guide with Google Cloud Shel
 **Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
 
 
-## Contributing
+## Contributing 🤝
 We welcome all feedback and contributions!  Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for more information on how
 to publish your contributions.
 
@@ -137,7 +159,7 @@ to publish your contributions.
 This project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 
-## Resources
+## Resources 📚
 This a list of public websites you can use to learn more about the Google Analytics 4, Google Ads, Google Cloud Products we used to build this solution.
 
 | Websites | Description |

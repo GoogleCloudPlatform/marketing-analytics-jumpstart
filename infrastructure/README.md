@@ -1,39 +1,25 @@
-# Marketing Analytics Jumpstart Installation Guide
+# Marketing Analytics Jumpstart Step-by-Step Installation Guide
 
 ## Overview
 
 Marketing Analytics Jumpstart consists of several components - marketing data store (MDS), feature store, ML pipelines,
-the activation pipeline and dashboards. This document describes the sequencing of installing these components.
+the activation pipeline and dashboards. 
 
-## Prerequisites
+This document describes the permission and data prerequisites for a successful installation and provides you with two routes to install the solution. These are design for advanced uses of the Marketing Analytics Jumpstart solution.
 
-### Marketing Analytics Data Sources
+**1) Guided Installation Tuturial of Terraform Modules on Cloud Shell**
+   
+   This route allows you to install and manage the solution components using our cloud-based Developer workspace. You will have the possibility to tailor the solution components to your needs. Allowing you to use only subcomponents of this solution. For instance, developers wanting to reuse their existing Marketing Data Store will prefer this installation method.
+    
+**2) Manual Installation of Terraform Modules**
+   
+   This route allows you to install and manage the solution in any workspace (cloud, local machine, Compute engine instance). This is the prefered method for user who are contributing and extending this solution to implement new features or adapt it to specific business needs. This route must also be taken, in case you need to manage multiple brands installations, multiple tenants installations, multiple regions installations in a comprehensive manner.
 
-* Set up Google Analytics 4 Export to Bigquery. Please follow the
-  set-up [documentation](https://support.google.com/analytics/answer/9358801?hl=en). The current version of MDS doesn't
-  use streaming export tables.
-* Set up Google Cloud Data Transfer Service to export Google Ads to Bigquery. Follow
-  these [instructions](https://cloud.google.com/bigquery/docs/google-ads-transfer).
+Once you have chosen your route, check the permissions and data prerequisites in detail.
 
-Make sure these exports use the same BigQuery location, either regional or multi-regional one. You can export the data
-into the same project or different projects - the MDS will be able to get the data from multiple projects.
+## Permissions Prerequisites
 
-### Destination Projects
-
-The Terraform scripts which are used to create the infrastructure don’t create Google Cloud projects themselves. These
-projects need to be created before the scripts can be run and their ids will be provided to the script via Terraform
-variables. It is possible to install the whole solution in a single project if the projected BigQuery data volume is
-small (megabytes or low digit gigabytes of additional data per day). For larger installations or when more granular
-access control is desired multiple projects can be used:
-
-* MDS data storage project for all the data curated by the solution.
-* MDS data processing project for hosting the Dataform scripts and running BigQuery curation jobs.
-* ML pipeline features engineering, model training, model inference and activation application.
-* Dashboard query processing project. In case of high volume Dashboard usage this project can enable BigQuery BI Engine
-  to
-  accelerate the query originated from the dashboard.
-
-### Permissions to create infrastructure and access source data
+### Permissions to deploy infrastructure and access source data
 
 There are multiple ways to configure Google Cloud authentication for the Terraform installations. Terraform's Google
 Provider [documentation](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference)
@@ -52,6 +38,49 @@ The Terraform principal will need to be granted certain permissions in different
   a service account which will be created by the Terraform scripts. Follow the
   BigQuery [documentation](https://cloud.google.com/bigquery/docs/control-access-to-resources-iam#grant_access_to_a_dataset)
   on how to grant this permission on a dataset level.
+
+### Google Analytics 4 Configurations and Permissions
+
+The activation application uses sensitive information from the Google Analytics property, such as Measurement ID and API Secret. These information is stored temporarily on environment variables to be exported manually by the user. 
+
+* A [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en) and [API secret](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) collected from the Google Analytics UI. In this [article](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) you will find instructions on how to generate the API secret.
+* Editor or Administrator role to the Google Analytics 4 account or property. In this [article](https://support.google.com/analytics/answer/9305587?hl=en#zippy=%2Cgoogle-analytics) you will find instructions on how to setup.
+
+## Data Prerequisites
+
+### Recommended data location
+
+### Marketing Analytics Data Sources
+
+* Set up Google Analytics 4 Export to Bigquery. Please follow the
+  set-up [documentation](https://support.google.com/analytics/answer/9358801?hl=en). Note that the current version of MDS doesn't
+  support streaming export tables.
+
+  [![Google Analytics 4 BigQuery Export](https://img.youtube.com/vi/u4QlVsNh2Q4/0.jpg)](https://youtube.com/clip/Ugkxo955w1NlF8o5_EZmMdQO7UsxcFxnGt3j?si=zf1X4iEq_8IY_fu2)
+  
+  
+* Set up Google Cloud Data Transfer Service to export Google Ads to Bigquery. Follow
+  these [instructions](https://cloud.google.com/bigquery/docs/google-ads-transfer).
+
+  [![Google Analytics 4 BigQuery Export](https://img.youtube.com/vi/svPy0o9r7eI/0.jpg)](https://youtube.com/clip/Ugkx9VT3yyM0GPwDXVVKcBMs2i7qbUmtOH74?si=p6MBZJE32x4EX8bT)
+
+Make sure these exports use the same BigQuery location, either regional or multi-regional one. You can export the data
+into the same project or different projects - the MDS will be able to get the data from multiple projects.
+
+### Destination Projects
+
+The Terraform scripts which are used to create the infrastructure don’t create Google Cloud projects themselves. These
+projects need to be created before the scripts can be run and their ids will be provided to the script via Terraform
+variables. It is possible to install the whole solution in a single project if the projected BigQuery data volume is
+small (megabytes or low digit gigabytes of additional data per day). For larger installations or when more granular
+access control is desired multiple projects can be used:
+
+* MDS data storage project for all the data curated by the solution.
+* MDS data processing project for hosting the Dataform scripts and running BigQuery curation jobs.
+* ML pipeline features engineering, model training, model inference and activation application.
+* Dashboard query processing project. In case of high volume Dashboard usage this project can enable BigQuery BI Engine
+  to
+  accelerate the query originated from the dashboard.
 
 ### Dataform Git Repository
 
@@ -78,26 +107,25 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    cd ..
    rm -rf marketing-analytics-jumpstart-dataform
    ```
-6. Generate a GitHub personal access token. It will be used by Dataform to access the repository. For details and
+6. Generate a [GitHub personal access token](https://cloud.google.com/dataform/docs/connect-repository#connect-https). It will be used by Dataform to access the repository. For details and
    additional guidance regarding token type, security and require permissions
    see [Dataform documentation](https://cloud.google.com/dataform/docs/connect-repository#create-secret). You don't need
    to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
    access token to the Terraform scripts using a Terraform variable.
 
-### Google Analytics 4 Configurations and Permissions
+## Guided Installation Tuturial of Terraform Modules on Cloud Shell
 
-The activation application uses sensitive information from the Google Analytics property, such as Measurement ID and API Secret. These information is stored temporarily on environment variables to be exported manually by the user. 
+Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
-* A [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en) and [API secret](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) collected from the Google Analytics UI. In this [article](https://support.google.com/analytics/answer/9814495?sjid=9902804247343448709-NA) you will find instructions on how to generate the API secret.
-* Editor or Administrator role to the Google Analytics 4 account or property. In this [article](https://support.google.com/analytics/answer/9305587?hl=en#zippy=%2Cgoogle-analytics) you will find instructions on how to setup.
+**Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
 
-## Installing the MDS, ML pipelines, the feature Store, and the activation pipeline
+## Manual Installation Guide of Terraform Modules
 
-Once all the prerequisites are met you can install these components using Terraform scripts.
+Once all the permissions and data prerequisites are met, you can install these components using Terraform scripts.
 
 Follow instructions in [terraform/README.md](terraform/README.md)
 
-## Installing Dashboards
+## Looker Studio Dashboard Installation
 
-Looker Studio Dashboards can be installed by following instructions
+Looker Studio Dashboard can be installed by following instructions
 in [../python/lookerstudio/README.md](../python/lookerstudio/README.md)

@@ -688,7 +688,6 @@ module "activation_pipeline_container" {
 module "activation_pipeline_template" {
   source                = "terraform-google-modules/gcloud/google"
   version               = "3.5.0"
-  additional_components = ["gsutil"]
 
   platform         = "linux"
   create_cmd_body  = "dataflow flex-template build --project=${module.project_services.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
