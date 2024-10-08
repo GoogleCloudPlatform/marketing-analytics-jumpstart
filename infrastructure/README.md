@@ -7,10 +7,12 @@ the activation pipeline and dashboards.
 
 This document describes the permission and data prerequisites for a successful installation and provides you with two routes to install the solution. These are design for advanced uses of the Marketing Analytics Jumpstart solution.
 
-1) Guided Installation Tuturial of Terraform Modules on Cloud Shell
+**1) Guided Installation Tuturial of Terraform Modules on Cloud Shell**
+   
    This route allows you to install and manage the solution components using our cloud-based Developer workspace. You will have the possibility to tailor the solution components to your needs. Allowing you to use only subcomponents of this solution. For instance, developers wanting to reuse their existing Marketing Data Store will prefer this installation method.
     
-2) Manual Installation of Terraform Modules
+**2) Manual Installation of Terraform Modules**
+   
    This route allows you to install and manage the solution in any workspace (cloud, local machine, Compute engine instance). This is the prefered method for user who are contributing and extending this solution to implement new features or adapt it to specific business needs. This route must also be taken, in case you need to manage multiple brands installations, multiple tenants installations, multiple regions installations in a comprehensive manner.
 
 Once you have chosen your route, check the permissions and data prerequisites in detail.
