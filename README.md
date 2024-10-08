@@ -135,7 +135,7 @@ https://cloud.google.com/compute/docs/regions-zones#available <br><br> https://c
 https://cloud.google.com/bigquery/docs/locations | "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1",    "australia-southeast2", "europe-central2", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west8", "europe-west9", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-central2",    "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4" |
 
 
-## Installation 👷‍♀️
+## Step by Step Installation 👷‍♀️
 
 To facilitate the installation, use this Step by Step Installation Video.
 
