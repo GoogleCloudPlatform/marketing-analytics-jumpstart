@@ -1,4 +1,4 @@
-# Installing Terraform Modules
+# Manual Installation of Terraform Modules
 
 The Terraform scripts in this folder and subfolders create the infrastructure to start data ingestion
 into BigQuery, create feature store, run ML pipelines and Dataflow activation application.
