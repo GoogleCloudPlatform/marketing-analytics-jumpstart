@@ -3,7 +3,17 @@
 ## Overview
 
 Marketing Analytics Jumpstart consists of several components - marketing data store (MDS), feature store, ML pipelines,
-the activation pipeline and dashboards. This document describes the permission and data prerequisites for a successful installation.
+the activation pipeline and dashboards. 
+
+This document describes the permission and data prerequisites for a successful installation and provides you with two routes to install the solution. These are design for advanced uses of the Marketing Analytics Jumpstart solution.
+
+1) Guided Installation Tuturial of Terraform Modules on Cloud Shell
+   This route allows you to install and manage the solution components using our cloud-based Developer workspace. You will have the possibility to tailor the solution components to your needs. Allowing you to use only subcomponents of this solution. For instance, developers wanting to reuse their existing Marketing Data Store will prefer this installation method.
+    
+2) Manual Installation of Terraform Modules
+   This route allows you to install and manage the solution in any workspace (cloud, local machine, Compute engine instance). This is the prefered method for user who are contributing and extending this solution to implement new features or adapt it to specific business needs. This route must also be taken, in case you need to manage multiple brands installations, multiple tenants installations, multiple regions installations in a comprehensive manner.
+
+Once you have chosen your route, check the permissions and data prerequisites in detail.
 
 ## Permissions Prerequisites
 
@@ -101,19 +111,19 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
    access token to the Terraform scripts using a Terraform variable.
 
-## Guided Installation of Terraform Modules
+## Guided Installation Tuturial of Terraform Modules on Cloud Shell
 
 Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
 
 **Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
 
-## Manual Installation of Terraform Modules
+## Manual Installation Guide of Terraform Modules
 
 Once all the permissions and data prerequisites are met, you can install these components using Terraform scripts.
 
 Follow instructions in [terraform/README.md](terraform/README.md)
 
-## Installing Dashboard
+## Looker Studio Dashboard Installation
 
 Looker Studio Dashboard can be installed by following instructions
 in [../python/lookerstudio/README.md](../python/lookerstudio/README.md)
