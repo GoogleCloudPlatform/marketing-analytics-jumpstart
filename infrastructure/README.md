@@ -101,7 +101,13 @@ copy the SQL scripts from a companion GitHub repo before running the Terraform s
    to create a Cloud Secret - it will be done by the Terraform scripts. You will need to provide the Git URL and the
    access token to the Terraform scripts using a Terraform variable.
 
-## Installing the Marketing Data Store, Machine Learning Pipelines, Feature Store, and the Activation Application
+## Guided Installation of Terraform Modules
+
+Step by step installation guide with [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
+
+**Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
+
+## Manual Installation of Terraform Modules
 
 Once all the permissions and data prerequisites are met, you can install these components using Terraform scripts.
 
