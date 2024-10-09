@@ -168,7 +168,8 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     terraform -chdir="${TERRAFORM_RUN_DIR}" apply
     ```
 
-   If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
+   If you run into errors, review and edit the `${TERRAFORM_RUN_DIR}/terraform.tfvars` file.
+   If you don't have a successful execution of certain resources, re-run `terraform -chdir="${TERRAFORM_RUN_DIR}" apply` a few more times until all is deployed successfully. However, if there are still resources not deployed, open a new [github issue](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/issues/).
 
 ### Resume terminal session
 
