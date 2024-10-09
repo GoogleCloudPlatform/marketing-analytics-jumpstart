@@ -140,16 +140,11 @@ https://cloud.google.com/bigquery/docs/locations | "US", "EU", "asia-east1", "as
 To facilitate the step by step installation process, we offer you two routes:
 
 * One is a guided step by step installation with the help of Google Cloud Shell Tutorial.
-* Another route is to follow the step by step manual installation guide supported by a video recording.
+* Another is to follow the step by step manual installation guide supported by a video recording.
 
 To understand better which route is more appropriate for your needs, read this [documentation](./infrastructure/README.md). 
 
-1. To follow the step by step installation guide with Google Cloud Shell Tutorial. Click the button below.
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
-
-**Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository on the link button above.
-
-2. To follow the manual installation guide, open the Youtube video below on another tab and read the instructions on this [documentation](./infrastructure/README.md).
+To follow the manual installation guide, open the Youtube video below on another tab and read the instructions on the [documentation](./infrastructure/README.md) above.
 [![Step by Step Installation Video](docs/images/YoutubeScreenshot.png)](https://youtu.be/JMnsIxTNbE4 "Marketing Analytics Jumpstart Installation Video")
 
 
