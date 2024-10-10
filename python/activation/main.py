@@ -330,7 +330,6 @@ class TransformToPayload(beam.DoFn):
 
   The DoFn takes the following arguments:
 
-  - template_str: The Jinja2 template string used to generate the Measurement Protocol payload.
   - event_name: The name of the event to be sent to Google Analytics 4.
 
   The DoFn yields the following output:
@@ -338,23 +337,19 @@ class TransformToPayload(beam.DoFn):
   - A dictionary containing the Measurement Protocol payload.
 
   The DoFn performs the following steps:
-
   1. Removes bad shaping strings in the `client_id` field.
-  2. Renders the Jinja2 template string using the provided data and event name.
-  3. Converts the rendered template string into a JSON object.
+  2. Converts the rendered template string into a JSON object.
   4. Handles any JSON decoding errors.
 
   The DoFn is used to ensure that the Measurement Protocol payload is formatted correctly before being sent to Google Analytics 4.
   """
-  def __init__(self, template_str, event_name):
+  def __init__(self, event_name):
     """
     Initializes the DoFn.
 
     Args:
-      template_str: The Jinja2 template string used to generate the Measurement Protocol payload.
       event_name: The name of the event to be sent to Google Analytics 4.
     """
-    self.template_str = template_str
     self.date_format = "%Y-%m-%d"
     self.date_time_format = "%Y-%m-%d %H:%M:%S.%f %Z"
     self.event_name = event_name
@@ -364,13 +359,6 @@ class TransformToPayload(beam.DoFn):
     }
     self.user_property_prefix = 'user_prop_'
     self.event_parameter_prefix = 'event_param_'
-
-
-  def setup(self):
-    """
-    Sets up the Jinja2 environment.
-    """
-    self.payload_template = Environment(loader=BaseLoader).from_string(self.template_str)
 
 
   def process(self, element):
@@ -391,7 +379,6 @@ class TransformToPayload(beam.DoFn):
     _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40007)</script>', '')
     _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40013)</script>', '')
 
-    # --- new implementation ---
     result = {}
     result['client_id'] = _client_id
     if element['user_id']:
@@ -401,22 +388,7 @@ class TransformToPayload(beam.DoFn):
     result['consent'] = self.consent_obj
     result['user_properties'] = self.extract_user_properties(element)
     result['events'] = [self.extract_event(element)]
-    # --- end ---
 
-    # payload_str = self.payload_template.render(
-    #   client_id=_client_id,
-    #   user_id=self.generate_user_id_key_value_pair(element),
-    #   event_timestamp=self.date_to_micro(element["inference_date"]),
-    #   event_name=self.event_name,
-    #   session_id=element['session_id'],
-    #   user_properties=self.generate_user_properties(element),
-    # )
-    # result = {}
-    # try:
-    #   result = json.loads(r'{}'.format(payload_str))
-    # except json.decoder.JSONDecodeError as e:
-    #   logging.error(payload_str)
-    #   logging.error(traceback.format_exc())
     yield result
     
 
@@ -435,25 +407,6 @@ class TransformToPayload(beam.DoFn):
 
     except Exception as e:
       return int(datetime.datetime.strptime(date_str, self.date_format).timestamp() * 1E6)
-
-
-  def generate_param_fields(self, element):
-    """
-    Generates a JSON string containing the parameter fields of the element.
-
-    Args:
-      element: The element to be processed.
-
-    Returns:
-      A JSON string containing the parameter fields of the element.
-    """
-    element_copy = element.copy()
-    del element_copy['client_id']
-    del element_copy['user_id']
-    del element_copy['session_id']
-    del element_copy['inference_date']
-    element_copy = {k: v for k, v in element_copy.items() if v}
-    return json.dumps(element_copy, cls=DecimalEncoder)
 
 
   def extract_user_properties(self, element):
@@ -490,44 +443,6 @@ class TransformToPayload(beam.DoFn):
       if k.startswith(self.event_parameter_prefix) and v:
         event['params'][k[len(self.event_parameter_prefix):]] = v
     return event
-
-  def generate_user_properties(self, element):
-    """
-    Generates a JSON string containing the user properties of the element.
-
-    Args:
-      element: The element to be processed.
-
-    Returns:
-      A JSON string containing the user properties of the element.
-    """
-    element_copy = element.copy()
-    del element_copy['client_id']
-    del element_copy['user_id']
-    del element_copy['session_id']
-    del element_copy['inference_date']
-    user_properties_obj =  {}
-    for k, v in element_copy.items():
-      if v:
-        user_properties_obj[k] = {'value': str(v)}
-    return json.dumps(user_properties_obj, cls=DecimalEncoder)
-  
-
-  def generate_user_id_key_value_pair(self, element):
-    """
-    If the user_id field is not empty generate the key/value string with the user_id.
-    else return empty string
-    Args:
-      element: The element to be processed.
-
-    Returns:
-      A string containing the key and value with the user_id.
-    """
-    user_id = element['user_id']
-    if user_id:
-      return f'"user_id": "{user_id}",'
-    return ""
-
 
 
 
@@ -572,8 +487,7 @@ def load_activation_type_configuration(args):
   # Create the activation type configuration dictionary.
   configuration = {
     'activation_event_name': activation_config['activation_event_name'],
-    'source_query_template': Environment(loader=BaseLoader).from_string(gcs_read_file(args.project, activation_config['source_query_template']).replace('\n', ' ')),
-    'measurement_protocol_payload_template': gcs_read_file(args.project, activation_config['measurement_protocol_payload_template'])
+    'source_query_template': Environment(loader=BaseLoader).from_string(gcs_read_file(args.project, activation_config['source_query_template']).replace('\n', ' '))
   }
 
   return configuration
@@ -642,7 +556,7 @@ def run(argv=None):
         query=load_from_source_query,
         use_json_exports=True,
         use_standard_sql=True)
-    | 'Prepare Measurement Protocol API payload' >> beam.ParDo(TransformToPayload(activation_type_configuration['measurement_protocol_payload_template'], activation_type_configuration['activation_event_name']))
+    | 'Prepare Measurement Protocol API payload' >> beam.ParDo(TransformToPayload(activation_type_configuration['activation_event_name']))
     | 'POST event to Measurement Protocol API' >> beam.ParDo(CallMeasurementProtocolAPI(activation_options.ga4_measurement_id, activation_options.ga4_api_secret, debug=activation_options.use_api_validation))
     )
 
