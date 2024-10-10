@@ -16,6 +16,7 @@ locals {
   vbb_activation_configuration_file = "vbb_activation_configuration.jsonl"
 }
 
+# JSON configuration file for smart bidding based activation
 resource "google_storage_bucket_object" "vbb_activation_configuration_file" {
   name   = "${local.configuration_folder}/${local.vbb_activation_configuration_file}"
   source = "${local.template_dir}/${local.vbb_activation_configuration_file}"
@@ -31,6 +32,8 @@ data "template_file" "load_vbb_activation_configuration_proc" {
     config_file_uri = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.vbb_activation_configuration_file.output_name}"
   }
 }
+
+# Store procedure that loads the json configuation file from GCS into a configuration table in BQ
 resource "google_bigquery_routine" "load_vbb_activation_configuration_proc" {
   project         = module.project_services.project_id
   dataset_id      = module.bigquery.bigquery_dataset.dataset_id

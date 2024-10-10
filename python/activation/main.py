@@ -358,6 +358,12 @@ class TransformToPayload(beam.DoFn):
     self.date_format = "%Y-%m-%d"
     self.date_time_format = "%Y-%m-%d %H:%M:%S.%f %Z"
     self.event_name = event_name
+    self.consent_obj = {
+      'ad_user_data':'GRANTED',
+      'ad_personalization':'GRANTED'
+    }
+    self.user_property_prefix = 'user_prop_'
+    self.event_parameter_prefix = 'event_param_'
 
 
   def setup(self):
@@ -384,21 +390,33 @@ class TransformToPayload(beam.DoFn):
     _client_id = element['client_id'].replace(r'<img onerror="_exploit_dom_xss(20010)', '')
     _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40007)</script>', '')
     _client_id = element['client_id'].replace(r'q="><script>_exploit_dom_xss(40013)</script>', '')
-    
-    payload_str = self.payload_template.render(
-      client_id=_client_id,
-      user_id=self.generate_user_id_key_value_pair(element),
-      event_timestamp=self.date_to_micro(element["inference_date"]),
-      event_name=self.event_name,
-      session_id=element['session_id'],
-      user_properties=self.generate_user_properties(element),
-    )
+
+    # --- new implementation ---
     result = {}
-    try:
-      result = json.loads(r'{}'.format(payload_str))
-    except json.decoder.JSONDecodeError as e:
-      logging.error(payload_str)
-      logging.error(traceback.format_exc())
+    result['client_id'] = _client_id
+    if element['user_id']:
+      result['user_id'] = element['user_id']
+    result['timestamp_micros'] = self.date_to_micro(element["inference_date"])
+    result['nonPersonalizedAds'] = False
+    result['consent'] = self.consent_obj
+    result['user_properties'] = self.extract_user_properties(element)
+    result['events'] = [self.extract_event(element)]
+    # --- end ---
+
+    # payload_str = self.payload_template.render(
+    #   client_id=_client_id,
+    #   user_id=self.generate_user_id_key_value_pair(element),
+    #   event_timestamp=self.date_to_micro(element["inference_date"]),
+    #   event_name=self.event_name,
+    #   session_id=element['session_id'],
+    #   user_properties=self.generate_user_properties(element),
+    # )
+    # result = {}
+    # try:
+    #   result = json.loads(r'{}'.format(payload_str))
+    # except json.decoder.JSONDecodeError as e:
+    #   logging.error(payload_str)
+    #   logging.error(traceback.format_exc())
     yield result
     
 
@@ -437,6 +455,41 @@ class TransformToPayload(beam.DoFn):
     element_copy = {k: v for k, v in element_copy.items() if v}
     return json.dumps(element_copy, cls=DecimalEncoder)
 
+
+  def extract_user_properties(self, element):
+    """
+    Generates a dictionary containing the user properties of the element.
+
+    Args:
+      element: The element to be processed.
+
+    Returns:
+      A dictionary containing the user properties of the element.
+    """
+    user_properties = {}
+    for k, v in element.items():
+      if k.startswith(self.user_property_prefix) and v:
+        user_properties[k[len(self.user_property_prefix):]] = {'value': str(v)}
+    return user_properties
+
+  def extract_event(self, element):
+    """
+    Generates a dictionary containing the event parameters from the element.
+
+    Args:
+      element: The element to be processed.
+
+    Returns:
+      A dictionary containing the event parameters from the element.
+    """
+    event = {
+      'name': self.event_name,
+      'params': {}
+    }
+    for k, v in element.items():
+      if k.startswith(self.event_parameter_prefix) and v:
+        event['params'][k[len(self.event_parameter_prefix):]] = v
+    return event
 
   def generate_user_properties(self, element):
     """

@@ -16,11 +16,13 @@ WITH user_prediction_decile AS (
     COALESCE(a.user_id, "") = COALESCE(b.user_id, "")
     AND a.user_pseudo_id = b.user_pseudo_id)
 SELECT
-  a.p_p_prediction,
-  b.value AS p_p_vbb_value,
+  a.p_p_prediction AS user_prop_p_p_prediction,
+  a.p_p_decile AS user_prop_p_p_decile,
+  b.value AS event_param_value,
+  'USD' AS event_param_currency,
   a.client_id,
   a.user_id,
-  a.session_id,
+  a.session_id AS event_param_session_id,
   a.inference_date
 FROM
   user_prediction_decile AS a

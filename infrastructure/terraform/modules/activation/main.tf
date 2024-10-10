@@ -647,6 +647,7 @@ resource "google_storage_bucket_object" "purchase_propensity_query_template_file
   bucket  = module.pipeline_bucket.name
 }
 
+# This resource creates a bucket object using as content the purchase_propensity_vbb_query_template_file file.
 data "template_file" "purchase_propensity_vbb_query_template_file" {
   template = file("${local.template_dir}/activation_query/${local.purchase_propensity_vbb_query_template_file}")
 
