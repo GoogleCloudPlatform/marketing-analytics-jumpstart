@@ -272,7 +272,7 @@ def create_custom_dimensions(configuration: map):
   """
   existing_dimensions = load_existing_ga4_custom_dimensions(configuration)
   create_custom_dimensions_for('Audience Segmentation', ['a_s_prediction'], existing_dimensions, configuration)
-  create_custom_dimensions_for('Purchase Propensity', ['p_p_prediction', 'p_p_decile', 'p_p_vbb_value'], existing_dimensions, configuration)
+  create_custom_dimensions_for('Purchase Propensity', ['p_p_prediction', 'p_p_decile'], existing_dimensions, configuration)
   create_custom_dimensions_for('CLTV', ['cltv_decile'], existing_dimensions, configuration)
   create_custom_dimensions_for('Auto Audience Segmentation', ['a_a_s_prediction'], existing_dimensions, configuration)
   create_custom_dimensions_for('Churn Propensity', ['c_p_prediction', 'c_p_decile'], existing_dimensions, configuration)
