@@ -38,12 +38,14 @@ For each use case, a corresponding SQL query template dictates how prediction va
 | Use Case |	Query Template |
 | -------- | --------- |
 | Purchase Propensity | [purchase_propensity_query_template.sqlx](../templates/activation_query/purchase_propensity_query_template.sqlx)|
+| Purchase Propensity for Smart Bidding | [purchase_propensity_vbb_query_template.sqlx](../templates/activation_query/purchase_propensity_vbb_query_template.sqlx)|
 | Customer Lifetime Value  | [cltv_query_template.sqlx](../templates/activation_query/cltv_query_template.sqlx) |
 | Demographic Audience Segmentation | [audience_segmentation_query_template.sqlx](../templates/activation_query/audience_segmentation_query_template.sqlx) |
 | Interest based Audience Segmentation | [auto_audience_segmentation_query_template.sqlx](../templates/activation_query/auto_audience_segmentation_query_template.sqlx) |
 | Churn Propensity | [churn_propensity_query_template.sqlx](../templates/activation_query/churn_propensity_query_template.sqlx)|
 
-The [activation configuration](../templates/activation_type_configuration_template.tpl) file links the GA4 custom events with their corresponding query templates and [GA4 Measurement Protocol payload template](../templates/app_payload_template.jinja2)
+**Note:** The dynamic fields in the query template need to be prefixed with `user_prop_` or `event_param_` prefix inorder for the activation process to parse the value into measurement protocol payload.
+
 
 The payload have the following keys set based on the [payload reference documentation](https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference#payload_post_body):
 
@@ -164,7 +166,78 @@ To build your custom audience, follow the [Create an audience guide](https://sup
 
 Now you have a custom audience that is automatically updated as new activation events are sent by the activation process. This custom audience can then be used for targeted remarketing campaigns in Google Ads or other platforms. Follow the [Share audiences guide](https://support.google.com/analytics/answer/12800258) to learn how to export your audience for use in external platforms.
 
-**Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering. 
+**Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering.
+
+## Activation through Smart Bidding Strategy
+To activate purchase propensity predictions via [Smart Bidding Strategy](https://support.google.com/google-ads/answer/7065882), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use Google Ads strategies for [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
+
+This also allows you to use [Search Ads 360 bid strategies](https://support.google.com/searchads/answer/6231813?hl=en)
+
+### Configure translation values
+This section explains how to configure the translation of purchase propensity predictions into monetary values for Smart Bidding.
+
+#### Understanding the Configuration File:
+The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configuration.jsonl) file controls how predicted deciles are converted into monetary values. It contains two key fields:
+
+- `value_norm`: Represents the typical or average transaction value for your GA4 property. This provides a baseline for calculating monetary values.
+- `decile_multiplier`: An array of multipliers, one for each decile. These multipliers determine how much each decile is valued relative to the value_norm.
+
+#### Configuration Steps:
+
+1. Set `value_norm`:
+    - Open the [vbb_activation_configuration.jsonl](../templates/vbb_activation_configuration.jsonl) file.
+    - Locate the entry where `"activation_type":"purchase-propensity"`.
+    - Modify the `value_norm` field to reflect the average transaction value specific to your GA4 property. For example, if your average transaction value is $200, set `value_norm` to 200.
+
+1. Set `decile_multiplier`:s:
+    - For each decile (1 through 10), adjust the `multiplier` value to reflect how much you value users in that decile.
+    - A higher multiplier signifies a higher value. For example, a multiplier of 3.5 for decile 1 means you value users in that decile 3.5 times more than the average customer.
+
+**Important**: To exclude lower-value deciles from smart bidding, set their decile_multiplier to 0. This prevents predictions for those deciles from being sent to GA4.
+
+**Example:**
+```json
+{"activation_type":"purchase-propensity","value_norm":150,"decile_multiplier":[{"decile":1,"multiplier":5.5},{"decile":2,"multiplier":3},{"decile":3,"multiplier":2},{"decile":4,"multiplier":1},{"decile":5,"multiplier":0},{"decile":6,"multiplier":0},{"decile":7,"multiplier":0},{"decile":8,"multiplier":0},{"decile":9,"multiplier":0},{"decile":10,"multiplier":0}]}
+```
+In this example:
+- The average transaction value (`value_norm`) is set to $150.
+- Users in the top decile are valued 5.5 times higher than the average customer.
+- Deciles 5 through 10 are excluded from smart bidding (`multiplier` is 0).
+
+**Important**:
+- Maintain the exact formatting of the JSON file. Do not add extra lines or commas as this will cause errors when importing the configuration into BigQuery.
+- The formula for calculating the final monetary value for each decile is:` value_norm * decile_multiplier`.
+
+### Upload configuration 
+This section outlines the process of uploading your Smart Bidding configuration to Google Cloud Storage (GCS) and then loading it into BigQuery for use in the activation pipeline.
+
+1. Run terraform apply to upload configuration into GCS bucket:
+    ```
+    cd infrastructure/terraform
+    terraform apply -target=module.activation[0].google_storage_bucket_object.vbb_activation_configuration_file
+    ```
+1. Run [load_vbb_activation_configuration](https://console.cloud.google.com/bigquery?ws=!1m5!1m4!6m3!1s!2sactivation!3sload_vbb_activation_configuration) stored procedure to load configuration into BigQeury
+
+1. Control the configuration in [vbb_activation_configuration](https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1s!2sactivation!3svbb_activation_configuration) BigQuery table
+
+### Send Smart Bidding activation events to GA4
+You can manually trigger a activation pipeline execution for Smart Bidding action by following [activation triggering process](#activation-process-triggering) where you set the `activation_type` value to `purchase-propensity-vbb-30-15`
+
+To configure the prediction pipeline to automatically trigger activation pipeline for Smart Bidding change the pipeline configuration parameter in [config.yaml.tftpl](../config/config.yaml.tftpl)
+and set `vertex_ai.pipelines.purchase_propensity.prediction.pipeline_parameters.pubsub_activation_type` to `purchase-propensity-vbb-30-15`
+and re-apply terraform to redeploy the pipeline:
+  ```
+  cd infrastructure/terraform
+  terraform apply -target=module.pipelines[0].null_resource.compile_purchase_propensity_prediction_pipelines
+  ```
+
+### Google Analytics configuration
+After the activation events have been send it will take ruffly 24 hours for them to appear in the `Admin -> Events` view. Once you see `maj_purchase_propensity_vbb_30_15` showing up in the event list mark it as key event.
+![alt text](images/vbb_mark_key_event.png)
+
+### Google Ads configuration
+
+Follow the [Set up Smart Bidding](https://support.google.com/google-ads/answer/10893605) guide to configure the bidding strategy to optimize for conversion value with `maj_purchase_propensity_vbb_30_15` as the conversion event.
 
 ## Monitoring & Troubleshooting
 The activation process logs all sent Measurement Protocol messages in log tables within the `activation` dataset in BigQuery. This includes both successful and failed transmissions, allowing you to track the progress of the activation, get number of events sent to GA4 and identify any potential issues.

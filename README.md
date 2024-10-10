@@ -42,10 +42,10 @@ These insights are used to serve as a basis to optimize paid media efforts and i
 |-------|-------|-------|--------|--------|
 | Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
 | Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Customer Lifetime Value | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Customer Lifetime Value | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Purchase Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Purchase | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Customer Lifetime Value | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Customer Lifetime Value | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
+| Purchase Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Purchase | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
 | Churn Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Churn | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
+| Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) |
 
 ## Repository Structure 🏗️
 The solution's source code is written in Terraform, Python, SQL, YAML and JSON; and it is organized into five main folders:
@@ -137,17 +137,15 @@ https://cloud.google.com/bigquery/docs/locations | "US", "EU", "asia-east1", "as
 
 ## Step by Step Installation 👷‍♀️
 
-To facilitate the installation, use this Step by Step Installation Video.
+To facilitate the step by step installation process, we offer you two routes:
 
+* One is a guided step by step installation with the help of Google Cloud Shell Tutorial.
+* Another is to follow the step by step manual installation guide supported by a video recording.
+
+To understand better which route is more appropriate for your needs, read this [documentation](./infrastructure/README.md). 
+
+To follow the manual installation guide, open the Youtube video below on another tab and read the instructions on the [documentation](./infrastructure/README.md) above.
 [![Step by Step Installation Video](docs/images/YoutubeScreenshot.png)](https://youtu.be/JMnsIxTNbE4 "Marketing Analytics Jumpstart Installation Video")
-
-Please follow this [Installation Guide](./infrastructure/README.md) to accompany the video.
-
-Alternatively, follow the step by step installation guide with Google Cloud Shell.
-
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart.git&cloudshell_git_branch=main&cloudshell_workspace=&cloudshell_tutorial=infrastructure/cloudshell/tutorial.md)
-
-**Note:** If you are working from a forked repository, be sure to update the `cloudshell_git_repo` parameter to the URL of your forked repository for the button link above.
 
 
 ## Contributing 🤝

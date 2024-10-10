@@ -65,7 +65,6 @@ Here's a brief breakdown of the contents of each folder:
 * * `procedures/`: This folder contains the JINJA template files with the `.sqlx` extension used to generate the stored procedures deployed in BigQuery.
 * * `queries/`: This folder contains the JINJA template files with the `.sqlx` extension used to generate the queries deployed in BigQuery.
 * `templates/`:
-* * `app_payload_template.jinja2`: This file defines the JINJA template used to generate the payload for the Measurement Protocol API used by the Activation Application.
 * * `activation_query`: This folder contains the JINJA template files with the `.sqlx` extension used to generate the SQL queries for each use case used by the Activation Application to get all the predictions to be prepared and send to Google Analytics 4.
 
 ## Out-of-the-box configuration parameters provided by the solution

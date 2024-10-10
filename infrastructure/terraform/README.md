@@ -161,14 +161,23 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     or in multi-regions by assigning value such as
     * `US` or `EU`
 
-1. Run Terraform to create resources:
+1. Run Terraform to initialize your environment, and validate if your configurations and variables are set as expected:
 
     ```bash
     terraform -chdir="${TERRAFORM_RUN_DIR}" init
-    terraform -chdir="${TERRAFORM_RUN_DIR}" apply
+    terraform -chdir="${TERRAFORM_RUN_DIR}" plan
+    terraform -chdir="${TERRAFORM_RUN_DIR}" validate
     ```
 
-   If you don't have a successful execution from the beginning, re-run until all is deployed successfully.
+    If you run into errors, review and edit the `${TERRAFORM_RUN_DIR}/terraform.tfvars` file.
+
+1. Run Terraform to create resources:
+
+    ```bash
+    terraform -chdir="${TERRAFORM_RUN_DIR}" apply
+    ```
+    
+   If you don't have a successful execution of certain resources, re-run `terraform -chdir="${TERRAFORM_RUN_DIR}" apply` a few more times until all is deployed successfully. However, if there are still resources not deployed, open a new [github issue](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/issues/).
 
 ### Resume terminal session
 
