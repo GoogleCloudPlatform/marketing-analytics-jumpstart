@@ -24,8 +24,8 @@ locals {
   auto_audience_segmentation_query_template_file = "auto_audience_segmentation_query_template.sqlx"
   cltv_query_template_file                       = "cltv_query_template.sqlx"
   purchase_propensity_query_template_file        = "purchase_propensity_query_template.sqlx"
+  purchase_propensity_vbb_query_template_file    = "purchase_propensity_vbb_query_template.sqlx"
   churn_propensity_query_template_file           = "churn_propensity_query_template.sqlx"
-  measurement_protocol_payload_template_file     = "app_payload_template.jinja2"
   activation_container_image_id                  = "activation-pipeline"
   docker_repo_prefix                             = "${var.location}-docker.pkg.dev/${var.project_id}"
   activation_container_name                      = "dataflow/${local.activation_container_image_id}"
@@ -45,11 +45,6 @@ locals {
   # in case the file content changes.
   activation_type_configuration_file_content_hash = filesha512(local.activation_type_configuration_file)
 
-  app_payload_template_file = "${local.source_root_dir}/templates/app_payload_template.jinja2"
-  # This is calculating a hash number on the file content to keep track of changes and trigger redeployment of resources 
-  # in case the file content changes.
-  app_payload_template_file_content_hash = filesha512(local.activation_type_configuration_file)
-
   activation_application_dir = "${local.source_root_dir}/python/activation"
   activation_application_fileset = [
     "${local.activation_application_dir}/main.py",
@@ -61,6 +56,9 @@ locals {
   # This is calculating a hash number on the files contents to keep track of changes and trigger redeployment of resources 
   # in case any of these files contents changes.
   activation_application_content_hash = sha512(join("", [for f in local.activation_application_fileset : fileexists(f) ? filesha512(f) : sha512("file-not-found")]))
+
+  ga4_setup_source_file              = "${local.source_root_dir}/python/ga4_setup/setup.py"
+  ga4_setup_source_file_content_hash = filesha512(local.ga4_setup_source_file)
 }
 
 data "google_project" "activation_project" {
@@ -322,6 +320,7 @@ resource "null_resource" "create_custom_events" {
   triggers = {
     services_enabled_project = null_resource.check_analyticsadmin_api.id != "" ? module.project_services.project_id : var.project_id
     source_contents_hash     = local.activation_type_configuration_file_content_hash
+    source_file_content_hash = local.ga4_setup_source_file_content_hash
   }
   provisioner "local-exec" {
     command     = <<-EOT
@@ -337,6 +336,7 @@ resource "null_resource" "create_custom_events" {
 resource "null_resource" "create_custom_dimensions" {
   triggers = {
     services_enabled_project = null_resource.check_analyticsadmin_api.id != "" ? module.project_services.project_id : var.project_id
+    source_file_content_hash = local.ga4_setup_source_file_content_hash
     #source_activation_type_configuration_hash = local.activation_type_configuration_file_content_hash 
     #source_activation_application_python_hash = local.activation_application_content_hash
   }
@@ -554,13 +554,6 @@ module "build_logs_bucket" {
   ]
 }
 
-# This resource creates a bucket object using as content the measurement_protocol_payload_template_file file.
-resource "google_storage_bucket_object" "measurement_protocol_payload_template_file" {
-  name   = "${local.configuration_folder}/${local.measurement_protocol_payload_template_file}"
-  source = "${local.template_dir}/${local.measurement_protocol_payload_template_file}"
-  bucket = module.pipeline_bucket.name
-}
-
 # This resource creates a bucket object using as content the audience_segmentation_query_template_file file.
 data "template_file" "audience_segmentation_query_template_file" {
   template = file("${local.template_dir}/activation_query/${local.audience_segmentation_query_template_file}")
@@ -641,6 +634,24 @@ resource "google_storage_bucket_object" "purchase_propensity_query_template_file
   bucket  = module.pipeline_bucket.name
 }
 
+# This resource creates a bucket object using as content the purchase_propensity_vbb_query_template_file file.
+data "template_file" "purchase_propensity_vbb_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.purchase_propensity_vbb_query_template_file}")
+
+  vars = {
+    mds_project_id        = var.mds_project_id
+    mds_dataset_suffix    = var.mds_dataset_suffix
+    activation_project_id = var.project_id
+    dataset               = module.bigquery.bigquery_dataset.dataset_id
+  }
+}
+
+resource "google_storage_bucket_object" "purchase_propensity_vbb_query_template_file" {
+  name    = "${local.configuration_folder}/${local.purchase_propensity_vbb_query_template_file}"
+  content = data.template_file.purchase_propensity_vbb_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
 # This data resources creates a data resource that renders a template file and stores the rendered content in a variable.
 data "template_file" "activation_type_configuration" {
   template = file("${local.template_dir}/activation_type_configuration_template.tpl")
@@ -650,8 +661,8 @@ data "template_file" "activation_type_configuration" {
     auto_audience_segmentation_query_template_gcs_path = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.auto_audience_segmentation_query_template_file.output_name}"
     cltv_query_template_gcs_path                       = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.cltv_query_template_file.output_name}"
     purchase_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_query_template_file.output_name}"
+    purchase_propensity_vbb_query_template_gcs_path    = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_vbb_query_template_file.output_name}"
     churn_propensity_query_template_gcs_path           = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.churn_propensity_query_template_file.output_name}"
-    measurement_protocol_payload_template_gcs_path     = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.measurement_protocol_payload_template_file.output_name}"
   }
 }
 
