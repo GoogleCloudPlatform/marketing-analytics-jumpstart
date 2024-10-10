@@ -168,13 +168,13 @@ Now you have a custom audience that is automatically updated as new activation e
 
 **Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering.
 
-## Activation through Value Based Bidding(VBB)
-To activate purchase propensity predictions via Value Based Bidding (VBB), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use [Smart Bidding](https://support.google.com/google-ads/answer/7065882) in Google Ads, [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
+## Activation through Smart Bidding Strategy
+To activate purchase propensity predictions via [Smart Bidding Strategy](https://support.google.com/google-ads/answer/7065882), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use Google Ads strategies for [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
 
 This also allows you to use [Search Ads 360 bid strategies](https://support.google.com/searchads/answer/6231813?hl=en)
 
 ### Configure translation values
-This section explains how to configure the translation of purchase propensity predictions into monetary values for Value Based Bidding (VBB).
+This section explains how to configure the translation of purchase propensity predictions into monetary values for Smart Bidding.
 
 #### Understanding the Configuration File:
 The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configuration.jsonl) file controls how predicted deciles are converted into monetary values. It contains two key fields:
@@ -193,7 +193,7 @@ The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configurati
     - For each decile (1 through 10), adjust the `multiplier` value to reflect how much you value users in that decile.
     - A higher multiplier signifies a higher value. For example, a multiplier of 3.5 for decile 1 means you value users in that decile 3.5 times more than the average customer.
 
-**Important**: To exclude lower-value deciles from VBB, set their decile_multiplier to 0. This prevents predictions for those deciles from being sent to GA4.
+**Important**: To exclude lower-value deciles from smart bidding, set their decile_multiplier to 0. This prevents predictions for those deciles from being sent to GA4.
 
 **Example:**
 ```json
@@ -202,14 +202,14 @@ The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configurati
 In this example:
 - The average transaction value (`value_norm`) is set to $150.
 - Users in the top decile are valued 5.5 times higher than the average customer.
-- Deciles 5 through 10 are excluded from VBB (`multiplier` is 0).
+- Deciles 5 through 10 are excluded from smart bidding (`multiplier` is 0).
 
 **Important**:
 - Maintain the exact formatting of the JSON file. Do not add extra lines or commas as this will cause errors when importing the configuration into BigQuery.
 - The formula for calculating the final monetary value for each decile is:` value_norm * decile_multiplier`.
 
 ### Upload configuration 
-This section outlines the process of uploading your Value Based Bidding (VBB) configuration to Google Cloud Storage (GCS) and then loading it into BigQuery for use in the activation pipeline.
+This section outlines the process of uploading your Smart Bidding configuration to Google Cloud Storage (GCS) and then loading it into BigQuery for use in the activation pipeline.
 
 1. Run terraform apply to upload configuration into GCS bucket:
     ```
@@ -220,10 +220,10 @@ This section outlines the process of uploading your Value Based Bidding (VBB) co
 
 1. Control the configuration in [vbb_activation_configuration](https://console.cloud.google.com/bigquery?ws=!1m5!1m4!4m3!1s!2sactivation!3svbb_activation_configuration) BigQuery table
 
-### Send VBB activation events to GA4
-You can manually trigger a activation pipeline execution for VBB action by following [activation triggering process](#activation-process-triggering) where you set the `activation_type` value to `purchase-propensity-vbb-30-15`
+### Send Smart Bidding activation events to GA4
+You can manually trigger a activation pipeline execution for Smart Bidding action by following [activation triggering process](#activation-process-triggering) where you set the `activation_type` value to `purchase-propensity-vbb-30-15`
 
-To configure the prediction pipeline to automatically trigger activation pipeline for VBB change the pipeline configuration parameter in [config.yaml.tftpl](../config/config.yaml.tftpl)
+To configure the prediction pipeline to automatically trigger activation pipeline for Smart Bidding change the pipeline configuration parameter in [config.yaml.tftpl](../config/config.yaml.tftpl)
 and set `vertex_ai.pipelines.purchase_propensity.prediction.pipeline_parameters.pubsub_activation_type` to `purchase-propensity-vbb-30-15`
 and re-apply terraform to redeploy the pipeline:
   ```
