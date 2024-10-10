@@ -10,7 +10,7 @@ WITH user_prediction_decile AS (
       ELSE TIMESTAMP_SUB(b.event_timestamp, INTERVAL 1 MICROSECOND)
     END AS inference_date
   FROM
-    `${mds_project_id}.marketing_ga4_v1_${mds_dataset_suffix}.latest_event_per_user_last_72_hours` b,
+    `${mds_project_id}.marketing_ga4_v1_${mds_dataset_suffix}.latest_event_per_user_last_24_hours` b,
     `{{source_table}}` a
   WHERE
     COALESCE(a.user_id, "") = COALESCE(b.user_id, "")
