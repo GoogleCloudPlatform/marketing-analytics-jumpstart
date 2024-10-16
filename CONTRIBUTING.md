@@ -44,31 +44,11 @@ Follow the typical GitHub guide on how to [fork a repo](https://docs.github.com/
 
 ### Complete the installation guide
 
-Complete the installation guide in a Google Cloud project in which you're developer and/or owner.
-
-### Configure Continuous Integration recipes
-
-Connect your GitHub repository by following this [guide](https://cloud.google.com/build/docs/automating-builds/github/connect-repo-github).
-
-In your Google Cloud project, configure Cloud Build triggers to be executed when you push code into your branch. Update the Clould build recipes in the `cloudbuild` folder and deploy them.
-
-### Update GCloud and Install Beta
-
-```bash
-gcloud components update
-gcloud components install beta
-```
-
-### Install packages to define components, run locally and compile pipeline
-
-```bash
-pip install poetry
-poetry install
-```
+Complete the manual installation guide in a Google Cloud project in which you're developer and/or owner for testing purposes.
 
 ### Modify the code and configurations as you prefer
 
-Do all the code changes you wish. 
+Do all the code changes you wish/need. 
 If you're implementing new use cases, add these resources to the existing terraform module components.
 Otherwise, in case you're implementing a new component, implement your own terraform module for it.
 
