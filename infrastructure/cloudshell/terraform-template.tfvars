@@ -54,4 +54,4 @@ ga4_stream_id         = "${MAJ_GA4_STREAM_ID}"
 
 project_owner_email   = "${MAJ_DATAFORM_REPO_OWNER_EMAIL}"
 dataform_github_repo  = "${MAJ_DATAFORM_GITHUB_REPO_URL}"
-dataform_github_token = "GitHub access token generated for your forked dataform repo"
+dataform_github_token = "${MAJ_DATAFORM_GITHUB_TOKEN}"
