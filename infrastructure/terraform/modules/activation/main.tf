@@ -90,6 +90,7 @@ module "project_services" {
     "analyticsadmin.googleapis.com",
     "eventarc.googleapis.com",
     "run.googleapis.com",
+    "cloudkms.googleapis.com"
   ]
 }
 
@@ -301,6 +302,32 @@ resource "null_resource" "check_cloudbuild_api" {
   ]
 }
 
+# This resource executes gcloud commands to check whether the IAM API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_cloudkms_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "cloudkms.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 6
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "cloud kms api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
   version = "8.1.0"
@@ -410,26 +437,110 @@ data "external" "ga4_measurement_properties" {
   ]
 }
 
+# It's used to create unique names for resources like KMS key rings or crypto keys, 
+# ensuring they don't clash with existing resources.
+resource "random_id" "random_suffix" {
+  byte_length = 2
+}
+
+# This ensures that Secret Manager has a service identity within your project. 
+# This identity is crucial for securely managing secrets and allowing Secret Manager 
+# to interact with other Google Cloud services on your behalf.
+resource "google_project_service_identity" "secretmanager_sa" {
+  provider = google-beta
+  project = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
+  service = "secretmanager.googleapis.com"
+}
+ # This Key Ring can then be used to store and manage encryption keys for various purposes, 
+ # such as encrypting data at rest or protecting secrets.
+resource "google_kms_key_ring" "key_ring_regional" {
+  name     = "key_ring_regional-${random_id.random_suffix.hex}"
+  location = var.location
+  project  = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
+}
+
+# This key can then be used for various encryption operations, 
+# such as encrypting data before storing it in Google Cloud Storage 
+# or protecting secrets within your application.
+resource "google_kms_crypto_key" "crypto_key_regional" {
+  name     = "crypto-key-${random_id.random_suffix.hex}"
+  key_ring = google_kms_key_ring.key_ring_regional.id
+}
+
+# Defines an IAM policy that explicitly grants the Secret Manager service account 
+# the ability to encrypt and decrypt data using a specific CryptoKey. This is a 
+# common pattern for securely managing secrets, allowing Secret Manager to encrypt 
+# or decrypt data without requiring direct access to the underlying encryption key material.
+data "google_iam_policy" "crypto_key_encrypter_decrypter" {
+  binding {
+    role = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+
+    members = [
+      "serviceAccount:${google_project_service_identity.secretmanager_sa.email}"
+    ]
+  }
+
+  depends_on = [
+    google_project_service_identity.secretmanager_sa,
+    google_kms_key_ring.key_ring_regional,
+    google_kms_crypto_key.crypto_key_regional
+  ]
+}
+
+# It sets the IAM policy for a KMS CryptoKey, specifically granting permissions defined 
+# in another data source.
+resource "google_kms_crypto_key_iam_policy" "crypto_key" {
+  crypto_key_id = google_kms_crypto_key.crypto_key_regional.id
+  policy_data = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
+}
+
+# It sets the IAM policy for a KMS Key Ring, granting specific permissions defined 
+# in a data source.
+resource "google_kms_key_ring_iam_policy" "key_ring" {
+  key_ring_id = google_kms_key_ring.key_ring_regional.id
+  policy_data = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
+}
+
 # This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
 module "secret_manager" {
   source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "0.4.0"
-  project_id = null_resource.check_secretmanager_api.id != "" ? module.project_services.project_id : var.project_id
+  version    = "~> 0.1"
+  project_id = google_kms_crypto_key_iam_policy.crypto_key.etag != "" && google_kms_key_ring_iam_policy.key_ring.etag != "" ? module.project_services.project_id : var.project_id
   secrets = [
     {
       name                  = "ga4-measurement-id"
       secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_id"] : var.ga4_measurement_id
-      automatic_replication = true
+      #automatic_replication = true
     },
     {
       name                  = "ga4-measurement-secret"
       secret_data           = (var.ga4_measurement_id == null || var.ga4_measurement_secret == null) ? data.external.ga4_measurement_properties[0].result["measurement_secret"] : var.ga4_measurement_secret
-      automatic_replication = true
+      #automatic_replication = true
     },
   ]
 
+  user_managed_replication = {
+    ga4-measurement-id = [
+      {
+        location = var.location
+        kms_key_name = google_kms_crypto_key.crypto_key_regional.id
+      }
+    ]
+    ga4-measurement-secret = [
+      {
+        location = var.location
+        kms_key_name = google_kms_crypto_key.crypto_key_regional.id
+      }
+    ]
+  }
+
   depends_on = [
-    data.external.ga4_measurement_properties
+    data.external.ga4_measurement_properties,
+    google_kms_crypto_key.crypto_key_regional,
+    google_kms_key_ring.key_ring_regional,
+    google_project_service_identity.secretmanager_sa,
+    google_kms_crypto_key_iam_policy.crypto_key,
+    google_kms_key_ring_iam_policy.key_ring
   ]
 }
 
