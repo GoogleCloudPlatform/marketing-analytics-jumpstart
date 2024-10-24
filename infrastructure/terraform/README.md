@@ -56,7 +56,7 @@ Also, this method allows you to extend this solution and develop it to satisfy y
    CLOUDSDK_PYTHON=python3.10
    ```
 
-1. Install Python's Poetry and set Poetry to use Python3.8-3.10 version
+1. Install Python's Poetry and set Poetry to use Python 3.10 version
 
    [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
 
@@ -69,6 +69,7 @@ Also, this method allows you to extend this solution and develop it to satisfy y
    sudo apt update
    sudo apt install pipx
    pipx ensurepath
+   pipx install poetry
    ```
    Verify that `poetry` is on your $PATH variable:
    ```shell
@@ -105,7 +106,7 @@ Also, this method allows you to extend this solution and develop it to satisfy y
 
 1. Review your Terraform version
 
-    Make sure you have installed terraform version is 1.5.7. We recommend you to use [tfenv](https://github.com/tfutils/tfenv) to manage your terraform version.
+    Make sure you have installed terraform version is 1.9.7. We recommend you to use [tfenv](https://github.com/tfutils/tfenv) to manage your terraform version.
    `Tfenv` is a version manager inspired by rbenv, a Ruby programming language version manager.
 
     To install `tfenv`, run the following commands:
@@ -169,7 +170,7 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     terraform -chdir="${TERRAFORM_RUN_DIR}" validate
     ```
 
-    If you run into errors, review and edit the `${TERRAFORM_RUN_DIR}/terraform.tfvars` file.
+    If you run into errors, review and edit the `${TERRAFORM_RUN_DIR}/terraform.tfvars` file. However, if there are still configuration errors, open a new [github issue](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/issues/).
 
 1. Run Terraform to create resources:
 
