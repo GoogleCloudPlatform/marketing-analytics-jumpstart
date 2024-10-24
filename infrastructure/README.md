@@ -17,6 +17,8 @@ This document describes the permission and data prerequisites for a successful i
 
 Once you have chosen your route, check the permissions and data prerequisites in detail.
 
+**Note:** If none of these routes are ideal for you, run this [installation notebook 📔](https://colab.sandbox.google.com/github/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/notebooks/quick_installation.ipynb) on Google Colaboratory and leverage Marketing Analytics Jumpstart in under 30 minutes. 
+
 ## Permissions Prerequisites
 
 ### Permissions to deploy infrastructure and access source data
