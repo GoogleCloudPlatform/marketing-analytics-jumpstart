@@ -455,6 +455,8 @@ resource "google_project_service_identity" "secretmanager_sa" {
  # such as encrypting data at rest or protecting secrets.
 resource "google_kms_key_ring" "key_ring_regional" {
   name     = "key_ring_regional-${random_id.random_suffix.hex}"
+  # If you want your replicas in other locations, change the location in the var.location variable passed as a parameter to this submodule.
+  # if you your replicas stored global, set the location = "global".
   location = var.location
   project  = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
 }
@@ -519,8 +521,13 @@ module "secret_manager" {
     },
   ]
 
+  # By commenting the user_managed_replication block, you will deploy replicas that may store the secret in different locations in the globe.
+  # This is not a desired behaviour, make sure you're aware of it before doing it.
+  # By default, to respect resources location, we prevent resources from being deployed globally by deploying secrets in the same region of the compute resources.
   user_managed_replication = {
     ga4-measurement-id = [
+      # If you want your replicas in other locations, uncomment the following lines and add them here.
+      # Check this example, as reference: https://github.com/GoogleCloudPlatform/terraform-google-secret-manager/blob/main/examples/multiple/main.tf#L91
       {
         location = var.location
         kms_key_name = google_kms_crypto_key.crypto_key_regional.id
