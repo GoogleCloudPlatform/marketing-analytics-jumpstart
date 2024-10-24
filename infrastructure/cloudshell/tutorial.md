@@ -118,7 +118,7 @@ terraform validate:
 ```sh
 terraform -chdir="${TERRAFORM_RUN_DIR}" validate
 ```
-If you run into errors, review and edit the configurations `${TERRAFORM_RUN_DIR}/terraform.tfvars` file. However, if there are still resources not deployed, open a new [github issue](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/issues/).
+If you run into errors, review and edit the configurations `${TERRAFORM_RUN_DIR}/terraform.tfvars` file. However, if there are still configurations errors, open a new [github issue](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/issues/).
 
 terraform apply:
 ```sh
