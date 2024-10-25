@@ -95,7 +95,7 @@ module "dashboard_bigquery" {
 
 module "load_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "6.1.0"
+  version       = "8.0.0"
   project_id    = module.project_services.project_id
   name          = "maj-monitor-${module.project_services.project_id}"
   location      = var.location
