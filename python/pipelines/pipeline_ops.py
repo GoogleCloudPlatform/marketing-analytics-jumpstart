@@ -676,6 +676,7 @@ def schedule_pipeline(
     pipeline_job = aiplatform.PipelineJob(
         template_path=template_path,
         pipeline_root=pipeline_root,
+        location=region,
         display_name=f"{pipeline_name}",
     )
 
