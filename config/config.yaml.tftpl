@@ -189,6 +189,12 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
@@ -267,6 +273,12 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
@@ -326,6 +338,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -381,6 +401,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -430,6 +458,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -485,6 +521,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -525,6 +569,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
@@ -600,6 +652,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project: "${project_id}"
@@ -639,6 +699,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
@@ -734,6 +802,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -789,6 +865,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
@@ -884,6 +968,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -939,6 +1031,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be compiled
         # For Demographics Audience Segmentation model, we use the BQML KMeans clustering algorithm.
@@ -982,6 +1082,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -1028,6 +1136,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be compiled
         # For Interest based Auto Audience Segmentation model, we use the BQML KMeans clustering algorithm.
@@ -1070,6 +1186,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         pipeline_parameters:
           project_id: "${project_id}"
@@ -1119,6 +1243,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
           # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
@@ -1230,6 +1362,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
@@ -1318,6 +1458,14 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
         # These are the pipeline parameters to be used in this convoluted prediction pipeline that takes predictions from LTV model and purchase propensity model.
         pipeline_parameters:
@@ -1397,6 +1545,12 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
@@ -1455,6 +1609,12 @@ vertex_ai:
           max_concurrent_run_count: 1
           start_time: null
           end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED

@@ -138,7 +138,9 @@ if __name__ == "__main__":
                     cron=my_pipeline_vars['schedule']['cron'],
                     max_concurrent_run_count=my_pipeline_vars['schedule']['max_concurrent_run_count'],
                     start_time=my_pipeline_vars['schedule']['start_time'],
-                    end_time=my_pipeline_vars['schedule']['end_time']
+                    end_time=my_pipeline_vars['schedule']['end_time'],
+                    subnetwork=my_pipeline_vars['schedule']['subnetwork'],
+                    use_private_service_access=my_pipeline_vars['schedule']['use_private_service_access'],
         )
 
         if my_pipeline_vars['schedule']['state'] == 'PAUSED':
