@@ -52,7 +52,9 @@ module "project_services" {
     "artifactregistry.googleapis.com",
     "aiplatform.googleapis.com",
     "dataflow.googleapis.com",
-    "bigqueryconnection.googleapis.com"
+    "bigqueryconnection.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "compute.googleapis.com"
   ]
 }
 
@@ -150,6 +152,32 @@ resource "null_resource" "check_artifactregistry_api" {
     done
     if [ $COUNTER -eq $MAX_TRIES ]; then
       echo "artifact registry api is not enabled, terraform can not continue!"
+      exit 1
+    fi
+    sleep 20
+    EOT
+  }
+
+  depends_on = [
+    module.project_services
+  ]
+}
+
+# This resource executes gcloud commands to check whether the Service Networking API is enabled.
+# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
+resource "null_resource" "check_servicenetworking_api" {
+  provisioner "local-exec" {
+    command = <<-EOT
+    COUNTER=0
+    MAX_TRIES=100
+    while ! gcloud services list --project=${module.project_services.project_id} | grep -i "servicenetworking.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
+    do
+      sleep 6
+      printf "."
+      COUNTER=$((COUNTER + 1))
+    done
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+      echo "service networking api is not enabled, terraform can not continue!"
       exit 1
     fi
     sleep 20

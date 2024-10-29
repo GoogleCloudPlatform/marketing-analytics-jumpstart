@@ -47,6 +47,7 @@ declare -a apis_array=("cloudresourcemanager.googleapis.com"
                 "bigquerydatatransfer.googleapis.com"
                 "dataform.googleapis.com"
                 "cloudkms.googleapis.com"
+                "servicenetworking.googleapis.com"
                 )
 
 get_project_id() {
