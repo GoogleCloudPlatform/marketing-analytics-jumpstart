@@ -29,7 +29,8 @@ locals {
   activation_container_image_id                  = "activation-pipeline"
   docker_repo_prefix                             = "${var.location}-docker.pkg.dev/${var.project_id}"
   activation_container_name                      = "dataflow/${local.activation_container_image_id}"
-  source_archive_file                            = "activation_trigger_source.zip"
+  source_archive_file_prefix                     = "activation_trigger_source"
+  source_archive_file                            = "${local.source_archive_file_prefix}.zip"
 
   pipeline_service_account_name  = "dataflow-worker"
   pipeline_service_account_email = "${local.app_prefix}-${local.pipeline_service_account_name}@${var.project_id}.iam.gserviceaccount.com"
@@ -873,7 +874,7 @@ module "function_bucket" {
 
 # This resource creates a bucket object using as content the activation_trigger_archive zip file.
 resource "google_storage_bucket_object" "activation_trigger_archive" {
-  name   = local.source_archive_file
+  name   = "${local.source_archive_file_prefix}_${data.archive_file.activation_trigger_source.output_sha256}.zip"
   source = data.archive_file.activation_trigger_source.output_path
   bucket = module.function_bucket.name
 }
