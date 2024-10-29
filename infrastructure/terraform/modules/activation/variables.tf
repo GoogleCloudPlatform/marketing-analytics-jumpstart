@@ -68,8 +68,8 @@ variable "ga4_property_id" {
 }
 
 variable "ga4_stream_id" {
-  description = "Google Analytics data stream id"
-  type        = string
+  description = "Google Analytics data stream id:s for activation"
+  type        = list(string)
 }
 
 variable "poetry_installed" {
