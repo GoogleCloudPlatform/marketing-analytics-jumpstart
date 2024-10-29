@@ -17,6 +17,7 @@ from os import name
 from tracemalloc import start
 
 import pip
+from sympy import preview
 from kfp import compiler
 from google.cloud.aiplatform.pipeline_jobs import PipelineJob, _set_enable_caching_value
 from google.cloud.aiplatform import TabularDataset, Artifact
@@ -625,6 +626,30 @@ def get_gcp_bearer_token() -> str:
     return bearer_token
 
 
+def _get_project_number(project_id) -> str:
+    """
+    Retrieves the project number from a project id
+
+    Returns:
+        A string containing the project number
+    
+    Raises:
+        Exception: If an error occurs while retrieving the resource manager project object.
+    """
+    from google.cloud import resourcemanager_v3
+
+    # Create a resource manager client
+    client = resourcemanager_v3.ProjectsClient()
+
+    # Get the project number
+    project = client.get_project(name=f"projects/{project_id}").name
+    project_number = project.split('/')[-1]
+
+    logging.info(f"Project Number: {project_number}")
+
+    return project_number
+
+
 # Function to schedule the pipeline.
 def schedule_pipeline(
         project_id: str,
@@ -637,6 +662,8 @@ def schedule_pipeline(
         max_concurrent_run_count: str,
         start_time: str,
         end_time: str,
+        subnetwork: str = "default",
+        use_private_service_access: bool = False,
         pipeline_parameters: Dict[str, Any] = None,
         pipeline_parameters_substitutions: Optional[Dict[str, Any]] = None,
     ) -> dict:
@@ -654,6 +681,8 @@ def schedule_pipeline(
         max_concurrent_run_count: The maximum number of concurrent pipeline runs.
         start_time: The start time of the schedule.
         end_time: The end time of the schedule.
+        subnetwork: The VPC subnetwork name to be used in VPC peering.
+        use_private_service_access: A flag to define whether to use the VPC private service access or not.
 
     Returns:
         A dictionary containing information about the scheduled pipeline.
@@ -663,6 +692,9 @@ def schedule_pipeline(
     """
 
     from google.cloud import aiplatform
+    from google.cloud.aiplatform.preview.pipelinejobschedule import (
+        pipeline_job_schedules as preview_pipeline_job_schedules,
+    )
 
     # Substitute pipeline parameters with necessary substitutions
     if pipeline_parameters_substitutions != None:
@@ -680,15 +712,50 @@ def schedule_pipeline(
         display_name=f"{pipeline_name}",
     )
 
-    # Create the schedule with the pipeline job defined
-    pipeline_job_schedule = pipeline_job.create_schedule(
+    # https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.PipelineJobSchedule
+    # Create a schedule for the pipeline job
+    pipeline_job_schedule = preview_pipeline_job_schedules.PipelineJobSchedule(
         display_name=f"{pipeline_name}",
-        cron=cron,
-        max_concurrent_run_count=max_concurrent_run_count,
-        start_time=start_time,
-        end_time=end_time,
-        service_account=pipeline_sa,
+        pipeline_job=pipeline_job,
+        location=region
     )
+
+    # Get the project number to use in the network identifier
+    project_number = _get_project_number(project_id)
+
+    # Create the schedule using the pipeline job schedule
+    # Using the VPC private service access or not, depending on the flag
+    if use_private_service_access:
+        pipeline_job_schedule.create(
+            cron_expression=cron,
+            max_concurrent_run_count=max_concurrent_run_count,
+            start_time=start_time,
+            end_time=end_time,
+            max_run_count=2,
+            service_account=pipeline_sa,
+            network=f"projects/{project_number}/global/networks/{subnetwork}",
+            create_request_timeout=None,
+        )
+    else:
+        pipeline_job_schedule.create(
+            cron_expression=cron,
+            max_concurrent_run_count=max_concurrent_run_count,
+            start_time=start_time,
+            end_time=end_time,
+            max_run_count=2,
+            service_account=pipeline_sa,
+            create_request_timeout=None,
+        )
+
+    # Old version - Create the schedule with the pipeline job defined
+    #pipeline_job_schedule = pipeline_job.create_schedule(
+    #    display_name=f"{pipeline_name}",
+    #    cron=cron,
+    #    max_concurrent_run_count=max_concurrent_run_count,
+    #    start_time=start_time,
+    #    end_time=end_time,
+    #    service_account=pipeline_sa,
+    #)
 
     logging.info(f"Pipeline scheduled : {pipeline_name}")
 
