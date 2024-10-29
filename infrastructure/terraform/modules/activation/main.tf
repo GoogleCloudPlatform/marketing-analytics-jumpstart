@@ -437,6 +437,7 @@ data "external" "ga4_measurement_properties" {
   ]
 }
 
+
 # It's used to create unique names for resources like KMS key rings or crypto keys, 
 # ensuring they don't clash with existing resources.
 resource "random_id" "random_suffix" {
