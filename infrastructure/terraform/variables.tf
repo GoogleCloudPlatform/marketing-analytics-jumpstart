@@ -241,3 +241,9 @@ variable "website_url" {
   type        = string
   default     = null
 }
+
+variable "time_zone" {
+  description = "Timezone for scheduled jobs"
+  type        = string
+  default     = "America/New_York"
+}

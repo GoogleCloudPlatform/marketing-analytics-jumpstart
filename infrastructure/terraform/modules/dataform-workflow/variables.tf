@@ -75,3 +75,7 @@ variable "includedTags" {
   type    = list(string)
   default = []
 }
+
+variable "time_zone" {
+  type = string
+}

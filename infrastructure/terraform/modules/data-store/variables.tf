@@ -129,3 +129,7 @@ variable "dataform_region" {
   description = "Specify dataform region when dataform is not available in the default cloud region of choice"
   type        = string
 }
+
+variable "time_zone" {
+  type = string
+}
