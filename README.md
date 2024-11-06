@@ -1,7 +1,14 @@
 # Marketing Analytics Jumpstart
-Marketing Analytics Jumpstart is a terraform automated, quick-to-deploy, customizable end-to-end marketing solution on Google Cloud Platform (GCP). This solution aims at helping customer better understand and better use their digital advertising budget.
+Marketing Analytics Jumpstart (MAJ) is a terraform automated, quick-to-deploy, customizable end-to-end marketing solution on Google Cloud Platform (GCP). This solution aims at helping customer better understand and better use their digital advertising budget.
 
 Customers are looking to drive revenue and increase media efficiency be identifying, predicting and targeting valuable users through the use of machine learning. However, marketers first have to solve the challenge of having a number of disparate data sources that prevent them from having a holistic view of customers. Marketers also often don't have the expertise and/or resources in their marketing departments to train, run, and activate ML models on paid channels. Without this solution that enables innovation through predictive analytics, marketers are missing opportunities to advance their marketing program and accelerate key goals and objectives (e.g. acquire new customers, improve customer retention, etc).
+
+## Version Variants
+
+| Version Name | Branch | Purpose |
+| ------------ | ------ | ------- |
+| Multi Stream Activation | [multi-stream-activation](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/tree/multi-stream-activation) | Activate to multiple Google Analytics 4 data streams (websites and application). |
+| Multi Property | [multi-property](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/tree/multi-property) | Deployment of multiple MAJ resources per each Google Analytics 4 property in the same Google Cloud project. |
 
 ## Quick Installation ⏰
 
