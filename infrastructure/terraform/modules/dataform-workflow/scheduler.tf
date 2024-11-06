@@ -19,7 +19,7 @@ resource "google_cloud_scheduler_job" "daily-dataform-increments" {
   description = "Daily Dataform ${var.environment} environment incremental update"
   # The schedule attribute specifies the schedule for the job. In this case, the job is scheduled to run daily at the specified times.
   schedule  = var.daily_schedule
-  time_zone = "America/New_York"
+  time_zone = var.time_zone
   # The attempt_deadline attribute specifies the maximum amount of time that the job will attempt to run before failing.
   # In this case, the job will attempt to run for a maximum of 5 minutes before failing.
   attempt_deadline = "320s"

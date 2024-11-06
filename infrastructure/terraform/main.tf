@@ -122,7 +122,8 @@ resource "local_file" "feature_store_configuration" {
     pipelines_github_owner = var.pipelines_github_owner
     pipelines_github_repo  = var.pipelines_github_repo
     #    TODO: this needs to be specific to environment.
-    location = var.destination_data_location
+    location  = var.destination_data_location
+    time_zone = var.time_zone
   })
 }
 
@@ -374,6 +375,9 @@ module "data_store" {
   # The project_owner_email is set in the terraform.tfvars file. 
   # An example of a valid email address is "william.mckinley@my-own-personal-domain.com".
   project_owner_email = var.project_owner_email
+
+  # Set the time zone for the scheduled jobs
+  time_zone = var.time_zone
 }
 
 

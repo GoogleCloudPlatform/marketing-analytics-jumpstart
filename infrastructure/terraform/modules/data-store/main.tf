@@ -62,6 +62,7 @@ module "dataform-workflow-dev" {
   # https://support.google.com/analytics/answer/9358801?hl=en#:~:text=A%20full%20export%20of%20data,(see%20Streaming%20export%20below).
   # Check https://crontab.guru/#0_5-23/4_*_*_* to see next execution times.
   daily_schedule = "0 5-23/4 * * *"
+  time_zone      = var.time_zone
 }
 
 # This module sets up a Dataform workflow environment for the "staging" environment. 
@@ -96,6 +97,7 @@ module "dataform-workflow-staging" {
   # https://support.google.com/analytics/answer/9358801?hl=en#:~:text=A%20full%20export%20of%20data,(see%20Streaming%20export%20below).
   # Check https://crontab.guru/#0_5-23/4_*_*_* to see next execution times.
   daily_schedule = "0 5-23/4 * * *"
+  time_zone      = var.time_zone
 }
 
 # This module sets up a Dataform workflow environment for the "prod" environment. 
@@ -127,4 +129,5 @@ module "dataform-workflow-prod" {
   # https://support.google.com/analytics/answer/9358801?hl=en#:~:text=A%20full%20export%20of%20data,(see%20Streaming%20export%20below).
   # Check https://crontab.guru/#0_5-23/2_*_*_* to see next execution times.
   daily_schedule = "0 5-23/2 * * *"
+  time_zone      = var.time_zone
 }
