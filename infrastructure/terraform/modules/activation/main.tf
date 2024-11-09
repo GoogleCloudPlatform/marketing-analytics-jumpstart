@@ -801,8 +801,15 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  #create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
-  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest --gcs-log-dir=gs://${module.build_logs_bucket.name} ${local.pipeline_source_dir}"
+  create_cmd_body  = <<-EOT
+    builds submit \
+      --project=${module.project_services.project_id} \
+      --region ${var.location} \
+      --default-buckets-behavior=regional-user-owned-bucket \
+      --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest \
+      --gcs-log-dir=gs://${module.build_logs_bucket.name} \
+      ${local.pipeline_source_dir}
+  EOT
   destroy_cmd_body = "artifacts docker images delete --project=${module.project_services.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 
   create_cmd_triggers = {
