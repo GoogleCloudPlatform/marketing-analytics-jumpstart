@@ -387,7 +387,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.0"
+  version    = "4.4.1"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.pipeline_service_account_name]
@@ -404,7 +404,7 @@ module "pipeline_service_account" {
 
 module "trigger_function_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.0"
+  version    = "4.4.1"
   project_id = null_resource.check_pubsub_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.trigger_function_account_name]
@@ -555,7 +555,7 @@ module "secret_manager" {
 # This module creates a Cloud Storage bucket to be used by the Activation Application
 module "pipeline_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "8.0.1"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-app-${module.project_services.project_id}"
   location   = var.location
@@ -641,7 +641,7 @@ data "google_project" "project" {
 # This module creates a Cloud Storage bucket to be used by the Cloud Build Log Bucket
 module "build_logs_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "8.0.1"
   project_id = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-logs-${module.project_services.project_id}"
   location   = var.location
@@ -855,7 +855,7 @@ data "archive_file" "activation_trigger_source" {
 # This module creates a Cloud Sorage bucket and sets the trigger_function_account_email as the admin.
 module "function_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "8.0.1"
   project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-trigger-${module.project_services.project_id}"
   location   = var.location
