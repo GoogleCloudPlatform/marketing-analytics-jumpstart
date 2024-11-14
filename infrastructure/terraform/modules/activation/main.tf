@@ -29,7 +29,8 @@ locals {
   activation_container_image_id                  = "activation-pipeline"
   docker_repo_prefix                             = "${var.location}-docker.pkg.dev/${var.project_id}"
   activation_container_name                      = "dataflow/${local.activation_container_image_id}"
-  source_archive_file                            = "activation_trigger_source.zip"
+  source_archive_file_prefix                     = "activation_trigger_source"
+  source_archive_file                            = "${local.source_archive_file_prefix}.zip"
 
   pipeline_service_account_name  = "dataflow-worker"
   pipeline_service_account_email = "${local.app_prefix}-${local.pipeline_service_account_name}@${var.project_id}.iam.gserviceaccount.com"
@@ -59,6 +60,17 @@ locals {
 
   ga4_setup_source_file              = "${local.source_root_dir}/python/ga4_setup/setup.py"
   ga4_setup_source_file_content_hash = filesha512(local.ga4_setup_source_file)
+
+  # GCP Cloud Build is not available in all regions.
+  cloud_build_available_locations = [
+    "us-central1",
+    "us-west2",
+    "europe-west1",
+    "asia-east1",
+    "australia-southeast1",
+    "southamerica-east1"
+  ]
+
 }
 
 data "google_project" "activation_project" {
@@ -300,6 +312,16 @@ resource "null_resource" "check_cloudbuild_api" {
   depends_on = [
     module.project_services
   ]
+
+  # The lifecycle block of the google_artifact_registry_repository resource defines a precondition that 
+  # checks if the specified region is included in the vertex_pipelines_available_locations list. 
+  # If the condition is not met, an error message is displayed and the Terraform configuration will fail.
+  lifecycle {
+    precondition {
+      condition     = contains(local.cloud_build_available_locations, var.location)
+      error_message = "Cloud Build is not available in your default region: ${var.location}.\nSet 'google_default_region' variable to a valid Cloud Build location, see Restricted Regions in https://cloud.google.com/build/docs/locations."
+    }
+  }
 }
 
 # This resource executes gcloud commands to check whether the IAM API is enabled.
@@ -448,13 +470,13 @@ resource "random_id" "random_suffix" {
 # to interact with other Google Cloud services on your behalf.
 resource "google_project_service_identity" "secretmanager_sa" {
   provider = google-beta
-  project = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
-  service = "secretmanager.googleapis.com"
+  project  = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
+  service  = "secretmanager.googleapis.com"
 }
- # This Key Ring can then be used to store and manage encryption keys for various purposes, 
- # such as encrypting data at rest or protecting secrets.
+# This Key Ring can then be used to store and manage encryption keys for various purposes, 
+# such as encrypting data at rest or protecting secrets.
 resource "google_kms_key_ring" "key_ring_regional" {
-  name     = "key_ring_regional-${random_id.random_suffix.hex}"
+  name = "key_ring_regional-${random_id.random_suffix.hex}"
   # If you want your replicas in other locations, change the location in the var.location variable passed as a parameter to this submodule.
   # if you your replicas stored global, set the location = "global".
   location = var.location
@@ -493,7 +515,7 @@ data "google_iam_policy" "crypto_key_encrypter_decrypter" {
 # in another data source.
 resource "google_kms_crypto_key_iam_policy" "crypto_key" {
   crypto_key_id = google_kms_crypto_key.crypto_key_regional.id
-  policy_data = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
+  policy_data   = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
 }
 
 # It sets the IAM policy for a KMS Key Ring, granting specific permissions defined 
@@ -529,13 +551,13 @@ module "secret_manager" {
       # If you want your replicas in other locations, uncomment the following lines and add them here.
       # Check this example, as reference: https://github.com/GoogleCloudPlatform/terraform-google-secret-manager/blob/main/examples/multiple/main.tf#L91
       {
-        location = var.location
+        location     = var.location
         kms_key_name = google_kms_crypto_key.crypto_key_regional.id
       }
     ]
     ga4-measurement-secret = [
       {
-        location = var.location
+        location     = var.location
         kms_key_name = google_kms_crypto_key.crypto_key_regional.id
       }
     ]
@@ -800,8 +822,15 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  #create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
-  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest --gcs-log-dir=gs://${module.build_logs_bucket.name} ${local.pipeline_source_dir}"
+  create_cmd_body  = <<-EOT
+    builds submit \
+      --project=${module.project_services.project_id} \
+      --region ${var.location} \
+      --default-buckets-behavior=regional-user-owned-bucket \
+      --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest \
+      --gcs-log-dir=gs://${module.build_logs_bucket.name} \
+      ${local.pipeline_source_dir}
+  EOT
   destroy_cmd_body = "artifacts docker images delete --project=${module.project_services.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 
   create_cmd_triggers = {
@@ -815,8 +844,8 @@ module "activation_pipeline_container" {
 
 # This module executes a gcloud command to build a dataflow flex template and uploads it to Dataflow
 module "activation_pipeline_template" {
-  source                = "terraform-google-modules/gcloud/google"
-  version               = "3.5.0"
+  source  = "terraform-google-modules/gcloud/google"
+  version = "3.5.0"
 
   platform         = "linux"
   create_cmd_body  = "dataflow flex-template build --project=${module.project_services.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
@@ -878,7 +907,7 @@ module "function_bucket" {
 
 # This resource creates a bucket object using as content the activation_trigger_archive zip file.
 resource "google_storage_bucket_object" "activation_trigger_archive" {
-  name   = local.source_archive_file
+  name   = "${local.source_archive_file_prefix}_${data.archive_file.activation_trigger_source.output_sha256}.zip"
   source = data.archive_file.activation_trigger_source.output_path
   bucket = module.function_bucket.name
 }
