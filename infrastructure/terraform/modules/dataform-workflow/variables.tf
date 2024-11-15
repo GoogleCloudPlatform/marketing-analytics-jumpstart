@@ -22,7 +22,7 @@ variable "region" {
   type        = string
 }
 
-variable "environment" {
+variable "property_id" {
   type = string
 }
 

@@ -107,12 +107,11 @@ To deploy the Marketing Data Store, follow the pre-requisites and instructions i
 Next, after creating the Terraform variables file by making a copy from the template, set the Terraform variables to create the environments you need for Dataform.
 
 ```bash
-create_dev_environment     = false
-create_staging_environment = false
-create_prod_environment    = true
+deploy_dataform      = true
+property_id          = "PROPERTY_ID"
 ```
 
-When the `create_dev_environment` variable is set to `true`, a development environment will be created. When the `create_staging_environment` variable is set to `true`, a staging environment will be created. When the `create_prod_environment` variable is set to `true`, a production environment will be created.
+When the `deploy_dataform` variable is set to `true`, a dataform workspace will be created.
 
 ![Dataform Repository](images/data_store_dataform_github_repository.png)
 After deploying the Marketing Data Store, the repository called `marketing_analytics` is created in Dataform.

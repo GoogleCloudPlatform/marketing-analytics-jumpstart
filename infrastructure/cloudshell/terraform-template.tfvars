@@ -17,10 +17,7 @@
 tf_state_project_id   = "${MAJ_DEFAULT_PROJECT_ID}"
 google_default_region = "${MAJ_DEFAULT_REGION}"
 
-create_dev_environment     = false
-create_staging_environment = false
-create_prod_environment    = true
-
+deploy_dataform      = true
 deploy_activation    = true
 deploy_feature_store = true
 deploy_pipelines     = true

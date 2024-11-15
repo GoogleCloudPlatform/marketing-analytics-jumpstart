@@ -15,8 +15,8 @@
 # This creates a Cloud Scheduler job that triggers the Dataform incremental workflow on a daily schedule. 
 resource "google_cloud_scheduler_job" "daily-dataform-increments" {
   project     = module.data_processing_project_services.project_id
-  name        = "daily-dataform-${var.environment}"
-  description = "Daily Dataform ${var.environment} environment incremental update"
+  name        = "daily-dataform-${var.property_id}"
+  description = "Daily Dataform ${var.property_id} property export incremental update"
   # The schedule attribute specifies the schedule for the job. In this case, the job is scheduled to run daily at the specified times.
   schedule  = var.daily_schedule
   time_zone = var.time_zone
