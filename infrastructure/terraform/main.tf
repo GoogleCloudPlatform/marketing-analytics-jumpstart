@@ -72,7 +72,7 @@ locals {
   # The uv_run_alias is the alias of the uv run command.
   uv_run_alias = "${var.uv_cmd} run"
   # The mds_dataset_suffix is the suffix of the marketing data store dataset.
-  mds_dataset_suffix = var.create_staging_environment ? "staging" : var.create_dev_environment ? "dev" : "prod"
+  mds_dataset_suffix = var.property_id
   # The project_toml_file_path is the path to the project.toml file.
   project_toml_file_path = "${local.source_root_dir}/pyproject.toml"
   # The project_toml_content_hash is the hash of the project.toml file.
@@ -284,8 +284,7 @@ resource "null_resource" "check_iam_api" {
 # Create the data store module.
 # The data store module creates the marketing data store in BigQuery, creates the ETL pipeline in Dataform 
 # for the marketing data from Google Ads and Google Analytics. 
-# The data store is created only if the `create_prod_environment`, `create_staging_environment` 
-# or `create_dev_environment` variable is set to true in the terraform.tfvars file.
+# The data store is created only if the `deploy_dataform` variable is set to true in the terraform.tfvars file.
 # The data store is created in the `data_project_id` project.
 module "data_store" {
   # The source directory of the data store module.
@@ -317,18 +316,10 @@ module "data_store" {
   dataform_github_repo  = var.dataform_github_repo
   dataform_github_token = var.dataform_github_token
 
-  # The create_dev_environment is set in the terraform.tfvars file. 
-  # The create_dev_environment determines if the dev environment is created. 
-  # When the value is true, the dev environment is created.
-  # The create_staging_environment is set in the terraform.tfvars file. 
-  # The create_staging_environment determines if the staging environment is created. 
-  # When the value is true, the staging environment is created.
-  # The create_prod_environment is set in the terraform.tfvars file.
-  # The create_prod_environment determines if the prod environment is created. 
-  # When the value is true, the prod environment is created.
-  create_dev_environment     = var.create_dev_environment
-  create_staging_environment = var.create_staging_environment
-  create_prod_environment    = var.create_prod_environment
+  # The create_dataform determines if dataform is created. 
+  # When the value is true, the dataform environment is created.
+  deploy_dataform     = var.deploy_dataform
+  property_id        = var.property_id
 
   # The dev_data_project_id is the project ID of where the dev datasets will created. 
   #If not provided, data_project_id will be used.
