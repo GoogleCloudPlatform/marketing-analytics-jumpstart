@@ -231,6 +231,12 @@ variable "poetry_cmd" {
   default     = "poetry"
 }
 
+variable "uv_cmd" {
+  description = "alias for uv run command on the current system"
+  type        = string
+  default     = "uv"
+}
+
 variable "feature_store_project_id" {
   type        = string
   description = "Project ID where feature store resources are created"
