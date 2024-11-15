@@ -43,52 +43,18 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     gcloud config set project $PROJECT_ID
     ```
 
-1. Install or update Python3
-    Install a compatible version of Python 3.8-3.10 and set the CLOUDSDK_PYTHON environment variable to point to it.
+1. ## Install update uv for running python scripts
+Install [uv](https://docs.astral.sh/uv/) that manages the python version and dependecies for the solution.
 
-    ```bash
-    sudo apt-get install python3.10
-    CLOUDSDK_PYTHON=python3.10
-    ```
-    If you are installing on a Mac:
-   ```shell
-   brew install python@3.10
-   CLOUDSDK_PYTHON=python3.10
-   ```
+```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH" 
+```
 
-1. Install Python's Poetry and set Poetry to use Python 3.10 version
-
-   [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
-
-   If you are installing on in Cloud Shell use the following commands:
-   ```shell
-   pipx install poetry
-   ```
-   If you don't have pipx installed - follow the [Pipx installation guide](https://pipx.pypa.io/stable/installation/)
-   ```shell
-   sudo apt update
-   sudo apt install pipx
-   pipx ensurepath
-   pipx install poetry
-   ```
-   Verify that `poetry` is on your $PATH variable:
-   ```shell
-   poetry --version
-   ```
-   If it fails - add it to your $PATH variable:
-   ```shell
-   export PATH="$HOME/.local/bin:$PATH" 
-   ```
-   If you are installing on a Mac:
-   ```shell
-   brew install poetry
-   ```
-   Set poetry to use your latest python3
-   ```shell
-   SOURCE_ROOT=${HOME}/${REPO}
-   cd ${SOURCE_ROOT}
-   poetry env use python3
-   ```
+Check uv installation
+```sh
+uv --version
+```
 
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
    ```shell
