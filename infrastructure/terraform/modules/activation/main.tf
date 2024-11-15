@@ -15,7 +15,6 @@
 locals {
   app_prefix                                     = "activation"
   source_root_dir                                = "../.."
-  poetry_run_alias                               = "${var.poetry_cmd} run"
   template_dir                                   = "${local.source_root_dir}/templates"
   pipeline_source_dir                            = "${local.source_root_dir}/python/activation"
   trigger_function_dir                           = "${local.source_root_dir}/python/function"
@@ -60,6 +59,17 @@ locals {
 
   ga4_setup_source_file              = "${local.source_root_dir}/python/ga4_setup/setup.py"
   ga4_setup_source_file_content_hash = filesha512(local.ga4_setup_source_file)
+
+  # GCP Cloud Build is not available in all regions.
+  cloud_build_available_locations = [
+    "us-central1",
+    "us-west2",
+    "europe-west1",
+    "asia-east1",
+    "australia-southeast1",
+    "southamerica-east1"
+  ]
+
 }
 
 data "google_project" "activation_project" {
@@ -301,6 +311,16 @@ resource "null_resource" "check_cloudbuild_api" {
   depends_on = [
     module.project_services
   ]
+
+  # The lifecycle block of the google_artifact_registry_repository resource defines a precondition that 
+  # checks if the specified region is included in the vertex_pipelines_available_locations list. 
+  # If the condition is not met, an error message is displayed and the Terraform configuration will fail.
+  lifecycle {
+    precondition {
+      condition     = contains(local.cloud_build_available_locations, var.location)
+      error_message = "Cloud Build is not available in your default region: ${var.location}.\nSet 'google_default_region' variable to a valid Cloud Build location, see Restricted Regions in https://cloud.google.com/build/docs/locations."
+    }
+  }
 }
 
 # This resource executes gcloud commands to check whether the IAM API is enabled.
@@ -352,7 +372,7 @@ resource "null_resource" "create_custom_events" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${var.uv_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
@@ -370,7 +390,7 @@ resource "null_resource" "create_custom_dimensions" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${var.uv_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
@@ -426,7 +446,7 @@ module "trigger_function_account" {
 # a python command defined in the module ga4_setup.
 # This informatoin can then be used in other parts of the Terraform configuration to access the retrieved information.
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  program     = ["bash", "-c", "${var.uv_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
   working_dir = local.source_root_dir
   # The count attribute specifies how many times the external data source should be executed.
   # This means that the external data source will be executed only if either the 
@@ -449,13 +469,13 @@ resource "random_id" "random_suffix" {
 # to interact with other Google Cloud services on your behalf.
 resource "google_project_service_identity" "secretmanager_sa" {
   provider = google-beta
-  project = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
-  service = "secretmanager.googleapis.com"
+  project  = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
+  service  = "secretmanager.googleapis.com"
 }
- # This Key Ring can then be used to store and manage encryption keys for various purposes, 
- # such as encrypting data at rest or protecting secrets.
+# This Key Ring can then be used to store and manage encryption keys for various purposes, 
+# such as encrypting data at rest or protecting secrets.
 resource "google_kms_key_ring" "key_ring_regional" {
-  name     = "key_ring_regional-${random_id.random_suffix.hex}"
+  name = "key_ring_regional-${random_id.random_suffix.hex}"
   # If you want your replicas in other locations, change the location in the var.location variable passed as a parameter to this submodule.
   # if you your replicas stored global, set the location = "global".
   location = var.location
@@ -494,7 +514,7 @@ data "google_iam_policy" "crypto_key_encrypter_decrypter" {
 # in another data source.
 resource "google_kms_crypto_key_iam_policy" "crypto_key" {
   crypto_key_id = google_kms_crypto_key.crypto_key_regional.id
-  policy_data = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
+  policy_data   = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
 }
 
 # It sets the IAM policy for a KMS Key Ring, granting specific permissions defined 
@@ -530,13 +550,13 @@ module "secret_manager" {
       # If you want your replicas in other locations, uncomment the following lines and add them here.
       # Check this example, as reference: https://github.com/GoogleCloudPlatform/terraform-google-secret-manager/blob/main/examples/multiple/main.tf#L91
       {
-        location = var.location
+        location     = var.location
         kms_key_name = google_kms_crypto_key.crypto_key_regional.id
       }
     ]
     ga4-measurement-secret = [
       {
-        location = var.location
+        location     = var.location
         kms_key_name = google_kms_crypto_key.crypto_key_regional.id
       }
     ]
@@ -801,8 +821,15 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  #create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
-  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest --gcs-log-dir=gs://${module.build_logs_bucket.name} ${local.pipeline_source_dir}"
+  create_cmd_body  = <<-EOT
+    builds submit \
+      --project=${module.project_services.project_id} \
+      --region ${var.location} \
+      --default-buckets-behavior=regional-user-owned-bucket \
+      --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest \
+      --gcs-log-dir=gs://${module.build_logs_bucket.name} \
+      ${local.pipeline_source_dir}
+  EOT
   destroy_cmd_body = "artifacts docker images delete --project=${module.project_services.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 
   create_cmd_triggers = {
@@ -816,8 +843,8 @@ module "activation_pipeline_container" {
 
 # This module executes a gcloud command to build a dataflow flex template and uploads it to Dataflow
 module "activation_pipeline_template" {
-  source                = "terraform-google-modules/gcloud/google"
-  version               = "3.5.0"
+  source  = "terraform-google-modules/gcloud/google"
+  version = "3.5.0"
 
   platform         = "linux"
   create_cmd_body  = "dataflow flex-template build --project=${module.project_services.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""

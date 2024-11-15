@@ -309,13 +309,12 @@ resource "null_resource" "build_push_pipelines_components_image" {
     docker_repo_id          = google_artifact_registry_repository.pipelines_docker_repo.id
     docker_repo_create_time = google_artifact_registry_repository.pipelines_docker_repo.create_time
     source_content_hash     = local.component_image_content_hash
-    poetry_installed        = var.poetry_installed
   }
 
   # The provisioner block specifies the command that will be executed to build and push the base component image.
   # This command will execute the build-push function in the base_component_image module, which will build and push the base component image to the specified Docker repository.
   provisioner "local-exec" {
-    command     = "${var.poetry_run_alias} python -m base_component_image.build-push -c ${local.config_file_path_relative_python_run_dir}"
+    command     = "${var.uv_run_alias} python -m base_component_image.build-push -c ${local.config_file_path_relative_python_run_dir}"
     working_dir = self.triggers.working_dir
   }
 }
@@ -367,9 +366,9 @@ resource "null_resource" "compile_feature_engineering_auto_audience_segmentation
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution -o fe_auto_audience_segmentation.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_auto_audience_segmentation.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution -i fe_auto_audience_segmentation.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution -o fe_auto_audience_segmentation.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_auto_audience_segmentation.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-auto-audience-segmentation.execution -i fe_auto_audience_segmentation.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -391,9 +390,9 @@ resource "null_resource" "compile_feature_engineering_aggregated_value_based_bid
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-aggregated-value-based-bidding.execution -o fe_agg_vbb.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_agg_vbb.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-aggregated-value-based-bidding.execution -i fe_agg_vbb.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-aggregated-value-based-bidding.execution -o fe_agg_vbb.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_agg_vbb.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-aggregated-value-based-bidding.execution -i fe_agg_vbb.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -415,9 +414,9 @@ resource "null_resource" "compile_feature_engineering_audience_segmentation_pipe
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-audience-segmentation.execution -o fe_audience_segmentation.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_audience_segmentation.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-audience-segmentation.execution -i fe_audience_segmentation.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-audience-segmentation.execution -o fe_audience_segmentation.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_audience_segmentation.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-audience-segmentation.execution -i fe_audience_segmentation.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -439,9 +438,9 @@ resource "null_resource" "compile_feature_engineering_purchase_propensity_pipeli
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-purchase-propensity.execution -o fe_purchase_propensity.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_purchase_propensity.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-purchase-propensity.execution -i fe_purchase_propensity.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-purchase-propensity.execution -o fe_purchase_propensity.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_purchase_propensity.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-purchase-propensity.execution -i fe_purchase_propensity.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -463,9 +462,9 @@ resource "null_resource" "compile_feature_engineering_churn_propensity_pipeline"
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-churn-propensity.execution -o fe_churn_propensity.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_churn_propensity.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-churn-propensity.execution -i fe_churn_propensity.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-churn-propensity.execution -o fe_churn_propensity.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_churn_propensity.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-churn-propensity.execution -i fe_churn_propensity.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -487,9 +486,9 @@ resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pi
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-customer-ltv.execution -o fe_customer_ltv.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_customer_ltv.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-customer-ltv.execution -i fe_customer_ltv.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-customer-ltv.execution -o fe_customer_ltv.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_customer_ltv.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-customer-ltv.execution -i fe_customer_ltv.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -512,9 +511,9 @@ resource "null_resource" "compile_purchase_propensity_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.training -o purchase_propensity_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f purchase_propensity_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.training -i purchase_propensity_training.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.training -o purchase_propensity_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f purchase_propensity_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.training -i purchase_propensity_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -533,9 +532,9 @@ resource "null_resource" "compile_purchase_propensity_prediction_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.prediction -o purchase_propensity_prediction.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f purchase_propensity_prediction.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.prediction -i purchase_propensity_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.prediction -o purchase_propensity_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f purchase_propensity_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.purchase_propensity.prediction -i purchase_propensity_prediction.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -554,9 +553,9 @@ resource "null_resource" "compile_propensity_clv_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity_clv.training -o propensity_clv_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f propensity_clv_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity_clv.training -i propensity_clv_training.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity_clv.training -o propensity_clv_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f propensity_clv_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.propensity_clv.training -i propensity_clv_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -575,9 +574,9 @@ resource "null_resource" "compile_clv_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.training -o clv_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f clv_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.training -i clv_training.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.training -o clv_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f clv_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.training -i clv_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -596,9 +595,9 @@ resource "null_resource" "compile_clv_prediction_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f clv_prediction.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.prediction -i clv_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.prediction -o clv_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f clv_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.clv.prediction -i clv_prediction.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -617,9 +616,9 @@ resource "null_resource" "compile_segmentation_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f segmentation_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.training -i segmentation_training.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.training -o segmentation_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f segmentation_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.training -i segmentation_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -638,9 +637,9 @@ resource "null_resource" "compile_segmentation_prediction_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f segmentation_prediction.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.prediction -i segmentation_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.prediction -o segmentation_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f segmentation_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.segmentation.prediction -i segmentation_prediction.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -659,9 +658,9 @@ resource "null_resource" "compile_auto_segmentation_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.training -o auto_segmentation_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f auto_segmentation_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.training -i auto_segmentation_training.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.training -o auto_segmentation_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f auto_segmentation_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.training -i auto_segmentation_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -680,9 +679,9 @@ resource "null_resource" "compile_auto_segmentation_prediction_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.prediction -o auto_segmentation_prediction.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f auto_segmentation_prediction.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.prediction -i auto_segmentation_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.prediction -o auto_segmentation_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f auto_segmentation_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.auto_segmentation.prediction -i auto_segmentation_prediction.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -701,9 +700,9 @@ resource "null_resource" "compile_value_based_bidding_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.training -o vbb_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f vbb_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.training -i vbb_training.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.training -o vbb_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f vbb_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.training -i vbb_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -722,9 +721,9 @@ resource "null_resource" "compile_value_based_bidding_explanation_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.explanation -o vbb_explanation.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f vbb_explanation.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.explanation -i vbb_explanation.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.explanation -o vbb_explanation.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f vbb_explanation.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.value_based_bidding.explanation -i vbb_explanation.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -743,9 +742,9 @@ resource "null_resource" "compile_churn_propensity_training_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.training -o churn_propensity_training.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f churn_propensity_training.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.training -i churn_propensity_training.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.training -o churn_propensity_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f churn_propensity_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.training -i churn_propensity_training.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -764,9 +763,9 @@ resource "null_resource" "compile_churn_propensity_prediction_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.prediction -o churn_propensity_prediction.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f churn_propensity_prediction.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.prediction -i churn_propensity_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.prediction -o churn_propensity_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f churn_propensity_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.churn_propensity.prediction -i churn_propensity_prediction.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -785,9 +784,9 @@ resource "null_resource" "compile_reporting_preparation_aggregate_predictions_pi
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.reporting_preparation.execution -o reporting_preparation.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f reporting_preparation.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.reporting_preparation.execution -i reporting_preparation.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.reporting_preparation.execution -o reporting_preparation.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f reporting_preparation.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.reporting_preparation.execution -i reporting_preparation.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
@@ -806,9 +805,9 @@ resource "null_resource" "compile_gemini_insights_pipelines" {
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.poetry_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.gemini_insights.execution -o gemini_insights.yaml
-    ${var.poetry_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f gemini_insights.yaml -t ${self.triggers.tag} -t latest
-    ${var.poetry_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.gemini_insights.execution -i gemini_insights.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.gemini_insights.execution -o gemini_insights.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f gemini_insights.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.gemini_insights.execution -i gemini_insights.yaml
     EOT
     working_dir = self.triggers.working_dir
   }
