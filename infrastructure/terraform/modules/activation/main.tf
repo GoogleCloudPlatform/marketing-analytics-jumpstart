@@ -15,7 +15,6 @@
 locals {
   app_prefix                                     = "activation"
   source_root_dir                                = "../.."
-  poetry_run_alias                               = "${var.poetry_cmd} run"
   template_dir                                   = "${local.source_root_dir}/templates"
   pipeline_source_dir                            = "${local.source_root_dir}/python/activation"
   trigger_function_dir                           = "${local.source_root_dir}/python/function"
@@ -373,7 +372,7 @@ resource "null_resource" "create_custom_events" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${var.uv_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
@@ -391,7 +390,7 @@ resource "null_resource" "create_custom_dimensions" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
+    ${var.uv_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}
     EOT
     working_dir = local.source_root_dir
   }
@@ -447,7 +446,7 @@ module "trigger_function_account" {
 # a python command defined in the module ga4_setup.
 # This informatoin can then be used in other parts of the Terraform configuration to access the retrieved information.
 data "external" "ga4_measurement_properties" {
-  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  program     = ["bash", "-c", "${var.uv_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
   working_dir = local.source_root_dir
   # The count attribute specifies how many times the external data source should be executed.
   # This means that the external data source will be executed only if either the 

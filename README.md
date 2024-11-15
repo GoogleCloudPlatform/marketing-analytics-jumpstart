@@ -119,7 +119,7 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 - [ ] [Backfill](https://cloud.google.com/bigquery/docs/google-ads-transfer) BigQuery Data Transfer service for Google Ads
 - [ ] Have existing Google Analytics 4 Property with [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en)
 
-**Note:** Google Ads Customer Matching currently only works with Google Analytics 4 **Properties** linked to Google Ads Accounts, it won't work for subproperties or Rollup properties.
+**Note:** Google Ads Customer Matching currently only works with Google Analytics 4 **Property** and **Subproperty** linked to Google Ads Accounts, it won't work for Rollup properties.
 
 ## Installation Permissions and Privileges
 - [ ] Google Analytics Property Editor or Owner

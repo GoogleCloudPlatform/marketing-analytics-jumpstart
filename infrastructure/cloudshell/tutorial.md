@@ -12,45 +12,17 @@ export PROJECT_ID="<walkthrough-project-id/>"
 gcloud config set project $PROJECT_ID
 ```
 
-## Install or update Python3
-Install a compatible version of Python 3.8-3.10 and set the CLOUDSDK_PYTHON environment variable to point to it.
-```sh
-sudo apt-get install python3.10
-CLOUDSDK_PYTHON=python3.10
-```
+## Install update uv for running python scripts
+Install [uv](https://docs.astral.sh/uv/) that manages the python version and dependecies for the solution.
 
-## Install Python's Poetry and set Poetry to use Python 3.10 version
-[Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
-If you are installing on in Cloud Shell use the following commands:
 ```sh
-pipx install poetry
-```
-If you don't have pipx installed - follow the [Pipx installation guide](https://pipx.pypa.io/stable/installation/)
-```sh
-sudo apt update
-sudo apt install pipx
-pipx ensurepath
-pipx install poetry
-```
-Verify that `poetry` is on your $PATH variable:
-```sh
-poetry --version
-```
-If it fails - add it to your $PATH variable:
-```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH" 
 ```
-Verify poetry is properly installed, run:
+
+Check uv installation
 ```sh
-poetry --version
-```
-Set poetry to use your latest python3
-```sh
-poetry env use python3
-```
-Install python dependencies, run:
-```sh
-poetry install
+uv --version
 ```
 
 ## Authenticate with additional OAuth 2.0 scopes

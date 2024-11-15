@@ -3,7 +3,7 @@ Marketing Analytics Jumpstart consists of an easy, extensible and automated impl
 
 ## Developer pre-requisites
 Use Visual Studio Code to develop the solution. Install Gemini Code Assistant, Docker, GitHub, Hashicorp, Terraform, Jinja extensions.
-You should have Python 3, Poetry, Terraform, Git and Docker installed in your developer terminal environment.
+You should have Python 3, uv, Terraform, Git and Docker installed in your developer terminal environment.
 
 ## Preparing development environment
 
