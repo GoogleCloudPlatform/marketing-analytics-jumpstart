@@ -44,17 +44,17 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     ```
 
 1. Install update uv for running python scripts
-Install [uv](https://docs.astral.sh/uv/) that manages the python version and dependecies for the solution.
+    Install [uv](https://docs.astral.sh/uv/) that manages the python version and dependecies for the solution.
 
-```sh
-curl -LsSf https://astral.sh/uv/install.sh | sh
-export PATH="$HOME/.local/bin:$PATH" 
-```
+    ```sh
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+    ```
 
-Check uv installation
-```sh
-uv --version
-```
+    Check uv installation:
+    ```sh
+    uv --version
+    ```
 
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
    ```shell
