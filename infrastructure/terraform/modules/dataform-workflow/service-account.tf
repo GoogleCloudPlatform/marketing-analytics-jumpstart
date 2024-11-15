@@ -19,13 +19,13 @@ resource "google_service_account" "scheduler" {
   ]
 
   project      = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
-  account_id   = "workflow-scheduler-${var.environment}"
-  display_name = "Service Account to schedule Dataform workflows in ${var.environment}"
+  account_id   = "workflow-scheduler-${var.property_id}"
+  display_name = "Service Account to schedule Dataform workflows in ${var.property_id}"
 }
 
 locals {
-  scheduler_sa = "workflow-scheduler-${var.environment}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
-  workflows_sa = "workflow-dataform-${var.environment}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
+  scheduler_sa = "workflow-scheduler-${var.property_id}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
+  workflows_sa = "workflow-dataform-${var.property_id}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
 }
 
 # Wait for the scheduler service account to be created
@@ -74,8 +74,8 @@ resource "google_service_account" "workflow-dataform" {
   ]
 
   project      = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
-  account_id   = "workflow-dataform-${var.environment}"
-  display_name = "Service Account to run Dataform workflows in ${var.environment}"
+  account_id   = "workflow-dataform-${var.property_id}"
+  display_name = "Service Account to run Dataform workflows in ${var.property_id}"
 }
 
 # Wait for the workflows service account to be created
