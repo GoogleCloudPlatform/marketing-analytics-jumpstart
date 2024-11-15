@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+[project]
+name = "marketing-analytics-jumpstart"
+version = "1.0.0"
+description = "Marketing Analytics Jumpstart"
+authors = ["Marketing Analytics Solutions Architects <ma-se@google.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+requires-python = ">=3.8,<3.11"
+
 [tool.poetry]
 name = "marketing-analytics-jumpstart"
 version = "1.0.0"

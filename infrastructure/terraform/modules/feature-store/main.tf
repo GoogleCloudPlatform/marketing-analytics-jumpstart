@@ -21,7 +21,6 @@ locals {
   config_bigquery                       = local.config_vars.bigquery
   feature_store_project_id              = local.config_vars.bigquery.dataset.feature_store.project_id
   sql_dir                               = var.sql_dir_input
-  poetry_run_alias                      = "${var.poetry_cmd} run"
   builder_repository_id                 = "marketing-analytics-jumpstart-base-repo"
   purchase_propensity_project_id        = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.purchase_propensity.project_id : local.feature_store_project_id
   churn_propensity_project_id           = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.churn_propensity.project_id : local.feature_store_project_id
