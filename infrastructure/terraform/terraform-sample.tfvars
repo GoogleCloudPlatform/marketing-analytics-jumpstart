@@ -16,10 +16,7 @@
 
 tf_state_project_id = "Google Cloud project where the terraform state file is stored"
 
-create_dev_environment     = false
-create_staging_environment = false
-create_prod_environment    = true
-
+deploy_dataform      = true
 deploy_activation    = true
 deploy_feature_store = true
 deploy_pipelines     = true
@@ -28,6 +25,7 @@ deploy_monitoring    = true
 ####################  DATA VARIABLES  #################################
 
 data_project_id              = "Project id where the MDS datasets will be created"
+property_id                  = "Google Analytics 4 property id to identify an unique MDS deployment"
 destination_data_location    = "BigQuery location (either regional or multi-regional) for the MDS BigQuery datasets."
 data_processing_project_id   = "Project id where the Dataform will be installed and run"
 source_ga4_export_project_id = "Project id which contains the GA4 export dataset"
