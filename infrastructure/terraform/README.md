@@ -43,7 +43,7 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     gcloud config set project $PROJECT_ID
     ```
 
-1. ## Install update uv for running python scripts
+1. Install update uv for running python scripts
 Install [uv](https://docs.astral.sh/uv/) that manages the python version and dependecies for the solution.
 
 ```sh
