@@ -69,8 +69,8 @@ locals {
   source_root_dir = "../.."
   # The config_file_name is the name of the config file.
   config_file_name = "config"
-  # The poetry_run_alias is the alias of the poetry command.
-  poetry_run_alias = "${var.poetry_cmd} run"
+  # The uv_run_alias is the alias of the uv run command.
+  uv_run_alias = "${var.uv_cmd} run"
   # The mds_dataset_suffix is the suffix of the marketing data store dataset.
   mds_dataset_suffix = var.create_staging_environment ? "staging" : var.create_dev_environment ? "dev" : "prod"
   # The project_toml_file_path is the path to the project.toml file.
@@ -127,39 +127,22 @@ resource "local_file" "feature_store_configuration" {
   })
 }
 
-# Runs the poetry command to install the dependencies.
-# The command is: poetry install
-resource "null_resource" "poetry_install" {
-  triggers = {
-    create_command       = "${var.poetry_cmd} lock && ${var.poetry_cmd} install"
-    source_contents_hash = local.project_toml_content_hash
-  }
-
-  # Only run the command when `terraform apply` executes and the resource doesn't exist.
-  provisioner "local-exec" {
-    when        = create
-    command     = self.triggers.create_command
-    working_dir = local.source_root_dir
-  }
-}
-
 data "external" "check_ga4_property_type" {
-  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=check_property_type --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  program     = ["bash", "-c", "${local.uv_run_alias} ga4-setup --ga4_resource=check_property_type --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
   working_dir = local.source_root_dir
-  depends_on  = [null_resource.poetry_install]
 }
 
-# Runs the poetry invoke command to generate the sql queries and procedures.
+# Runs the uv invoke command to generate the sql queries and procedures.
 # This command is executed before the feature store is created.
 resource "null_resource" "generate_sql_queries" {
 
   triggers = {
     # The create command generates the sql queries and procedures.
-    # The command is: poetry inv [function_name] --env-name=${local.config_file_name}
+    # The command is: uv inv [function_name] --env-name=${local.config_file_name}
     # The --env-name argument is the name of the configuration file.
     create_command = <<-EOT
-    ${local.poetry_run_alias} inv apply-config-parameters-to-all-queries --env-name=${local.config_file_name}
-    ${local.poetry_run_alias} inv apply-config-parameters-to-all-procedures --env-name=${local.config_file_name}
+    ${local.uv_run_alias} inv apply-config-parameters-to-all-queries --env-name=${local.config_file_name}
+    ${local.uv_run_alias} inv apply-config-parameters-to-all-procedures --env-name=${local.config_file_name}
     EOT
 
     # The destroy command removes the generated sql queries and procedures.
@@ -170,10 +153,6 @@ resource "null_resource" "generate_sql_queries" {
 
     # The working directory is the root of the project.
     working_dir = local.source_root_dir
-
-    # The poetry_installed trigger is the ID of the null_resource.poetry_install resource.
-    # This is used to ensure that the poetry command is run before the generate_sql_queries command.
-    poetry_installed = null_resource.poetry_install.id
 
     # The source_contents_hash trigger is the hash of the project.toml file.
     # This is used to ensure that the generate_sql_queries command is run only if the project.toml file has changed.
@@ -415,15 +394,12 @@ module "pipelines" {
   # The source is the path to the pipelines module.
   source           = "./modules/pipelines"
   config_file_path = local_file.feature_store_configuration.id != "" ? local_file.feature_store_configuration.filename : ""
-  poetry_run_alias = local.poetry_run_alias
+  uv_run_alias = local.uv_run_alias
   # The count determines if the pipelines are created or not.
   # If the count is 1, the pipelines are created.
   # If the count is 0, the pipelines are not created.
   # This is done to avoid creating the pipelines if the `deploy_pipelines` variable is set to false in the terraform.tfvars file.
   count = var.deploy_pipelines ? 1 : 0
-  # The poetry_installed trigger is the ID of the null_resource.poetry_install resource.
-  # This is used to ensure that the poetry command is run before the pipelines module is created.
-  poetry_installed = null_resource.poetry_install.id
   # The project_id is the project in which the data is stored.
   # This is set to the data project ID in the terraform.tfvars file.
   mds_project_id = var.data_project_id
@@ -454,9 +430,9 @@ module "activation" {
   # The trigger function is used to trigger the activation function.
   # The trigger function is created in the same region as the activation function.
   trigger_function_location = var.google_default_region
-  # The poetry_cmd is the poetry_cmd variable.
-  # This can be set on the poetry_cmd in the terraform.tfvars file.
-  poetry_cmd = var.poetry_cmd
+  # The uv_run_alias is the uv_run_alias variable.
+  # This can be set on the uv_cmd in the terraform.tfvars file.
+  uv_run_alias = local.uv_run_alias
   # The ga4_measurement_id is the ga4_measurement_id variable.
   # This can be set on the ga4_measurement_id in the terraform.tfvars file.
   ga4_measurement_id = var.ga4_measurement_id
@@ -479,9 +455,6 @@ module "activation" {
   # This is done to avoid creating the activation function if the `deploy_activation` variable is set 
   # to false in the terraform.tfvars file.
   count = var.deploy_activation ? 1 : 0
-  # The poetry_installed is the ID of the null_resource poetry_install
-  # This is used to ensure that the poetry command is run before the activation module is created.
-  poetry_installed   = null_resource.poetry_install.id
   mds_project_id     = var.data_project_id
   mds_dataset_suffix = local.mds_dataset_suffix
 

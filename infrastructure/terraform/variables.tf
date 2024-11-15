@@ -225,10 +225,10 @@ variable "feature_store_config_env" {
   default     = "config"
 }
 
-variable "poetry_cmd" {
-  description = "alias for poetry run command on the current system"
+variable "uv_cmd" {
+  description = "alias for uv run command on the current system"
   type        = string
-  default     = "poetry"
+  default     = "uv"
 }
 
 variable "feature_store_project_id" {

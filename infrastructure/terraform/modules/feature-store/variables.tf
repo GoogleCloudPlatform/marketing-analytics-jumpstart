@@ -37,8 +37,8 @@ variable "sql_dir_input" {
   description = "SQL queries directory"
 }
 
-variable "poetry_cmd" {
-  description = "alias for poetry command on the current system"
+variable "uv_run_alias" {
+  description = "alias for uv run command on the current system"
   type        = string
-  default     = "poetry"
+  default     = "uv run"
 }

@@ -17,13 +17,8 @@ variable "config_file_path" {
   description = "pipelines config file"
 }
 
-variable "poetry_run_alias" {
-  description = "alias for poetry run command on the current system"
-  type        = string
-}
-
-variable "poetry_installed" {
-  description = "Construct to specify dependency to poetry installed"
+variable "uv_run_alias" {
+  description = "alias for uv run command on the current system"
   type        = string
 }
 
