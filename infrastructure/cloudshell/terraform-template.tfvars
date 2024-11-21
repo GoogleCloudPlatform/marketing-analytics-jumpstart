@@ -27,6 +27,7 @@ deploy_monitoring    = true
 
 data_project_id              = "${MAJ_MDS_PROJECT_ID}"
 destination_data_location    = "${MAJ_MDS_DATA_LOCATION}"
+property_id                  = "${MAJ_GA4_PROPERTY_ID}"
 data_processing_project_id   = "${MAJ_MDS_DATAFORM_PROJECT_ID}"
 source_ga4_export_project_id = "${MAJ_GA4_EXPORT_PROJECT_ID}"
 source_ga4_export_dataset    = "${MAJ_GA4_EXPORT_DATASET}"

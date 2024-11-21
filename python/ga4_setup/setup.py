@@ -513,9 +513,14 @@ def entry():
 
   if args.ga4_resource == "check_property_type":
     property = get_property(configuration)
-    result = {
-      'supported': f"{property.property_type == property.property_type.PROPERTY_TYPE_ORDINARY}"
-    }
+    is_property_supported = set((property.property_type.PROPERTY_TYPE_ORDINARY, property.property_type.PROPERTY_TYPE_SUBPROPERTY, property.property_type.PROPERTY_TYPE_ROLLUP))
+    
+    result = {}
+    if property.property_type in is_property_supported:
+      result = {'supported': "True"}
+    else:
+      result = {'supported': "False"}
+
     print(json.dumps(result))
 
   # python setup.py --ga4_resource=custom_events
