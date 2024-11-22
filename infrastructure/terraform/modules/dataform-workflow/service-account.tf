@@ -12,20 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "google_service_account" "scheduler" {
+locals {
+  scheduler_sa = "workflow-scheduler-${var.property_id}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
+  workflows_sa = "workflow-dataform-${var.property_id}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
+}
+
+module "scheduler" {
+  source  = "terraform-google-modules/service-accounts/google//modules/simple-sa"
+  version = "~> 4.0"
+
+  project_id    = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
+  name  = "workflow-scheduler-${var.property_id}"
+  project_roles = [
+    "roles/workflows.invoker"
+  ]
+
   depends_on = [
     module.data_processing_project_services,
     null_resource.check_cloudscheduler_api,
   ]
-
-  project      = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
-  account_id   = "workflow-scheduler-${var.property_id}"
-  display_name = "Service Account to schedule Dataform workflows in ${var.property_id}"
 }
 
-locals {
-  scheduler_sa = "workflow-scheduler-${var.property_id}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
-  workflows_sa = "workflow-dataform-${var.property_id}@${module.data_processing_project_services.project_id}.iam.gserviceaccount.com"
+# Propagation time for change of access policy typically takes 2 minutes
+# according to https://cloud.google.com/iam/docs/access-change-propagation
+# this wait make sure the policy changes are propagated before proceeding
+# with the build
+resource "time_sleep" "wait_for_scheduler_service_account_role_propagation" {
+  create_duration = "120s"
+  depends_on = [
+    module.scheduler
+  ]
 }
 
 # Wait for the scheduler service account to be created
@@ -37,7 +53,7 @@ resource "null_resource" "wait_for_scheduler_sa_creation" {
     MAX_TRIES=100
     while ! gcloud iam service-accounts list --project=${module.data_processing_project_services.project_id} --filter="EMAIL:${local.scheduler_sa} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 10
       printf "."
       COUNTER=$((COUNTER + 1))
     done
@@ -45,37 +61,44 @@ resource "null_resource" "wait_for_scheduler_sa_creation" {
       echo "scheduler service account was not created, terraform can not continue!"
       exit 1
     fi
-    sleep 20
+    sleep 120
     EOT
   }
 
   depends_on = [
     module.data_processing_project_services,
-    null_resource.check_dataform_api
+    time_sleep.wait_for_scheduler_service_account_role_propagation,
+    null_resource.check_dataform_api,
+    module.scheduler,
   ]
 }
 
-resource "google_project_iam_member" "scheduler-workflow-invoker" {
-  depends_on = [
-    module.data_processing_project_services,
-    null_resource.check_cloudscheduler_api,
-    null_resource.wait_for_scheduler_sa_creation
+module "workflow-dataform" {
+  source  = "terraform-google-modules/service-accounts/google//modules/simple-sa"
+  version = "~> 4.0"
+
+  project_id    = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
+  name  = "workflow-dataform-${var.property_id}"
+  project_roles = [
+    "roles/dataform.editor"
   ]
 
-  project = null_resource.check_cloudscheduler_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
-  member  = "serviceAccount:${google_service_account.scheduler.email}"
-  role    = "roles/workflows.invoker"
-}
-
-resource "google_service_account" "workflow-dataform" {
   depends_on = [
     module.data_processing_project_services,
     null_resource.check_workflows_api,
+    null_resource.check_dataform_api,
   ]
+}
 
-  project      = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
-  account_id   = "workflow-dataform-${var.property_id}"
-  display_name = "Service Account to run Dataform workflows in ${var.property_id}"
+# Propagation time for change of access policy typically takes 2 minutes
+# according to https://cloud.google.com/iam/docs/access-change-propagation
+# this wait make sure the policy changes are propagated before proceeding
+# with the build
+resource "time_sleep" "wait_for_workflow_dataform_service_account_role_propagation" {
+  create_duration = "120s"
+  depends_on = [
+    module.workflow-dataform
+  ]
 }
 
 # Wait for the workflows service account to be created
@@ -86,7 +109,7 @@ resource "null_resource" "wait_for_workflows_sa_creation" {
     MAX_TRIES=100
     while ! gcloud iam service-accounts list --project=${module.data_processing_project_services.project_id} --filter="EMAIL:${local.workflows_sa} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
-      sleep 3
+      sleep 10
       printf "."
       COUNTER=$((COUNTER + 1))
     done
@@ -94,25 +117,14 @@ resource "null_resource" "wait_for_workflows_sa_creation" {
       echo "workflows service account was not created, terraform can not continue!"
       exit 1
     fi
-    sleep 20
+    sleep 120
     EOT
   }
 
   depends_on = [
     module.data_processing_project_services,
-    null_resource.check_dataform_api
-  ]
-}
-
-
-resource "google_project_iam_member" "worflow-dataform-dataform-editor" {
-  depends_on = [
-    module.data_processing_project_services,
     null_resource.check_dataform_api,
-    null_resource.wait_for_workflows_sa_creation
+    module.workflow-dataform,
+    time_sleep.wait_for_workflow_dataform_service_account_role_propagation,
   ]
-
-  project = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
-  member  = "serviceAccount:${google_service_account.workflow-dataform.email}"
-  role    = "roles/dataform.editor"
 }
