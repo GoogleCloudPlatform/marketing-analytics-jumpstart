@@ -1467,6 +1467,7 @@ resource "null_resource" "create_gemini_model" {
     vertex_ai_connection_exists = google_bigquery_connection.vertex_ai_connection.id,
     gemini_dataset_exists       = module.gemini_insights.bigquery_dataset.id,
     check_gemini_dataset_listed = null_resource.check_gemini_insights_dataset_exists.id
+    role_propagated             = time_sleep.wait_for_vertex_ai_connection_sa_role_propagation.id
   }
 
   provisioner "local-exec" {
@@ -1478,7 +1479,8 @@ resource "null_resource" "create_gemini_model" {
   depends_on = [
     google_bigquery_connection.vertex_ai_connection,
     module.gemini_insights.google_bigquery_dataset,
-    null_resource.check_gemini_insights_dataset_exists
+    null_resource.check_gemini_insights_dataset_exists,
+    time_sleep.wait_for_vertex_ai_connection_sa_role_propagation,
   ]
 }
 
