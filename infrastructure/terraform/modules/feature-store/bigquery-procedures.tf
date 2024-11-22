@@ -1487,6 +1487,7 @@ resource "null_resource" "check_gemini_model_exists" {
   triggers = {
     vertex_ai_connection_exists = google_bigquery_connection.vertex_ai_connection.id
     gemini_model_created        = null_resource.create_gemini_model.id
+    role_propagated             = time_sleep.wait_for_vertex_ai_connection_sa_role_propagation.id
   }
 
   provisioner "local-exec" {
@@ -1509,7 +1510,9 @@ resource "null_resource" "check_gemini_model_exists" {
 
   depends_on = [
     google_bigquery_connection.vertex_ai_connection,
-    null_resource.create_gemini_model
+    null_resource.create_gemini_model,
+    time_sleep.wait_for_vertex_ai_connection_sa_role_propagation,
+    google_project_iam_member.vertex_ai_connection_sa_roles
   ]
 }
 
