@@ -148,6 +148,17 @@ resource "google_project_iam_member" "vertex_ai_connection_sa_roles" {
   }
 }
 
+# Propagation time for change of access policy typically takes 2 minutes
+# according to https://cloud.google.com/iam/docs/access-change-propagation
+# this wait make sure the policy changes are propagated before proceeding
+# with the build
+resource "time_sleep" "wait_for_vertex_ai_connection_sa_role_propagation" {
+  create_duration = "120s"
+  depends_on = [
+    google_project_iam_member.vertex_ai_connection_sa_roles
+  ]
+}
+
 
 #module "vertex_ai_connection_sa_roles" {
 #  source  = "terraform-google-modules/iam/google//modules/member_iam"
