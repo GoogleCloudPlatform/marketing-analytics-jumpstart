@@ -35,7 +35,7 @@ resource "google_cloud_scheduler_job" "daily-dataform-increments" {
     uri         = "https://workflowexecutions.googleapis.com/v1/projects/${module.data_processing_project_services.project_id}/locations/${var.region}/workflows/${google_workflows_workflow.dataform-incremental-workflow.name}/executions"
 
     oauth_token {
-      service_account_email = google_service_account.scheduler.email
+      service_account_email = module.scheduler.email
     }
   }
 }

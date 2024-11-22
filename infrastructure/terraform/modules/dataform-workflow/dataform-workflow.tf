@@ -25,7 +25,7 @@ resource "google_workflows_workflow" "dataform-incremental-workflow" {
   name            = "dataform-${var.property_id}-incremental"
   region          = var.region
   description     = "Dataform incremental workflow for ${var.property_id} ga4 property"
-  service_account = google_service_account.workflow-dataform.email
+  service_account = module.workflow-dataform.email
   # The source code includes the following steps:
   # Init: This step initializes the workflow by assigning the value of the dataform_repository_id variable to the repository variable.
   # Create Compilation Result: This step creates a compilation result for the Dataform repository. The compilation result includes the git commit hash and the code compilation configuration.
