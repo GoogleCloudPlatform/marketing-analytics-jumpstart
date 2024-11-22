@@ -1472,6 +1472,7 @@ resource "null_resource" "create_gemini_model" {
 
   provisioner "local-exec" {
     command = <<-EOT
+    sleep 120
     ${var.uv_run_alias} bq query --use_legacy_sql=false --max_rows=100 --maximum_bytes_billed=10000000 < ${data.local_file.create_gemini_model_file.filename}
     EOT
   }
