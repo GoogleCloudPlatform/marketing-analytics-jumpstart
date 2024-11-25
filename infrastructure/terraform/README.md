@@ -154,7 +154,7 @@ Because a Cloud Shell session is ephemeral, your Cloud Shell session could termi
 
 Reset your Google Cloud Project ID variables:
 
-    ```shell
+    ```bash
     export PROJECT_ID="[your Google Cloud project id]"
     gcloud config set project $PROJECT_ID
     ```
