@@ -163,7 +163,35 @@ CREATE OR REPLACE TEMP TABLE first_purchasers as (
 );
 
 -- This SQL code calculates various user engagement and revenue metrics at a daily level and inserts the results into a target table. It leverages several temporary tables created earlier in the script to aggregate data efficiently.
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
+  processed_timestamp,
+  feature_date,
+  lifetime_purchasers_users,
+  lifetime_average_daily_purchasers,
+  lifetime_active_users,
+  lifetime_DAU,
+  lifetime_MAU,
+  lifetime_WAU,
+  lifetime_dau_per_mau,
+  lifetime_dau_per_wau,
+  lifetime_wau_per_mau,
+  lifetime_users_engagement_duration_seconds,
+  lifetime_average_engagement_time,
+  lifetime_average_engagement_time_per_session,
+  lifetime_average_sessions_per_user,
+  lifetime_ARPPU,
+  lifetime_ARPU,
+  lifetime_average_daily_revenue,
+  lifetime_max_daily_revenue,
+  lifetime_min_daily_revenue,
+  lifetime_new_users,
+  lifetime_returning_users,
+  lifetime_first_time_purchasers,
+  lifetime_first_time_purchaser_conversion,
+  lifetime_first_time_purchasers_per_new_user,
+  lifetime_avg_user_conversion_rate,
+  lifetime_avg_session_conversion_rate
+)
 SELECT
  -- Records the current timestamp when the query is executed.
  CURRENT_TIMESTAMP() AS processed_timestamp,
