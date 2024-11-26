@@ -137,7 +137,31 @@ CREATE OR REPLACE TEMP TABLE events_users as (
 -- This code block inserts data into the specified table, combining information from the "events_users" table
 -- and the "user_dimensions_event_session_scoped" table.
 -- It aggregates user-level features for each user and date.
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
+  processed_timestamp,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id
+)
   SELECT DISTINCT
   -- The current timestamp.
   CURRENT_TIMESTAMP() AS processed_timestamp,

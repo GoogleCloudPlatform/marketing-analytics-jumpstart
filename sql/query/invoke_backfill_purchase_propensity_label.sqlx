@@ -125,7 +125,26 @@ CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
 );
 
 -- Inserts data into the target table
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
+  processed_timestamp,
+  feature_date,
+  user_pseudo_id,
+  purchase_day_1,
+  purchase_day_2,
+  purchase_day_3,
+  purchase_day_4,
+  purchase_day_5,
+  purchase_day_6,
+  purchase_day_7,
+  purchase_day_8,
+  purchase_day_9,
+  purchase_day_10,
+  purchase_day_11,
+  purchase_day_12,
+  purchase_day_13,
+  purchase_day_14,
+  purchase_day_15_30
+)
 SELECT DISTINCT
   -- Selects the current timestamp and assigns it to the column processed_timestamp
   CURRENT_TIMESTAMP() AS processed_timestamp,
