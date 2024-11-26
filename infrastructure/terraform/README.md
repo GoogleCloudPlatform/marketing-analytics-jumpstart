@@ -87,17 +87,19 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     terraform --version
     ```
 
+    **Note:** If you have a Apple Silicon Macbook, you should install terraform by setting the `TFENV_ARCH` environment variable:
+    ```shell
+    TFENV_ARCH=amd64 tfenv install 1.9.7
+    tfenv use 1.9.7
+    terraform --version
+    ```
+    If not properly terraform version for your architecture is installed, `terraform .. init` will fail.
+
     For instance, the output on MacOS should be like:
     ```shell
     Terraform v1.9.7
     on darwin_amd64
     ```
-
-    If you have a Apple Silicon Macbook, you should install terraform by setting the `TFENV_ARCH` environment variable:
-   ```shell
-   TFENV_ARCH=amd64 tfenv install 1.9.7
-   tfenv use 1.9.7
-   ```
 
 1. Run the following script to create a Terraform remote backend. 
 
