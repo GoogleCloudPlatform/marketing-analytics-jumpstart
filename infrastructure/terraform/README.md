@@ -93,6 +93,12 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     on darwin_amd64
     ```
 
+    If you have a Apple Silicon Macbook, you should install terraform by setting the `TFENV_ARCH` environment variable:
+   ```shell
+   TFENV_ARCH=amd64 tfenv install 1.9.7
+   tfenv use 1.9.7
+   ```
+
 1. Run the following script to create a Terraform remote backend. 
 
     Terraform stores state about managed infrastructure to map real-world resources to the configuration, keep track of metadata, and improve performance. Terraform stores this state in a local file by default, but you can also use a Terraform remote backend to store state remotely. [Remote state](https://developer.hashicorp.com/terraform/cdktf/concepts/remote-backends) makes it easier for teams to work together because all members have access to the latest state data in the remote store.
