@@ -86,7 +86,7 @@ toml = "0.10.2"
 ga4-setup = "python.ga4_setup.setup:entry"
 
 [tool.poetry.group.test.dependencies]
-pytest = "7.0.0"
+pytest = "7.4.4"
 pytest-env = "0.6.2"
 pytest-mock = "3.7.0"
 pytest-variables = {extras = ["yaml"], version = "^2.0.0"}
