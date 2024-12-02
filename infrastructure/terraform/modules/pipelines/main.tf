@@ -35,7 +35,7 @@ locals {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "17.0.0"
+  version = "17.0.1"
 
   disable_dependent_services  = true
   disable_services_on_destroy = false
