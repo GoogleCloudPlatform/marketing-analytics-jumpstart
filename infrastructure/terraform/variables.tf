@@ -241,3 +241,110 @@ variable "time_zone" {
   type        = string
   default     = "America/New_York"
 }
+
+variable "pipeline_configuration" {
+  description = "Pipeline configuration that will alternate certain settings in the config.yaml.tftpl"
+  type = map(
+    map(
+      object({
+        schedule        = object({
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
+          state                    = string
+        })
+      })
+    )
+  )
+
+  default = {
+    feature-creation-auto-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-purchase-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-churn-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-customer-ltv = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-aggregated-value-based-bidding = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    value_based_bidding = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      explanation = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    purchase_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    churn_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+  }
+  validation {
+    condition = alltrue([
+      for p in keys(var.pipeline_configuration) : alltrue([
+        for c in keys(var.pipeline_configuration[p]) : (
+          try(var.pipeline_configuration[p][c].schedule.state, "") == "ACTIVE" ||
+          try(var.pipeline_configuration[p][c].schedule.state, "") == "PAUSED"
+        )
+      ])
+    ])
+    error_message = "The 'state' field must be either 'PAUSED' or 'ACTIVE' for all pipeline configurations."
+  }
+}
