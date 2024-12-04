@@ -63,8 +63,8 @@ IF churners > 0 THEN
     SET train_start_date =  min_date;
     SET train_end_date = max_date;
 ELSE
-    SET train_start_date =  DATE '2000-01-01';
-    SET train_end_date = DATE '2024-12-01';
+    SET train_start_date =  DATE_SUB(CURRENT_DATE(), INTERVAL 3 YEAR);
+    SET train_end_date = DATE_SUB(CURRENT_DATE(), INTERVAL 5 DAY);
 END IF;
 
 -- Finally, the script calls a stored procedure, passing the adjusted training dates and split numbers as arguments. 
