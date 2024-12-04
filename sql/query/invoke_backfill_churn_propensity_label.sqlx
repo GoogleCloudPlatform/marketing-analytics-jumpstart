@@ -119,7 +119,13 @@ GROUP BY
 );
 
 -- Insert data into the target table, combining user information with churn and bounce status
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
+  processed_timestamp,
+  feature_date,
+  user_pseudo_id,
+  churned,
+  bounced
+)
 SELECT DISTINCT
   -- Current timestamp as the processing timestamp
   CURRENT_TIMESTAMP() AS processed_timestamp,

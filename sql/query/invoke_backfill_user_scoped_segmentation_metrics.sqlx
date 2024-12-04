@@ -136,7 +136,35 @@ GROUP BY feature_date
 );
 
 -- This SQL code calculates various user engagement and revenue metrics at a daily level and inserts the results into a target table. It leverages several temporary tables created earlier in the script to aggregate data efficiently.
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
+  processed_timestamp,
+  feature_date,
+  purchasers_users,
+  average_daily_purchasers,
+  active_users,
+  DAU,
+  MAU,
+  WAU,
+  dau_per_mau,
+  dau_per_wau,
+  wau_per_mau,
+  users_engagement_duration_seconds,
+  average_engagement_time,
+  average_engagement_time_per_session,
+  average_sessions_per_user,
+  ARPPU,
+  ARPU,
+  average_daily_revenue,
+  max_daily_revenue,
+  min_daily_revenue,
+  new_users,
+  returning_users,
+  first_time_purchasers,
+  first_time_purchaser_conversion,
+  first_time_purchasers_per_new_user,
+  avg_user_conversion_rate,
+  avg_session_conversion_rate
+)
   SELECT
     -- Records the current timestamp when the query is executed.
     CURRENT_TIMESTAMP() AS processed_timestamp,

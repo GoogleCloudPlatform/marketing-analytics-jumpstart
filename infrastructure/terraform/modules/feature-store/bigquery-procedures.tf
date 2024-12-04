@@ -1467,18 +1467,28 @@ resource "null_resource" "create_gemini_model" {
     vertex_ai_connection_exists = google_bigquery_connection.vertex_ai_connection.id,
     gemini_dataset_exists       = module.gemini_insights.bigquery_dataset.id,
     check_gemini_dataset_listed = null_resource.check_gemini_insights_dataset_exists.id
+    role_propagated             = time_sleep.wait_for_vertex_ai_connection_sa_role_propagation.id
   }
 
   provisioner "local-exec" {
     command = <<-EOT
+    sleep 120
     ${var.uv_run_alias} bq query --use_legacy_sql=false --max_rows=100 --maximum_bytes_billed=10000000 < ${data.local_file.create_gemini_model_file.filename}
     EOT
+  }
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = true
   }
 
   depends_on = [
     google_bigquery_connection.vertex_ai_connection,
     module.gemini_insights.google_bigquery_dataset,
-    null_resource.check_gemini_insights_dataset_exists
+    null_resource.check_gemini_insights_dataset_exists,
+    time_sleep.wait_for_vertex_ai_connection_sa_role_propagation,
   ]
 }
 

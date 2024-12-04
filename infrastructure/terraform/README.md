@@ -87,6 +87,14 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     terraform --version
     ```
 
+    **Note:** If you have a Apple Silicon Macbook, you should install terraform by setting the `TFENV_ARCH` environment variable:
+    ```shell
+    TFENV_ARCH=amd64 tfenv install 1.9.7
+    tfenv use 1.9.7
+    terraform --version
+    ```
+    If not properly terraform version for your architecture is installed, `terraform .. init` will fail.
+
     For instance, the output on MacOS should be like:
     ```shell
     Terraform v1.9.7
@@ -154,10 +162,10 @@ Because a Cloud Shell session is ephemeral, your Cloud Shell session could termi
 
 Reset your Google Cloud Project ID variables:
 
-    ```shell
-    export PROJECT_ID="[your Google Cloud project id]"
-    gcloud config set project $PROJECT_ID
-    ```
+   ```bash
+   export PROJECT_ID="[your Google Cloud project id]"
+   gcloud config set project $PROJECT_ID
+   ```
 
 Follow the authentication workflow, since your credentials expires daily:
 
