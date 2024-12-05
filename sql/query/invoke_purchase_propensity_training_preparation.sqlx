@@ -58,9 +58,9 @@ SET purchasers = (SELECT COUNT(DISTINCT user_pseudo_id)
                 );
 
 -- Setting Training Dates
--- If there are churners in the training set, then keep the calculated dates, or else set
+-- If there are purchasers in the training set, then keep the calculated dates, or else set
 -- the start and end dates to a fixed interval preventing `train_start_date` and `train_end_date` from being NULL.
-IF churners > 0 THEN
+IF purchasers > 0 THEN
     SET train_start_date =  min_date;
     SET train_end_date = max_date;
 ELSE
