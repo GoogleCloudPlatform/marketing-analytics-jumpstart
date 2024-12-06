@@ -195,9 +195,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.feature-creation-auto-audience-segmentation.execution.schedule.state}'
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.
@@ -279,9 +277,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.feature-creation-audience-segmentation.execution.schedule.state}'
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.
@@ -344,9 +340,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.feature-creation-purchase-propensity.execution.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -407,9 +401,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.feature-creation-churn-propensity.execution.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -464,9 +456,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.feature-creation-customer-ltv.execution.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -527,9 +517,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.feature-creation-aggregated-value-based-bidding.execution.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -575,9 +563,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.value_based_bidding.training.schedule.state}'
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -658,9 +644,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.value_based_bidding.explanation.schedule.state}'
         pipeline_parameters:
           project: "${project_id}"
           location: "${cloud_region}"
@@ -705,9 +689,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.purchase_propensity.training.schedule.state}'
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -808,9 +790,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          # The `state` defines the state of the pipeline.
-          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.purchase_propensity.prediction.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${cloud_region}"
@@ -871,6 +851,7 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
+          state: '${pipeline_configuration.churn_propensity.training.schedule.state}'
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
           state: PAUSED # possible states ACTIVE or PAUSED
