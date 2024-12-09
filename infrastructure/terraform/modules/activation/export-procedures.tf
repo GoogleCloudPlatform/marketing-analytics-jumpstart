@@ -118,7 +118,7 @@ resource "google_bigquery_routine" "export_churn_propensity_procedure" {
   routine_id      = "export_churn_propensity_predictions"
   routine_type    = "PROCEDURE"
   language        = "SQL"
-  definition_body = data.template_file.purchase_propensity_csv_export_query.rendered
+  definition_body = data.template_file.churn_propensity_csv_export_query.rendered
   description     = "Export purchase propensity predictions as CSV for GA4 User Data Import"
   arguments {
     name      = "prediction_table_name"
