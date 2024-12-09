@@ -850,11 +850,10 @@ vertex_ai:
           # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
-          use_private_service_access: false
-          state: '${pipeline_configuration.churn_propensity.training.schedule.state}'
+          use_private_service_access: false   
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.churn_propensity.training.schedule.state}'
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
