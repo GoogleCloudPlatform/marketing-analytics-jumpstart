@@ -124,6 +124,7 @@ resource "local_file" "feature_store_configuration" {
     #    TODO: this needs to be specific to environment.
     location  = var.destination_data_location
     time_zone = var.time_zone
+    pipeline_configuration = var.pipeline_configuration
   })
 }
 
