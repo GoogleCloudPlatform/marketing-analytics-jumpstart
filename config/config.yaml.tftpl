@@ -973,7 +973,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.churn_propensity.prediction.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${cloud_region}"
@@ -1036,7 +1036,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.segmentation.training.schedule.state}'
         # These are pipeline parameters that will be passed to the pipeline to be compiled
         # For Demographics Audience Segmentation model, we use the BQML KMeans clustering algorithm.
         # Check the official documentation for better understanding the algorithm 
@@ -1087,7 +1087,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.segmentation.prediction.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -1141,7 +1141,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.auto_segmentation.training.schedule.state}'
         # These are pipeline parameters that will be passed to the pipeline to be compiled
         # For Interest based Auto Audience Segmentation model, we use the BQML KMeans clustering algorithm.
         # Check the official documentation for better understanding the algorithm 
@@ -1191,7 +1191,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.auto_segmentation.prediction.schedule.state}'
         pipeline_parameters:
           project_id: "${project_id}"
           location: "${location}"
@@ -1248,7 +1248,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.propensity_clv.training.schedule.state}'
           # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -1372,7 +1372,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.clv.training.schedule.state}'
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -1473,7 +1473,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.clv.prediction.schedule.state}'
         # These are the pipeline parameters to be used in this convoluted prediction pipeline that takes predictions from LTV model and purchase propensity model.
         pipeline_parameters:
           project_id: "${project_id}"
