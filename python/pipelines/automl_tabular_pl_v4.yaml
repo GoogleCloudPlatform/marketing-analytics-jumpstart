@@ -11151,21 +11151,21 @@ root:
         isOptional: true
         parameterType: BOOLEAN
       distill_batch_predict_machine_type:
-        defaultValue: n1-standard-16
+        defaultValue: n1-highmem-8
         description: 'The prediction server machine type for
 
           batch predict component in the model distillation.'
         isOptional: true
         parameterType: STRING
       distill_batch_predict_max_replica_count:
-        defaultValue: 25.0
+        defaultValue: 5.0
         description: 'The max number of prediction server
 
           for batch predict component in the model distillation.'
         isOptional: true
         parameterType: NUMBER_INTEGER
       distill_batch_predict_starting_replica_count:
-        defaultValue: 25.0
+        defaultValue: 5.0
         description: 'The initial number of
 
           prediction server for batch predict component in the model distillation.'
@@ -11201,14 +11201,14 @@ root:
         isOptional: true
         parameterType: STRING
       evaluation_batch_explain_max_replica_count:
-        defaultValue: 10.0
+        defaultValue: 5.0
         description: 'The max number of prediction
 
           server for batch explain components during evaluation.'
         isOptional: true
         parameterType: NUMBER_INTEGER
       evaluation_batch_explain_starting_replica_count:
-        defaultValue: 10.0
+        defaultValue: 5.0
         description: 'The initial number of
 
           prediction server for batch explain components during evaluation.'
@@ -11222,14 +11222,14 @@ root:
         isOptional: true
         parameterType: STRING
       evaluation_batch_predict_max_replica_count:
-        defaultValue: 20.0
+        defaultValue: 5.0
         description: 'The max number of prediction
 
           server for batch predict components during evaluation.'
         isOptional: true
         parameterType: NUMBER_INTEGER
       evaluation_batch_predict_starting_replica_count:
-        defaultValue: 20.0
+        defaultValue: 5.0
         description: 'The initial number of
 
           prediction server for batch predict components during evaluation.'
@@ -11279,7 +11279,7 @@ root:
         description: The GCP region that runs the pipeline components.
         parameterType: STRING
       max_selected_features:
-        defaultValue: 1000.0
+        defaultValue: 100.0
         description: number of features to select for training.
         isOptional: true
         parameterType: NUMBER_INTEGER
@@ -11356,7 +11356,7 @@ root:
         isOptional: true
         parameterType: BOOLEAN
       stage_1_num_parallel_trials:
-        defaultValue: 35.0
+        defaultValue: 5.0
         description: Number of parallel trails for stage 1.
         isOptional: true
         parameterType: NUMBER_INTEGER
@@ -11367,7 +11367,7 @@ root:
         isOptional: true
         parameterType: LIST
       stage_2_num_parallel_trials:
-        defaultValue: 35.0
+        defaultValue: 5.0
         description: Number of parallel trails for stage 2.
         isOptional: true
         parameterType: NUMBER_INTEGER

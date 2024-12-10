@@ -115,6 +115,13 @@ resource "google_bigquery_connection" "vertex_ai_connection" {
   project       = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.feature_store_project_id
   location      = local.config_bigquery.region
   cloud_resource {}
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = true
+  }
 }
 
 

@@ -601,10 +601,15 @@ vertex_ai:
           stats_and_example_gen_dataflow_max_num_workers: 10
           evaluation_dataflow_starting_num_workers: 5
           evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_max_replica_count: 10
-          distill_batch_predict_starting_replica_count: 10
-          evaluation_batch_predict_max_replica_count: 10
-          evaluation_batch_predict_starting_replica_count: 10
+          distill_batch_predict_machine_type: "n1-highmem-8"
+          distill_batch_predict_max_replica_count: 5
+          distill_batch_predict_starting_replica_count: 5
+          evaluation_batch_predict_max_replica_count: 5
+          evaluation_batch_predict_starting_replica_count: 5
+          evaluation_batch_explain_max_replica_count: 5
+          evaluation_batch_explain_starting_replica_count: 5
+          stage_1_num_parallel_trials: 5
+          stage_2_num_parallel_trials: 5
           evaluation_dataflow_disk_size_gb: 30
           stats_and_example_gen_dataflow_disk_size_gb: 30
           transform_dataflow_disk_size_gb: 30
@@ -735,10 +740,15 @@ vertex_ai:
           stats_and_example_gen_dataflow_max_num_workers: 10
           evaluation_dataflow_starting_num_workers: 5
           evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_max_replica_count: 10
-          distill_batch_predict_starting_replica_count: 10
-          evaluation_batch_predict_max_replica_count: 10
-          evaluation_batch_predict_starting_replica_count: 10
+          distill_batch_predict_machine_type: "n1-highmem-8"
+          distill_batch_predict_max_replica_count: 5
+          distill_batch_predict_starting_replica_count: 5
+          evaluation_batch_predict_max_replica_count: 5
+          evaluation_batch_predict_starting_replica_count: 5
+          evaluation_batch_explain_max_replica_count: 5
+          evaluation_batch_explain_starting_replica_count: 5
+          stage_1_num_parallel_trials: 5
+          stage_2_num_parallel_trials: 5
           evaluation_dataflow_disk_size_gb: 30
           stats_and_example_gen_dataflow_disk_size_gb: 30
           transform_dataflow_disk_size_gb: 30
@@ -851,10 +861,9 @@ vertex_ai:
           subnetwork: "default"
           # If you want to use the vpc network defined above, set the following flag to true
           use_private_service_access: false
-          state: '${pipeline_configuration.churn_propensity.training.schedule.state}'
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: '${pipeline_configuration.churn_propensity.training.schedule.state}'
         # These are pipeline parameters that will be passed to the pipeline to be recompiled
         pipeline_parameters:
           project: "${project_id}"
@@ -900,10 +909,17 @@ vertex_ai:
           stats_and_example_gen_dataflow_max_num_workers: 10
           evaluation_dataflow_starting_num_workers: 5
           evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_max_replica_count: 10
-          distill_batch_predict_starting_replica_count: 10
-          evaluation_batch_predict_max_replica_count: 10
-          evaluation_batch_predict_starting_replica_count: 10
+          distill_batch_predict_machine_type: "n1-highmem-8"
+          distill_batch_predict_max_replica_count: 5
+          distill_batch_predict_starting_replica_count: 5
+          evaluation_batch_predict_max_replica_count: 5
+          evaluation_batch_predict_starting_replica_count: 5
+          evaluation_batch_explain_max_replica_count: 5
+          evaluation_batch_explain_starting_replica_count: 5
+          evaluation_batch_explain_max_replica_count: 5
+          evaluation_batch_explain_starting_replica_count: 5
+          stage_1_num_parallel_trials: 5
+          stage_2_num_parallel_trials: 5
           evaluation_dataflow_disk_size_gb: 30
           stats_and_example_gen_dataflow_disk_size_gb: 30
           transform_dataflow_disk_size_gb: 30
@@ -1277,10 +1293,15 @@ vertex_ai:
           stats_and_example_gen_dataflow_max_num_workers: 10
           evaluation_dataflow_starting_num_workers: 5
           evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_max_replica_count: 10
-          distill_batch_predict_starting_replica_count: 10
-          evaluation_batch_predict_max_replica_count: 10
-          evaluation_batch_predict_starting_replica_count: 10
+          distill_batch_predict_machine_type: "n1-highmem-8"
+          distill_batch_predict_max_replica_count: 5
+          distill_batch_predict_starting_replica_count: 5
+          evaluation_batch_predict_max_replica_count: 5
+          evaluation_batch_predict_starting_replica_count: 5
+          evaluation_batch_explain_max_replica_count: 5
+          evaluation_batch_explain_starting_replica_count: 5
+          stage_1_num_parallel_trials: 5
+          stage_2_num_parallel_trials: 5
           evaluation_dataflow_disk_size_gb: 30
           stats_and_example_gen_dataflow_disk_size_gb: 30
           transform_dataflow_disk_size_gb: 30
@@ -1393,10 +1414,15 @@ vertex_ai:
           stats_and_example_gen_dataflow_max_num_workers: 10
           evaluation_dataflow_starting_num_workers: 5
           evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_max_replica_count: 10
-          distill_batch_predict_starting_replica_count: 10
-          evaluation_batch_predict_max_replica_count: 10
-          evaluation_batch_predict_starting_replica_count: 10
+          distill_batch_predict_machine_type: "n1-highmem-8"
+          distill_batch_predict_max_replica_count: 5
+          distill_batch_predict_starting_replica_count: 5
+          evaluation_batch_predict_max_replica_count: 5
+          evaluation_batch_predict_starting_replica_count: 5
+          evaluation_batch_explain_max_replica_count: 5
+          evaluation_batch_explain_starting_replica_count: 5
+          stage_1_num_parallel_trials: 5
+          stage_2_num_parallel_trials: 5
           evaluation_dataflow_disk_size_gb: 30
           stats_and_example_gen_dataflow_disk_size_gb: 30
           transform_dataflow_disk_size_gb: 30
@@ -1534,7 +1560,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.
@@ -1598,7 +1624,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: PAUSED # possible states ACTIVE or PAUSED
+          state: ACTIVE # possible states ACTIVE or PAUSED
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.

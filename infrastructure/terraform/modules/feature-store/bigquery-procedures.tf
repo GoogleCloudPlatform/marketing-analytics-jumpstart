@@ -1481,7 +1481,7 @@ resource "null_resource" "create_gemini_model" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 
   depends_on = [
