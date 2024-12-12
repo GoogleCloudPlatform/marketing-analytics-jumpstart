@@ -28,6 +28,8 @@ locals {
   activation_project_url    = "${local.p_key}=${var.activation_project_id}"
 
   mds_dataform_repo = "marketing-analytics"
+
+  purchase_propensity_dataset = "purchase_propensity"
 }
 
 module "project_services" {
@@ -257,5 +259,31 @@ data "template_file" "looker_studio_dashboard_url" {
     dataform_log_table_id          = local.dataform_log_table_id
     vertex_pipelines_log_table_id  = local.vertex_pipelines_log_table_id
     dataflow_log_table_id          = local.dataflow_log_table_id
+  }
+}
+
+data "template_file" "purchase_propensity_prediction_stats_query" {
+  template = file("${local.source_root_dir}/templates/purchase_propensity_smart_bidding_view.sql.tpl")
+  vars = {
+    project_id                  = var.feature_store_project_id
+    purchase_propensity_dataset = local.purchase_propensity_dataset
+    activation_dataset          = "activation"
+  }
+}
+
+data "google_bigquery_dataset" "purchase_propensity_dataset" {
+  dataset_id = local.purchase_propensity_dataset
+  project    = var.feature_store_project_id
+}
+
+resource "google_bigquery_table" "purchase_propensity_prediction_stats" {
+  project             = var.feature_store_project_id
+  dataset_id          = data.google_bigquery_dataset.purchase_propensity_dataset.dataset_id
+  table_id            = "purchase_propensity_prediction_stats"
+  deletion_protection = false
+
+  view {
+    query          = data.template_file.purchase_propensity_prediction_stats_query.rendered
+    use_legacy_sql = false
   }
 }
