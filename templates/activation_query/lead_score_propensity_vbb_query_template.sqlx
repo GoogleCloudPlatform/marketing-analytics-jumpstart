@@ -1,0 +1,35 @@
+WITH user_prediction_decile AS (
+  SELECT
+    a.prediction AS l_s_p_prediction,
+    NTILE(10) OVER (ORDER BY a.prediction_prob DESC) AS l_s_p_decile,
+    b.user_pseudo_id AS client_id,
+    b.user_id AS user_id,
+    b.ga_session_id AS session_id,
+    CASE
+      WHEN EXTRACT(MICROSECOND FROM b.event_timestamp) = 1 THEN b.event_timestamp
+      ELSE TIMESTAMP_SUB(b.event_timestamp, INTERVAL 1 MICROSECOND)
+    END AS inference_date
+  FROM
+    `${mds_project_id}.marketing_ga4_v1_${mds_dataset_suffix}.latest_event_per_user_last_24_hours` b,
+    `{{source_table}}` a
+  WHERE
+    COALESCE(a.user_id, "") = COALESCE(b.user_id, "")
+    AND a.user_pseudo_id = b.user_pseudo_id)
+SELECT
+  a.l_s_p_prediction AS user_prop_l_s_p_prediction,
+  a.l_s_p_decile AS user_prop_l_s_p_decile,
+  b.value AS event_param_value,
+  'USD' AS event_param_currency,
+  a.client_id,
+  a.user_id,
+  a.session_id AS event_param_session_id,
+  a.inference_date
+FROM
+  user_prediction_decile AS a
+LEFT JOIN
+  `${activation_project_id}.${dataset}.vbb_activation_configuration` AS b
+ON
+  a.l_s_p_decile = b.decile
+WHERE
+  b.activation_type = 'lead-score-propensity'
+AND b.value > 0

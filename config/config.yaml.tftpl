@@ -531,6 +531,67 @@ vertex_ai:
         pipeline_parameters_substitutions:
           aggregated_value_based_bidding_training_preparation_procedure_name: "${project_id}.aggregated_vbb.invoke_aggregated_value_based_bidding_training_preparation"
           aggregated_value_based_bidding_explanation_preparation_procedure_name: "${project_id}.aggregated_vbb.invoke_aggregated_value_based_bidding_explanation_preparation"
+
+    # This pipeline contains the configuration parameters for the feature creation pipeline for the lead score propensity model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the queries and procedures SQL parameters in this file under the `bigquery` section, following YAML format
+    ## 3. Create the queries and procedures SQL files under sql/ folder
+    ## 4. Create the terraform resources uin terraform/feature-store/bigquery-procedures.tf
+    ## 5. Create the terraform resources to compile and schedule the pipeline in terraform/pipelines/pipelines.tf
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 8. Create the pipeline python function in python/pipelines/feature_engineering_pipelines.py
+    ## 9. Run terraform apply
+    feature-creation-lead-score-propensity: 
+      execution:
+        name: "feature-creation-lead-score-propensity"
+        job_id_prefix: "feature-creation-lead-score-propensity-"
+        experiment_name: "feature-creation-lead-score-propensity"
+        # `type` must be "custom", when we're building Python and/or SQL based pipelines for feature engineering purposes.
+        type: "custom"
+        schedule:
+          cron: "TZ=${time_zone} 0 1 * * *"
+          # Define the maximum number of concurrent pipeline runs.
+          # The default value is 1.
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          state: '${pipeline_configuration.feature-creation-lead-score-propensity.execution.schedule.state}'
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${location}"
+          # The query_lead_score_propensity_label defines the procedure that will be used to invoke the creation of the lead score propensity label feature table.
+          query_lead_score_propensity_label: "
+            CALL `{lead_score_propensity_label_procedure_name}`();"
+          # The query_user_dimensions defines the procedure that will be used to invoke the creation of the user dimensions feature table.
+          query_user_dimensions: "
+            CALL `{user_dimensions_procedure_name}`();"
+          # The query_user_rolling_window_metrics defines the procedure that will be used to invoke the creation of the user rolling window metrics feature table.
+          query_user_rolling_window_metrics: "
+            CALL `{user_rolling_window_metrics_procedure_name}`();"
+          # The query_lead_score_propensity_inference_preparation define the procedure that will be used to invoke the creation of the lead score propensity inference preparation table.
+          query_lead_score_propensity_inference_preparation: "
+            CALL `{lead_score_propensity_inference_preparation_procedure_name}`();"
+          # The query_lead_score_propensity_training_preparation define the procedure that will be used to invoke the creation of the lead score propensity training preparation table.
+          query_lead_score_propensity_training_preparation: "
+            CALL `{lead_score_propensity_training_preparation_procedure_name}`();"
+          timeout: 3600.0
+        pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
+          lead_score_propensity_label_procedure_name: "${project_id}.feature_store.invoke_lead_score_propensity_label"
+          user_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_dimensions"
+          user_rolling_window_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_metrics"
+          user_scoped_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_metrics"
+          user_session_event_aggregated_metrics_procedure_name: "${project_id}.feature_store.invoke_user_session_event_aggregated_metrics"
+          date_timezone: "UTC" # used when input_date is None and need to get current date.
+          lead_score_propensity_inference_preparation_procedure_name: "${project_id}.lead_score_propensity.invoke_lead_score_propensity_inference_preparation"
+          lead_score_propensity_training_preparation_procedure_name: "${project_id}.lead_score_propensity.invoke_lead_score_propensity_training_preparation"
     
     # This pipeline contains the configuration parameters for the value based bidding training and inference pipelines.
     # To deploy this pipeline to your Google Cloud project:
@@ -1518,6 +1579,173 @@ vertex_ai:
           pubsub_activation_type: "cltv-180-30" # cltv-180-180 | cltv-180-90 | cltv-180-30
         pipeline_parameters_substitutions: null
     
+    # This pipeline contains the configuration parameters for the propensity training and inference pipelines for the lead score propensity model.
+    # To deploy this pipeline to your Google Cloud project:
+    ## 1. Define the pipeline parameters below, following YAML format
+    ## 2. Define the bigquery or Vertex AI KFP components to be used by your pipeline in `python/pipelines` section, if applicable.
+    ## 3. Define or reuse the pipeline definition method to be used to compile the pipeline into a YAML file in `python/pipelines` section.
+    ## 5. Create the terraform resources to compile, upload and schedule the pipeline in `terraform/pipelines/pipelines.tf`
+    ## 6. Define python function that perform `compilation` and `upload to GCS bucket` are defined in `python/pipelines/compiler.py` and `python/pipelines/uploader.py`.
+    ## 7. Define python function that perform `schedule` of the pipeline is defined in `python/pipelines/scheduler.py`.
+    ## 9. Run terraform apply
+    ## Note: For `type` = "tabular workflows", the pre-compiled YAML file `automl_tabular_pl_v4.yaml` is recompiled by parsing the `pipeline_parameters` below as default values
+    ## to the the new YAML file. The recompiled YAML will be uploaded and scheduled in Vertex AI Pipelines.
+    lead_score_propensity:
+      training:
+        name: "lead-score-propensity-training-pl"
+        job_id_prefix: "lead-score-propensity-training-pl-"
+        experiment_name: "lead-score-propensity-training"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
+        type: "tabular-workflows"
+        schedule:
+          cron: "TZ=${time_zone} 0 8 * * SAT"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          state: '${pipeline_configuration.lead_score_propensity.training.schedule.state}'
+        # These are pipeline parameters that will be passed to the pipeline to be recompiled
+        pipeline_parameters:
+          project: "${project_id}"
+          location: "${cloud_region}"
+          root_dir: "gs://${project_id}-pipelines/lead-score-propensity-training"
+          transformations: "gs://${project_id}-pipelines/lead-score-propensity-training/transformations_config_{timestamp}.json"
+          # These are specific data types transformations that will be applied to the dataset.
+          custom_transformations: "pipelines/transformations-lead-score-propensity.json"
+          train_budget_milli_node_hours: 100 # 1000 = 1 hour 
+          # Set these to apply feature selection tuning.
+          max_selected_features: 20
+          apply_feature_selection_tuning: true
+          run_evaluation: true
+          run_distillation: false
+          # The Lead Score Propensity model name
+          model_display_name: "lead-score-propensity-model" 
+          # The Lead Score Propensity model description
+          model_description: "Lead Score Propensity Classification AutoML Model"
+          # Use `prediction_type` to "regression" for training models that predict a numerical value.  For classification models, use "classification" and you will
+          # also get the probability likelihood for that class.
+          prediction_type: "classification"
+          # The optimization objectives may change depending on the `prediction_type`.
+          # For binary classification, use "maximize-au-roc", "minimize-log-loss", "maximize-au-prc", "maximize-precision-at-recall" or "maximize-recall-at-precision". 
+          # For multi class classification, use "minimize-log-loss". 
+          # For regression, use "minimize-rmse", "minimize-mae", or "minimize-rmsle".
+          optimization_objective: "maximize-au-roc" # maximize-precision-at-recall, maximize-au-prc, maximize-au-roc, minimize-log-loss, maximize-recall-at-precision
+          #Don't use when parameter `optimization_objective` is not `maximize-precision-at-recall` or `maximize-recall-at-precision`
+          #optimization_objective_recall_value: 0.72
+          #optimization_objective_precision_value: 0.72
+          target_column: "will_login"
+          predefined_split_key: "data_split"
+          data_source_csv_filenames: null
+          training_fraction: null
+          validation_fraction: null
+          test_fraction: null
+          # This is the training dataset provided during the training routine.
+          # The schema in this table or view must match the schema in the json files.
+          # Take into consideration the `excluded_features` list below. They won't be used for training.
+          data_source_bigquery_table_path: "bq://${project_id}.lead_score_propensity.v_lead_score_propensity_training_5_1_last_window"
+          data_source_bigquery_table_schema: "../sql/schema/table/lead_score_propensity_training_preparation.json"
+          dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
+          transform_dataflow_max_num_workers: 10
+          stats_and_example_gen_dataflow_max_num_workers: 10
+          evaluation_dataflow_starting_num_workers: 5
+          evaluation_dataflow_max_num_workers: 10
+          distill_batch_predict_machine_type: "n1-highmem-8"
+          distill_batch_predict_max_replica_count: 5
+          distill_batch_predict_starting_replica_count: 5
+          evaluation_batch_predict_max_replica_count: 5
+          evaluation_batch_predict_starting_replica_count: 5
+          evaluation_batch_explain_max_replica_count: 5
+          evaluation_batch_explain_starting_replica_count: 5
+          stage_1_num_parallel_trials: 5
+          stage_2_num_parallel_trials: 5
+          evaluation_dataflow_disk_size_gb: 30
+          stats_and_example_gen_dataflow_disk_size_gb: 30
+          transform_dataflow_disk_size_gb: 30
+          timestamp_split_key: null
+          stratified_split_key: null
+          weight_column: null
+          additional_experiments: null
+          export_additional_model_without_custom_ops: false
+          # Override the study spec parameters in case you want to restrict hyperparameter search space. Including `model_type`.
+          # In this case, for Value Based Bidding, we're looking for a perfect fit using a tree based model.
+          # Don't use when parameter `apply_feature_selection_tuning` is `true`
+          #study_spec_parameters_override:
+          #  - parameter_id: "model_type"
+          #    categorical_value_spec:
+          #      values: 
+          #        - nn
+          #        - boosted_trees
+          #  - parameter_id: "feature_selection_rate"
+          #    double_value_spec:
+          #      min_value: 0.5
+          #      max_value: 1.0
+          #    scale_type: UNIT_LINEAR_SCALE
+        # Features to be excluded from the training dataset.
+        exclude_features:
+          - processed_timestamp
+          - data_split
+          #- feature_date
+          - user_pseudo_id
+          - user_id
+          - device_web_browser_version
+          - device_os_version
+          - will_login
+        pipeline_parameters_substitutions: null 
+      prediction:
+        name: "lead-score-propensity-prediction-pl"
+        job_id_prefix: "lead-score-propensity-prediction-pl-"
+        experiment_name: "lead-score-propensity-prediction"
+        # `type` can be "custom" or "tabular-workflows". 
+        #  For using Vertex AI Tabular Workflow use the later, for all other modeling approaches use "custom" (i.e. BQML, Scikit-learn).
+        type: "custom"
+        schedule:
+          cron: "TZ=${time_zone} 0 5 * * *"
+          max_concurrent_run_count: 1
+          start_time: null
+          end_time: null
+          # The `subnetwork` defines the subnetwork in which the pipeline will be executed.
+          # The default value is "default".
+          # Follow the guide: https://cloud.google.com/vertex-ai/docs/general/vpc-peering
+          subnetwork: "default"
+          # If you want to use the vpc network defined above, set the following flag to true
+          use_private_service_access: false
+          state: '${pipeline_configuration.lead_score_propensity.prediction.schedule.state}'
+        pipeline_parameters:
+          project_id: "${project_id}"
+          location: "${cloud_region}"
+          job_name_prefix: "lead-score-propensity-prediction-pl-"
+          # The Lead Score Propensity model name to be used for prediction
+          model_display_name: "lead-score-propensity-model" 
+          model_metric_name: "logLoss"
+          # The `model_metric_threshold` parameter defines what is the maximum acceptable value for the `model_metric_name` so that the model can be selected.
+          # If the actual models metrics values are higher than this limit, no models will be selected and the pipeline is going to fail.
+          model_metric_threshold: 0.9
+          number_of_models_considered: 1
+          # This is the prediction dataset table or view.
+          bigquery_source: "${project_id}.lead_score_propensity.v_lead_score_propensity_inference_30_15"
+          bigquery_destination_prefix: "${project_id}.lead_score_propensity"
+          bq_unique_key: "user_pseudo_id"
+          machine_type: "n1-standard-4"
+          max_replica_count: 10
+          batch_size: 64
+          accelerator_count: 0
+          accelerator_type: "ACCELERATOR_TYPE_UNSPECIFIED" # ONE OF ACCELERATOR_TYPE_UNSPECIFIED, NVIDIA_TESLA_K80, NVIDIA_TESLA_P100, NVIDIA_TESLA_V100, NVIDIA_TESLA_P4, NVIDIA_TESLA_T4
+          generate_explanation: false
+          # This is the probability value that will tell the condition to slit into the two classes.
+          # For probabilities higher than `threashold`, set postive label to 1, otherwise 0.
+          threashold: 0.5
+          positive_label: "1"
+          # THese are parameters to trigger the Activation Application Dataflow.
+          pubsub_activation_topic: "activation-trigger"
+          pubsub_activation_type: "lead-score-propensity-5-1"  # lead-score-propensity-5-1
+        pipeline_parameters_substitutions: null
+
     # This pipeline contains the configuration parameters for the feature creation pipeline for the audience segmentation model.
     # This block defines the pipeline parameters that are going to be used for three tasks: compilation, upload and scheduling.
     # To deploy this pipeline to your Google Cloud project:
@@ -1753,6 +1981,18 @@ bigquery:
       description: "Dataset with gemini_insights results from multiple use cases"
       friendly_name: "Gemini Insights Dataset"
       max_time_travel_hours: 168
+    # Dataset for the lead score propensity use case.
+    lead_score_propensity:
+      name: "lead_score_propensity"
+      location: "${location}"
+      project_id: "${project_id}"
+      collation: "und:ci"
+      is_case_insensitive: TRUE
+      description: "Lead Score Propensity Use Case dataset for Marketing behavioural modeling"
+      friendly_name: "Lead Score Propensity Dataset"
+      max_time_travel_hours: 168
+      default_partition_expiration_days: 365
+      default_table_expiration_days: 365
   table:
     # Table containing the feature engineered dataset that will be used for the Audience Segmentation prediction pipeline.
     audience_segmentation_inference_preparation:
@@ -1789,6 +2029,13 @@ bigquery:
       table_name: "churn_propensity_inference_preparation"
       location: "${location}"
       table_description: "Purchase Propensity Inference Preparation table to be used for Model Prediction"
+    # Table containing the feature engineered dataset that will be used for the Lead Score Propensity prediction pipeline.
+    lead_score_propensity_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "lead_score_propensity"
+      table_name: "lead_score_propensity_inference_preparation"
+      location: "${location}"
+      table_description: "Lead Score Propensity Inference Preparation table to be used for Model Prediction"
     # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
     purchase_propensity_label:
       project_id: "${project_id}"
@@ -1796,13 +2043,20 @@ bigquery:
       table_name: "purchase_propensity_label"
       location: "${location}"
       table_description: "Purchase Propensity Label table to be used for Model Prediction"
-    # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
+    # Table containing the feature engineered labels that will be used for the Churn Propensity training pipeline.
     churn_propensity_label:
       project_id: "${project_id}"
       dataset: "feature_store"
       table_name: "churn_propensity_label"
       location: "${location}"
       table_description: "Churn Propensity Label table to be used for Model Prediction"
+    # Table containing the feature engineered labels that will be used for the Purchase Propensity training pipeline.
+    lead_score_propensity_label:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      table_name: "lead_score_propensity_label"
+      location: "${location}"
+      table_description: "Lead Score Propensity Label table to be used for Model Prediction"
     # Table containing the feature engineered dimensions that will be used for the Purchase Propensity training and inference pipeline.
     user_dimensions:
       project_id: "${project_id}"
@@ -1887,6 +2141,9 @@ bigquery:
     churn_propensity_query_template:
       none: none
     # This is a query template to be used by the Activation application, so there is no configuration to be applied.
+    lead_score_propensity_query_template:
+      none: none
+    # This is a query template to be used by the Activation application, so there is no configuration to be applied.
     cltv_query_template:
       none: none
     create_gemini_model:
@@ -1902,6 +2159,25 @@ bigquery:
       project_id: "${project_id}"
       dataset: "aggregated_vbb"
       stored_procedure: "aggregated_value_based_bidding_training_preparation"
+    # This is a stored procedure that CALLs the Lead Score Propensity Training Preparation stored procedure.
+    invoke_lead_score_propensity_training_preparation:
+      project_id: "${project_id}"
+      dataset: "lead_score_propensity"
+      stored_procedure: "lead_score_propensity_training_preparation"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
+      interval_max_date: 1
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
+      interval_min_date: 5
+      # `training_split_end_number` must be smaller then `validation_split_end_number`.
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = TRAIN (Between 1 and `training_split_end_number`)
+      train_split_end_number: 5
+      # This is a number out of 10 deciles, how many rows will belong to the `data_split` = VALIDATE (Between `training_split_end_number` and `validation_split_end_number`)
+      # The rest of the rows will belong to the `data_split` = TEST (Between `validation_split_end_number` and 10)
+      validation_split_end_number: 8
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
     # This is a stored procedure that CALLs the Purchase Propensity Training Preparation stored procedure.
     invoke_purchase_propensity_training_preparation:
       project_id: "${project_id}"
@@ -1921,7 +2197,7 @@ bigquery:
       validation_split_end_number: 8
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
-    # This is a stored procedure that CALLs the Purchase Propensity Training Preparation stored procedure.
+    # This is a stored procedure that CALLs the Churn Propensity Training Preparation stored procedure.
     invoke_churn_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "churn_propensity"
@@ -1989,6 +2265,11 @@ bigquery:
       stored_procedure: "auto_audience_segmentation_training_preparation"
       # The `lookback_days` parameter is the number of days to look back for training data.
       lookback_days: 15
+    # This is a stored procedure that CALLs the Lead Score Propensity Inference Inference Preparation stored procedure.
+    invoke_lead_score_propensity_inference_preparation:
+      project_id: "${project_id}"
+      dataset: "lead_score_propensity"
+      stored_procedure: "lead_score_propensity_inference_preparation"
     # This is a stored procedure that CALLs the Purchase Propensity Inference Inference Preparation stored procedure.
     invoke_purchase_propensity_inference_preparation:
       project_id: "${project_id}"
@@ -2112,6 +2393,22 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the Lead Store Propensity Label Backfill stored procedure.
+    invoke_backfill_lead_score_propensity_label:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "lead_score_propensity_label"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
+      interval_max_date: 1
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
+      interval_min_date: 5
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_end_date: 5
     # This is a stored procedure that CALLs the Purchase Propensity Label Backfill stored procedure.
     invoke_backfill_purchase_propensity_label:
       mds_project_id: "${mds_project_id}"
@@ -2246,6 +2543,16 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_input_date: 180
+    # This is a stored procedure that CALLs the Lead Score Propensity Label stored procedure.
+    invoke_lead_score_propensity_label:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      stored_procedure: "lead_score_propensity_label"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_input_date: 1
     # This is a stored procedure that CALLs the Purchase Propensity Label stored procedure.
     invoke_purchase_propensity_label:
       mds_project_id: "${mds_project_id}"
@@ -2349,10 +2656,11 @@ bigquery:
   # This section sets the parameters for the features, training and inference procedures that insert data into tables and views to be used for
   # training and prediction.
   # There is no strict recommendation on the right parameters that will maximize the models performance, however here are some back of the envelope numbers.
-  #      Purchase Propensity model: 1 month-2 years for dates interval. From Xk - 10M users.
-  #      Customer LTV model: 6 months-2 years for dates interval. From Xk - 10M users.
-  #      Audience Segmentation / Auto Audience Segmentation models: 1 month-1 year for dates interval. From XXX - 10M users.
-  #      Aggregated VBB model: 1000 days - 2000 days 
+  #      Lead Score Propensity model: 2 weeks-1 year for dates interval. From Xk - 1M users.
+  #      Purchase Propensity model: 1 month-2 years for dates interval. From Xk - 1M users.
+  #      Customer LTV model: 6 months-2 years for dates interval. From Xk - 1M users.
+  #      Audience Segmentation / Auto Audience Segmentation models: 1 month-1 year for dates interval. From XXX - 1M users.
+  #      Aggregated VBB model: 100 days - 2000 days 
   #         Note: For Aggregated VBB, it's common to duplicate rows to that training dataset size reaches at least 1k rows for AutoML to train a model.
   #               If that is your case, this is not a problem since typically duplicated rows has a similar effect as of training the model for more epochs.
   procedure:
@@ -2440,6 +2748,17 @@ bigquery:
       expiration_duration_hours: 168
       custom_start_date: "'2023-01-01'"
       custom_end_date: "NULL"
+    # This is the stored procedure that calculates the label column for the Lead Score Propensity use case.
+    # The label represents wether a user will make a lead score over a period of time.
+    # Typically, looking at a period of 1 day in the future.
+    # The granularity level is per user per day.
+    lead_score_propensity_label:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      name: "lead_score_propensity_label"
+      insert_table: "lead_score_propensity_label"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
     # This is the stored procedure that calculates the label column for the Purchase Propensity use case.
     # The label represents wether a user will make a purchase over a period of time.
     # Typically, looking at a period of 15 to 30 days in the future.
@@ -2452,7 +2771,7 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
     # This is the stored procedure that calculates the label column for the Churn Propensity use case.
-    # The label represents wether a user will make a purchase over a period of time.
+    # The label represents wether a user will churn over a period of time.
     # Typically, looking at a period of 30 days in the future.
     # The granularity level is per user per day.
     churn_propensity_label:
@@ -2471,6 +2790,22 @@ bigquery:
     # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
     # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
     # you will provide at maximum a couple of millions of rows.
+    lead_score_propensity_training_preparation:
+      project_id: "${project_id}"
+      dataset: "lead_score_propensity"
+      name: "lead_score_propensity_training_preparation"
+      insert_table: "lead_score_propensity_training_full_dataset"
+      feature_store_project_id: "${project_id}"
+      feature_store_dataset: "feature_store"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+      expiration_duration_hours: 168
+      custom_start_date: "'2024-01-01'"
+      custom_end_date: "NULL"
+    # This is the stored procedure that collects the features and prepare the examples rows to train a model.
+    # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
+    # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
+    # you will provide at maximum a couple of millions of rows.
     purchase_propensity_training_preparation:
       project_id: "${project_id}"
       dataset: "purchase_propensity"
@@ -2481,7 +2816,7 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       expiration_duration_hours: 168
-      custom_start_date: "'2023-01-01'"
+      custom_start_date: "'2024-01-01'"
       custom_end_date: "NULL"
     # This is the stored procedure that collects the features and prepare the examples rows to train a model.
     # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
@@ -2601,6 +2936,16 @@ bigquery:
       insert_table: "user_session_event_aggregated_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
+    lead_score_propensity_inference_preparation:
+      project_id: "${project_id}"
+      mds_dataset: "${mds_dataset}"
+      dataset: "lead_score_propensity"
+      name: "lead_score_propensity_inference_preparation"
+      feature_store_project_id: "${project_id}" 
+      feature_store_dataset: "feature_store"
+      insert_table: "lead_score_propensity_inference_preparation"
+      expiration_duration_hours: 168
     # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     purchase_propensity_inference_preparation:
       project_id: "${project_id}"

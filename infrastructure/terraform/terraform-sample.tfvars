@@ -39,6 +39,151 @@ source_ads_export_data = [
 
 feature_store_project_id = "Project ID where feature store resources will be created"
 
+###################  PIPELINE CONFIGURATIONS  ##################################
+
+pipeline_configuration = {
+    feature-creation-auto-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    feature-creation-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    feature-creation-purchase-propensity = {
+      execution = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    feature-creation-churn-propensity = {
+      execution = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    feature-creation-customer-ltv = {
+      execution = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    feature-creation-aggregated-value-based-bidding = {
+      execution = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    feature-creation-lead-score-propensity = {
+      execution = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    value_based_bidding = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      explanation = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    purchase_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    churn_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    auto_segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    propensity_clv = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    clv = {
+      training = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+    lead_score_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "ACTIVE"
+        }
+      }
+    }
+  }
+
 ####################     ML MODEL VARIABLES    #################################
 
 website_url = "Customer Website URL" # i.e. "https://shop.googlemerchandisestore.com/"

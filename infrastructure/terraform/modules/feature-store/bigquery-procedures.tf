@@ -350,6 +350,32 @@ resource "google_bigquery_routine" "churn_propensity_inference_preparation" {
   }
 }
 
+# This resource reads the contents of a local SQL file named lead_score_propensity_inference_preparation.sql and 
+# stores it in a variable named lead_score_propensity_inference_preparation_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named lead_score_propensity_inference_preparation.
+data "local_file" "lead_score_propensity_inference_preparation_file" {
+  filename = "${local.sql_dir}/procedure/lead_score_propensity_inference_preparation.sql"
+}
+
+# The lead_score_propensity_inference_preparation procedure is designed to prepare features for the Lead Score Propensity model.
+# ##
+# The procedure is typically invoked before prediction the Lead Score Propensity model to ensure that the features data 
+# is in the correct format and contains the necessary features for prediction.
+resource "google_bigquery_routine" "lead_score_propensity_inference_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.lead_score_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.lead_score_propensity.dataset_id
+  routine_id      = "lead_score_propensity_inference_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.lead_score_propensity_inference_preparation_file.content
+  description     = "Procedure that prepares features for Lead Score Propensity model inference. User-per-day granularity level features. Run this procedure every time before Lead Score Propensity model predict."
+  arguments {
+    name      = "inference_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+}
+
 # This resource reads the contents of a local SQL file named purchase_propensity_label.sql and 
 # stores it in a variable named purchase_propensity_label_file.content. 
 # The SQL file is expected to contain the definition of a BigQuery procedure named purchase_propensity_label.
@@ -422,6 +448,42 @@ resource "google_bigquery_routine" "churn_propensity_label" {
   }
 }
 
+# This resource reads the contents of a local SQL file named lead_score_propensity_label.sql and 
+# stores it in a variable named lead_score_propensity_label_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named lead_score_propensity_label.
+data "local_file" "lead_score_propensity_label_file" {
+  filename = "${local.sql_dir}/procedure/lead_score_propensity_label.sql"
+}
+
+# The lead_score_propensity_label procedure is designed to prepare label for the Lead Score Propensity model.
+# ##
+# The procedure is typically invoked before training the Lead Score Propensity model to ensure that the labeled data 
+# is in the correct format and ready for training.
+resource "google_bigquery_routine" "lead_score_propensity_label" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "lead_score_propensity_label"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.lead_score_propensity_label_file.content
+  description     = "User-per-day granularity level labels. Run this procedure daily."
+  arguments {
+    name      = "input_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "end_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "rows_added"
+    mode      = "OUT"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+}
+
 # This resource reads the contents of a local SQL file named purchase_propensity_training_preparation.sql and 
 # stores it in a variable named purchase_propensity_training_preparation_file.content. 
 # The SQL file is expected to contain the definition of a BigQuery procedure named purchase_propensity_training_preparation.
@@ -463,6 +525,46 @@ resource "google_bigquery_routine" "purchase_propensity_training_preparation" {
   }
 }
 
+# This resource reads the contents of a local SQL file named lead_score_propensity_training_preparation.sql and 
+# stores it in a variable named lead_score_propensity_training_preparation_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named lead_score_propensity_training_preparation.
+data "local_file" "lead_score_propensity_training_preparation_file" {
+  filename = "${local.sql_dir}/procedure/lead_score_propensity_training_preparation.sql"
+}
+
+# The lead_score_propensity_training_preparation procedure is designed to prepare features for the Lead Score Propensity model.
+# ##
+# The procedure is typically invoked before training the Lead Score Propensity model to ensure that the features data 
+# is in the correct format and contains the necessary features for training.
+resource "google_bigquery_routine" "lead_score_propensity_training_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.lead_score_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.lead_score_propensity.dataset_id
+  routine_id      = "lead_score_propensity_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.lead_score_propensity_training_preparation_file.content
+  description     = "Procedure that prepares features for Lead Score Propensity model training. User-per-day granularity level features. Run this procedure every time before Lead Score Propensity model train."
+  arguments {
+    name      = "start_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "end_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "train_split_end_number"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+  arguments {
+    name      = "validation_split_end_number"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+}
 
 # This resource reads the contents of a local SQL file named churn_propensity_training_preparation.sql and 
 # stores it in a variable named churn_propensity_training_preparation_file.content. 
@@ -930,6 +1032,20 @@ resource "google_bigquery_routine" "invoke_backfill_churn_propensity_label" {
   description     = "Procedure that backfills the churn_propensity_label feature table. Run this procedure occasionally before training the models."
 }
 
+data "local_file" "invoke_backfill_lead_score_propensity_label_file" {
+  filename = "${local.sql_dir}/query/invoke_backfill_lead_score_propensity_label.sql"
+}
+
+resource "google_bigquery_routine" "invoke_backfill_lead_score_propensity_label" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "invoke_backfill_lead_score_propensity_label"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_backfill_lead_score_propensity_label_file.content
+  description     = "Procedure that backfills the lead_score_propensity_label feature table. Run this procedure occasionally before training the models."
+}
+
 data "local_file" "invoke_backfill_user_dimensions_file" {
   filename = "${local.sql_dir}/query/invoke_backfill_user_dimensions.sql"
 }
@@ -1139,6 +1255,19 @@ resource "google_bigquery_routine" "invoke_churn_propensity_inference_preparatio
   definition_body = data.local_file.invoke_churn_propensity_inference_preparation_file.content
 }
 
+data "local_file" "invoke_lead_score_propensity_inference_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_lead_score_propensity_inference_preparation.sql"
+}
+
+resource "google_bigquery_routine" "invoke_lead_score_propensity_inference_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.lead_score_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.lead_score_propensity.dataset_id
+  routine_id      = "invoke_lead_score_propensity_inference_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_lead_score_propensity_inference_preparation_file.content
+}
+
 
 data "local_file" "invoke_audience_segmentation_inference_preparation_file" {
   filename = "${local.sql_dir}/query/invoke_audience_segmentation_inference_preparation.sql"
@@ -1222,6 +1351,19 @@ resource "google_bigquery_routine" "invoke_churn_propensity_training_preparation
 }
 
 
+data "local_file" "invoke_lead_score_propensity_training_preparation_file" {
+  filename = "${local.sql_dir}/query/invoke_lead_score_propensity_training_preparation.sql"
+}
+
+resource "google_bigquery_routine" "invoke_lead_score_propensity_training_preparation" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.lead_score_propensity_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.lead_score_propensity.dataset_id
+  routine_id      = "invoke_lead_score_propensity_training_preparation"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_lead_score_propensity_training_preparation_file.content
+}
+
 data "local_file" "invoke_audience_segmentation_training_preparation_file" {
   filename = "${local.sql_dir}/query/invoke_audience_segmentation_training_preparation.sql"
 }
@@ -1297,6 +1439,20 @@ resource "google_bigquery_routine" "invoke_purchase_propensity_label" {
   description     = "Procedure that invokes the purchase_propensity_label table. Daily granularity level. Run this procedure daily before running prediction pipelines."
 }
 
+
+data "local_file" "invoke_lead_score_propensity_label_file" {
+  filename = "${local.sql_dir}/query/invoke_lead_score_propensity_label.sql"
+}
+
+resource "google_bigquery_routine" "invoke_lead_score_propensity_label" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "invoke_lead_score_propensity_label"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_lead_score_propensity_label_file.content
+  description     = "Procedure that invokes the lead_score_propensity_label table. Daily granularity level. Run this procedure daily before running prediction pipelines."
+}
 
 data "local_file" "invoke_churn_propensity_label_file" {
   filename = "${local.sql_dir}/query/invoke_churn_propensity_label.sql"
@@ -1448,7 +1604,7 @@ data "local_file" "invoke_user_session_event_aggregated_metrics_file" {
 }
 
 resource "google_bigquery_routine" "invoke_user_session_event_aggregated_metrics" {
-  project         = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
   dataset_id      = google_bigquery_dataset.feature_store.dataset_id
   routine_id      = "invoke_user_session_event_aggregated_metrics"
   routine_type    = "PROCEDURE"
