@@ -366,7 +366,7 @@ resource "null_resource" "compile_feature_engineering_lead_score_propensity_pipe
   # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
   provisioner "local-exec" {
     command     = <<-EOT
-    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-lead_score-propensity.execution -o fe_lead_score_propensity.yaml
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-lead-score-propensity.execution -o fe_lead_score_propensity.yaml
     ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_lead_score_propensity.yaml -t ${self.triggers.tag} -t latest
     ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-lead-score-propensity.execution -i fe_lead_score_propensity.yaml
     EOT
