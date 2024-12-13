@@ -879,7 +879,7 @@ def bq_dynamic_query_exec_output(
     # Construct query template
     template = jinja2.Template("""
         CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.{{create_table}}` AS (
-        SELECT
+        SELECT DISTINCT
             feature,
             ROUND(100 * SUM(users) OVER (ORDER BY users DESC) / SUM(users) OVER (), 2) as cumulative_traffic_percent,
 
@@ -892,7 +892,7 @@ def bq_dynamic_query_exec_output(
                 SELECT
                     user_pseudo_id,
                     user_id,
-                    page_location as page_path
+                    LOWER(page_location) as page_path
                 FROM `{{mds_project_id}}.{{mds_dataset}}.event`
                 WHERE
                     event_name = 'page_view'
