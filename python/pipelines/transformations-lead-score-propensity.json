@@ -1,0 +1,368 @@
+[
+	{
+	  "numeric": {
+		"column_name": "user_ltv_revenue",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_category"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_mobile_brand_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_mobile_model_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_os"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_language"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "device_web_browser"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_sub_continent"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_country"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_region"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_city"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "geo_metro"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "last_traffic_source_medium"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "last_traffic_source_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "last_traffic_source_source"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "first_traffic_source_medium"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "first_traffic_source_name"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "first_traffic_source_source"
+	  }
+	},
+	{
+	  "categorical": {
+		"column_name": "has_signed_in_with_user_id"
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_50_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_50_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_50_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_50_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_50_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_90_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_90_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_90_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_90_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "scroll_90_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_search_results_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_search_results_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_search_results_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_search_results_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "view_search_results_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "file_download_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "file_download_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "file_download_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "file_download_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "file_download_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "recipe_add_to_list_past_1_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "recipe_add_to_list_past_2_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "recipe_add_to_list_past_3_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "recipe_add_to_list_past_4_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+	  "numeric": {
+		"column_name": "recipe_add_to_list_past_5_day",
+		"invalid_values_allowed": true
+	  }
+	},
+	{
+    "numeric": {
+      "column_name": "recipe_print_past_1_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "recipe_print_past_2_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "recipe_print_past_3_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "recipe_print_past_4_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "recipe_print_past_5_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "sign_up_past_1_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "sign_up_past_2_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "sign_up_past_3_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "sign_up_past_4_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "sign_up_past_5_day",
+      "invalid_values_allowed": true
+    }
+  },
+  {
+    "numeric": {
+      "column_name": "recipe_favorite_past_1_day",
+      "invalid_values_allowed": true
+      }
+    },
+  {
+    "numeric": {
+      "column_name": "recipe_favorite_past_2_day",
+      "invalid_values_allowed": true
+      }
+    },
+  {
+    "numeric": {
+      "column_name": "recipe_favorite_past_3_day",
+      "invalid_values_allowed": true
+      }
+    },
+  {
+    "numeric": {
+      "column_name": "recipe_favorite_past_4_day",
+      "invalid_values_allowed": true
+      }
+    },
+  {
+    "numeric": {
+      "column_name": "recife_favorite_past_5_day",
+      "invalid_values_allowed": true
+      }
+    },
+  {
+    "numeric": {
+      "column_name": "recipe_add_to_menu_past_1_day",
+      "invalid_values_allowed": true
+      }
+    },
+    {
+    "numeric": {
+      "column_name": "recipe_add_to_menu_past_2_day",
+      "invalid_values_allowed": true
+      }
+    },
+    {
+    "numeric": {
+      "column_name": "recipe_add_to_menu_past_3_day",
+      "invalid_values_allowed": true
+      }
+    },
+    {
+    "numeric": {
+      "column_name": "recipe_add_to_menu_past_4_day",
+      "invalid_values_allowed": true
+      }
+    },
+    {
+    "numeric": {
+      "column_name": "recipe_add_to_menu_past_5_day",
+      "invalid_values_allowed": true
+      }
+    }
+]
