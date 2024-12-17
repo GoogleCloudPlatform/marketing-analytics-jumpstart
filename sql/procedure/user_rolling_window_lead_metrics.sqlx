@@ -154,7 +154,6 @@ GROUP BY user_pseudo_id
 );
 
 -- Past User metrics: 1-day recipe_print per user, 2-5-day recipe_print per user
--- 2-5-day recipe_print per user
 CREATE OR REPLACE TEMP TABLE rolling_recipe_print_past_days AS (
 SELECT
   -- User pseudo ID, a unique identifier for the user

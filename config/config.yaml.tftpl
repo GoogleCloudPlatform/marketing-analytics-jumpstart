@@ -586,7 +586,7 @@ vertex_ai:
         pipeline_parameters_substitutions: # Substitutions are applied to the parameters before compilation
           lead_score_propensity_label_procedure_name: "${project_id}.feature_store.invoke_lead_score_propensity_label"
           user_dimensions_procedure_name: "${project_id}.feature_store.invoke_user_dimensions"
-          user_rolling_window_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_metrics"
+          user_rolling_window_metrics_procedure_name: "${project_id}.feature_store.invoke_user_rolling_window_lead_metrics"
           user_scoped_metrics_procedure_name: "${project_id}.feature_store.invoke_user_scoped_metrics"
           user_session_event_aggregated_metrics_procedure_name: "${project_id}.feature_store.invoke_user_session_event_aggregated_metrics"
           date_timezone: "UTC" # used when input_date is None and need to get current date.
@@ -1728,7 +1728,7 @@ vertex_ai:
           model_metric_threshold: 0.9
           number_of_models_considered: 1
           # This is the prediction dataset table or view.
-          bigquery_source: "${project_id}.lead_score_propensity.v_lead_score_propensity_inference_30_15"
+          bigquery_source: "${project_id}.lead_score_propensity.v_lead_score_propensity_inference_5_1"
           bigquery_destination_prefix: "${project_id}.lead_score_propensity"
           bq_unique_key: "user_pseudo_id"
           machine_type: "n1-standard-4"
@@ -2668,6 +2668,14 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 180
+    # This is a stored procedure that CALLs the User Rolling Window Metrics stored procedure.
+    invoke_user_rolling_window_lead_metrics:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      stored_procedure: "user_rolling_window_lead_metrics"
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_end_date: 15
     # This is a stored procedure that CALLs the User Scoped Metrics stored procedure.
     invoke_user_scoped_metrics:
       project_id: "${project_id}"
