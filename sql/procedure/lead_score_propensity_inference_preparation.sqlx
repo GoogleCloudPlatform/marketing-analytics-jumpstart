@@ -93,77 +93,97 @@ CREATE OR REPLACE TEMP TABLE inference_preparation_uwlm as (
     -- Feature date
     UWM.feature_date,
     -- Calculate the maximum value for each metric over the window
-    MAX(UWM.active_users_past_1_day) OVER(user_rolling_window_lead) AS active_users_past_1_day,
+    MAX(UWLM.scroll_50_past_1_day) OVER(user_rolling_lead_window) AS scroll_50_past_1_day,
     -- Maximum active users in the past 2 days
-    MAX(UWM.active_users_past_2_day) OVER(user_rolling_window_lead) AS active_users_past_2_day,
+    MAX(UWLM.scroll_50_past_2_day) OVER(user_rolling_lead_window) AS scroll_50_past_2_day,
     -- Maximum active users in the past 3 days
-    MAX(UWM.active_users_past_3_day) OVER(user_rolling_window_lead) AS active_users_past_3_day,
+    MAX(UWLM.scroll_50_past_3_day) OVER(user_rolling_lead_window) AS scroll_50_past_3_day,
     -- Maximum active users in the past 4 days
-    MAX(UWM.active_users_past_4_day) OVER(user_rolling_window_lead) AS active_users_past_4_day,
+    MAX(UWLM.scroll_50_past_4_day) OVER(user_rolling_lead_window) AS scroll_50_past_4_day,
     -- Maximum active users in the past 5 days
-    MAX(UWM.active_users_past_5_day) OVER(user_rolling_window_lead) AS active_users_past_5_day,
-    -- Maximum purchases in the past 1 day
-    MAX(UWM.purchases_past_1_day) OVER(user_rolling_window_lead) AS purchases_past_1_day,
-    -- Maximum purchases in the past 2 days
-    MAX(UWM.purchases_past_2_day) OVER(user_rolling_window_lead) AS purchases_past_2_day,
-    -- Maximum purchases in the past 3 days
-    MAX(UWM.purchases_past_3_day) OVER(user_rolling_window_lead) AS purchases_past_3_day,
-    -- Maximum purchases in the past 4 days
-    MAX(UWM.purchases_past_4_day) OVER(user_rolling_window) AS purchases_past_4_day,
-    -- Maximum purchases in the past 5 days
-    MAX(UWM.purchases_past_5_day) OVER(user_rolling_window) AS purchases_past_5_day,
-    -- Maximum visits in the past 1 day
-    MAX(UWM.visits_past_1_day) OVER(user_rolling_window) AS visits_past_1_day,
-    -- Maximum visits in the past 2 days
-    MAX(UWM.visits_past_2_day) OVER(user_rolling_window) AS visits_past_2_day,
-    -- Maximum visits in the past 3 days
-    MAX(UWM.visits_past_3_day) OVER(user_rolling_window) AS visits_past_3_day,
-    -- Maximum visits in the past 4 days
-    MAX(UWM.visits_past_4_day) OVER(user_rolling_window) AS visits_past_4_day,
-    -- Maximum visits in the past 5 days
-    MAX(UWM.visits_past_5_day) OVER(user_rolling_window) AS visits_past_5_day,
-    -- Maximum view items in the past 1 day
-    MAX(UWM.view_items_past_1_day) OVER(user_rolling_window) AS view_items_past_1_day,
-    -- Maximum view items in the past 2 days
-    MAX(UWM.view_items_past_2_day) OVER(user_rolling_window) AS view_items_past_2_day,
-    -- Maximum view items in the past 3 days
-    MAX(UWM.view_items_past_3_day) OVER(user_rolling_window) AS view_items_past_3_day,
-    -- Maximum view items in the past 4 days
-    MAX(UWM.view_items_past_4_day) OVER(user_rolling_window) AS view_items_past_4_day,
-    -- Maximum view items in the past 5 days
-    MAX(UWM.view_items_past_5_day) OVER(user_rolling_window) AS view_items_past_5_day,
-    -- Maximum add to carts in the past 1 day
-    MAX(UWM.add_to_carts_past_1_day) OVER(user_rolling_window) AS add_to_carts_past_1_day,
-    -- Maximum add to carts in the past 2 days
-    MAX(UWM.add_to_carts_past_2_day) OVER(user_rolling_window) AS add_to_carts_past_2_day,
-    -- Maximum add to carts in the past 3 days
-    MAX(UWM.add_to_carts_past_3_day) OVER(user_rolling_window) AS add_to_carts_past_3_day,
-    -- Maximum add to carts in the past 4 days
-    MAX(UWM.add_to_carts_past_4_day) OVER(user_rolling_window) AS add_to_carts_past_4_day,
-    -- Maximum add to carts in the past 5 days
-    MAX(UWM.add_to_carts_past_5_day) OVER(user_rolling_window) AS add_to_carts_past_5_day,
-    -- Maximum checkouts in the past 1 day
-    MAX(UWM.checkouts_past_1_day) OVER(user_rolling_window) AS checkouts_past_1_day,
-    -- Maximum checkouts in the past 2 days
-    MAX(UWM.checkouts_past_2_day) OVER(user_rolling_window) AS checkouts_past_2_day,
-    -- Maximum checkouts in the past 3 days
-    MAX(UWM.checkouts_past_3_day) OVER(user_rolling_window) AS checkouts_past_3_day,
-    -- Maximum checkouts in the past 4 days
-    MAX(UWM.checkouts_past_4_day) OVER(user_rolling_window) AS checkouts_past_4_day,
-    -- Maximum checkouts in the past 5 days
-    MAX(UWM.checkouts_past_5_day) OVER(user_rolling_window) AS checkouts_past_5_day
+    MAX(UWLM.scroll_50_past_5_day) OVER(user_rolling_lead_window) AS scroll_50_past_5_day,
+    -- Maximum scroll_90 in the past 1 day
+    MAX(UWLM.scroll_90_past_1_day) OVER(user_rolling_lead_window) AS scroll_90_past_1_day,
+    -- Maximum scroll_90 in the past 2 days
+    MAX(UWLM.scroll_90_past_2_day) OVER(user_rolling_lead_window) AS scroll_90_past_2_day,
+    -- Maximum scroll_90 in the past 3 days
+    MAX(UWLM.scroll_90_past_3_day) OVER(user_rolling_lead_window) AS scroll_90_past_3_day,
+    -- Maximum scroll_90 in the past 4 days
+    MAX(UWLM.scroll_90_past_4_day) OVER(user_rolling_lead_window) AS scroll_90_past_4_day,
+    -- Maximum scroll_90 in the past 5 days
+    MAX(UWLM.scroll_90_past_5_day) OVER(user_rolling_lead_window) AS scroll_90_past_5_day,
+    -- Maximum view_search_results in the past 1 day
+    MAX(UWLM.view_search_results_past_1_day) OVER(user_rolling_lead_window) AS view_search_results_past_1_day,
+    -- Maximum view_search_results in the past 2 days
+    MAX(UWLM.view_search_results_past_2_day) OVER(user_rolling_lead_window) AS view_search_results_past_2_day,
+    -- Maximum view_search_results in the past 3 days
+    MAX(UWLM.view_search_results_past_3_day) OVER(user_rolling_lead_window) AS view_search_results_past_3_day,
+    -- Maximum view_search_results in the past 4 days
+    MAX(UWLM.view_search_results_past_4_day) OVER(user_rolling_lead_window) AS view_search_results_past_4_day,
+    -- Maximum view_search_results in the past 5 days
+    MAX(UWLM.view_search_results_past_5_day) OVER(user_rolling_lead_window) AS view_search_results_past_5_day,
+    -- Maximum recipe_add_to_list in the past 1 day
+    MAX(UWLM.recipe_add_to_list_past_1_day) OVER(user_rolling_lead_window) AS recipe_add_to_list_past_1_day,
+    -- Maximum recipe_add_to_list in the past 2 days
+    MAX(UWLM.recipe_add_to_list_past_2_day) OVER(user_rolling_lead_window) AS recipe_add_to_list_past_2_day,
+    -- Maximum recipe_add_to_list in the past 3 days
+    MAX(UWLM.recipe_add_to_list_past_3_day) OVER(user_rolling_lead_window) AS recipe_add_to_list_past_3_day,
+    -- Maximum recipe_add_to_list in the past 4 days
+    MAX(UWLM.recipe_add_to_list_past_4_day) OVER(user_rolling_lead_window) AS recipe_add_to_list_past_4_day,
+    -- Maximum recipe_add_to_list in the past 5 days
+    MAX(UWLM.recipe_add_to_list_past_5_day) OVER(user_rolling_lead_window) AS recipe_add_to_list_past_5_day,
+    -- Maximum recipe_print in the past 1 day
+    MAX(UWLM.recipe_print_past_1_day) OVER(user_rolling_lead_window) AS recipe_print_past_1_day,
+    -- Maximum recipe_print in the past 2 days
+    MAX(UWLM.recipe_print_past_2_day) OVER(user_rolling_lead_window) AS recipe_print_past_2_day,
+    -- Maximum recipe_print in the past 3 days
+    MAX(UWLM.recipe_print_past_3_day) OVER(user_rolling_lead_window) AS recipe_print_past_3_day,
+    -- Maximum recipe_print in the past 4 days
+    MAX(UWLM.recipe_print_past_4_day) OVER(user_rolling_lead_window) AS recipe_print_past_4_day,
+    -- Maximum recipe_print in the past 5 days
+    MAX(UWLM.recipe_print_past_5_day) OVER(user_rolling_lead_window) AS recipe_print_past_5_day,
+    -- Maximum sign_up_past in the past 1 day
+    MAX(UWLM.sign_up_past_1_day) OVER(user_rolling_lead_window) AS sign_up_past_1_day,
+    -- Maximum sign_up_past in the past 2 days
+    MAX(UWLM.sign_up_past_2_day) OVER(user_rolling_lead_window) AS sign_up_past_2_day,
+    -- Maximum sign_up_past in the past 3 days
+    MAX(UWLM.sign_up_past_3_day) OVER(user_rolling_lead_window) AS sign_up_past_3_day,
+    -- Maximum sign_up_past in the past 4 days
+    MAX(UWLM.sign_up_past_4_day) OVER(user_rolling_lead_window) AS sign_up_past_4_day,
+    -- Maximum sign_up_past in the past 5 days
+    MAX(UWLM.sign_up_past_5_day) OVER(user_rolling_lead_window) AS sign_up_past_5_day,
+    -- Maximum recipe_favorite in the past 1 day
+    MAX(UWLM.recipe_favorite_past_1_day) OVER(user_rolling_lead_window) AS recipe_favorite_past_1_day,
+    -- Maximum recipe_favorite in the past 2 days
+    MAX(UWLM.recipe_favorite_past_2_day) OVER(user_rolling_lead_window) AS recipe_favorite_past_2_day,
+    -- Maximum recipe_favorite in the past 3 days
+    MAX(UWLM.recipe_favorite_past_3_day) OVER(user_rolling_lead_window) AS recipe_favorite_past_3_day,
+    -- Maximum recipe_favorite in the past 4 days
+    MAX(UWLM.recipe_favorite_past_4_day) OVER(user_rolling_lead_window) AS recipe_favorite_past_4_day,
+    -- Maximum recipe_favorite in the past 5 days
+    MAX(UWLM.recipe_favorite_past_5_day) OVER(user_rolling_lead_window) AS recipe_favorite_past_5_day,
+    -- Maximum recipe_add_to_menu in the past 1 day
+    MAX(UWLM.recipe_add_to_menu_past_1_day) OVER(user_rolling_lead_window) AS recipe_add_to_menu_past_1_day,
+    -- Maximum recipe_add_to_menu in the past 2 days
+    MAX(UWLM.recipe_add_to_menu_past_2_day) OVER(user_rolling_lead_window) AS recipe_add_to_menu_past_2_day,
+    -- Maximum recipe_add_to_menu in the past 3 days
+    MAX(UWLM.recipe_add_to_menu_past_3_day) OVER(user_rolling_lead_window) AS recipe_add_to_menu_past_3_day,
+    -- Maximum recipe_add_to_menu in the past 4 days
+    MAX(UWLM.recipe_add_to_menu_past_4_day) OVER(user_rolling_lead_window) AS recipe_add_to_menu_past_4_day,
+    -- Maximum recipe_add_to_menu in the past 5 days
+    MAX(UWLM.recipe_add_to_menu_past_5_day) OVER(user_rolling_lead_window) AS recipe_add_to_menu_past_5_day,
 FROM
-  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lead_metrics` UWM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lead_metrics` UWLM
 INNER JOIN
   `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
 ON
-  UWM.user_pseudo_id = LEU.user_pseudo_id
+  UWLM.user_pseudo_id = LEU.user_pseudo_id
 WHERE
   -- Filter for the features in the inferecen date
-  UWM.feature_date = inference_date
-  AND UWM.processed_timestamp = lastest_processed_time_uwm
+  UWLM.feature_date = inference_date
+  AND UWLM.processed_timestamp = lastest_processed_time_uwm
 WINDOW 
-  user_rolling_window AS (PARTITION BY UWM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+  user_rolling_lead_window AS (PARTITION BY UWLM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );
 
 -- This is a temp table consolidating all features over the dates intervals.
@@ -191,47 +211,53 @@ CREATE OR REPLACE TEMP TABLE inference_preparation as (
     UD.first_traffic_source_name,
     UD.first_traffic_source_source,
     UD.has_signed_in_with_user_id,
-    UWM.active_users_past_1_day,
-    UWM.active_users_past_2_day,
-    UWM.active_users_past_3_day,
-    UWM.active_users_past_4_day,
-    UWM.active_users_past_5_day,
-    UWM.active_users_past_6_day,
-    UWM.active_users_past_7_day,
-    UWM.active_users_past_8_14_day,
-    UWM.active_users_past_15_30_day,
-    UWM.purchases_past_1_day,
-    UWM.purchases_past_2_day,
-    UWM.purchases_past_3_day,
-    UWM.purchases_past_4_day,
-    UWM.purchases_past_5_day,
-    UWM.visits_past_1_day,
-    UWM.visits_past_2_day,
-    UWM.visits_past_3_day,
-    UWM.visits_past_4_day,
-    UWM.visits_past_5_day,
-    UWM.view_items_past_1_day,
-    UWM.view_items_past_2_day,
-    UWM.view_items_past_3_day,
-    UWM.view_items_past_4_day,
-    UWM.view_items_past_5_day,
-    UWM.add_to_carts_past_1_day,
-    UWM.add_to_carts_past_2_day,
-    UWM.add_to_carts_past_3_day,
-    UWM.add_to_carts_past_4_day,
-    UWM.add_to_carts_past_5_day,
-    UWM.checkouts_past_1_day,
-    UWM.checkouts_past_2_day,
-    UWM.checkouts_past_3_day,
-    UWM.checkouts_past_4_day,
-    UWM.checkouts_past_5_day
+    UWLM.scroll_50_past_1_day,
+    UWLM.scroll_50_past_2_day,
+    UWLM.scroll_50_past_3_day,
+    UWLM.scroll_50_past_4_day,
+    UWLM.scroll_50_past_5_day,
+    UWLM.scroll_90_past_1_day,
+    UWLM.scroll_90_past_2_day,
+    UWLM.scroll_90_past_3_day,
+    UWLM.scroll_90_past_4_day,
+    UWLM.scroll_90_past_5_day,
+    UWLM.view_search_results_past_1_day,
+    UWLM.view_search_results_past_2_day,
+    UWLM.view_search_results_past_3_day,
+    UWLM.view_search_results_past_4_day,
+    UWLM.view_search_results_past_5_day,
+    UWLM.recipe_add_to_list_past_1_day,
+    UWLM.recipe_add_to_list_past_2_day,
+    UWLM.recipe_add_to_list_past_3_day,
+    UWLM.recipe_add_to_list_past_4_day,
+    UWLM.recipe_add_to_list_past_5_day,
+    UWLM.recipe_print_past_1_day,
+    UWLM.recipe_print_past_2_day,
+    UWLM.recipe_print_past_3_day,
+    UWLM.recipe_print_past_4_day,
+    UWLM.recipe_print_past_5_day,
+    UWLM.sign_up_past_1_day,
+    UWLM.sign_up_past_2_day,
+    UWLM.sign_up_past_3_day,
+    UWLM.sign_up_past_4_day,
+    UWLM.sign_up_past_5_day,
+    UWLM.recipe_favorite_past_1_day,
+    UWLM.recipe_favorite_past_2_day,
+    UWLM.recipe_favorite_past_3_day,
+    UWLM.recipe_favorite_past_4_day,
+    UWLM.recipe_favorite_past_5_day,
+    UWLM.recipe_add_to_menu_past_1_day,
+    UWLM.recipe_add_to_menu_past_2_day,
+    UWLM.recipe_add_to_menu_past_3_day,
+    UWLM.recipe_add_to_menu_past_4_day,
+    UWLM.recipe_add_to_menu_past_5_day
 FROM
   inference_preparation_ud UD
 INNER JOIN
-  inference_preparation_uwm UWM
+  inference_preparation_uwlm UWLM
 ON
-  UWM.user_pseudo_id = UD.user_pseudo_id
-  AND UWM.feature_date = UD.feature_date
+  UWLM.user_pseudo_id = UD.user_pseudo_id
+  AND UWLM.feature_date = UD.feature_date
 );
 
 DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
@@ -260,36 +286,46 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
   first_traffic_source_name,
   first_traffic_source_source,
   has_signed_in_with_user_id,
-  active_users_past_1_day,
-  active_users_past_2_day,
-  active_users_past_3_day,
-  active_users_past_4_day,
-  active_users_past_5_day,
-  purchases_past_1_day,
-  purchases_past_2_day,
-  purchases_past_3_day,
-  purchases_past_4_day,
-  purchases_past_5_day,
-  visits_past_1_day,
-  visits_past_2_day,
-  visits_past_3_day,
-  visits_past_4_day,
-  visits_past_5_day,
-  view_items_past_1_day,
-  view_items_past_2_day,
-  view_items_past_3_day,
-  view_items_past_4_day,
-  view_items_past_5_day,
-  add_to_carts_past_1_day,
-  add_to_carts_past_2_day,
-  add_to_carts_past_3_day,
-  add_to_carts_past_4_day,
-  add_to_carts_past_5_day,
-  checkouts_past_1_day,
-  checkouts_past_2_day,
-  checkouts_past_3_day,
-  checkouts_past_4_day,
-  checkouts_past_5_day
+  scroll_50_past_1_day,
+  scroll_50_past_2_day,
+  scroll_50_past_3_day,
+  scroll_50_past_4_day,
+  scroll_50_past_5_day,
+  scroll_90_past_1_day,
+  scroll_90_past_2_day,
+  scroll_90_past_3_day,
+  scroll_90_past_4_day,
+  scroll_90_past_5_day,
+  view_search_results_past_1_day,
+  view_search_results_past_2_day,
+  view_search_results_past_3_day,
+  view_search_results_past_4_day,
+  view_search_results_past_5_day,
+  recipe_add_to_list_past_1_day,
+  recipe_add_to_list_past_2_day,
+  recipe_add_to_list_past_3_day,
+  recipe_add_to_list_past_4_day,
+  recipe_add_to_list_past_5_day,
+  recipe_print_past_1_day,
+  recipe_print_past_2_day,
+  recipe_print_past_3_day,
+  recipe_print_past_4_day,
+  recipe_print_past_5_day,
+  sign_up_past_1_day,
+  sign_up_past_2_day,
+  sign_up_past_3_day,
+  sign_up_past_4_day,
+  sign_up_past_5_day,
+  recipe_favorite_past_1_day,
+  recipe_favorite_past_2_day,
+  recipe_favorite_past_3_day,
+  recipe_favorite_past_4_day,
+  recipe_favorite_past_5_day,
+  recipe_add_to_menu_past_1_day,
+  recipe_add_to_menu_past_2_day,
+  recipe_add_to_menu_past_3_day,
+  recipe_add_to_menu_past_4_day,
+  recipe_add_to_menu_past_5_day
 )
 SELECT DISTINCT 
 feature_date,
@@ -314,40 +350,50 @@ feature_date,
   first_traffic_source_name,
   first_traffic_source_source,
   has_signed_in_with_user_id,
-  active_users_past_1_day,
-  active_users_past_2_day,
-  active_users_past_3_day,
-  active_users_past_4_day,
-  active_users_past_5_day,
-  purchases_past_1_day,
-  purchases_past_2_day,
-  purchases_past_3_day,
-  purchases_past_4_day,
-  purchases_past_5_day,
-  visits_past_1_day,
-  visits_past_2_day,
-  visits_past_3_day,
-  visits_past_4_day,
-  visits_past_5_day,
-  view_items_past_1_day,
-  view_items_past_2_day,
-  view_items_past_3_day,
-  view_items_past_4_day,
-  view_items_past_5_day,
-  add_to_carts_past_1_day,
-  add_to_carts_past_2_day,
-  add_to_carts_past_3_day,
-  add_to_carts_past_4_day,
-  add_to_carts_past_5_day,
-  checkouts_past_1_day,
-  checkouts_past_2_day,
-  checkouts_past_3_day,
-  checkouts_past_4_day,
-  checkouts_past_5_day
+  scroll_50_past_1_day,
+  scroll_50_past_2_day,
+  scroll_50_past_3_day,
+  scroll_50_past_4_day,
+  scroll_50_past_5_day,
+  scroll_90_past_1_day,
+  scroll_90_past_2_day,
+  scroll_90_past_3_day,
+  scroll_90_past_4_day,
+  scroll_90_past_5_day,
+  view_search_results_past_1_day,
+  view_search_results_past_2_day,
+  view_search_results_past_3_day,
+  view_search_results_past_4_day,
+  view_search_results_past_5_day,
+  recipe_add_to_list_past_1_day,
+  recipe_add_to_list_past_2_day,
+  recipe_add_to_list_past_3_day,
+  recipe_add_to_list_past_4_day,
+  recipe_add_to_list_past_5_day,
+  recipe_print_past_1_day,
+  recipe_print_past_2_day,
+  recipe_print_past_3_day,
+  recipe_print_past_4_day,
+  recipe_print_past_5_day,
+  sign_up_past_1_day,
+  sign_up_past_2_day,
+  sign_up_past_3_day,
+  sign_up_past_4_day,
+  sign_up_past_5_day,
+  recipe_favorite_past_1_day,
+  recipe_favorite_past_2_day,
+  recipe_favorite_past_3_day,
+  recipe_favorite_past_4_day,
+  recipe_favorite_past_5_day,
+  recipe_add_to_menu_past_1_day,
+  recipe_add_to_menu_past_2_day,
+  recipe_add_to_menu_past_3_day,
+  recipe_add_to_menu_past_4_day,
+  recipe_add_to_menu_past_5_day
 FROM inference_preparation;
 
 
-CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_inference_5_1` AS(
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.lead_score_propensity_inference_5_1` AS(
   SELECT DISTINCT
   CURRENT_TIMESTAMP() AS processed_timestamp,
   feature_date,
@@ -372,41 +418,51 @@ CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.purchase_propensity_inferenc
   LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_name,
   LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_source,
   LAST_VALUE(has_signed_in_with_user_id) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS has_signed_in_with_user_id,
-  LAST_VALUE(active_users_past_1_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_1_day,
-  LAST_VALUE(active_users_past_2_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_2_day,
-  LAST_VALUE(active_users_past_3_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_3_day,
-  LAST_VALUE(active_users_past_4_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_4_day,
-  LAST_VALUE(active_users_past_5_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS active_users_past_5_day,
-  LAST_VALUE(purchases_past_1_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_1_day,
-  LAST_VALUE(purchases_past_2_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_2_day,
-  LAST_VALUE(purchases_past_3_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_3_day,
-  LAST_VALUE(purchases_past_4_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_4_day,
-  LAST_VALUE(purchases_past_5_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS purchases_past_5_day,
-  LAST_VALUE(visits_past_1_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_1_day,
-  LAST_VALUE(visits_past_2_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_2_day,
-  LAST_VALUE(visits_past_3_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_3_day,
-  LAST_VALUE(visits_past_4_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_4_day,
-  LAST_VALUE(visits_past_5_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS visits_past_5_day,
-  LAST_VALUE(view_items_past_1_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_1_day,
-  LAST_VALUE(view_items_past_2_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_2_day,
-  LAST_VALUE(view_items_past_3_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_3_day,
-  LAST_VALUE(view_items_past_4_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_4_day,
-  LAST_VALUE(view_items_past_5_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS view_items_past_5_day,
-  LAST_VALUE(add_to_carts_past_1_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_1_day,
-  LAST_VALUE(add_to_carts_past_2_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_2_day,
-  LAST_VALUE(add_to_carts_past_3_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_3_day,
-  LAST_VALUE(add_to_carts_past_4_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_4_day,
-  LAST_VALUE(add_to_carts_past_5_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS add_to_carts_past_5_day,
-  LAST_VALUE(checkouts_past_1_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_1_day,
-  LAST_VALUE(checkouts_past_2_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_2_day,
-  LAST_VALUE(checkouts_past_3_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_3_day,
-  LAST_VALUE(checkouts_past_4_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_4_day,
-  LAST_VALUE(checkouts_past_5_day) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS checkouts_past_5_day
+  LAST_VALUE(scroll_50_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_50_past_1_day,
+  LAST_VALUE(scroll_50_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_50_past_2_day,
+  LAST_VALUE(scroll_50_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_50_past_3_day,
+  LAST_VALUE(scroll_50_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_50_past_4_day,
+  LAST_VALUE(scroll_50_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_50_past_5_day,
+  LAST_VALUE(scroll_90_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_90_past_1_day,
+  LAST_VALUE(scroll_90_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_90_past_2_day,
+  LAST_VALUE(scroll_90_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_90_past_3_day,
+  LAST_VALUE(scroll_90_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_90_past_4_day,
+  LAST_VALUE(scroll_90_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS scroll_90_past_5_day,
+  LAST_VALUE(view_search_results_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_search_results_past_1_day,
+  LAST_VALUE(view_search_results_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_search_results_past_2_day,
+  LAST_VALUE(view_search_results_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_search_results_past_3_day,
+  LAST_VALUE(view_search_results_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_search_results_past_4_day,
+  LAST_VALUE(view_search_results_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS view_search_results_past_5_day,
+  LAST_VALUE(recipe_add_to_list_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_list_past_1_day,
+  LAST_VALUE(recipe_add_to_list_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_list_past_2_day,
+  LAST_VALUE(recipe_add_to_list_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_list_past_3_day,
+  LAST_VALUE(recipe_add_to_list_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_list_past_4_day,
+  LAST_VALUE(recipe_add_to_list_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_list_past_5_day,
+  LAST_VALUE(recipe_print_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_print_past_1_day,
+  LAST_VALUE(recipe_print_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_print_past_2_day,
+  LAST_VALUE(recipe_print_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_print_past_3_day,
+  LAST_VALUE(recipe_print_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_print_past_4_day,
+  LAST_VALUE(recipe_print_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_print_past_5_day,
+  LAST_VALUE(sign_up_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS sign_up_past_1_day,
+  LAST_VALUE(sign_up_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS sign_up_past_2_day,
+  LAST_VALUE(sign_up_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS sign_up_past_3_day,
+  LAST_VALUE(sign_up_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS sign_up_past_4_day,
+  LAST_VALUE(sign_up_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS sign_up_past_5_day,
+  LAST_VALUE(recipe_favorite_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_favorite_past_1_day,
+  LAST_VALUE(recipe_favorite_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_favorite_past_2_day,
+  LAST_VALUE(recipe_favorite_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_favorite_past_3_day,
+  LAST_VALUE(recipe_favorite_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_favorite_past_4_day,
+  LAST_VALUE(recipe_favorite_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_favorite_past_5_day,
+  LAST_VALUE(recipe_add_to_menu_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_menu_past_1_day,
+  LAST_VALUE(recipe_add_to_menu_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_menu_past_2_day,
+  LAST_VALUE(recipe_add_to_menu_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_menu_past_3_day,
+  LAST_VALUE(recipe_add_to_menu_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_menu_past_4_day,
+  LAST_VALUE(recipe_add_to_menu_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS recipe_add_to_menu_past_5_day
   FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
 );
 
 
-CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_inference_5_1`
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_lead_score_propensity_inference_5_1`
 (processed_timestamp, 
   feature_date,
   user_pseudo_id,
@@ -430,41 +486,51 @@ CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_purchase_propensity_inferen
   first_traffic_source_name,
   first_traffic_source_source,
   has_signed_in_with_user_id,
-  active_users_past_1_day,
-  active_users_past_2_day,
-  active_users_past_3_day,
-  active_users_past_4_day,
-  active_users_past_5_day,
-  purchases_past_1_day,
-  purchases_past_2_day,
-  purchases_past_3_day,
-  purchases_past_4_day,
-  purchases_past_5_day,
-  visits_past_1_day,
-  visits_past_2_day,
-  visits_past_3_day,
-  visits_past_4_day,
-  visits_past_5_day,
-  view_items_past_1_day,
-  view_items_past_2_day,
-  view_items_past_3_day,
-  view_items_past_4_day,
-  view_items_past_5_day,
-  add_to_carts_past_1_day,
-  add_to_carts_past_2_day,
-  add_to_carts_past_3_day,
-  add_to_carts_past_4_day,
-  add_to_carts_past_5_day,
-  checkouts_past_1_day,
-  checkouts_past_2_day,
-  checkouts_past_3_day,
-  checkouts_past_4_day,
-  checkouts_past_5_day
+  scroll_50_past_1_day,
+  scroll_50_past_2_day,
+  scroll_50_past_3_day,
+  scroll_50_past_4_day,
+  scroll_50_past_5_day,
+  scroll_90_past_1_day,
+  scroll_90_past_2_day,
+  scroll_90_past_3_day,
+  scroll_90_past_4_day,
+  scroll_90_past_5_day,
+  view_search_results_past_1_day,
+  view_search_results_past_2_day,
+  view_search_results_past_3_day,
+  view_search_results_past_4_day,
+  view_search_results_past_5_day,
+  recipe_add_to_list_past_1_day,
+  recipe_add_to_list_past_2_day,
+  recipe_add_to_list_past_3_day,
+  recipe_add_to_list_past_4_day,
+  recipe_add_to_list_past_5_day,
+  recipe_print_past_1_day,
+  recipe_print_past_2_day,
+  recipe_print_past_3_day,
+  recipe_print_past_4_day,
+  recipe_print_past_5_day,
+  sign_up_past_1_day,
+  sign_up_past_2_day,
+  sign_up_past_3_day,
+  sign_up_past_4_day,
+  sign_up_past_5_day,
+  recipe_favorite_past_1_day,
+  recipe_favorite_past_2_day,
+  recipe_favorite_past_3_day,
+  recipe_favorite_past_4_day,
+  recipe_favorite_past_5_day,
+  recipe_add_to_menu_past_1_day,
+  recipe_add_to_menu_past_2_day,
+  recipe_add_to_menu_past_3_day,
+  recipe_add_to_menu_past_4_day,
+  recipe_add_to_menu_past_5_day
   )
 OPTIONS(
   --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
-  friendly_name="v_purchase_propensity_inference_5_1",
-  description="View Purchase Propensity Inference dataset using 5 days back to predict 1 day ahead. View expires after 48h and should run daily.",
+  friendly_name="v_lead_score_propensity_inference_5_1",
+  description="View Lead Score Propensity Inference dataset using 5 days back to predict 1 day ahead. View expires after 48h and should run daily.",
   labels=[("org_unit", "development")]
 ) AS 
 SELECT DISTINCT
@@ -491,36 +557,46 @@ SELECT DISTINCT
   first_traffic_source_name,
   first_traffic_source_source,
   has_signed_in_with_user_id,
-  active_users_past_1_day,
-  active_users_past_2_day,
-  active_users_past_3_day,
-  active_users_past_4_day,
-  active_users_past_5_day,
-  purchases_past_1_day,
-  purchases_past_2_day,
-  purchases_past_3_day,
-  purchases_past_4_day,
-  purchases_past_5_day,
-  visits_past_1_day,
-  visits_past_2_day,
-  visits_past_3_day,
-  visits_past_4_day,
-  visits_past_5_day,
-  view_items_past_1_day,
-  view_items_past_2_day,
-  view_items_past_3_day,
-  view_items_past_4_day,
-  view_items_past_5_day,
-  add_to_carts_past_1_day,
-  add_to_carts_past_2_day,
-  add_to_carts_past_3_day,
-  add_to_carts_past_4_day,
-  add_to_carts_past_5_day,
-  checkouts_past_1_day,
-  checkouts_past_2_day,
-  checkouts_past_3_day,
-  checkouts_past_4_day,
-  checkouts_past_5_day
+  scroll_50_past_1_day,
+  scroll_50_past_2_day,
+  scroll_50_past_3_day,
+  scroll_50_past_4_day,
+  scroll_50_past_5_day,
+  scroll_90_past_1_day,
+  scroll_90_past_2_day,
+  scroll_90_past_3_day,
+  scroll_90_past_4_day,
+  scroll_90_past_5_day,
+  view_search_results_past_1_day,
+  view_search_results_past_2_day,
+  view_search_results_past_3_day,
+  view_search_results_past_4_day,
+  view_search_results_past_5_day,
+  recipe_add_to_list_past_1_day,
+  recipe_add_to_list_past_2_day,
+  recipe_add_to_list_past_3_day,
+  recipe_add_to_list_past_4_day,
+  recipe_add_to_list_past_5_day,
+  recipe_print_past_1_day,
+  recipe_print_past_2_day,
+  recipe_print_past_3_day,
+  recipe_print_past_4_day,
+  recipe_print_past_5_day,
+  sign_up_past_1_day,
+  sign_up_past_2_day,
+  sign_up_past_3_day,
+  sign_up_past_4_day,
+  sign_up_past_5_day,
+  recipe_favorite_past_1_day,
+  recipe_favorite_past_2_day,
+  recipe_favorite_past_3_day,
+  recipe_favorite_past_4_day,
+  recipe_favorite_past_5_day,
+  recipe_add_to_menu_past_1_day,
+  recipe_add_to_menu_past_2_day,
+  recipe_add_to_menu_past_3_day,
+  recipe_add_to_menu_past_4_day,
+  recipe_add_to_menu_past_5_day
 FROM (
 SELECT DISTINCT
   processed_timestamp, 
@@ -546,39 +622,49 @@ SELECT DISTINCT
   first_traffic_source_name,
   first_traffic_source_source,
   has_signed_in_with_user_id,
-  active_users_past_1_day,
-  active_users_past_2_day,
-  active_users_past_3_day,
-  active_users_past_4_day,
-  active_users_past_5_day,
-  purchases_past_1_day,
-  purchases_past_2_day,
-  purchases_past_3_day,
-  purchases_past_4_day,
-  purchases_past_5_day,
-  visits_past_1_day,
-  visits_past_2_day,
-  visits_past_3_day,
-  visits_past_4_day,
-  visits_past_5_day,
-  view_items_past_1_day,
-  view_items_past_2_day,
-  view_items_past_3_day,
-  view_items_past_4_day,
-  view_items_past_5_day,
-  add_to_carts_past_1_day,
-  add_to_carts_past_2_day,
-  add_to_carts_past_3_day,
-  add_to_carts_past_4_day,
-  add_to_carts_past_5_day,
-  checkouts_past_1_day,
-  checkouts_past_2_day,
-  checkouts_past_3_day,
-  checkouts_past_4_day,
-  checkouts_past_5_day,
+  scroll_50_past_1_day,
+  scroll_50_past_2_day,
+  scroll_50_past_3_day,
+  scroll_50_past_4_day,
+  scroll_50_past_5_day,
+  scroll_90_past_1_day,
+  scroll_90_past_2_day,
+  scroll_90_past_3_day,
+  scroll_90_past_4_day,
+  scroll_90_past_5_day,
+  view_search_results_past_1_day,
+  view_search_results_past_2_day,
+  view_search_results_past_3_day,
+  view_search_results_past_4_day,
+  view_search_results_past_5_day,
+  recipe_add_to_list_past_1_day,
+  recipe_add_to_list_past_2_day,
+  recipe_add_to_list_past_3_day,
+  recipe_add_to_list_past_4_day,
+  recipe_add_to_list_past_5_day,
+  recipe_print_past_1_day,
+  recipe_print_past_2_day,
+  recipe_print_past_3_day,
+  recipe_print_past_4_day,
+  recipe_print_past_5_day,
+  sign_up_past_1_day,
+  sign_up_past_2_day,
+  sign_up_past_3_day,
+  sign_up_past_4_day,
+  sign_up_past_5_day,
+  recipe_favorite_past_1_day,
+  recipe_favorite_past_2_day,
+  recipe_favorite_past_3_day,
+  recipe_favorite_past_4_day,
+  recipe_favorite_past_5_day,
+  recipe_add_to_menu_past_1_day,
+  recipe_add_to_menu_past_2_day,
+  recipe_add_to_menu_past_3_day,
+  recipe_add_to_menu_past_4_day,
+  recipe_add_to_menu_past_5_day,
   -- Row number partitioned by user pseudo id ordered by feature date descending
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_row_order
-  FROM `{{project_id}}.{{dataset}}.purchase_propensity_inference_5_1`
+  FROM `{{project_id}}.{{dataset}}.lead_score_propensity_inference_5_1`
 )
 WHERE
   -- Filter only for the most recent user example

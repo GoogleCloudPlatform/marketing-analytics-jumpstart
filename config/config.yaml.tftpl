@@ -2092,6 +2092,13 @@ bigquery:
       table_name: "user_rolling_window_metrics"
       location: "${location}"
       table_description: "User Rolling Window Metrics table as part of the Feature Store for Purchase Propensity use case"
+    # Table containing the featured engineered rolling window metrics that will be used for the Purchase Propensity training and inference pipeline.
+    user_rolling_window_lead_metrics:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      table_name: "user_rolling_window_lead_metrics"
+      location: "${location}"
+      table_description: "User Rolling Window Lead Metrics table as part of the Feature Store for Lead Score Propensity use case"
     # Table containing the feature engineered all users metrics that will be used for the Customer Lifetime Value training and inference pipeline.
     user_scoped_lifetime_metrics:
       project_id: "${project_id}"
@@ -2478,6 +2485,22 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 30
+    # This is a stored procedure that CALLs the User Rolling Window Lead Metrics Backfill stored procedure.
+    invoke_backfill_user_rolling_window_lead_metrics:
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}" 
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      insert_table: "user_rolling_window_lead_metrics"
+      # The `interval_max_date` parameter defines hwo many days we leave out of the training dataset after the latest date in the dataset.
+      # This is usually the same value as the look forward window.
+      interval_max_date: 1
+      # The `interval_min_date` parameter defines how many days we leave out of the training dataset before the first date in the dataset.
+      # This is usually the same value as the lookback window.
+      interval_min_date: 5
+      # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
+      # This is usually the same value as the look forward window.
+      interval_end_date: 5
     # This is a stored procedure that CALLs the User Scoped Metrics Backfill stored procedure.
     invoke_backfill_user_scoped_metrics:
       mds_project_id: "${mds_project_id}"
@@ -2884,6 +2907,16 @@ bigquery:
       dataset: "feature_store"
       name: "user_rolling_window_metrics"
       insert_table: "user_rolling_window_metrics"
+      mds_project_id: "${mds_project_id}"
+      mds_dataset: "${mds_dataset}"
+    # This is the stored procedure that UPSERTs new look back rolling windows metrics rows daily.
+    # The granularity level is per user per day.
+    # These metrics are used for the Lead Score Propensity use case.
+    user_rolling_window_lead_metrics:
+      project_id: "${project_id}"
+      dataset: "feature_store"
+      name: "user_rolling_window_lead_metrics"
+      insert_table: "user_rolling_window_lead_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
     # This is the stored procedure that UPSERTs new aggregated users metrics rows daily.
