@@ -787,6 +787,42 @@ resource "google_bigquery_routine" "user_rolling_window_metrics" {
   }
 }
 
+# This resource reads the contents of a local SQL file named user_rolling_window_lead_metrics.sql and 
+# stores it in a variable named user_rolling_window_lead_metrics_file.content. 
+# The SQL file is expected to contain the definition of a BigQuery procedure named user_rolling_window_lead_metrics.
+data "local_file" "user_rolling_window_lead_metrics_file" {
+  filename = "${local.sql_dir}/procedure/user_rolling_window_lead_metrics.sql"
+}
+
+# The user_rolling_window_lead_metrics procedure is designed to prepare the features for the Purchase Propensity model.
+# ##
+# The procedure is typically invoked before training the Purchase Propensity model to ensure that the features data 
+# is in the correct format and ready for training.
+resource "google_bigquery_routine" "user_rolling_window_lead_metrics" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "user_rolling_window_lead_metrics"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.user_rolling_window_lead_metrics_file.content
+  description     = "User-per-day granularity level metrics. Run this procedure daily. Metrics calculated using a rolling window operation."
+  arguments {
+    name      = "input_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "end_date"
+    mode      = "INOUT"
+    data_type = jsonencode({ "typeKind" : "DATE" })
+  }
+  arguments {
+    name      = "rows_added"
+    mode      = "OUT"
+    data_type = jsonencode({ "typeKind" : "INT64" })
+  }
+}
+
 # This resource reads the contents of a local SQL file named user_scoped_lifetime_metrics.sql
 data "local_file" "user_scoped_lifetime_metrics_file" {
   filename = "${local.sql_dir}/procedure/user_scoped_lifetime_metrics.sql"
@@ -1117,6 +1153,20 @@ resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_metrics"
   language        = "SQL"
   definition_body = data.local_file.invoke_backfill_user_rolling_window_metrics_file.content
   description     = "Procedure that backfills the user_rolling_window_metrics feature table. Run this procedure occasionally before training the models."
+}
+
+data "local_file" "invoke_backfill_user_rolling_window_lead_metrics_file" {
+  filename = "${local.sql_dir}/query/invoke_backfill_user_rolling_window_lead_metrics.sql"
+}
+
+resource "google_bigquery_routine" "invoke_backfill_user_rolling_window_lead_metrics" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "invoke_backfill_user_rolling_window_lead_metrics"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_backfill_user_rolling_window_lead_metrics_file.content
+  description     = "Procedure that backfills the user_rolling_window_lead_metrics feature table. Run this procedure occasionally before training the models."
 }
 
 
@@ -1543,6 +1593,20 @@ resource "google_bigquery_routine" "invoke_user_rolling_window_metrics" {
 }
 
 
+data "local_file" "invoke_user_rolling_window_lead_metrics_file" {
+  filename = "${local.sql_dir}/query/invoke_user_rolling_window_lead_metrics.sql"
+}
+
+resource "google_bigquery_routine" "invoke_user_rolling_window_lead_metrics" {
+  project         = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : local.feature_store_project_id
+  dataset_id      = google_bigquery_dataset.feature_store.dataset_id
+  routine_id      = "invoke_user_rolling_window_lead_metrics"
+  routine_type    = "PROCEDURE"
+  language        = "SQL"
+  definition_body = data.local_file.invoke_user_rolling_window_lead_metrics_file.content
+  description     = "Procedure that invokes the user_rolling_window_lead_metrics table. Daily granularity level. Run this procedure daily before running prediction pipelines."
+}
+
 data "local_file" "invoke_user_scoped_lifetime_metrics_file" {
   filename = "${local.sql_dir}/query/invoke_user_scoped_lifetime_metrics.sql"
 }
@@ -1636,8 +1700,8 @@ resource "null_resource" "create_gemini_model" {
   # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
-    ignore_changes  = all
-    prevent_destroy = true
+    #ignore_changes  = all
+    #prevent_destroy = true
   }
 
   depends_on = [

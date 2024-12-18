@@ -14,7 +14,7 @@
 
 DECLARE lastest_processed_time_ud TIMESTAMP;
 DECLARE lastest_processed_time_useam TIMESTAMP;
-DECLARE lastest_processed_time_uwm TIMESTAMP;
+DECLARE lastest_processed_time_uwlm TIMESTAMP;
 DECLARE lastest_processed_time_um TIMESTAMP;
 
 -- Setting procedure to lookback from the day before `inference_date`
@@ -22,7 +22,7 @@ SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
 
 SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_useam = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` WHERE feature_date = inference_date LIMIT 1);
-SET lastest_processed_time_uwm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_uwlm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lead_metrics` WHERE feature_date = inference_date LIMIT 1);
 SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date = inference_date LIMIT 1);
 
 CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
@@ -89,9 +89,9 @@ WINDOW
 CREATE OR REPLACE TEMP TABLE inference_preparation_uwlm as (
   SELECT DISTINCT
     -- User pseudo id
-    UWM.user_pseudo_id,
+    UWLM.user_pseudo_id,
     -- Feature date
-    UWM.feature_date,
+    UWLM.feature_date,
     -- Calculate the maximum value for each metric over the window
     MAX(UWLM.scroll_50_past_1_day) OVER(user_rolling_lead_window) AS scroll_50_past_1_day,
     -- Maximum active users in the past 2 days
@@ -181,7 +181,7 @@ ON
 WHERE
   -- Filter for the features in the inferecen date
   UWLM.feature_date = inference_date
-  AND UWLM.processed_timestamp = lastest_processed_time_uwm
+  AND UWLM.processed_timestamp = lastest_processed_time_uwlm
 WINDOW 
   user_rolling_lead_window AS (PARTITION BY UWLM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
 );

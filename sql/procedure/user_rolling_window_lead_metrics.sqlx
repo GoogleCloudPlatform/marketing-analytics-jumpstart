@@ -414,7 +414,7 @@ WHEN MATCHED THEN
     I.recipe_add_to_menu_past_2_day = T.recipe_add_to_menu_past_2_day,
     I.recipe_add_to_menu_past_3_day = T.recipe_add_to_menu_past_3_day,
     I.recipe_add_to_menu_past_4_day = T.recipe_add_to_menu_past_4_day,
-    I.recipe_add_to_menu_past_5_day = T.recipe_add_to_menu_past_5_day,
+    I.recipe_add_to_menu_past_5_day = T.recipe_add_to_menu_past_5_day
 WHEN NOT MATCHED THEN
   INSERT 
     (processed_timestamp,
@@ -435,6 +435,11 @@ WHEN NOT MATCHED THEN
      view_search_results_past_3_day,
      view_search_results_past_4_day,
      view_search_results_past_5_day,
+     file_download_past_1_day,
+     file_download_past_2_day,
+     file_download_past_3_day,
+     file_download_past_4_day,
+     file_download_past_5_day,
      recipe_add_to_list_past_1_day,
      recipe_add_to_list_past_2_day,
      recipe_add_to_list_past_3_day,
@@ -479,6 +484,11 @@ WHEN NOT MATCHED THEN
      T.view_search_results_past_3_day,
      T.view_search_results_past_4_day,
      T.view_search_results_past_5_day,
+     T.file_download_past_1_day,
+     T.file_download_past_2_day,
+     T.file_download_past_3_day,
+     T.file_download_past_4_day,
+     T.file_download_past_5_day,
      T.recipe_add_to_list_past_1_day,
      T.recipe_add_to_list_past_2_day,
      T.recipe_add_to_list_past_3_day,

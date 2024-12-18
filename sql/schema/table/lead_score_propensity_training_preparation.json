@@ -195,6 +195,31 @@
     "description": "The number of times the user has visited in the past 5th day"
   },
   {
+    "name": "file_download_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past day"
+  },
+  {
+      "name": "file_download_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 2nd day"
+  },
+  {
+      "name": "file_download_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 3rd day"
+  },
+  {
+      "name": "file_download_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 4th day"
+  },
+  {
+      "name": "file_download_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 5th day"
+  },
+  {
     "name": "recipe_add_to_list_past_1_day",
     "type": "INTEGER",
     "description": "The number of times the user has viewed items in the past day"
