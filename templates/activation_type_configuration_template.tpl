@@ -46,5 +46,9 @@
     "churn-propensity-15-7": {
         "activation_event_name": "maj_churn_propensity_15_7",
         "source_query_template": "${churn_propensity_query_template_gcs_path}"
+    },
+    "lead-score-propensity-30-15": {
+        "activation_event_name": "maj_lead_score_propensity_30_15",
+        "source_query_template": "${lead_score_propensity_query_template_gcs_path}"
     }
 }

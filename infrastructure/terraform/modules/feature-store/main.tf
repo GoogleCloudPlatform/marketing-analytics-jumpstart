@@ -24,6 +24,7 @@ locals {
   builder_repository_id                 = "marketing-analytics-jumpstart-base-repo"
   purchase_propensity_project_id        = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.purchase_propensity.project_id : local.feature_store_project_id
   churn_propensity_project_id           = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.churn_propensity.project_id : local.feature_store_project_id
+  lead_score_propensity_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.lead_score_propensity.project_id : local.feature_store_project_id
   audience_segmentation_project_id      = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.audience_segmentation.project_id : local.feature_store_project_id
   auto_audience_segmentation_project_id = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.auto_audience_segmentation.project_id : local.feature_store_project_id
   aggregated_vbb_project_id             = null_resource.check_bigquery_api.id != "" ? local.config_vars.bigquery.dataset.aggregated_vbb.project_id : local.feature_store_project_id
@@ -115,6 +116,13 @@ resource "google_bigquery_connection" "vertex_ai_connection" {
   project       = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.feature_store_project_id
   location      = local.config_bigquery.region
   cloud_resource {}
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    prevent_destroy = true
+  }
 }
 
 

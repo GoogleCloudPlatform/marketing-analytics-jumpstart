@@ -1,0 +1,28 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- This script sets up a date range, calls a stored procedure with this range and a variable to 
+-- store a result, and then returns the result of the stored procedure. This pattern is common 
+-- for orchestrating data processing tasks within BigQuery using stored procedures.
+
+DECLARE input_date DATE;
+DECLARE end_date DATE;
+DECLARE users_added INT64 DEFAULT NULL;
+
+SET input_date= CURRENT_DATE();
+SET end_date= (SELECT DATE_SUB(input_date, INTERVAL {{interval_end_date}} DAY));
+
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(input_date, end_date, users_added);
+
+SELECT users_added;
