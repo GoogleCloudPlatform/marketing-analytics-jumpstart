@@ -77,7 +77,7 @@ CREATE OR REPLACE TEMP TABLE future_logins_per_user AS (
     input_date as feature_date,
     -- This calculation is performed over a window partitioned by user_pseudo_id and input_date
     -- Repeats the above logic for different day offsets (1) to calculate future login counts for different days
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS purchase_day_1
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS login_day_1
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
