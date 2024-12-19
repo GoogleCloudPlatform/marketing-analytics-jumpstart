@@ -37,7 +37,7 @@ module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
   version = "17.0.0"
 
-  disable_dependent_services  = true
+  disable_dependent_services  = false
   disable_services_on_destroy = false
 
   project_id = local.feature_store_project_id
@@ -121,7 +121,8 @@ resource "google_bigquery_connection" "vertex_ai_connection" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
+    create_before_destroy = true
   }
 }
 
@@ -152,7 +153,8 @@ resource "google_project_iam_member" "vertex_ai_connection_sa_roles" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
+    create_before_destroy = true
   }
 }
 
@@ -165,6 +167,14 @@ resource "time_sleep" "wait_for_vertex_ai_connection_sa_role_propagation" {
   depends_on = [
     google_project_iam_member.vertex_ai_connection_sa_roles
   ]
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 

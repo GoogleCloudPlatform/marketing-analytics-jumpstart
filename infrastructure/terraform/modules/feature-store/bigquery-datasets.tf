@@ -326,7 +326,8 @@ module "gemini_insights" {
   location     = local.config_bigquery.dataset.gemini_insights.location
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
-  delete_contents_on_destroy = true
+  delete_contents_on_destroy = false
+  deletion_protection = true
 
   dataset_labels = {
     version    = "prod",
@@ -340,7 +341,7 @@ module "gemini_insights" {
       # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
       # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.gemini_insights.max_time_travel_hours configuration.
       max_time_travel_hours = local.config_bigquery.dataset.gemini_insights.max_time_travel_hours
-      deletion_protection   = false
+      deletion_protection   = true
       time_partitioning     = null,
       range_partitioning    = null,
       expiration_time       = null,

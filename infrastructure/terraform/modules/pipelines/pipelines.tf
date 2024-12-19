@@ -18,6 +18,14 @@ resource "google_service_account" "service_account" {
   account_id   = local.pipeline_vars.service_account_id
   display_name = local.pipeline_vars.service_account_id
   description  = "Service Account to run Vertex AI Pipelines"
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # Wait for the pipelines service account to be created
@@ -72,6 +80,14 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     "roles/compute.networkUser"
   ])
   role = each.key
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource binds the service account to the required roles in the mds project
@@ -89,6 +105,14 @@ resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
     "roles/bigquery.dataViewer"
   ])
   role = each.key
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource creates a service account to run the dataflow jobs
@@ -97,6 +121,14 @@ resource "google_service_account" "dataflow_worker_service_account" {
   account_id   = local.dataflow_vars.worker_service_account_id
   display_name = local.dataflow_vars.worker_service_account_id
   description  = "Service Account to run Dataflow jobs"
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # Wait for the dataflow worker service account to be created
@@ -143,6 +175,14 @@ resource "google_project_iam_member" "dataflow_worker_sa_roles" {
     "roles/storage.objectAdmin",
   ])
   role = each.key
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource binds the service account to the required roles
@@ -157,6 +197,14 @@ resource "google_service_account_iam_member" "dataflow_sa_iam" {
   service_account_id = "projects/${module.project_services.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.service_account.email}"
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource creates a Cloud Storage Bucket for the pipeline artifacts
@@ -170,12 +218,12 @@ resource "google_storage_bucket" "pipelines_bucket" {
   # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
   force_destroy = false
 
-  # The lifecycle block allows you to configure the lifecycle of the bucket. 
-  # In this case, the ignore_changes attribute is set to all, which means that Terraform 
-  # will ignore any changes to the bucket's lifecycle configuration. The prevent_destroy attribute is set to false, which means that the bucket can be destroyed.
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = false ##true
+    #prevent_destroy = true
+    create_before_destroy = true
   }
 }
 
@@ -190,12 +238,12 @@ resource "google_storage_bucket" "custom_model_bucket" {
   # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
   force_destroy = false
 
-  # The lifecycle block allows you to configure the lifecycle of the bucket. 
-  # In this case, the ignore_changes attribute is set to all, which means that Terraform 
-  # will ignore any changes to the bucket's lifecycle configuration. The prevent_destroy attribute is set to false, which means that the bucket can be destroyed.
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = false ##true
+    #prevent_destroy = true
+    create_before_destroy = true
   }
 }
 

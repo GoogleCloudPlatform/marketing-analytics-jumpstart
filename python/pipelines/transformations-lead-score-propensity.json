@@ -331,7 +331,7 @@
     },
   {
     "numeric": {
-      "column_name": "recife_favorite_past_5_day",
+      "column_name": "recipe_favorite_past_5_day",
       "invalid_values_allowed": true
       }
     },

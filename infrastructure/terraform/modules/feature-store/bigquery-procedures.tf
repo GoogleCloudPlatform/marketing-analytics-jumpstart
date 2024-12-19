@@ -1018,6 +1018,14 @@ resource "google_bigquery_routine" "user_behaviour_revenue_insights" {
   depends_on = [
     null_resource.check_gemini_model_exists
   ]
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 /*
@@ -1257,6 +1265,14 @@ resource "google_bigquery_routine" "invoke_backfill_user_behaviour_revenue_insig
     null_resource.check_gemini_model_exists,
     null_resource.create_gemini_model
   ]
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 /*
@@ -1700,8 +1716,9 @@ resource "null_resource" "create_gemini_model" {
   # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
-    #ignore_changes  = all
+    ignore_changes  = all
     #prevent_destroy = true
+    create_before_destroy = true
   }
 
   depends_on = [
