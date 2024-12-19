@@ -24,6 +24,8 @@ locals {
   cltv_query_template_file                       = "cltv_query_template.sqlx"
   purchase_propensity_query_template_file        = "purchase_propensity_query_template.sqlx"
   purchase_propensity_vbb_query_template_file    = "purchase_propensity_vbb_query_template.sqlx"
+  lead_score_propensity_query_template_file      = "lead_score_propensity_query_template.sqlx"
+  lead_score_propensity_vbb_query_template_file  = "lead_score_propensity_vbb_query_template.sqlx"
   churn_propensity_query_template_file           = "churn_propensity_query_template.sqlx"
   activation_container_image_id                  = "activation-pipeline"
   docker_repo_prefix                             = "${var.location}-docker.pkg.dev/${var.project_id}"
@@ -750,7 +752,7 @@ data "template_file" "churn_propensity_query_template_file" {
   }
 }
 
-# This resource creates a bucket object using as content the purchase_propensity_query_template_file file.
+# This resource creates a bucket object using as content the churn_propensity_query_template_file file.
 resource "google_storage_bucket_object" "churn_propensity_query_template_file" {
   name    = "${local.configuration_folder}/${local.churn_propensity_query_template_file}"
   content = data.template_file.churn_propensity_query_template_file.rendered
@@ -791,6 +793,40 @@ resource "google_storage_bucket_object" "purchase_propensity_vbb_query_template_
   bucket  = module.pipeline_bucket.name
 }
 
+data "template_file" "lead_score_propensity_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.lead_score_propensity_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
+}
+
+# This resource creates a bucket object using as content the lead_score_propensity_query_template_file file.
+resource "google_storage_bucket_object" "lead_score_propensity_query_template_file" {
+  name    = "${local.configuration_folder}/${local.lead_score_propensity_query_template_file}"
+  content = data.template_file.lead_score_propensity_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+# This resource creates a bucket object using as content the lead_score_propensity_vbb_query_template_file file.
+data "template_file" "lead_score_propensity_vbb_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.lead_score_propensity_vbb_query_template_file}")
+
+  vars = {
+    mds_project_id        = var.mds_project_id
+    mds_dataset_suffix    = var.mds_dataset_suffix
+    activation_project_id = var.project_id
+    dataset               = module.bigquery.bigquery_dataset.dataset_id
+  }
+}
+
+resource "google_storage_bucket_object" "lead_score_propensity_vbb_query_template_file" {
+  name    = "${local.configuration_folder}/${local.lead_score_propensity_vbb_query_template_file}"
+  content = data.template_file.lead_score_propensity_vbb_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
 # This data resources creates a data resource that renders a template file and stores the rendered content in a variable.
 data "template_file" "activation_type_configuration" {
   template = file("${local.template_dir}/activation_type_configuration_template.tpl")
@@ -802,6 +838,8 @@ data "template_file" "activation_type_configuration" {
     purchase_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_query_template_file.output_name}"
     purchase_propensity_vbb_query_template_gcs_path    = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_vbb_query_template_file.output_name}"
     churn_propensity_query_template_gcs_path           = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.churn_propensity_query_template_file.output_name}"
+    lead_score_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.lead_score_propensity_query_template_file.output_name}"
+    lead_score_propensity_vbb_query_template_gcs_path    = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.lead_score_propensity_vbb_query_template_file.output_name}"
   }
 }
 

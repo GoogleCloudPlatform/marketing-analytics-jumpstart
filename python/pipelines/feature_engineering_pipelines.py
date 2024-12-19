@@ -196,8 +196,73 @@ def audience_segmentation_feature_engineering_pipeline(
         location=location,
         query=query_audience_segmentation_inference_preparation,
         timeout=timeout).set_display_name('audience_segmentation_inference_preparation').after(*phase_1)
-  
-      
+
+
+@dsl.pipeline()
+def lead_score_propensity_feature_engineering_pipeline(
+    project_id: str,
+    location: Optional[str],
+    query_lead_score_propensity_label: str,
+    query_user_dimensions: str,
+    query_user_rolling_window_metrics: str,
+    query_lead_score_propensity_inference_preparation: str,
+    query_lead_score_propensity_training_preparation: str,
+    timeout: Optional[float] = 3600.0
+):
+    """
+    This pipeline defines the steps for feature engineering for the lead score propensity model.
+
+    Args:
+        project_id: The Google Cloud project ID.
+        location: The Google Cloud region where the pipeline will be run.
+        query_lead_score_propensity_label: The SQL query that will be used to calculate the purchase propensity label.
+        query_user_dimensions: The SQL query that will be used to calculate the user dimensions.
+        query_user_rolling_window_metrics: The SQL query that will be used to calculate the user rolling window metrics.
+        query_lead_score_propensity_inference_preparation: The SQL query that will be used to prepare the inference data.
+        query_lead_score_propensity_training_preparation: The SQL query that will be used to prepare the training data.
+        timeout: The timeout for the pipeline in seconds.
+
+    Returns:
+        None
+    """
+
+    # Features Preparation
+    phase_1 = list()
+    phase_1.append(
+        sp(
+            project=project_id,
+            location=location,
+            query=query_lead_score_propensity_label,
+            timeout=timeout).set_display_name('lead_score_propensity_label')
+    )
+    phase_1.append(
+        sp(
+            project=project_id,
+            location=location,
+            query=query_user_dimensions,
+            timeout=timeout).set_display_name('user_dimensions')
+    )
+    phase_1.append(
+        sp(
+            project=project_id,
+            location=location,
+            query=query_user_rolling_window_metrics,
+            timeout=timeout).set_display_name('user_rolling_window_metrics')
+    )
+    # Training data preparation
+    purchase_propensity_train_prep = sp(
+        project=project_id,
+        location=location,
+        query=query_lead_score_propensity_training_preparation,
+        timeout=timeout).set_display_name('lead_score_propensity_training_preparation').after(*phase_1)
+    # Inference data preparation
+    purchase_propensity_inf_prep = sp(
+        project=project_id,
+        location=location,
+        query=query_lead_score_propensity_inference_preparation,
+        timeout=timeout).set_display_name('lead_score_propensity_inference_preparation').after(*phase_1)
+
+
 @dsl.pipeline()
 def purchase_propensity_feature_engineering_pipeline(
     project_id: str,

@@ -1,0 +1,73 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- This script intelligently determines the optimal date range for training a purchase 
+-- propensity model by considering user-defined parameters and the availability of purchase 
+-- events within the dataset. It ensures that the training data includes purchase events if 
+-- they exist within the specified bounds.
+
+-- Intended start and end dates for training data
+-- Initializing Training Dates
+DECLARE train_start_date DATE DEFAULT NULL;
+DECLARE train_end_date DATE DEFAULT NULL;
+
+-- Control data splitting for training and validation (likely used in a subsequent process).
+DECLARE train_split_end_number INT64 DEFAULT NULL;
+DECLARE validation_split_end_number INT64 DEFAULT NULL;
+
+-- Will store the count of distinct users who made a login within a given period.
+DECLARE logged_users INT64 DEFAULT NULL;
+
+-- Used to store the maximum and minimum event dates from the source data.
+DECLARE max_date DATE;
+DECLARE min_date DATE;
+
+-- Determining Maximum and Minimum Dates
+SET max_date = (SELECT DATE_SUB(MAX(event_date), INTERVAL {{interval_max_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+SET min_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL {{interval_min_date}} DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`); 
+
+-- If min_date > maximum event_date OR max_date < minimum event_date, then set min_date for the min event_date and set max_date for the max event_date
+IF min_date >= (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) OR max_date <= (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`)  OR min_date >= max_date THEN
+  SET min_date = (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+  SET max_date = (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+END IF;
+
+-- Setting Split Numbers
+-- Sets the train_split_end_number to a user-defined value. This value likely determines the proportion of data used for training.
+SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% for training use number 5. If you want 80% use number 7.
+-- Sets the validation_split_end_number to a user-defined value, controlling the proportion of data used for validation.
+SET validation_split_end_number = {{validation_split_end_number}};
+
+-- This crucial step counts distinct users who have an event named 'login' within the initially set training date range.
+-- IF there are no logged_users in the time interval selected, then set "train_start_date" and "train_end_date" as "max_date" and "min_date".
+SET logged_users = (SELECT COUNT(DISTINCT user_pseudo_id) 
+                FROM `{{mds_project_id}}.{{mds_dataset}}.event`
+                WHERE event_name = 'login' AND
+                event_date BETWEEN min_date AND max_date
+                );
+
+-- Setting Training Dates
+-- If there are logged_users in the training set, then keep the calculated dates, or else set
+-- the start and end dates to a fixed interval preventing `train_start_date` and `train_end_date` from being NULL.
+IF logged_users > 0 THEN
+    SET train_start_date =  min_date;
+    SET train_end_date = max_date;
+ELSE
+    SET train_start_date =  DATE_SUB(CURRENT_DATE(), INTERVAL 3 YEAR);
+    SET train_end_date = DATE_SUB(CURRENT_DATE(), INTERVAL 5 DAY);
+END IF;
+
+-- Finally, the script calls a stored procedure, passing the adjusted training dates and split numbers as arguments. This stored procedure 
+-- handles the actual data preparation for the lead score propensity model.
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(train_start_date, train_end_date, train_split_end_number, validation_split_end_number);
