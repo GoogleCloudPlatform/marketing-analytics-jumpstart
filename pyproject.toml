@@ -66,7 +66,7 @@ scikit-learn = "1.2.2"
 #matplotlib= "3.7.2" 
 #seaborn = "0.12.2"
 ma-components = {path = "python/base_component_image/", develop = true}
-google-cloud-pubsub = "2.15.0"
+google-cloud-pubsub = "2.27.2"
 #google-analytics-admin = "0.17.0"
 google-analytics-admin = "0.22.7"
 google-analytics-data = "^0.18.0"
