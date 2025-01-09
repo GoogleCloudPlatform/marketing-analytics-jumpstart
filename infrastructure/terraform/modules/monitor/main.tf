@@ -34,7 +34,7 @@ locals {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "17.0.0"
+  version = "18.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
@@ -74,7 +74,7 @@ resource "null_resource" "check_bigquery_api" {
 
 module "dashboard_bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id                 = local.dashboard_dataset_name
   dataset_name               = local.dashboard_dataset_name
@@ -97,7 +97,7 @@ module "dashboard_bigquery" {
 
 module "load_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "6.1.0"
+  version       = "9.0.0"
   project_id    = module.project_services.project_id
   name          = "maj-monitor-${module.project_services.project_id}"
   location      = var.location
@@ -165,7 +165,7 @@ locals {
 
 module "log_export_bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id                 = local.log_dataset_name
   dataset_name               = local.log_dataset_name
