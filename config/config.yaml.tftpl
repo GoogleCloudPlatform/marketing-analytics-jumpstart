@@ -977,8 +977,6 @@ vertex_ai:
           evaluation_batch_predict_starting_replica_count: 5
           evaluation_batch_explain_max_replica_count: 5
           evaluation_batch_explain_starting_replica_count: 5
-          evaluation_batch_explain_max_replica_count: 5
-          evaluation_batch_explain_starting_replica_count: 5
           stage_1_num_parallel_trials: 5
           stage_2_num_parallel_trials: 5
           evaluation_dataflow_disk_size_gb: 30
@@ -2157,7 +2155,6 @@ bigquery:
       project_id: "${project_id}"
       dataset: "gemini_insights"
       model_name: "gemini_1_5_pro"
-      region: lower("${cloud_region}")
       connection_name: "vertex_ai"
       region: "${location}"
       endpoint_name: "gemini-1.5-pro-001"
@@ -2501,6 +2498,16 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 5
+      short_list_features: 
+        - feature_name: "scroll_50"
+        - feature_name: "scroll_90"
+        - feature_name: "view_search_results"
+        - feature_name: "file_download"
+        - feature_name: "recipe_add_to_list"
+        - feature_name: "recipe_print"
+        - feature_name: "sign_up"
+        - feature_name: "recipe_favorite"
+        - feature_name: "recipe_add_to_menu"
     # This is a stored procedure that CALLs the User Scoped Metrics Backfill stored procedure.
     invoke_backfill_user_scoped_metrics:
       mds_project_id: "${mds_project_id}"
@@ -2790,6 +2797,7 @@ bigquery:
       insert_table: "lead_score_propensity_label"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+      target_event: "login"
     # This is the stored procedure that calculates the label column for the Purchase Propensity use case.
     # The label represents wether a user will make a purchase over a period of time.
     # Typically, looking at a period of 15 to 30 days in the future.
@@ -2927,6 +2935,16 @@ bigquery:
       insert_table: "user_rolling_window_lead_metrics"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
+      short_list_features: 
+        - feature_name: "scroll_50"
+        - feature_name: "scroll_90"
+        - feature_name: "view_search_results"
+        - feature_name: "file_download"
+        - feature_name: "recipe_add_to_list"
+        - feature_name: "recipe_print"
+        - feature_name: "sign_up"
+        - feature_name: "recipe_favorite"
+        - feature_name: "recipe_add_to_menu"
     # This is the stored procedure that UPSERTs new aggregated users metrics rows daily.
     # The granularity level is per day, whereas the calculations take into consideration all users.
     # These metrics are used for the Customer Lifetime Value use case.

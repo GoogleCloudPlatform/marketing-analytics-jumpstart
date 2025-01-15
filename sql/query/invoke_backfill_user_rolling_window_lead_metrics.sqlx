@@ -47,242 +47,36 @@ CREATE OR REPLACE TEMP TABLE dates_interval as (
     ORDER BY input_date DESC
 );
 
+{% for feature in short_list_features %}
 -- Run these windows aggregations every day. For each date in training and inference date ranges.
--- All users metrics: 1–5-day scroll_50 users
-CREATE OR REPLACE TEMP TABLE rolling_scroll_50_past_days AS (
+-- All users metrics: 1–5-day {{feature.feature_name}} users
+CREATE OR REPLACE TEMP TABLE rolling_{{feature.feature_name}}_past_days AS (
   SELECT
     user_pseudo_id,
     input_date as feature_date,
-    -- Number of times the user has scroll_50 in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_50_past_1_day,
-    -- Number of times the user has scroll_50 in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_50_past_2_day,
-    -- Number of times the user has scroll_50 in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_50_past_3_day,
-    -- Number of times the user has scroll_50 in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_50_past_4_day,
-    -- Number of times the user has scroll_50 in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_50_past_5_day
+    -- Number of times the user has {{feature.feature_name}} in the past 1st day
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS {{feature.feature_name}}_past_1_day,
+    -- Number of times the user has {{feature.feature_name}} in the past 2nd day
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS {{feature.feature_name}}_past_2_day,
+    -- Number of times the user has {{feature.feature_name}} in the past 3rd day
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS {{feature.feature_name}}_past_3_day,
+    -- Number of times the user has {{feature.feature_name}} in the past 4th day
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS {{feature.feature_name}}_past_4_day,
+    -- Number of times the user has {{feature.feature_name}} in the past 5th day
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS {{feature.feature_name}}_past_5_day
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   CROSS JOIN dates_interval as DI
   -- Filter events to be within the defined date range
   WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Filter for scroll_50 events
-  AND event_name='scroll_50'
+  -- Filter for {{feature.feature_name}} events
+  AND event_name='{{feature.feature_name}}'
   -- Ensure valid session ID
   AND ga_session_id IS NOT NULL
   -- Group the results by user pseudo ID and feature date
   GROUP BY user_pseudo_id, feature_date
 );
 
--- Past User metrics: 1-day scroll_90 per user, 2-5-day scroll_90 per user
-CREATE OR REPLACE TEMP TABLE rolling_scroll_90_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Number of scroll_90 made by the user in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_90_past_1_day,
-    -- Number of scroll_90 made by the user in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_90_past_2_day,
-    -- Number of scroll_90 made by the user in the past 3th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_90_past_3_day,
-    -- Number of scroll_90 made by the user in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_90_past_4_day,
-    -- Number of scroll_90 made by the user in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS scroll_90_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Consider only events with event name 'scroll_90'
-  AND event_name='scroll_90'
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
-
--- Past User metrics: 1-day view_search_results per user, 2-5-day visits per user
-CREATE OR REPLACE TEMP TABLE rolling_view_search_results_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Calculate the number of times the user view_search_results in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_search_results_past_1_day,
-    -- Calculate the number of times the user view_search_results in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_search_results_past_2_day,
-    -- Calculate the number of times the user view_search_results in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_search_results_past_3_day,
-    -- Calculate the number of times the user view_search_results in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_search_results_past_4_day,
-    -- Calculate the number of times the user view_search_results in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY)  = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS view_search_results_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Filter for view_search_results events
-  AND event_name='view_search_results'
-  -- Ensure valid session ID
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
-
--- Past User metrics: 1-day view_item per user, 2-5-day view_item per user
-CREATE OR REPLACE TEMP TABLE rolling_file_download_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Number of times the user has file_download in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS file_download_past_1_day,
-    -- Number of times the user has file_download in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS file_download_past_2_day,
-    -- Number of times the user has file_download in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS file_download_past_3_day,
-    -- Number of times the user has file_download in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS file_download_past_4_day,
-    -- Number of times the user has file_download in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS file_download_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Consider only events with event name 'file_download'
-  AND event_name='file_download'
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
-
-## Past User metrics: 1-day recipe_add_to_list per user, 2-5-day recipe_add_to_list per user
-CREATE OR REPLACE TEMP TABLE rolling_recipe_add_to_list_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Number of times the user has added items to cart in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_list_past_1_day,
-    -- Number of times the user has added items to cart in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_list_past_2_day,
-    -- Number of times the user has added items to cart in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_list_past_3_day,
-    -- Number of times the user has added items to cart in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_list_past_4_day,
-    -- Number of times the user has added items to cart in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_list_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Consider only events with event name 'recipe_add_to_list'
-  AND event_name='recipe_add_to_list'
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
-
--- Past User metrics: 1-day recipe_print per user, 2-5-day recipe_print per user
-CREATE OR REPLACE TEMP TABLE rolling_recipe_print_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Number of times the user has recipe_print in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_print_past_1_day,
-    -- Number of times the user has recipe_print in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_print_past_2_day,
-    -- Number of times the user has recipe_print in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_print_past_3_day,
-    -- Number of times the user has recipe_print in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_print_past_4_day,
-    -- Number of times the user has recipe_print in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_print_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Consider only events with event name 'recipe_print'
-  AND event_name='recipe_print'
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
-
--- Past User metrics: 1-day sign_up per user, 2-5-day sign_up per user
-CREATE OR REPLACE TEMP TABLE rolling_sign_up_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Number of times the user has sign_up in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS sign_up_past_1_day,
-    -- Number of times the user has sign_up in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS sign_up_past_2_day,
-    -- Number of times the user has sign_up in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS sign_up_past_3_day,
-    -- Number of times the user has sign_up in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS sign_up_past_4_day,
-    -- Number of times the user has sign_up in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS sign_up_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Consider only events with event name 'sign_up'
-  AND event_name='sign_up'
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
-
--- Past User metrics: 1-day recipe_favorite per user, 2-5-day recipe_favorite per user
-CREATE OR REPLACE TEMP TABLE rolling_recipe_favorite_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Number of times the user has recipe_favorite in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_favorite_past_1_day,
-    -- Number of times the user has recipe_favorite in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_favorite_past_2_day,
-    -- Number of times the user has recipe_favorite in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_favorite_past_3_day,
-    -- Number of times the user has recipe_favorite in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_favorite_past_4_day,
-    -- Number of times the user has recipe_favorite in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_favorite_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Consider only events with event name 'recipe_favorite'
-  AND event_name='recipe_favorite'
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
-
--- Past User metrics: 1-day recipe_add_to_menu per user, 2-5-day recipe_add_to_menu per user
-CREATE OR REPLACE TEMP TABLE rolling_recipe_add_to_menu_past_days AS (
-  SELECT
-    user_pseudo_id,
-    input_date as feature_date,
-    -- Number of times the user has recipe_add_to_menu in the past 1st day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_menu_past_1_day,
-    -- Number of times the user has recipe_add_to_menu in the past 2nd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 2 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_menu_past_2_day,
-    -- Number of times the user has recipe_add_to_menu in the past 3rd day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 3 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_menu_past_3_day,
-    -- Number of times the user has recipe_add_to_menu in the past 4th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 4 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_menu_past_4_day,
-    -- Number of times the user has recipe_add_to_menu in the past 5th day
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(input_date, event_date, DAY) = 5 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id, input_date) AS recipe_add_to_menu_past_5_day
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
-  CROSS JOIN dates_interval as DI
-  -- Filter events to be within the defined date range
-  WHERE E.event_date BETWEEN DI.end_date AND DI.input_date
-  -- Consider only events with event name 'recipe_add_to_menu'
-  AND event_name='recipe_add_to_menu'
-  AND ga_session_id IS NOT NULL
-  -- Group the results by user pseudo ID and feature date
-  GROUP BY user_pseudo_id, feature_date
-);
+{% endfor %}
 
 -- All users in the platform
 -- This code creates a temporary table that contains a distinct list of user pseudo IDs 
@@ -308,124 +102,26 @@ CREATE OR REPLACE TEMP TABLE events_users as (
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
   processed_timestamp,
   feature_date,
-  user_pseudo_id,
-  scroll_50_past_1_day,
-  scroll_50_past_2_day,
-  scroll_50_past_3_day,
-  scroll_50_past_4_day,
-  scroll_50_past_5_day,
-  scroll_90_past_1_day,
-  scroll_90_past_2_day,
-  scroll_90_past_3_day,
-  scroll_90_past_4_day,
-  scroll_90_past_5_day,
-  view_search_results_past_1_day,
-  view_search_results_past_2_day,
-  view_search_results_past_3_day,
-  view_search_results_past_4_day,
-  view_search_results_past_5_day,
-  file_download_past_1_day,
-  file_download_past_2_day,
-  file_download_past_3_day,
-  file_download_past_4_day,
-  file_download_past_5_day,
-  recipe_add_to_list_past_1_day,
-  recipe_add_to_list_past_2_day,
-  recipe_add_to_list_past_3_day,
-  recipe_add_to_list_past_4_day,
-  recipe_add_to_list_past_5_day,
-  recipe_print_past_1_day,
-  recipe_print_past_2_day,
-  recipe_print_past_3_day,
-  recipe_print_past_4_day,
-  recipe_print_past_5_day,
-  sign_up_past_1_day,
-  sign_up_past_2_day,
-  sign_up_past_3_day,
-  sign_up_past_4_day,
-  sign_up_past_5_day,
-  recipe_favorite_past_1_day,
-  recipe_favorite_past_2_day,
-  recipe_favorite_past_3_day,
-  recipe_favorite_past_4_day,
-  recipe_favorite_past_5_day,
-  recipe_add_to_menu_past_1_day,
-  recipe_add_to_menu_past_2_day,
-  recipe_add_to_menu_past_3_day,
-  recipe_add_to_menu_past_4_day,
-  recipe_add_to_menu_past_5_day
+  user_pseudo_id{% for feature in short_list_features %},
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day{% endfor %}
 )
   SELECT DISTINCT
     -- This selects the current timestamp and assigns it to the column processed_timestamp.
     CURRENT_TIMESTAMP() AS processed_timestamp,
     EUD.feature_date,
-    EUD.user_pseudo_id,
-    COALESCE(scroll_50_past_1_day,0) AS scroll_50_past_1_day,
-    COALESCE(scroll_50_past_2_day,0) AS scroll_50_past_2_day,
-    COALESCE(scroll_50_past_3_day,0) AS scroll_50_past_3_day,
-    COALESCE(scroll_50_past_4_day,0) AS scroll_50_past_4_day,
-    COALESCE(scroll_50_past_5_day,0) AS scroll_50_past_5_day,
-    COALESCE(scroll_90_past_1_day,0) AS scroll_90_past_1_day,
-    COALESCE(scroll_90_past_2_day,0) AS scroll_90_past_2_day,
-    COALESCE(scroll_90_past_3_day,0) AS scroll_90_past_3_day,
-    COALESCE(scroll_90_past_4_day,0) AS scroll_90_past_4_day,
-    COALESCE(scroll_90_past_5_day,0) AS scroll_90_past_5_day,
-    COALESCE(view_search_results_past_1_day,0) AS view_search_results_past_1_day,
-    COALESCE(view_search_results_past_2_day,0) AS view_search_results_past_2_day,
-    COALESCE(view_search_results_past_3_day,0) AS view_search_results_past_3_day,
-    COALESCE(view_search_results_past_4_day,0) AS view_search_results_past_4_day,
-    COALESCE(view_search_results_past_5_day,0) AS view_search_results_past_5_day,
-    COALESCE(file_download_past_1_day,0) AS file_download_past_1_day,
-    COALESCE(file_download_past_2_day,0) AS file_download_past_2_day,
-    COALESCE(file_download_past_3_day,0) AS file_download_past_3_day,
-    COALESCE(file_download_past_4_day,0) AS file_download_past_4_day,
-    COALESCE(file_download_past_5_day,0) AS file_download_past_5_day,
-    COALESCE(recipe_add_to_list_past_1_day,0) AS recipe_add_to_list_past_1_day,
-    COALESCE(recipe_add_to_list_past_2_day,0) AS recipe_add_to_list_past_2_day,
-    COALESCE(recipe_add_to_list_past_3_day,0) AS recipe_add_to_list_past_3_day,
-    COALESCE(recipe_add_to_list_past_4_day,0) AS recipe_add_to_list_past_4_day,
-    COALESCE(recipe_add_to_list_past_5_day,0) AS recipe_add_to_list_past_5_day,
-    COALESCE(recipe_print_past_1_day,0) AS recipe_print_past_1_day,
-    COALESCE(recipe_print_past_2_day,0) AS recipe_print_past_2_day,
-    COALESCE(recipe_print_past_3_day,0) AS recipe_print_past_3_day,
-    COALESCE(recipe_print_past_4_day,0) AS recipe_print_past_4_day,
-    COALESCE(recipe_print_past_5_day,0) AS recipe_print_past_5_day,
-    COALESCE(sign_up_past_1_day,0) AS sign_up_past_1_day,
-    COALESCE(sign_up_past_2_day,0) AS sign_up_past_2_day,
-    COALESCE(sign_up_past_3_day,0) AS sign_up_past_3_day,
-    COALESCE(sign_up_past_4_day,0) AS sign_up_past_4_day,
-    COALESCE(sign_up_past_5_day,0) AS sign_up_past_5_day,
-    COALESCE(recipe_favorite_past_1_day,0) AS recipe_favorite_past_1_day,
-    COALESCE(recipe_favorite_past_2_day,0) AS recipe_favorite_past_2_day,
-    COALESCE(recipe_favorite_past_3_day,0) AS recipe_favorite_past_3_day,
-    COALESCE(recipe_favorite_past_4_day,0) AS recipe_favorite_past_4_day,
-    COALESCE(recipe_favorite_past_5_day,0) AS recipe_favorite_past_5_day,
-    COALESCE(recipe_add_to_menu_past_1_day,0) AS recipe_add_to_menu_past_1_day,
-    COALESCE(recipe_add_to_menu_past_2_day,0) AS recipe_add_to_menu_past_2_day,
-    COALESCE(recipe_add_to_menu_past_3_day,0) AS recipe_add_to_menu_past_3_day,
-    COALESCE(recipe_add_to_menu_past_4_day,0) AS recipe_add_to_menu_past_4_day,
-    COALESCE(recipe_add_to_menu_past_5_day,0) AS recipe_add_to_menu_past_5_day
-    FROM events_users AS EUD
-    -- This performs a full outer join, which combines all rows from both tables, 
-    -- including those that don't have matching values.
-    FULL OUTER JOIN rolling_scroll_50_past_days AS A
-    ON EUD.user_pseudo_id = A.user_pseudo_id
-    FULL OUTER JOIN rolling_scroll_90_past_days AS B
-    ON EUD.user_pseudo_id = B.user_pseudo_id
-    FULL OUTER JOIN rolling_view_search_results_past_days AS C
-    ON EUD.user_pseudo_id = C.user_pseudo_id
-    FULL OUTER JOIN rolling_file_download_past_days AS D
-    ON EUD.user_pseudo_id = D.user_pseudo_id
-    FULL OUTER JOIN rolling_recipe_add_to_list_past_days AS E
-    ON EUD.user_pseudo_id = E.user_pseudo_id
-    FULL OUTER JOIN rolling_recipe_print_past_days AS F
-    ON EUD.user_pseudo_id = F.user_pseudo_id
-    FULL OUTER JOIN rolling_sign_up_past_days AS G
-    ON EUD.user_pseudo_id = G.user_pseudo_id
-    FULL OUTER JOIN rolling_recipe_favorite_past_days AS H
-    ON EUD.user_pseudo_id = H.user_pseudo_id
-    FULL OUTER JOIN rolling_recipe_add_to_menu_past_days AS I
-    ON EUD.user_pseudo_id = I.user_pseudo_id
+    EUD.user_pseudo_id{% for feature in short_list_features %},
+    COALESCE({{feature.feature_name}}_past_1_day,0) AS {{feature.feature_name}}_past_1_day,
+    COALESCE({{feature.feature_name}}_past_2_day,0) AS {{feature.feature_name}}_past_2_day,
+    COALESCE({{feature.feature_name}}_past_3_day,0) AS {{feature.feature_name}}_past_3_day,
+    COALESCE({{feature.feature_name}}_past_4_day,0) AS {{feature.feature_name}}_past_4_day,
+    COALESCE({{feature.feature_name}}_past_5_day,0) AS {{feature.feature_name}}_past_5_day{% endfor %}
+    FROM events_users AS EUD{% for feature in short_list_features %}
+    FULL OUTER JOIN rolling_scroll_50_past_days AS {{feature.feature_name}}
+    ON EUD.user_pseudo_id = A.user_pseudo_id{% endfor %}
     -- This filters the results to include only rows where the user_pseudo_id is not null.
     WHERE EUD.user_pseudo_id IS NOT NULL
     ; 

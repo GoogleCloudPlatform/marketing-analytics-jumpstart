@@ -17,22 +17,22 @@
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
--- Future User metrics: 1-day future logins per user
-CREATE OR REPLACE TEMP TABLE future_logins_per_user AS (
+-- Future User metrics: 1-day future {{target_event}}s per user
+CREATE OR REPLACE TEMP TABLE future_{{target_event}}s_per_user AS (
   SELECT
     -- User's unique identifier
     user_pseudo_id,
-    -- The date for which future logins are being calculated
+    -- The date for which future {{target_event}}s are being calculated
     input_date as event_date,
-    -- Calculates the maximum count of distinct events for users who made a logins 1 day after `input_date`
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS login_day_1
+    -- Calculates the maximum count of distinct events for users who made a {{target_event}}s 1 day after `input_date`
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS {{target_event}}_day_1
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
     ON E.device_type_id = D.device_type_id
   -- Filters events to be within the date range defined by input_date and end_date from dates_interval
   WHERE event_date BETWEEN input_date AND end_date
-    -- Filter event with event name login
-    AND LOWER(E.event_name) IN ('login')
+    -- Filter event with event name {{target_event}}
+    AND LOWER(E.event_name) IN ('{{target_event}}')
     AND E.ga_session_id IS NOT NULL
     AND D.device_os IS NOT NULL
   -- Grouping by user pseudo ids
@@ -40,21 +40,20 @@ CREATE OR REPLACE TEMP TABLE future_logins_per_user AS (
 );
 
 -- All users in the platform
-CREATE OR REPLACE TEMP TABLE all_users_possible_logins as (
+CREATE OR REPLACE TEMP TABLE all_users_possible_{{target_event}}s as (
   SELECT DISTINCT
     -- User's unique identifier
     Users.user_pseudo_id,
-    -- The event date for which logins are being considered
+    -- The event date for which {{target_event}}s are being considered
     Days.event_date as event_date,
-    -- Placeholder columns for login counts in future days
-    NULL as login_day_1
+    -- Placeholder columns for {{target_event}} counts in future days
+    NULL as {{target_event}}_day_1
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
   CROSS JOIN 
   -- Generates a list of dates for the current date (`input_date`)
   (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
   WHERE Days.event_date = input_date
-    -- Filter event with event name login
-    -- AND Users.event_name='login'
+    -- Filter event with valid sessions
     AND Users.ga_session_id IS NOT NULL
 );
 
@@ -63,14 +62,14 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
 SELECT DISTINCT
   -- Timestamp when the data was processed
   CURRENT_TIMESTAMP() AS processed_timestamp,
-  -- The date for which logins are being considered
+  -- The date for which {{target_event}}s are being considered
   A.event_date as feature_date,
   -- User's unique identifier
   A.user_pseudo_id,
-  -- The maximum of 0 and the login count for day 1 (if it exists)
-  LEAST(COALESCE(B.login_day_1, 0), 1) AS login_day_1
-FROM all_users_possible_logins AS A
-LEFT JOIN future_logins_per_user AS B
+  -- The maximum of 0 and the {{target_event}} count for day 1 (if it exists)
+  LEAST(COALESCE(B.{{target_event}}_day_1, 0), 1) AS {{target_event}}_day_1
+FROM all_users_possible_{{target_event}}s AS A
+LEFT JOIN future_{{target_event}}s_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id
 ;
 
@@ -84,20 +83,20 @@ WHEN MATCHED THEN
   UPDATE SET 
     -- Updates the processed timestamp
     I.processed_timestamp = T.processed_timestamp,
-    -- Updates login counts for each day
-    I.login_day_1 = T.login_day_1
+    -- Updates {{target_event}} counts for each day
+    I.{{target_event}}_day_1 = T.{{target_event}}_day_1
 WHEN NOT MATCHED THEN
   -- Inserts new records
   INSERT 
     (processed_timestamp,
      feature_date,
      user_pseudo_id,
-     login_day_1)
+     {{target_event}}_day_1)
   VALUES
     (T.processed_timestamp,
      T.feature_date,
      T.user_pseudo_id,
-     T.login_day_1)
+     T.{{target_event}}_day_1)
 ;
 
 SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);
