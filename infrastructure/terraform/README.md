@@ -106,6 +106,7 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     Terraform stores state about managed infrastructure to map real-world resources to the configuration, keep track of metadata, and improve performance. Terraform stores this state in a local file by default, but you can also use a Terraform remote backend to store state remotely. [Remote state](https://developer.hashicorp.com/terraform/cdktf/concepts/remote-backends) makes it easier for teams to work together because all members have access to the latest state data in the remote store.
 
     ```bash
+    SOURCE_ROOT="${HOME}/${REPO}"
     cd ${SOURCE_ROOT}
     scripts/generate-tf-backend.sh
     ```
