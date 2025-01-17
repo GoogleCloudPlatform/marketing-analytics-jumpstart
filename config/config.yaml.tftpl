@@ -2413,6 +2413,7 @@ bigquery:
       # The `interval_end_date` parameter defines how many days we leave out of the backfill before the last dates of events.
       # This is usually the same value as the look forward window.
       interval_end_date: 5
+      target_event: "${non_ecomm_target_event}"
     # This is a stored procedure that CALLs the Purchase Propensity Label Backfill stored procedure.
     invoke_backfill_purchase_propensity_label:
       mds_project_id: "${mds_project_id}"
@@ -2499,15 +2500,9 @@ bigquery:
       # This is usually the same value as the look forward window.
       interval_end_date: 5
       short_list_features: 
-        - feature_name: "scroll_50"
-        - feature_name: "scroll_90"
-        - feature_name: "view_search_results"
-        - feature_name: "file_download"
-        - feature_name: "recipe_add_to_list"
-        - feature_name: "recipe_print"
-        - feature_name: "sign_up"
-        - feature_name: "recipe_favorite"
-        - feature_name: "recipe_add_to_menu"
+        %{ for non_ecomm_event in non_ecomm_events_list ~}
+        - feature_name: "${non_ecomm_event}"
+        %{ endfor ~}
     # This is a stored procedure that CALLs the User Scoped Metrics Backfill stored procedure.
     invoke_backfill_user_scoped_metrics:
       mds_project_id: "${mds_project_id}"
@@ -2797,7 +2792,7 @@ bigquery:
       insert_table: "lead_score_propensity_label"
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
-      target_event: "login"
+      target_event: "${non_ecomm_target_event}"
     # This is the stored procedure that calculates the label column for the Purchase Propensity use case.
     # The label represents wether a user will make a purchase over a period of time.
     # Typically, looking at a period of 15 to 30 days in the future.
@@ -2841,6 +2836,11 @@ bigquery:
       expiration_duration_hours: 168
       custom_start_date: "'2024-01-01'"
       custom_end_date: "NULL"
+      target_event: "${non_ecomm_target_event}"
+      short_list_features: 
+        %{ for non_ecomm_event in non_ecomm_events_list ~}
+        - feature_name: "${non_ecomm_event}"
+        %{ endfor ~}
     # This is the stored procedure that collects the features and prepare the examples rows to train a model.
     # The procedure will split the data into three splits (TRAIN, VALIDATE, TEST) and will take care of avoiding splits contamination.
     # There is a minimum number of examples rows of 1000 and the maximum is as much as it fits in memory, overall consensus is that for ML models
@@ -2936,15 +2936,9 @@ bigquery:
       mds_project_id: "${mds_project_id}"
       mds_dataset: "${mds_dataset}"
       short_list_features: 
-        - feature_name: "scroll_50"
-        - feature_name: "scroll_90"
-        - feature_name: "view_search_results"
-        - feature_name: "file_download"
-        - feature_name: "recipe_add_to_list"
-        - feature_name: "recipe_print"
-        - feature_name: "sign_up"
-        - feature_name: "recipe_favorite"
-        - feature_name: "recipe_add_to_menu"
+        %{ for non_ecomm_event in non_ecomm_events_list ~}
+        - feature_name: "${non_ecomm_event}"
+        %{ endfor ~}
     # This is the stored procedure that UPSERTs new aggregated users metrics rows daily.
     # The granularity level is per day, whereas the calculations take into consideration all users.
     # These metrics are used for the Customer Lifetime Value use case.
@@ -3005,6 +2999,10 @@ bigquery:
       feature_store_dataset: "feature_store"
       insert_table: "lead_score_propensity_inference_preparation"
       expiration_duration_hours: 168
+      short_list_features: 
+        %{ for non_ecomm_event in non_ecomm_events_list ~}
+        - feature_name: "${non_ecomm_event}"
+        %{ endfor ~}
     # This is the stored procedure that collects the features and prepare the examples rows for daily prediction.
     purchase_propensity_inference_preparation:
       project_id: "${project_id}"

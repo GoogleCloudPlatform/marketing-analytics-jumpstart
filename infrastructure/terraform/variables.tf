@@ -348,3 +348,16 @@ variable "pipeline_configuration" {
     error_message = "The 'state' field must be either 'PAUSED' or 'ACTIVE' for all pipeline configurations."
   }
 }
+
+
+variable "non_ecomm_events_list" {
+  description = "Short list of prioritized events that are correlated to the non ecommerce target event"
+  type = list(string)
+  default = []
+}
+
+variable "non_ecomm_target_event" {
+  description = "Non ecommerce target event for the lead score propensity feature transformation"
+  type        = string
+  default     = "login"
+}

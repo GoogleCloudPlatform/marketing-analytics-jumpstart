@@ -48,43 +48,43 @@ CREATE OR REPLACE TEMP TABLE dates_interval as (
 );
 
 -- All users in the platform
--- Creates a temporary table called all_users_possible_logins to store user login data
-CREATE OR REPLACE TEMP TABLE all_users_possible_logins as (
+-- Creates a temporary table called all_users_possible_{{target_event}}s to store user {{target_event}} data
+CREATE OR REPLACE TEMP TABLE all_users_possible_{{target_event}}s as (
     SELECT DISTINCT
       -- Selects the user_pseudo_id from the 'event' table and assigns it to the column user_pseudo_id
       Users.user_pseudo_id,
       -- Selects the event_date from the date array generated using GENERATE_DATE_ARRAY and assigns it to the column feature_date
       DI.event_date as feature_date,
-      -- Creates a series of columns (login_day_1) and initializes them with NULL values
-      -- These columns will be populated later with login data for specific days
-      NULL as login_day_1
+      -- Creates a series of columns ({{target_event}}_day_1) and initializes them with NULL values
+      -- These columns will be populated later with {{target_event}} data for specific days
+      NULL as {{target_event}}_day_1
     FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
     -- Performs a cross join with a subquery that generates a date array using GENERATE_DATE_ARRAY
     -- The date array includes dates from min_date to max_date with a 1-day interval
     CROSS JOIN (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(min_date, max_date, INTERVAL 1 DAY)) as event_date) as DI
-    -- Filters the data to include events where event_name is 'login'
-    WHERE LOWER(Users.event_name) IN ('login')
+    -- Filters the data to include events where event_name is '{{target_event}}'
+    WHERE LOWER(Users.event_name) IN ('{{target_event}}')
       AND Users.ga_session_id IS NOT NULL
   );
 
--- Creates a temporary table called future_logins_per_user to store user login data in the future
--- Future User metrics: 1-7-day future logins per user, 1-day future logins per user
-CREATE OR REPLACE TEMP TABLE future_logins_per_user AS (
+-- Creates a temporary table called future_{{target_event}}s_per_user to store user {{target_event}} data in the future
+-- Future User metrics: 1-7-day future {{target_event}}s per user, 1-day future {{target_event}}s per user
+CREATE OR REPLACE TEMP TABLE future_{{target_event}}s_per_user AS (
   SELECT
     -- Selects user_pseudo_id from the event table and assigns it to column user_pseudo_id
     user_pseudo_id,
     -- Selects input_date from the dates_interval table and assigns it to column feature_date
     input_date as feature_date,
     -- This calculation is performed over a window partitioned by user_pseudo_id and input_date
-    -- Repeats the above logic for different day offsets (1) to calculate future login counts for different days
-    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS login_day_1
+    -- Repeats the above logic for different day offsets (1) to calculate future {{target_event}} counts for different days
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN ecommerce.transaction_id END)) OVER(PARTITION BY user_pseudo_id, input_date) AS {{target_event}}_day_1
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
   ON E.device_type_id = D.device_type_id
   CROSS JOIN dates_interval as DI
      -- Filters events to be within the date range defined by input_date and end_date from dates_interval
     WHERE E.event_date BETWEEN DI.input_date AND DI.end_date
-    AND LOWER(E.event_name) IN ('login')
+    AND LOWER(E.event_name) IN ('{{target_event}}')
     AND E.ga_session_id IS NOT NULL
     AND D.device_os IS NOT NULL
     -- Groups the result by user_pseudo_id and feature_date
@@ -96,21 +96,21 @@ INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
   processed_timestamp,
   feature_date,
   user_pseudo_id,
-  login_day_1
+  {{target_event}}_day_1
 )
 SELECT DISTINCT
   -- Selects the current timestamp and assigns it to the column processed_timestamp
   CURRENT_TIMESTAMP() AS processed_timestamp,
-  -- Selects the feature_date from the all_users_possible_logins table and assigns it to the column feature_date
+  -- Selects the feature_date from the all_users_possible_{{target_event}}s table and assigns it to the column feature_date
   A.feature_date,
-  -- Selects the user_pseudo_id from the all_users_possible_logins table and assigns it to the column user_pseudo_id
+  -- Selects the user_pseudo_id from the all_users_possible_{{target_event}}s table and assigns it to the column user_pseudo_id
   A.user_pseudo_id,
-  -- Uses the LEAST function to get the minimum value between the coalesced value of login_day_1 and 1
+  -- Uses the LEAST function to get the minimum value between the coalesced value of {{target_event}}_day_1 and 1
   -- COALESCE is used to handle null values, replacing them with 0
-  -- This pattern is repeated for login_day_1 to populate the respective columns
-  LEAST(COALESCE(B.login_day_1, 0), 1) AS login_day_1
-FROM all_users_possible_logins AS A
--- Performs a left join with the future_logins_per_user table (aliased as B) using user_pseudo_id and feature_date
-LEFT JOIN future_logins_per_user AS B
+  -- This pattern is repeated for {{target_event}}_day_1 to populate the respective columns
+  LEAST(COALESCE(B.{{target_event}}_day_1, 0), 1) AS {{target_event}}_day_1
+FROM all_users_possible_{{target_event}}s AS A
+-- Performs a left join with the future_{{target_event}}s_per_user table (aliased as B) using user_pseudo_id and feature_date
+LEFT JOIN future_{{target_event}}s_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id AND B.feature_date = A.feature_date
 ;
