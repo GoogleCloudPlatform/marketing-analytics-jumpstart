@@ -26,8 +26,8 @@ DECLARE train_end_date DATE DEFAULT NULL;
 DECLARE train_split_end_number INT64 DEFAULT NULL;
 DECLARE validation_split_end_number INT64 DEFAULT NULL;
 
--- Will store the count of distinct users who made a login within a given period.
-DECLARE logged_users INT64 DEFAULT NULL;
+-- Will store the count of distinct users who made a {{target_event}} within a given period.
+DECLARE {{target_event}}_users INT64 DEFAULT NULL;
 
 -- Used to store the maximum and minimum event dates from the source data.
 DECLARE max_date DATE;
@@ -49,18 +49,18 @@ SET train_split_end_number = {{train_split_end_number}};    -- If you want 60% f
 -- Sets the validation_split_end_number to a user-defined value, controlling the proportion of data used for validation.
 SET validation_split_end_number = {{validation_split_end_number}};
 
--- This crucial step counts distinct users who have an event named 'login' within the initially set training date range.
--- IF there are no logged_users in the time interval selected, then set "train_start_date" and "train_end_date" as "max_date" and "min_date".
-SET logged_users = (SELECT COUNT(DISTINCT user_pseudo_id) 
+-- This crucial step counts distinct users who have an event named '{{target_event}}' within the initially set training date range.
+-- IF there are no users with {{target_event}} event in the time interval selected, then set "train_start_date" and "train_end_date" as "max_date" and "min_date".
+SET {{target_event}}_users = (SELECT COUNT(DISTINCT user_pseudo_id) 
                 FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-                WHERE event_name = 'login' AND
+                WHERE event_name = '{{target_event}}' AND
                 event_date BETWEEN min_date AND max_date
                 );
 
 -- Setting Training Dates
--- If there are logged_users in the training set, then keep the calculated dates, or else set
+-- If there are {{target_event}}_users in the training set, then keep the calculated dates, or else set
 -- the start and end dates to a fixed interval preventing `train_start_date` and `train_end_date` from being NULL.
-IF logged_users > 0 THEN
+IF {{target_event}}_users > 0 THEN
     SET train_start_date =  min_date;
     SET train_end_date = max_date;
 ELSE

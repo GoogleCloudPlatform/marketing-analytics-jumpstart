@@ -38,6 +38,9 @@ source_ads_export_data = [
 ####################  FEATURE STORE VARIABLES  #################################
 
 feature_store_project_id = "Project ID where feature store resources will be created"
+# List of comma separated events used in the lead score feature engineering e.g. (["scroll_50", "scroll_90", "view_search_results", ..])
+non_ecomm_events_list = ["scroll_50", "view_search_results"] # Finalizing lead score use case
+non_ecomm_target_event = "target event used in the lead score propensity use case"
 
 ###################  PIPELINE CONFIGURATIONS  ##################################
 
