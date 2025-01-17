@@ -125,6 +125,8 @@ resource "local_file" "feature_store_configuration" {
     location  = var.destination_data_location
     time_zone = var.time_zone
     pipeline_configuration = var.pipeline_configuration
+    non_ecomm_events_list = var.non_ecomm_events_list
+    non_ecomm_target_event = var.non_ecomm_target_event
   })
 }
 

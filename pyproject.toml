@@ -16,7 +16,7 @@
 name = "marketing-analytics-jumpstart"
 version = "1.0.0"
 description = "Marketing Analytics Jumpstart"
-authors = ["Marketing Analytics Solutions Architects <ma-se@google.com>"]
+authors = [{name = "Marketing Analytics Solutions Architects", email = "ma-se@google.com"}]
 license = "Apache 2.0"
 readme = "README.md"
 requires-python = ">=3.8,<3.11"
