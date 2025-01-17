@@ -62,6 +62,7 @@ class ActivationOptions(GoogleCloudOptions):
         - purchase-propensity-15-15
         - purchase-propensity-15-7
         - churn-propensity-30-15
+        - lead-score-propensity-5-1
       activation_type_configuration: The GCS path to the configuration file for all activation types.
     """
 
@@ -110,6 +111,7 @@ class ActivationOptions(GoogleCloudOptions):
         purchase-propensity-15-15
         purchase-propensity-15-7
         churn-propensity-30-15
+        lead-score-propensity-5-1
       ''',
       required=True
     )

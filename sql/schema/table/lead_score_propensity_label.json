@@ -1,0 +1,22 @@
+[
+  {
+      "name": "processed_timestamp",
+      "type": "TIMESTAMP",
+      "description": "Timestamp of when the data was processed"
+  },
+  {
+      "name": "feature_date",
+      "type": "DATE",
+      "description": "The date serving as basis for the features calculation"
+  },
+  {
+      "name": "user_pseudo_id",
+      "type": "STRING",
+      "description": "The user pseudo identifier"
+  },
+  {
+      "name": "login_day_1",
+      "type": "INTEGER",
+      "description": "Predicted number of logins by the user in the next 1st day from the feature date"
+  }
+]

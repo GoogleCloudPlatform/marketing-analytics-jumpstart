@@ -37,8 +37,11 @@ pipelines_list = {
     'vertex_ai.pipelines.feature-creation-purchase-propensity.execution': "pipelines.feature_engineering_pipelines.purchase_propensity_feature_engineering_pipeline",
     'vertex_ai.pipelines.feature-creation-churn-propensity.execution': "pipelines.feature_engineering_pipelines.churn_propensity_feature_engineering_pipeline",
     'vertex_ai.pipelines.feature-creation-customer-ltv.execution': "pipelines.feature_engineering_pipelines.customer_lifetime_value_feature_engineering_pipeline",
+    'vertex_ai.pipelines.feature-creation-lead-score-propensity.execution': "pipelines.feature_engineering_pipelines.lead_score_propensity_feature_engineering_pipeline",
     'vertex_ai.pipelines.purchase_propensity.training': None,  # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.purchase_propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
+    'vertex_ai.pipelines.lead_score_propensity.training': None, # tabular workflows pipelines is precompiled
+    'vertex_ai.pipelines.lead_score_propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
     'vertex_ai.pipelines.churn_propensity.training': None, # tabular workflows pipelines is precompiled
     'vertex_ai.pipelines.churn_propensity.prediction': "pipelines.tabular_pipelines.prediction_binary_classification_pl",
     'vertex_ai.pipelines.segmentation.training': "pipelines.segmentation_pipelines.training_pl",
