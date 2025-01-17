@@ -1509,12 +1509,11 @@ resource "null_resource" "check_gemini_model_exists" {
       sleep 5
       printf "."
       COUNTER=$((COUNTER + 1))
+      if [ $COUNTER -eq $MAX_TRIES ]; then
+        echo "Gemini model was not created, terraform can not continue!"
+        exit 1
+      fi
     done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "Gemini model was not created, terraform can not continue!"
-      exit 1
-    fi
-    sleep 5
     EOT
   }
 
