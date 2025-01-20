@@ -661,7 +661,7 @@ def schedule_pipeline(
         cron: str,
         max_concurrent_run_count: str,
         start_time: str,
-        end_time: str,
+        end_time: str = None,
         subnetwork: str = "default",
         use_private_service_access: bool = False,
         pipeline_parameters: Dict[str, Any] = None,
@@ -692,9 +692,6 @@ def schedule_pipeline(
     """
 
     from google.cloud import aiplatform
-    from google.cloud.aiplatform.preview.pipelinejobschedule import (
-        pipeline_job_schedules as preview_pipeline_job_schedules,
-    )
 
     # Substitute pipeline parameters with necessary substitutions
     if pipeline_parameters_substitutions != None:
@@ -714,7 +711,7 @@ def schedule_pipeline(
 
     # https://cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.PipelineJobSchedule
     # Create a schedule for the pipeline job
-    pipeline_job_schedule = preview_pipeline_job_schedules.PipelineJobSchedule(
+    pipeline_job_schedule = aiplatform.PipelineJobSchedule(
         display_name=f"{pipeline_name}",
         pipeline_job=pipeline_job,
         location=region
@@ -727,22 +724,20 @@ def schedule_pipeline(
     # Using the VPC private service access or not, depending on the flag
     if use_private_service_access:
         pipeline_job_schedule.create(
-            cron_expression=cron,
+            cron=cron,
             max_concurrent_run_count=max_concurrent_run_count,
             start_time=start_time,
             end_time=end_time,
-            max_run_count=2,
             service_account=pipeline_sa,
             network=f"projects/{project_number}/global/networks/{subnetwork}",
             create_request_timeout=None,
         )
     else:
         pipeline_job_schedule.create(
-            cron_expression=cron,
+            cron=cron,
             max_concurrent_run_count=max_concurrent_run_count,
             start_time=start_time,
             end_time=end_time,
-            max_run_count=2,
             service_account=pipeline_sa,
             create_request_timeout=None,
         )
