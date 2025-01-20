@@ -190,7 +190,7 @@ resource "null_resource" "generate_sql_queries" {
 
 module "initial_project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "17.0.0"
+  version = "18.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
