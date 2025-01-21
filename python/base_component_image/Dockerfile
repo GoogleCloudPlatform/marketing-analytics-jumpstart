@@ -22,5 +22,5 @@ ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
 COPY ./pyproject.toml ./README.md /app/
 COPY ./ma_components /app/ma_components
-RUN poetry config virtualenvs.create false # so that installations is on global python3.9 and not in venv
+RUN poetry config virtualenvs.create false # so that installations is on global python3.10 and not in venv
 RUN poetry install
