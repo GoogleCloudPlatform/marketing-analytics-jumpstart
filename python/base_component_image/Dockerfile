@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.13.1-slim
+FROM python:3.10.16-slim
 
 RUN pip install --upgrade pip
 RUN pip install poetry
@@ -22,5 +22,5 @@ ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
 COPY ./pyproject.toml ./README.md /app/
 COPY ./ma_components /app/ma_components
-RUN poetry config virtualenvs.create false # so that installations is on global python3.7 and not in venv
+RUN poetry config virtualenvs.create false # so that installations is on global python3.10 and not in venv
 RUN poetry install
