@@ -19,7 +19,7 @@ description = "Marketing Analytics Jumpstart"
 authors = [{name = "Marketing Analytics Solutions Architects", email = "ma-se@google.com"}]
 license = "Apache 2.0"
 readme = "README.md"
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.9"
 
 [tool.poetry]
 name = "marketing-analytics-jumpstart"
@@ -31,7 +31,7 @@ readme = "README.md"
 packages = [{include = "python"}]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.9"
 #google-cloud-aiplatform = "1.52.0"
 google-cloud-aiplatform = "1.77.0"
 shapely = "<2.0.0"
