@@ -353,7 +353,7 @@ variable "pipeline_configuration" {
 variable "non_ecomm_events_list" {
   description = "Short list of prioritized events that are correlated to the non ecommerce target event"
   type = list(string)
-  default = []
+  default = ["scroll_50", "view_search_results"]
 }
 
 variable "non_ecomm_target_event" {
