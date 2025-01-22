@@ -42,7 +42,7 @@ feature_store_project_id = "Project ID where feature store resources will be cre
 # List of comma separated events used in the lead score feature engineering e.g. (["scroll_50", "scroll_90", "view_search_results", ..])
 non_ecomm_events_list = ["scroll_50", "view_search_results"]
 # A target event for the lead score propensity feature engineering e.g. "login"
-non_ecomm_target_event = "target event used in the lead score propensity use case"
+non_ecomm_target_event = "login"
 
 ###################  PIPELINE CONFIGURATIONS  ##################################
 
