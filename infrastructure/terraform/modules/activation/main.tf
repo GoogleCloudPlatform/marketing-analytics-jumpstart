@@ -409,7 +409,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.3"
+  version    = "4.4.4"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.pipeline_service_account_name]
@@ -426,7 +426,7 @@ module "pipeline_service_account" {
 
 module "trigger_function_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.3"
+  version    = "4.4.4"
   project_id = null_resource.check_pubsub_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.trigger_function_account_name]
