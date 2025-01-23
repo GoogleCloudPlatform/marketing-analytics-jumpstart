@@ -133,3 +133,6 @@ parallel = true
 fail_under = 70
 show_missing = true
 skip_empty= true
+
+[tool.uv.workspace]
+members = ["python/lookerstudio"]

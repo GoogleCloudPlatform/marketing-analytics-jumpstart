@@ -252,10 +252,12 @@ data "template_file" "looker_studio_dashboard_url" {
     mds_ga4_product_dataset        = "marketing_ga4_v1_${var.mds_dataset_suffix}"
     mds_ga4_base_dataset           = "marketing_ga4_base_${var.mds_dataset_suffix}"
     mds_ads_product_dataset        = "marketing_ads_v1_${var.mds_dataset_suffix}"
+    mds_ads_base_dataset           = "marketing_ads_base_${var.mds_dataset_suffix}"
     logs_dataset                   = module.log_export_bigquery.bigquery_dataset.dataset_id
     aggregated_vbb_dataset         = "aggregated_vbb"
     aggregated_predictions_dataset = "aggregated_predictions"
     gemini_insights_dataset        = "gemini_insights"
+    purchase_propensity_dataset    = local.purchase_propensity_dataset
     dataform_log_table_id          = local.dataform_log_table_id
     vertex_pipelines_log_table_id  = local.vertex_pipelines_log_table_id
     dataflow_log_table_id          = local.dataflow_log_table_id

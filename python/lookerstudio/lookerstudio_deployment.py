@@ -28,7 +28,7 @@ from configparser import ConfigParser, ExtendedInterpolation, Error as ConfigErr
 
 # Constants
 
-CONFIG_FILE = "config.ini"
+CONFIG_FILE = "python/lookerstudio/config.ini"
 BASE_URL = "https://lookerstudio.google.com/reporting/create?"
 REPORT_ID = "f61f65fe-4991-45fc-bcdc-80593966f28c"
 REPORT_NAME = "Marketing%20Analytics%20Sample"

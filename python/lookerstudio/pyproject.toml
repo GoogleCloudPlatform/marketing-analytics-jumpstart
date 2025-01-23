@@ -1,3 +1,11 @@
+[project]
+name = "lookerstudio"
+version = "0.1.0"
+description = "Deployment process for the Marketing Analytics Jumpstart Looker Studio dashboard."
+readme = "README.md"
+requires-python = ">=3.7.1"
+dependencies = []
+
 [tool.poetry]
 name = "looker studio deployment"
 version = "0.1.0"
