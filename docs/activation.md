@@ -195,6 +195,45 @@ The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configurati
 
 **Important**: To exclude lower-value deciles from smart bidding, set their decile_multiplier to 0. This prevents predictions for those deciles from being sent to GA4.
 
+**Calculate multiplier example:**
+The following example provide a way to use quantative analysis to derived the multiplier value for each decile. The query uses the prediction result table, which contains purchase propensity predictions and associated user data.
+```sql
+WITH
+  base AS (
+  SELECT
+    user_ltv_revenue,
+    NTILE(10) OVER (ORDER BY prediction_prob DESC) AS p_p_decile,
+  FROM
+    `purchase_propensity.predictions_YYYY_MM_DDTHH_mm_ss_xxxx_xxx_view`),
+  segments_ltv AS (
+  SELECT
+    SUM(user_ltv_revenue) AS seg_total_revenue,
+    AVG(user_ltv_revenue) AS avg_seg_revenue,
+    p_p_decile
+  FROM
+    base
+  GROUP BY
+    p_p_decile),
+  total_avg AS (
+  SELECT
+    AVG(user_ltv_revenue) AS avg_revenue
+  FROM
+    base
+  WHERE
+    p_p_decile IS NOT NULL)
+SELECT
+  sg.*,
+  sg.avg_seg_revenue/t.avg_revenue AS multiplier
+FROM
+  segments_ltv AS sg,
+  total_avg AS t
+ORDER BY
+  sg.p_p_decile ASC
+```
+The SQL query calculates the `multiplier` by dividing `avg_seg_revenue` (average revenue per decile) by `avg_revenue` (overall average revenue)
+
+In the example `user_ltv_revenue` field is used, but you can replace it with other relevant numeric metrics depending on their business goals. For example, if the goal is to maximize conversions, the query could use a conversion value metric instead. The key is to choose a metric that aligns with the desired optimization strategy.
+
 **Example:**
 ```json
 {"activation_type":"purchase-propensity","value_norm":150,"decile_multiplier":[{"decile":1,"multiplier":5.5},{"decile":2,"multiplier":3},{"decile":3,"multiplier":2},{"decile":4,"multiplier":1},{"decile":5,"multiplier":0},{"decile":6,"multiplier":0},{"decile":7,"multiplier":0},{"decile":8,"multiplier":0},{"decile":9,"multiplier":0},{"decile":10,"multiplier":0}]}
