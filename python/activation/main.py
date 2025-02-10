@@ -386,7 +386,7 @@ class TransformToPayload(beam.DoFn):
     if element['user_id']:
       result['user_id'] = element['user_id']
     result['timestamp_micros'] = self.date_to_micro(element["inference_date"])
-    result['nonPersonalizedAds'] = False
+    result['non_personalized_ads'] = False
     result['consent'] = self.consent_obj
     result['user_properties'] = self.extract_user_properties(element)
     result['events'] = [self.extract_event(element)]
