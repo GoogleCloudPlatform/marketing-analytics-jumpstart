@@ -299,6 +299,13 @@ variable "pipeline_configuration" {
         }
       }
     }
+    feature-creation-lead-score-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
     value_based_bidding = {
       training = {
         schedule = {
@@ -324,6 +331,66 @@ variable "pipeline_configuration" {
       }
     }
     churn_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    auto_segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    propensity_clv = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    clv = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    lead_score_propensity = {
       training = {
         schedule = {
           state                    = "PAUSED"

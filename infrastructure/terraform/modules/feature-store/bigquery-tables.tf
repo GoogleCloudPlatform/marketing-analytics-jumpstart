@@ -480,4 +480,27 @@ resource "google_bigquery_table" "user_session_event_aggregated_metrics" {
   }
 }
 
+# This resource creates a BigQuery table named predictions_placeholder
+# in the dataset specified by google_bigquery_dataset.purchase_propensity
+resource "google_bigquery_table" "purchase_propurchase_propensity_predictions_placeholder" {
+  project     = google_bigquery_dataset.purchase_propensity.project
+  dataset_id  = google_bigquery_dataset.purchase_propensity.dataset_id
+  table_id    = "predictions_placeholder"
+  description = "Dummy table to facilitate the creation of down stream dependent views"
+
+  # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
+  deletion_protection = false
+  labels = {
+    version = "prod"
+  }
+
+  # The schema attribute specifies the schema of the table. In this case, the schema is defined in the JSON file.
+  schema = file("${local.sql_dir}/schema/table/purchase_propensity_predictions_placeholder.json")
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore
+  # any changes to the table and will not attempt to update the table.
+  lifecycle {
+    ignore_changes  = all
+  }
+}
 

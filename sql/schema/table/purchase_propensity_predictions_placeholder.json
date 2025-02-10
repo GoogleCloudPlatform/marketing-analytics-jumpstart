@@ -1,0 +1,26 @@
+[
+  {
+    "name": "prediction",
+    "type": "STRING"
+  },
+  {
+    "name": "prediction_prob",
+    "type": "FLOAT"
+  },
+  {
+    "name": "processed_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE"
+  },
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING"
+  },
+  {
+    "name": "user_id",
+    "type": "STRING"
+  }
+]

@@ -464,14 +464,16 @@ module "activation" {
 # The monitoring resources are created only if the `deploy_monitoring` variable is set to true in the terraform.tfvars file.
 # The monitoring resources are created in the `data_project_id` project.
 module "monitoring" {
-  source                   = "./modules/monitor"
-  count                    = var.deploy_monitoring ? 1 : 0
-  project_id               = var.data_project_id
-  location                 = var.google_default_region
-  mds_project_id           = var.data_project_id
-  mds_dataset_suffix       = local.mds_dataset_suffix
-  mds_location             = var.google_default_region
-  mds_dataform_workspace   = var.dataform_workspace
-  feature_store_project_id = var.feature_store_project_id
-  activation_project_id    = var.activation_project_id
+  source                            = "./modules/monitor"
+  count                             = var.deploy_monitoring ? 1 : 0
+  project_id                        = var.data_project_id
+  location                          = var.google_default_region
+  mds_project_id                    = var.data_project_id
+  mds_dataset_suffix                = local.mds_dataset_suffix
+  mds_location                      = var.google_default_region
+  mds_dataform_workspace            = var.dataform_workspace
+  feature_store_project_id          = var.feature_store_project_id
+  activation_project_id             = var.activation_project_id
+  purchase_propensity_dataset_id    = module.feature_store[0].purchase_propensity_dataset_id
+  smart_bidding_configuration_table = module.activation[0].configuration_table_name
 }
