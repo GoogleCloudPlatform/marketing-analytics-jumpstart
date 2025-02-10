@@ -34,7 +34,7 @@ FROM (
     inference_date,
     p_p_decile ) AS p_stat
 JOIN
-  `${project_id}.${activation_dataset}.vbb_activation_configuration` conf
+  `${project_id}.${activation_dataset}.${smart_bidding_configuration_table}` conf
 ON
   p_stat.p_p_decile = decile
 WHERE

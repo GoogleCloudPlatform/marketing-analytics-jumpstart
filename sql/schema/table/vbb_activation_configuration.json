@@ -1,0 +1,17 @@
+[
+  {
+    "name": "activation_type",
+    "type": "STRING",
+    "description": "Specifies the type of activation, e.g., purchase-propensity"
+  },
+  {
+    "name": "decile",
+    "type": "INTEGER",
+    "description": "Represents the decile number (1-10) for the prediction"
+  },
+  {
+    "name": "value",
+    "type": "FLOAT",
+    "description": "The monetary value multiplier for the given decile, relative to the average transaction value"
+  }
+]

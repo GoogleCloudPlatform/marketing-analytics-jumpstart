@@ -12,12 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "trigger_topic" {
-  description = "activation trigger topic"
-  value       = google_pubsub_topic.activation_trigger.name
-}
-
-output "configuration_table_name" {
-  description = "smart bidding configuration table name"
-  value       = split("/", google_bigquery_table.smart_bidding_configuration.id)[5]
+output "purchase_propensity_dataset_id" {
+  description = "Purchase Propensity use case dataset"
+  value       = google_bigquery_dataset.purchase_propensity.dataset_id
 }
