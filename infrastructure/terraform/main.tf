@@ -42,6 +42,11 @@ provider "google" {
   region = var.google_default_region
 }
 
+data "google_project" "main_project" {
+  provider   = google
+  project_id = var.main_project_id
+}
+
 data "google_project" "feature_store_project" {
   provider   = google
   project_id = var.feature_store_project_id
@@ -93,9 +98,9 @@ locals {
 }
 
 
-# Create a configuration file for the feature store.
+# Create a configuration file for the solution.
 # the template file is located at 
-# ${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl.
+# ${local.source_root_dir}/config/${var.global_config_env}.yaml.tftpl.
 # This variable can be set in the terraform.tfvars file. Its default value is "config".
 #
 #The template file contains the configuration for the feature store. 
@@ -109,12 +114,12 @@ locals {
 # pipelines_github_owner: The owner of the GitHub repository that contains the pipelines code.
 # pipelines_github_repo: The name of the GitHub repository that contains the pipelines code.
 # location: The location in which the feature store will be created.
-resource "local_file" "feature_store_configuration" {
+resource "local_file" "global_configuration" {
   filename = "${local.source_root_dir}/config/${local.config_file_name}.yaml"
-  content = templatefile("${local.source_root_dir}/config/${var.feature_store_config_env}.yaml.tftpl", {
-    project_id             = var.feature_store_project_id
-    project_name           = data.google_project.feature_store_project.name
-    project_number         = data.google_project.feature_store_project.number
+  content = templatefile("${local.source_root_dir}/config/${var.global_config_env}.yaml.tftpl", {
+    project_id             = var.main_project_id
+    project_name           = data.google_project.main_project.name
+    project_number         = data.google_project.main_project.number
     cloud_region           = var.google_default_region
     mds_project_id         = var.data_project_id
     mds_dataset            = "${var.mds_dataset_prefix}_${local.mds_dataset_suffix}"
@@ -160,7 +165,7 @@ resource "null_resource" "generate_sql_queries" {
     # The source_contents_hash trigger is the hash of the project.toml file.
     # This is used to ensure that the generate_sql_queries command is run only if the project.toml file has changed.
     # It also ensures that the generate_sql_queries command is run only if the sql queries and procedures have changed.
-    source_contents_hash        = local_file.feature_store_configuration.content_sha512
+    source_contents_hash        = local_file.global_configuration.content_sha512
     destination_queries_hash    = local.generated_sql_queries_content_hash
     destination_procedures_hash = local.generated_sql_procedures_content_hash
   }
@@ -185,103 +190,6 @@ resource "null_resource" "generate_sql_queries" {
       error_message = "The configured GA4 property is not supported"
     }
   }
-}
-
-
-module "initial_project_services" {
-  source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "18.0.0"
-
-  disable_dependent_services  = false
-  disable_services_on_destroy = false
-
-  project_id = var.tf_state_project_id
-
-  activate_apis = [
-    "cloudresourcemanager.googleapis.com",
-    "serviceusage.googleapis.com",
-    "iam.googleapis.com"
-  ]
-}
-
-# This resource executes gcloud commands to check whether the Cloud Resource Manager API is enabled.
-# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_cloudresourcemanager_api" {
-  provisioner "local-exec" {
-    command = <<-EOT
-    COUNTER=0
-    MAX_TRIES=100
-    while ! gcloud services list --project=${module.initial_project_services.project_id} | grep -i "cloudresourcemanager.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
-    do
-      sleep 6
-      printf "."
-      COUNTER=$((COUNTER + 1))
-    done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "cloudresourcemanager api is not enabled, terraform can not continue!"
-      exit 1
-    fi
-    sleep 20
-    EOT
-  }
-
-  depends_on = [
-    module.initial_project_services
-  ]
-}
-
-
-# This resource executes gcloud commands to check whether the service usage API is enabled.
-# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_serviceusage_api" {
-  provisioner "local-exec" {
-    command = <<-EOT
-    COUNTER=0
-    MAX_TRIES=100
-    while ! gcloud services list --project=${module.initial_project_services.project_id} | grep -i "serviceusage.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
-    do
-      sleep 6
-      printf "."
-      COUNTER=$((COUNTER + 1))
-    done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "serviceusage api is not enabled, terraform can not continue!"
-      exit 1
-    fi
-    sleep 20
-    EOT
-  }
-
-  depends_on = [
-    module.initial_project_services
-  ]
-}
-
-
-# This resource executes gcloud commands to check whether the IAM API is enabled.
-# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_iam_api" {
-  provisioner "local-exec" {
-    command = <<-EOT
-    COUNTER=0
-    MAX_TRIES=100
-    while ! gcloud services list --project=${module.initial_project_services.project_id} | grep -i "iam.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
-    do
-      sleep 6
-      printf "."
-      COUNTER=$((COUNTER + 1))
-    done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "iam api is not enabled, terraform can not continue!"
-      exit 1
-    fi
-    sleep 20
-    EOT
-  }
-
-  depends_on = [
-    module.initial_project_services
-  ]
 }
 
 # Create the data store module.
@@ -354,6 +262,25 @@ module "data_store" {
 }
 
 
+module "purchase_propensity" {
+  # The source is the path to the feature store module.
+  source           = "./modules/purchase-propensity"
+  config_file_path = local_file.global_configuration.id != "" ? local_file.global_configuration.filename : ""
+  enabled          = var.deploy_purchase_propensity
+  # the count determines if the feature store is created or not.
+  # If the count is 1, the feature store is created.
+  # If the count is 0, the feature store is not created.
+  # This is done to avoid creating the feature store if the `deploy_purchase_propensity` variable is set to false in the terraform.tfvars file.
+  count      = var.deploy_purchase_propensity ? 1 : 0
+  project_id = var.feature_store_project_id
+  # The region is the region in which the feature store is created.
+  # This is set to the default region in the terraform.tfvars file.
+  region = var.google_default_region
+  # The sql_dir_input is the path to the sql directory.
+  # This is set to the path to the sql directory in the feature store module.
+  sql_dir_input = null_resource.generate_sql_queries.id != "" ? "${local.source_root_dir}/sql" : ""
+}
+
 
 # Create the feature store module.
 # The feature store module creates the feature store and the sql queries and procedures in BigQuery.
@@ -362,7 +289,7 @@ module "data_store" {
 module "feature_store" {
   # The source is the path to the feature store module.
   source           = "./modules/feature-store"
-  config_file_path = local_file.feature_store_configuration.id != "" ? local_file.feature_store_configuration.filename : ""
+  config_file_path = local_file.global_configuration.id != "" ? local_file.global_configuration.filename : ""
   enabled          = var.deploy_feature_store
   # the count determines if the feature store is created or not.
   # If the count is 1, the feature store is created.
@@ -387,7 +314,7 @@ module "feature_store" {
 module "pipelines" {
   # The source is the path to the pipelines module.
   source           = "./modules/pipelines"
-  config_file_path = local_file.feature_store_configuration.id != "" ? local_file.feature_store_configuration.filename : ""
+  config_file_path = local_file.global_configuration.id != "" ? local_file.global_configuration.filename : ""
   uv_run_alias = local.uv_run_alias
   # The count determines if the pipelines are created or not.
   # If the count is 1, the pipelines are created.

@@ -72,7 +72,7 @@ resource "google_bigquery_table" "customer_lifetime_value_label" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -151,7 +151,7 @@ resource "google_bigquery_table" "purchase_propensity_label" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -176,7 +176,7 @@ resource "google_bigquery_table" "churn_propensity_label" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -201,7 +201,7 @@ resource "google_bigquery_table" "lead_score_propensity_label" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -226,7 +226,7 @@ resource "google_bigquery_table" "user_dimensions" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -251,7 +251,7 @@ resource "google_bigquery_table" "user_lifetime_dimensions" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -276,7 +276,7 @@ resource "google_bigquery_table" "user_lookback_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -301,7 +301,7 @@ resource "google_bigquery_table" "user_rolling_window_lifetime_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -326,7 +326,7 @@ resource "google_bigquery_table" "user_rolling_window_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -351,7 +351,7 @@ resource "google_bigquery_table" "user_rolling_window_lead_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -376,7 +376,7 @@ resource "google_bigquery_table" "user_scoped_lifetime_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -401,7 +401,7 @@ resource "google_bigquery_table" "user_scoped_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -426,7 +426,7 @@ resource "google_bigquery_table" "user_scoped_segmentation_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -451,7 +451,7 @@ resource "google_bigquery_table" "user_segmentation_dimensions" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
@@ -476,7 +476,7 @@ resource "google_bigquery_table" "user_session_event_aggregated_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
