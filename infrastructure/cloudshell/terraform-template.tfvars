@@ -195,9 +195,10 @@ pipeline_configuration = {
       }
     }
     reporting_preparation = {
-    execution = {
-      schedule = {
-        state                    = "PAUSED"
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
       }
     }
 }
