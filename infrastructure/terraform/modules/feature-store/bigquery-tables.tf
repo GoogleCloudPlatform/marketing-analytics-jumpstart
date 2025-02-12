@@ -489,7 +489,7 @@ resource "google_bigquery_table" "purchase_propurchase_propensity_predictions_pl
   description = "Dummy table to facilitate the creation of down stream dependent views"
 
   # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
-  deletion_protection = true
+  deletion_protection = false
   labels = {
     version = "prod"
   }
