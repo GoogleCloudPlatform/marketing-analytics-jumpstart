@@ -15,6 +15,7 @@
 ####################  INFRA VARIABLES  #################################
 
 tf_state_project_id   = "${MAJ_DEFAULT_PROJECT_ID}"
+main_project_id   = "${MAJ_DEFAULT_PROJECT_ID}"
 google_default_region = "${MAJ_DEFAULT_REGION}"
 
 deploy_dataform      = true
