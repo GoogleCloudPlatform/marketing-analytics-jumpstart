@@ -262,24 +262,24 @@ module "data_store" {
 }
 
 
-module "purchase_propensity" {
-  # The source is the path to the feature store module.
-  source           = "./modules/purchase-propensity"
-  config_file_path = local_file.global_configuration.id != "" ? local_file.global_configuration.filename : ""
-  enabled          = var.deploy_purchase_propensity
-  # the count determines if the feature store is created or not.
-  # If the count is 1, the feature store is created.
-  # If the count is 0, the feature store is not created.
-  # This is done to avoid creating the feature store if the `deploy_purchase_propensity` variable is set to false in the terraform.tfvars file.
-  count      = var.deploy_purchase_propensity ? 1 : 0
-  project_id = var.feature_store_project_id
-  # The region is the region in which the feature store is created.
-  # This is set to the default region in the terraform.tfvars file.
-  region = var.google_default_region
-  # The sql_dir_input is the path to the sql directory.
-  # This is set to the path to the sql directory in the feature store module.
-  sql_dir_input = null_resource.generate_sql_queries.id != "" ? "${local.source_root_dir}/sql" : ""
-}
+#module "purchase_propensity" {
+#  # The source is the path to the feature store module.
+#  source           = "./modules/purchase-propensity"
+#  config_file_path = local_file.global_configuration.id != "" ? local_file.global_configuration.filename : ""
+#  enabled          = var.deploy_purchase_propensity
+#  # the count determines if the feature store is created or not.
+#  # If the count is 1, the feature store is created.
+#  # If the count is 0, the feature store is not created.
+#  # This is done to avoid creating the feature store if the `deploy_purchase_propensity` variable is set to false in the terraform.tfvars file.
+#  count      = var.deploy_purchase_propensity ? 1 : 0
+#  project_id = var.feature_store_project_id
+#  # The region is the region in which the feature store is created.
+#  # This is set to the default region in the terraform.tfvars file.
+#  region = var.google_default_region
+#  # The sql_dir_input is the path to the sql directory.
+#  # This is set to the path to the sql directory in the feature store module.
+#  sql_dir_input = null_resource.generate_sql_queries.id != "" ? "${local.source_root_dir}/sql" : ""
+#}
 
 
 # Create the feature store module.
