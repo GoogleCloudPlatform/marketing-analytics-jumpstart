@@ -68,7 +68,6 @@ section_close
 section_open "Creating BigQuery and Vertex AI connection"
     create_bigquery_connection "${PROJECT_ID}" "${LOCATION}" "vertex_ai_conn"
     create_bigquery_connection "${PROJECT_ID}" "US" "vertex_ai_conn"
-    create_bigquery_connection "${PROJECT_ID}" "EU" "vertex_ai_conn"
 section_close
 
 printf "$DIVIDER"
