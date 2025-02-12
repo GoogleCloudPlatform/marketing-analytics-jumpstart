@@ -50,14 +50,14 @@ pipeline_configuration = {
     feature-creation-auto-audience-segmentation = {
       execution = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
     feature-creation-audience-segmentation = {
       execution = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -71,21 +71,21 @@ pipeline_configuration = {
     feature-creation-churn-propensity = {
       execution = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
     feature-creation-customer-ltv = {
       execution = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
     feature-creation-aggregated-value-based-bidding = {
       execution = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -104,14 +104,14 @@ pipeline_configuration = {
       }
       explanation = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
     purchase_propensity = {
       training = {
         schedule = {
-          state                    = "PAUSED"
+          state                    = "ACTIVE"
         }
       }
       prediction = {
@@ -128,7 +128,7 @@ pipeline_configuration = {
       }
       prediction = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -140,7 +140,7 @@ pipeline_configuration = {
       }
       prediction = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -152,7 +152,7 @@ pipeline_configuration = {
       }
       prediction = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -166,19 +166,19 @@ pipeline_configuration = {
     clv = {
       training = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
       prediction = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
     lead_score_propensity = {
       training = {
         schedule = {
-          state                    = "PAUSED"
+          state                    = "ACTIVE"
         }
       }
       prediction = {
@@ -187,7 +187,21 @@ pipeline_configuration = {
         }
       }
     }
-  }
+
+    gemini_insights = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    reporting_preparation = {
+    execution = {
+      schedule = {
+        state                    = "PAUSED"
+      }
+    }
+}
 
 ####################     ML MODEL VARIABLES    #################################
 

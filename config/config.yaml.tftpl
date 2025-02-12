@@ -1786,7 +1786,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: ${pipeline_configuration.reporting_preparation.execution.schedule.state} # possible states ACTIVE or PAUSED
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.
@@ -1850,7 +1850,7 @@ vertex_ai:
           use_private_service_access: false
           # The `state` defines the state of the pipeline.
           # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
-          state: ACTIVE # possible states ACTIVE or PAUSED
+          state: ${pipeline_configuration.gemini_insights.execution.schedule.state} # possible states ACTIVE or PAUSED
         # The `pipeline_parameters` defines the parameters that are going to be used to compile the pipeline.
         # Those values may difer depending on the pipeline type and the pipeline steps being used.
         # Make sure you review the python function the defines the pipeline.
@@ -2155,7 +2155,7 @@ bigquery:
       project_id: "${project_id}"
       dataset: "gemini_insights"
       model_name: "gemini_1_5_pro"
-      connection_name: "vertex_ai"
+      connection_name: "vertex_ai_conn"
       region: "${location}"
       endpoint_name: "gemini-1.5-pro-001"
     # This is a stored procedure that CALLs the Aggregated Value Based Bidding Training Preparation stored procedure.

@@ -17,6 +17,11 @@ variable "tf_state_project_id" {
   type        = string
 }
 
+variable "main_project_id" {
+  type        = string
+  description = "Project ID where feature store resources are created"
+}
+
 variable "data_project_id" {
   description = "Default project to contain the MDS BigQuery datasets"
   type        = string
@@ -183,6 +188,12 @@ variable "deploy_dataform" {
   default     = false
 }
 
+variable "deploy_purchase_propensity" {
+  description = "Toggler for purchase propensity module"
+  type        = bool
+  default     = false
+}
+
 variable "deploy_activation" {
   description = "Toggler for activation module"
   type        = bool
@@ -213,8 +224,8 @@ variable "mds_dataset_prefix" {
   default     = "marketing_ga4_v1"
 }
 
-variable "feature_store_config_env" {
-  description = "determine which config file is used for feature store deployment"
+variable "global_config_env" {
+  description = "determine which config file is used for globaly for deployment"
   type        = string
   default     = "config"
 }
