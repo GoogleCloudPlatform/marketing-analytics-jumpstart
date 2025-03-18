@@ -39,25 +39,6 @@ CREATE OR REPLACE TEMP TABLE future_{{target_event}}s_per_user AS (
   GROUP BY user_pseudo_id
 );
 
--- All users in the platform
-CREATE OR REPLACE TEMP TABLE all_users_possible_{{target_event}}s as (
-  SELECT DISTINCT
-    -- User's unique identifier
-    Users.user_pseudo_id,
-    -- The event date for which {{target_event}}s are being considered
-    Days.event_date as event_date,
-    -- Placeholder columns for {{target_event}} counts in future days
-    NULL as {{target_event}}_day_1
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
-  CROSS JOIN 
-  -- Generates a list of dates for the current date (`input_date`)
-  (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
-  WHERE Days.event_date = input_date
-    -- Filter event with valid sessions
-    AND Users.ga_session_id IS NOT NULL
-);
-
-
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
 SELECT DISTINCT
   -- Timestamp when the data was processed
@@ -67,9 +48,9 @@ SELECT DISTINCT
   -- User's unique identifier
   A.user_pseudo_id,
   -- The maximum of 0 and the {{target_event}} count for day 1 (if it exists)
-  LEAST(COALESCE(B.{{target_event}}_day_1, 0), 1) AS {{target_event}}_day_1
-FROM all_users_possible_{{target_event}}s AS A
-LEFT JOIN future_{{target_event}}s_per_user AS B
+  LEAST(COALESCE(A.{{target_event}}_day_1, 0), 1) AS {{target_event}}_day_1
+FROM future_{{target_event}}s_per_user AS A
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` AS B
 ON B.user_pseudo_id = A.user_pseudo_id
 ;
 

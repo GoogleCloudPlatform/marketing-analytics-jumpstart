@@ -1175,6 +1175,7 @@ SELECT DISTINCT
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
   --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_15`
+  TABLESAMPLE SYSTEM (1 PERCENT)
 )
 WHERE
   user_row_order = 1;
@@ -1690,6 +1691,7 @@ SELECT DISTINCT
   ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_purchase ORDER BY feature_date DESC) AS user_row_order
   --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
   FROM `{{project_id}}.{{dataset}}.purchase_propensity_training_30_30`
+  TABLESAMPLE SYSTEM (1 PERCENT)
 )
 WHERE
   user_row_order = 1;

@@ -17,6 +17,27 @@
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
+-- Users who have never purchased, outside the 72h past window
+CREATE OR REPLACE TEMP TABLE user_never_purchased AS (
+  SELECT
+    DISTINCT user_pseudo_id,
+  FROM
+    `{{mds_project_id}}.{{mds_dataset}}.event`
+  WHERE
+    user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id,
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.event`
+    WHERE
+      event_name = 'purchase' )
+    AND user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` )
+):
+
 -- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
 CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
   SELECT
@@ -69,42 +90,6 @@ CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
   GROUP BY user_pseudo_id
 );
 
--- All users in the platform
-CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
-  SELECT DISTINCT
-    -- User's unique identifier
-    Users.user_pseudo_id,
-    -- The event date for which purchases are being considered
-    Days.event_date as event_date,
-    -- Placeholder columns for purchase counts in future days
-    NULL as purchase_day_1,
-    NULL as purchase_day_2,
-    NULL as purchase_day_3,
-    NULL as purchase_day_4,
-    NULL as purchase_day_5,
-    NULL as purchase_day_6,
-    NULL as purchase_day_7,
-    NULL as purchase_day_8,
-    NULL as purchase_day_9,
-    NULL as purchase_day_10,
-    NULL as purchase_day_11,
-    NULL as purchase_day_12,
-    NULL as purchase_day_13,
-    NULL as purchase_day_14,
-    NULL as purchase_day_15_30
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
-  CROSS JOIN 
-  -- Generates a list of dates for the current date (`input_date`)
-  (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
-  WHERE Days.event_date = input_date
-    -- Filter event with event name purchase
-    -- AND Users.event_name='purchase'
-    AND Users.ga_session_id IS NOT NULL
-    AND Users.ecommerce.transaction_id IS NOT NULL 
-    AND Users.ecommerce.transaction_id <> '(not set)'
-);
-
-
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
 SELECT DISTINCT
   -- Timestamp when the data was processed
@@ -114,38 +99,37 @@ SELECT DISTINCT
   -- User's unique identifier
   A.user_pseudo_id,
   -- The maximum of 0 and the purchase count for day 1 (if it exists)
-  LEAST(COALESCE(B.purchase_day_1, 0), 1) AS purchase_day_1,
+  LEAST(COALESCE(A.purchase_day_1, 0), 1) AS purchase_day_1,
   -- The maximum of 0 and the purchase count for day 2 (if it exists)
-  LEAST(COALESCE(B.purchase_day_2, 0), 1) AS purchase_day_2,
+  LEAST(COALESCE(A.purchase_day_2, 0), 1) AS purchase_day_2,
   -- The maximum of 0 and the purchase count for day 3 (if it exists)
-  LEAST(COALESCE(B.purchase_day_3, 0), 1) AS purchase_day_3,
+  LEAST(COALESCE(A.purchase_day_3, 0), 1) AS purchase_day_3,
   -- The maximum of 0 and the purchase count for day 4 (if it exists)
-  LEAST(COALESCE(B.purchase_day_4, 0), 1) AS purchase_day_4,
+  LEAST(COALESCE(A.purchase_day_4, 0), 1) AS purchase_day_4,
   -- The maximum of 0 and the purchase count for day 5 (if it exists)
-  LEAST(COALESCE(B.purchase_day_5, 0), 1) AS purchase_day_5,
+  LEAST(COALESCE(A.purchase_day_5, 0), 1) AS purchase_day_5,
   -- The maximum of 0 and the purchase count for day 6 (if it exists)
-  LEAST(COALESCE(B.purchase_day_6, 0), 1) AS purchase_day_6,
+  LEAST(COALESCE(A.purchase_day_6, 0), 1) AS purchase_day_6,
   -- The maximum of 0 and the purchase count for day 7 (if it exists)
-  LEAST(COALESCE(B.purchase_day_7, 0), 1) AS purchase_day_7,
+  LEAST(COALESCE(A.purchase_day_7, 0), 1) AS purchase_day_7,
   -- The maximum of 0 and the purchase count for day 8 (if it exists)
-  LEAST(COALESCE(B.purchase_day_8, 0), 1) AS purchase_day_8,
+  LEAST(COALESCE(A.purchase_day_8, 0), 1) AS purchase_day_8,
   -- The maximum of 0 and the purchase count for day 9 (if it exists)
-  LEAST(COALESCE(B.purchase_day_9, 0), 1) AS purchase_day_9,
+  LEAST(COALESCE(A.purchase_day_9, 0), 1) AS purchase_day_9,
   -- The maximum of 0 and the purchase count for day 10 (if it exists)
-  LEAST(COALESCE(B.purchase_day_10, 0), 1) AS purchase_day_10,
+  LEAST(COALESCE(A.purchase_day_10, 0), 1) AS purchase_day_10,
   -- The maximum of 0 and the purchase count for day 11 (if it exists)
-  LEAST(COALESCE(B.purchase_day_11, 0), 1) AS purchase_day_11,
+  LEAST(COALESCE(A.purchase_day_11, 0), 1) AS purchase_day_11,
   -- The maximum of 0 and the purchase count for day 12 (if it exists)
-  LEAST(COALESCE(B.purchase_day_12, 0), 1) AS purchase_day_12,
+  LEAST(COALESCE(A.purchase_day_12, 0), 1) AS purchase_day_12,
   -- The maximum of 0 and the purchase count for day 13 (if it exists)
-  LEAST(COALESCE(B.purchase_day_13, 0), 1) AS purchase_day_13,
+  LEAST(COALESCE(A.purchase_day_13, 0), 1) AS purchase_day_13,
   -- The maximum of 0 and the purchase count for day 14 (if it exists)
-  LEAST(COALESCE(B.purchase_day_14, 0), 1) AS purchase_day_14,
+  LEAST(COALESCE(A.purchase_day_14, 0), 1) AS purchase_day_14,
   -- The maximum of 0 and the purchase count for days 15-30 (if it exists)
-  LEAST(COALESCE(B.purchase_day_15_30, 0), 1) AS purchase_day_15_30
-FROM all_users_possible_purchases AS A
-LEFT JOIN future_purchases_per_user AS B
-ON B.user_pseudo_id = A.user_pseudo_id
+  LEAST(COALESCE(A.purchase_day_15_30, 0), 1) AS purchase_day_15_30
+FROM future_purchases_per_user AS A
+WHERE A.user_pseudo_id NOT IN (SELECT user_pseudo_id FROM user_never_purchased)
 ;
 
 -- Updates or inserts data into the target table

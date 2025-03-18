@@ -658,11 +658,11 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.aggregated_vbb.aggregated_value_based_bidding_training"
           data_source_bigquery_table_schema: "../sql/schema/table/value_based_bidding_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
-          transform_dataflow_max_num_workers: 10
-          stats_and_example_gen_dataflow_max_num_workers: 10
-          evaluation_dataflow_starting_num_workers: 5
-          evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_machine_type: "n1-highmem-8"
+          transform_dataflow_max_num_workers: 2
+          stats_and_example_gen_dataflow_max_num_workers: 2
+          evaluation_dataflow_starting_num_workers: 4
+          evaluation_dataflow_max_num_workers: 5
+          distill_batch_predict_machine_type: "n1-standard-16"
           distill_batch_predict_max_replica_count: 5
           distill_batch_predict_starting_replica_count: 5
           evaluation_batch_predict_max_replica_count: 5
@@ -797,11 +797,11 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_15_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
-          transform_dataflow_max_num_workers: 10
-          stats_and_example_gen_dataflow_max_num_workers: 10
-          evaluation_dataflow_starting_num_workers: 5
-          evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_machine_type: "n1-highmem-8"
+          transform_dataflow_max_num_workers: 2
+          stats_and_example_gen_dataflow_max_num_workers: 2
+          evaluation_dataflow_starting_num_workers: 4
+          evaluation_dataflow_max_num_workers: 5
+          distill_batch_predict_machine_type: "n1-standard-16"
           distill_batch_predict_max_replica_count: 5
           distill_batch_predict_starting_replica_count: 5
           evaluation_batch_predict_max_replica_count: 5
@@ -889,7 +889,7 @@ vertex_ai:
           positive_label: "1"
           # THese are parameters to trigger the Activation Application Dataflow.
           pubsub_activation_topic: "activation-trigger"
-          pubsub_activation_type: "purchase-propensity-30-15"  # purchase-propensity-30-15 | purchase-propensity-vbb-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
+          pubsub_activation_type: "purchase-propensity-vbb-30-15"  # purchase-propensity-30-15 | purchase-propensity-vbb-30-15 | purchase-propensity-15-15 | purchase-propensity-15-7" 
         pipeline_parameters_substitutions: null
     
     # This pipeline contains the configuration parameters for the churn propensity training and inference pipelines for the churn propensity model.
@@ -966,11 +966,11 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.churn_propensity.v_churn_propensity_training_30_30_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/churn_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
-          transform_dataflow_max_num_workers: 10
-          stats_and_example_gen_dataflow_max_num_workers: 10
-          evaluation_dataflow_starting_num_workers: 5
-          evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_machine_type: "n1-highmem-8"
+          transform_dataflow_max_num_workers: 2
+          stats_and_example_gen_dataflow_max_num_workers: 2
+          evaluation_dataflow_starting_num_workers: 4
+          evaluation_dataflow_max_num_workers: 5
+          distill_batch_predict_machine_type: "n1-standard-16"
           distill_batch_predict_max_replica_count: 5
           distill_batch_predict_starting_replica_count: 5
           evaluation_batch_predict_max_replica_count: 5
@@ -1348,11 +1348,11 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.purchase_propensity.v_purchase_propensity_training_30_30_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/purchase_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
-          transform_dataflow_max_num_workers: 10
-          stats_and_example_gen_dataflow_max_num_workers: 10
-          evaluation_dataflow_starting_num_workers: 5
-          evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_machine_type: "n1-highmem-8"
+          transform_dataflow_max_num_workers: 2
+          stats_and_example_gen_dataflow_max_num_workers: 2
+          evaluation_dataflow_starting_num_workers: 4
+          evaluation_dataflow_max_num_workers: 5
+          distill_batch_predict_machine_type: "n1-standard-16"
           distill_batch_predict_max_replica_count: 5
           distill_batch_predict_starting_replica_count: 5
           evaluation_batch_predict_max_replica_count: 5
@@ -1469,11 +1469,11 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.customer_lifetime_value.v_customer_lifetime_value_training_180_30_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/customer_lifetime_value_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
-          transform_dataflow_max_num_workers: 10
-          stats_and_example_gen_dataflow_max_num_workers: 10
-          evaluation_dataflow_starting_num_workers: 5
-          evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_machine_type: "n1-highmem-8"
+          transform_dataflow_max_num_workers: 2
+          stats_and_example_gen_dataflow_max_num_workers: 2
+          evaluation_dataflow_starting_num_workers: 4
+          evaluation_dataflow_max_num_workers: 5
+          distill_batch_predict_machine_type: "n1-standard-16"
           distill_batch_predict_max_replica_count: 5
           distill_batch_predict_starting_replica_count: 5
           evaluation_batch_predict_max_replica_count: 5
@@ -1556,7 +1556,7 @@ vertex_ai:
           # The `purchase_model_metric_threshold` parameter defines what is the maximum acceptable value for the `purchase_model_metric_name` so that the model can be selected.
           # If the actual models metrics values are higher than this limit, no models will be selected and the pipeline is going to fail.
           clv_model_metric_name: "meanAbsoluteError" #'rootMeanSquaredError', 'meanAbsoluteError', 'meanAbsolutePercentageError', 'rSquared', 'rootMeanSquaredLogError'
-          clv_model_metric_threshold: 400
+          clv_model_metric_threshold: 600
           number_of_clv_models_considered: 1
           # This is the prediction dataset table or view for the purchase model.
           purchase_bigquery_source: "${project_id}.purchase_propensity.v_purchase_propensity_inference_30_30"
@@ -1649,11 +1649,11 @@ vertex_ai:
           data_source_bigquery_table_path: "bq://${project_id}.lead_score_propensity.v_lead_score_propensity_training_5_1_last_window"
           data_source_bigquery_table_schema: "../sql/schema/table/lead_score_propensity_training_preparation.json"
           dataflow_service_account: "df-worker@${project_id}.iam.gserviceaccount.com"
-          transform_dataflow_max_num_workers: 10
-          stats_and_example_gen_dataflow_max_num_workers: 10
-          evaluation_dataflow_starting_num_workers: 5
-          evaluation_dataflow_max_num_workers: 10
-          distill_batch_predict_machine_type: "n1-highmem-8"
+          transform_dataflow_max_num_workers: 2
+          stats_and_example_gen_dataflow_max_num_workers: 2
+          evaluation_dataflow_starting_num_workers: 4
+          evaluation_dataflow_max_num_workers: 5
+          distill_batch_predict_machine_type: "n1-standard-16"
           distill_batch_predict_max_replica_count: 5
           distill_batch_predict_starting_replica_count: 5
           evaluation_batch_predict_max_replica_count: 5

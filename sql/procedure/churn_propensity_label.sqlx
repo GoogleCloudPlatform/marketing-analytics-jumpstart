@@ -68,29 +68,6 @@ GROUP BY
   user_last_event
 );
 
--- All users in the platform
-CREATE OR REPLACE TEMP TABLE all_possible_users as (
-  SELECT DISTINCT
-    -- User's pseudo ID
-    Users.user_pseudo_id,
-    -- Event date as the feature date
-    Days.event_date as event_date,
-    -- Placeholder for churned status (to be populated later)
-    NULL as churned,
-    -- Placeholder for bounced status (to be populated later)
-    NULL as bounced,
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
-  -- Cross join with a generated date array to include all possible dates for each user
-  CROSS JOIN 
-  (SELECT event_date FROM UNNEST(GENERATE_DATE_ARRAY(input_date, end_date, INTERVAL 1 DAY)) AS event_date) Days
-  -- Filter for events on the specific input date
-  WHERE Days.event_date = input_date
-    -- Filter for user engagement events
-    -- AND LOWER(Users.event_name) IN ('{{user_engagement_event}}')
-    -- Filter for events with valid session IDs
-    AND Users.ga_session_id IS NOT NULL
-);
-
 
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
 SELECT DISTINCT
@@ -101,11 +78,11 @@ SELECT DISTINCT
   -- User's pseudo ID
   A.user_pseudo_id,
   -- Churned status, defaulting to 0 if null
-  LEAST(COALESCE(B.churned, 0), 1) AS churned,
+  LEAST(COALESCE(A.churned, 0), 1) AS churned,
   -- Bounced status, defaulting to 0 if null
-  LEAST(COALESCE(B.bounced, 0), 1) AS bounced,
-FROM all_possible_users AS A
-LEFT JOIN future_churn_per_user AS B
+  LEAST(COALESCE(A.bounced, 0), 1) AS bounced,
+FROM future_churn_per_user AS A
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` AS B
 ON B.user_pseudo_id = A.user_pseudo_id
 ;
 
