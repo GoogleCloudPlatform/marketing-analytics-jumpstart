@@ -51,8 +51,10 @@ declare -a apis_array=("cloudresourcemanager.googleapis.com"
                 "artifactregistry.googleapis.com"
                 "cloudbuild.googleapis.com"
                 "aiplatform.googleapis.com"
+                "dataflow.googleapis.com"
                 "storage-api.googleapis.com"
                 "bigqueryconnection.googleapis.com"
+                "compute.googleapis.com"
                 )
 
 create_bigquery_connection() {
