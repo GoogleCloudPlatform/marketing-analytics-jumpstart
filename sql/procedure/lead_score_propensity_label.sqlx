@@ -48,8 +48,8 @@ SELECT DISTINCT
   -- User's unique identifier
   A.user_pseudo_id,
   -- The maximum of 0 and the {{target_event}} count for day 1 (if it exists)
-  LEAST(COALESCE(B.{{target_event}}_day_1, 0), 1) AS {{target_event}}_day_1
-FROM all_users_possible_{{target_event}}s AS A
+  LEAST(COALESCE(A.{{target_event}}_day_1, 0), 1) AS {{target_event}}_day_1
+FROM future_{{target_event}}s_per_user AS A
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` AS B
 ON B.user_pseudo_id = A.user_pseudo_id
 ;
