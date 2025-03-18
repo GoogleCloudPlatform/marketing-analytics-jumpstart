@@ -17,6 +17,29 @@
 SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
 SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
 
+
+-- Users who have never purchased, outside the 72h past window
+CREATE OR REPLACE TEMP TABLE user_never_{{target_event}}ed AS (
+  SELECT
+    DISTINCT user_pseudo_id,
+  FROM
+    `{{mds_project_id}}.{{mds_dataset}}.event`
+  WHERE
+    user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id,
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.event`
+    WHERE
+      LOWER(event_name) IN ('{{target_event}}') )
+    AND user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` )
+);
+
+
 -- Future User metrics: 1-day future {{target_event}}s per user
 CREATE OR REPLACE TEMP TABLE future_{{target_event}}s_per_user AS (
   SELECT
@@ -52,6 +75,7 @@ SELECT DISTINCT
 FROM future_{{target_event}}s_per_user AS A
 INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` AS B
 ON B.user_pseudo_id = A.user_pseudo_id
+WHERE A.user_pseudo_id NOT IN (SELECT user_pseudo_id FROM user_never_{{target_event}}ed)
 ;
 
 -- Updates or inserts data into the target table
