@@ -83,6 +83,27 @@ CREATE OR REPLACE TEMP TABLE all_users_possible_purchases as (
       AND Users.ecommerce.transaction_id <> '(not set)'
   );
 
+-- Users who have never purchased, outside the 72h past window
+CREATE OR REPLACE TEMP TABLE user_never_purchased AS (
+  SELECT
+    DISTINCT user_pseudo_id,
+  FROM
+    `{{mds_project_id}}.{{mds_dataset}}.event`
+  WHERE
+    user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id,
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.event`
+    WHERE
+      event_name = 'purchase' )
+    AND user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` )
+):
+
 -- Creates a temporary table called future_purchases_per_user to store user purchase data in the future
 -- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
 CREATE OR REPLACE TEMP TABLE future_purchases_per_user AS (
@@ -174,4 +195,5 @@ FROM all_users_possible_purchases AS A
 -- Performs a left join with the future_purchases_per_user table (aliased as B) using user_pseudo_id and feature_date
 LEFT JOIN future_purchases_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id AND B.feature_date = A.feature_date
+WHERE A.user_pseudo_id NOT IN (SELECT user_pseudo_id FROM user_never_purchased)
 ;
