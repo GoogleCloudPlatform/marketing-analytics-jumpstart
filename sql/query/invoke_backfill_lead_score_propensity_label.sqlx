@@ -91,6 +91,28 @@ CREATE OR REPLACE TEMP TABLE future_{{target_event}}s_per_user AS (
     GROUP BY user_pseudo_id, feature_date
 );
 
+
+-- Users who have never purchased, outside the 72h past window
+CREATE OR REPLACE TEMP TABLE user_never_{{target_event}}ed AS (
+  SELECT
+    DISTINCT user_pseudo_id,
+  FROM
+    `{{mds_project_id}}.{{mds_dataset}}.event`
+  WHERE
+    user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id,
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.event`
+    WHERE
+      LOWER(E.event_name) IN ('{{target_event}}') )
+    AND user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` )
+)
+
 -- Inserts data into the target table
 INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
   processed_timestamp,
@@ -113,4 +135,5 @@ FROM all_users_possible_{{target_event}}s AS A
 -- Performs a left join with the future_{{target_event}}s_per_user table (aliased as B) using user_pseudo_id and feature_date
 LEFT JOIN future_{{target_event}}s_per_user AS B
 ON B.user_pseudo_id = A.user_pseudo_id AND B.feature_date = A.feature_date
+WHERE A.user_pseudo_id NOT IN (SELECT user_pseudo_id FROM user_never_{{target_event}}ed)
 ;
