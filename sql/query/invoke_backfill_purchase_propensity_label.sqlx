@@ -102,7 +102,7 @@ CREATE OR REPLACE TEMP TABLE user_never_purchased AS (
       DISTINCT user_pseudo_id
     FROM
       `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` )
-):
+);
 
 -- Creates a temporary table called future_purchases_per_user to store user purchase data in the future
 -- Future User metrics: 1-7-day future purchases per user, 1-15-day future purchases per user, 1-30-day future purchases per user, 1–90-day future purchases per user
