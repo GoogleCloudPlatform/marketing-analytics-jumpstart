@@ -191,6 +191,12 @@ variable "deploy_dataform" {
 variable "deploy_purchase_propensity" {
   description = "Toggler for purchase propensity module"
   type        = bool
+  default     = true
+}
+
+variable "deploy_optional" {
+  description = "Toggler for optional use cases module"
+  type        = bool
   default     = false
 }
 
