@@ -1,0 +1,129 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+-- Subtract one day from `input_date`
+SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
+-- Subtract one day from `end_date`
+SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
+
+{% for feature in short_list_features %}
+-- Past User metrics: 1-day {{feature.feature_name}} events per user, 2-5-day {{feature.feature_name}} events per user
+-- Create a temporary table `rolling_{{feature.feature_name}}_past_days` to store the rolling {{feature.feature_name}} events count for each user
+CREATE OR REPLACE TEMP TABLE rolling_{{feature.feature_name}}_past_days AS (
+SELECT
+  -- User's unique identifier
+  user_pseudo_id,
+  -- Calculate the number of {{feature.feature_name}} made in the past 1 day
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) = 1 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS {{feature.feature_name}}_past_1_day,
+  -- Calculate the number of {{feature.feature_name}} made in the past 2 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) = 2 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS {{feature.feature_name}}_past_2_day,
+  -- Calculate the number of {{feature.feature_name}} made in the past 3 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) = 3 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS {{feature.feature_name}}_past_3_day,
+  -- Calculate the number of {{feature.feature_name}} made in the past 4 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) = 4 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS {{feature.feature_name}}_past_4_day,
+  -- Calculate the number of {{feature.feature_name}} made in the past 5 days
+  MAX(COUNT(DISTINCT CASE WHEN DATE_DIFF(input_date, event_date, DAY) = 5 THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS {{feature.feature_name}}_past_5_day
+FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+-- Filter events within the defined date range
+WHERE event_date BETWEEN end_date AND input_date
+-- Filter for {{feature.feature_name}} events
+AND event_name='{{feature.feature_name}}'
+-- Ensure valid session ID
+AND ga_session_id IS NOT NULL
+-- Group the results by user pseudo ID
+GROUP BY user_pseudo_id
+);
+
+{% endfor %}
+
+-- All users in the platform
+CREATE OR REPLACE TEMP TABLE events_users_days as (
+  SELECT DISTINCT
+  -- User pseudo ID
+  Users.user_pseudo_id,
+  -- distinct event date
+  Days.event_date as event_date
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users
+  -- 'Days' is an alias for a temporary table containing distinct event dates
+  CROSS JOIN 
+  (SELECT DISTINCT event_date FROM `{{mds_project_id}}.{{mds_dataset}}.event`) Days
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+  ON Users.device_type_id = D.device_type_id 
+  -- Exclude events without a valid session ID
+  WHERE Users.ga_session_id IS NOT NULL
+  -- Exclude events without a valid device operating system
+  AND D.device_os IS NOT NULL
+  -- Filter events within the defined date range
+  AND Days.event_date BETWEEN end_date AND input_date)
+;
+
+-- Create a temporary table to store data for the target table
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
+SELECT DISTINCT
+  -- Current timestamp
+  CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- Feature date
+  input_date AS feature_date,
+  -- User pseudo ID
+  EUD.user_pseudo_id{% for feature in short_list_features %},
+  COALESCE({{feature.feature_name}}_past_1_day,0) AS {{feature.feature_name}}_past_1_day,
+  COALESCE({{feature.feature_name}}_past_2_day,0) AS {{feature.feature_name}}_past_2_day,
+  COALESCE({{feature.feature_name}}_past_3_day,0) AS {{feature.feature_name}}_past_3_day,
+  COALESCE({{feature.feature_name}}_past_4_day,0) AS {{feature.feature_name}}_past_4_day,
+  COALESCE({{feature.feature_name}}_past_5_day,0) AS {{feature.feature_name}}_past_5_day{% endfor %}
+  FROM events_users_days AS EUD{% for feature in short_list_features %}
+  FULL OUTER JOIN rolling_{{feature.feature_name}}_past_days AS {{feature.feature_name}}
+  ON EUD.user_pseudo_id = {{feature.feature_name}}.user_pseudo_id{% endfor %}
+  -- Exclude rows without a valid user pseudo ID
+  WHERE EUD.user_pseudo_id IS NOT NULL
+  ;
+
+-- Merge data into the target table
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date
+  AND I.user_pseudo_id = T.user_pseudo_id
+WHEN MATCHED THEN
+  UPDATE SET 
+    -- Update the processed timestamp and rolling window features
+    I.processed_timestamp = T.processed_timestamp{% for feature in short_list_features %},
+    I.{{feature.feature_name}}_past_1_day = T.{{feature.feature_name}}_past_1_day,
+    I.{{feature.feature_name}}_past_2_day = T.{{feature.feature_name}}_past_2_day,
+    I.{{feature.feature_name}}_past_3_day = T.{{feature.feature_name}}_past_3_day,
+    I.{{feature.feature_name}}_past_4_day = T.{{feature.feature_name}}_past_4_day,
+    I.{{feature.feature_name}}_past_5_day = T.{{feature.feature_name}}_past_5_day{% endfor %}
+WHEN NOT MATCHED THEN
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     user_pseudo_id{% for feature in short_list_features %},
+     {{feature.feature_name}}_past_1_day,
+     {{feature.feature_name}}_past_2_day,
+     {{feature.feature_name}}_past_3_day,
+     {{feature.feature_name}}_past_4_day,
+     {{feature.feature_name}}_past_5_day{% endfor %})
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.user_pseudo_id{% for feature in short_list_features %},
+     T.{{feature.feature_name}}_past_1_day,
+     T.{{feature.feature_name}}_past_2_day,
+     T.{{feature.feature_name}}_past_3_day,
+     T.{{feature.feature_name}}_past_4_day,
+     T.{{feature.feature_name}}_past_5_day{% endfor %})
+;
+
+-- Set a variable to track the number of rows added
+SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);

@@ -22,7 +22,7 @@ variable "region" {
   type        = string
 }
 
-variable "environment" {
+variable "property_id" {
   type = string
 }
 
@@ -74,4 +74,8 @@ variable "gitCommitish" {
 variable "includedTags" {
   type    = list(string)
   default = []
+}
+
+variable "time_zone" {
+  type = string
 }

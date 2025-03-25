@@ -1,0 +1,337 @@
+[
+  {
+    "name": "user_pseudo_id",
+    "type": "STRING",
+    "description": "The user pseudo identifier"
+  },
+  {
+    "name": "user_id",
+    "type": "STRING",
+    "description": "The user identifier when the user is logged in"
+  },
+  {
+    "name": "feature_date",
+    "type": "DATE",
+    "description": "Date that serves as the basis for the calculation of the features"
+  },
+  {
+    "name": "user_ltv_revenue",
+    "type": "FLOAT",
+    "description": "The current customer lifetime value revenue of the user"
+  },
+  {
+    "name": "device_category",
+    "type": "STRING",
+    "description": "The device category the user last accessed"
+  },
+  {
+    "name": "device_mobile_brand_name",
+    "type": "STRING",
+    "description": "The device mobile brand name the user last accessed"
+  },
+  {
+    "name": "device_mobile_model_name",
+    "type": "STRING",
+    "description": "The device mobile model name the user last accessed"
+  },
+  {
+    "name": "device_os",
+    "type": "STRING",
+    "description": "The device operating system the user last accessed"
+  },
+  {
+    "name": "device_language",
+    "type": "STRING",
+    "description": "The device language the user last accessed"
+  },
+  {
+    "name": "device_web_browser",
+    "type": "STRING",
+    "description": "The device web browser the user last accessed"
+  },
+  {
+    "name": "geo_sub_continent",
+    "type": "STRING",
+    "description": "The geographic subcontinent the user last accessed from"
+  },
+  {
+    "name": "geo_country",
+    "type": "STRING",
+    "description": "The geographic country the user last accessed from"
+  },
+  {
+    "name": "geo_region",
+    "type": "STRING",
+    "description": "The geographic region the user last accessed from"
+  },
+  {
+    "name": "geo_city",
+    "type": "STRING",
+    "description": "The geographic city the user last accessed from"
+  },
+  {
+    "name": "geo_metro",
+    "type": "STRING",
+    "description": "The geographic metropolitan area the user last accessed from"
+  },
+  {
+    "name": "last_traffic_source_medium",
+    "type": "STRING",
+    "description": "The last traffic source medium the user has been acquired"
+  },
+  {
+    "name": "last_traffic_source_name",
+    "type": "STRING",
+    "description": "The last traffic source name the user has been acquired"
+  },
+  {
+    "name": "last_traffic_source_source",
+    "type": "STRING",
+    "description": "The last traffic source source the user has been acquired"
+  },
+  {
+    "name": "first_traffic_source_medium",
+    "type": "STRING",
+    "description": "The first traffic source medium the user has been acquired"
+  },
+  {
+    "name": "first_traffic_source_name",
+    "type": "STRING",
+    "description": "The first traffic source name the user has been acquired"
+  },
+  {
+    "name": "first_traffic_source_source",
+    "type": "STRING",
+    "description": "The first traffic source source the user has been acquired"
+  },
+  {
+    "name": "has_signed_in_with_user_id",
+    "type": "BOOLEAN",
+    "description": "A boolean indicating whether the user has signed in with an user id"
+  },
+  {
+    "name": "scroll_50_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 1 day"
+  },
+  {
+    "name": "scroll_50_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 2nd day"
+  },
+  {
+    "name": "scroll_50_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 3rd day"
+  },
+  {
+    "name": "scroll_50_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 4th day"
+  },
+  {
+    "name": "scroll_50_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has been active in the past 5th day"
+  },
+  {
+    "name": "scroll_90_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has scrolled 90p pages in the past day"
+  },
+  {
+    "name": "scroll_90_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has scrolled 90p pages in the past 2nd day"
+  },
+  {
+    "name": "scroll_90_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has scrolled 90p pages in the past 3rd day"
+  },
+  {
+    "name": "scroll_90_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has scrolled 90p pages in the past 4th day"
+  },
+  {
+    "name": "scroll_90_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has scrolled 90p pages in the past 5th day"
+  },
+  {
+    "name": "view_search_results_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past day"
+  },
+  {
+    "name": "view_search_results_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 2nd day"
+  },
+  {
+    "name": "view_search_results_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 3rd day"
+  },
+  {
+    "name": "view_search_results_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 4th day"
+  },
+  {
+    "name": "view_search_results_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past 5th day"
+  },
+  {
+    "name": "file_download_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has visited in the past day"
+  },
+  {
+      "name": "file_download_past_2_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 2nd day"
+  },
+  {
+      "name": "file_download_past_3_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 3rd day"
+  },
+  {
+      "name": "file_download_past_4_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 4th day"
+  },
+  {
+      "name": "file_download_past_5_day",
+      "type": "INTEGER",
+      "description": "The number of times the user has visited in the past 5th day"
+  },
+  {
+    "name": "recipe_add_to_list_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past day"
+  },
+  {
+    "name": "recipe_add_to_list_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 2nd day"
+  },
+  {
+    "name": "recipe_add_to_list_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 3rd day"
+  },
+  {
+    "name": "recipe_add_to_list_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 4th day"
+  },
+  {
+    "name": "recipe_add_to_list_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has viewed items in the past 5th day"
+  },
+  {
+    "name": "recipe_print_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past day"
+  },
+  {
+    "name": "recipe_print_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 2nd day"
+  },
+  {
+    "name": "recipe_print_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 3rd day"
+  },
+  {
+    "name": "recipe_print_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 4th day"
+  },
+  {
+    "name": "recipe_print_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has added items to cart in the past 5th day"
+  },
+  {
+    "name": "sign_up_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past day"
+  },
+  {
+    "name": "sign_up_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 2nd day"
+  },
+  {
+    "name": "sign_up_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 3rd day"
+  },
+  {
+    "name": "sign_up_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 4th day"
+  },
+  {
+    "name": "sign_up_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 5th day"
+  },
+  {
+    "name": "recipe_favorite_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past day"
+  },
+  {
+    "name": "recipe_favorite_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 2nd day"
+  },
+  {
+    "name": "recipe_favorite_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 3rd day"
+  },
+  {
+    "name": "recipe_favorite_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 4th day"
+  },
+  {
+    "name": "recipe_favorite_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 5th day"
+  },
+  {
+    "name": "recipe_add_to_menu_past_1_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past day"
+  },
+  {
+    "name": "recipe_add_to_menu_past_2_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 2nd day"
+  },
+  {
+    "name": "recipe_add_to_menu_past_3_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 3rd day"
+  },
+  {
+    "name": "recipe_add_to_menu_past_4_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 4th day"
+  },
+  {
+    "name": "recipe_add_to_menu_past_5_day",
+    "type": "INTEGER",
+    "description": "The number of times the user has checked out in the past 5th day"
+  }
+]

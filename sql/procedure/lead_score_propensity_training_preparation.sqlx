@@ -1,0 +1,569 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+DECLARE custom_start_date DATE DEFAULT NULL;
+DECLARE custom_end_date DATE DEFAULT NULL;
+
+-- custom_start_date: The start date of the data to be used for training.
+-- custom_end_date: The end date of the data to be used for training.
+SET custom_start_date = PARSE_DATE("%Y-%m-%d", {{custom_start_date}});
+SET custom_end_date = PARSE_DATE("%Y-%m-%d", {{custom_end_date}});
+
+-- The procedure first checks if the custom_start_date and custom_end_date parameters are valid. 
+-- If either parameter is not valid, the procedure sets the corresponding date to the maximum or
+-- minimum date of the available data.
+IF custom_start_date IS NOT NULL AND custom_start_date >= start_date AND custom_start_date <= end_date 
+   AND custom_start_date < custom_end_date THEN
+  SET start_date = custom_start_date;
+END IF;
+
+IF custom_end_date IS NOT NULL AND custom_end_date <= end_date AND custom_end_date >= start_date 
+   AND custom_end_date > custom_start_date THEN
+  SET end_date = custom_end_date;
+END IF;
+
+-- This is a temp table consolidating user_dimensions over the dates intervals.
+CREATE OR REPLACE TEMP TABLE training_preparation_ud as (
+  SELECT DISTINCT
+    -- The user pseudo id
+    UD.user_pseudo_id,
+    -- The user id 
+    MAX(UD.user_id) OVER(user_dimensions_window) AS user_id,
+    -- The feature date
+    UD.feature_date,
+    -- The user lifetime value revenue
+    MAX(UD.user_ltv_revenue) OVER(user_dimensions_window) AS user_ltv_revenue,
+    -- The device category
+    MAX(UD.device_category) OVER(user_dimensions_window) AS device_category,
+    -- The device brand name
+    MAX(UD.device_mobile_brand_name) OVER(user_dimensions_window) AS device_mobile_brand_name,
+    -- The device model name
+    MAX(UD.device_mobile_model_name) OVER(user_dimensions_window) AS device_mobile_model_name,
+    -- The device operating system
+    MAX(UD.device_os) OVER(user_dimensions_window) AS device_os,
+    -- The device language
+    MAX(UD.device_language) OVER(user_dimensions_window) AS device_language,
+    -- The device web browser
+    MAX(UD.device_web_browser) OVER(user_dimensions_window) AS device_web_browser,
+    -- The user sub continent
+    MAX(UD.geo_sub_continent) OVER(user_dimensions_window) AS geo_sub_continent,
+    -- The user country
+    MAX(UD.geo_country) OVER(user_dimensions_window) AS geo_country,
+    -- The user region
+    MAX(UD.geo_region) OVER(user_dimensions_window) AS geo_region,
+    -- The user city
+    MAX(UD.geo_city) OVER(user_dimensions_window) AS geo_city,
+    -- The user metro
+    MAX(UD.geo_metro) OVER(user_dimensions_window) AS geo_metro,
+    -- The user last traffic source medium
+    MAX(UD.last_traffic_source_medium) OVER(user_dimensions_window) AS last_traffic_source_medium,
+    -- The user last traffic source name
+    MAX(UD.last_traffic_source_name) OVER(user_dimensions_window) AS last_traffic_source_name,
+    -- The user last traffic source source
+    MAX(UD.last_traffic_source_source) OVER(user_dimensions_window) AS last_traffic_source_source,
+    -- The user first traffic source medium
+    MAX(UD.first_traffic_source_medium) OVER(user_dimensions_window) AS first_traffic_source_medium,
+    -- The user first traffic source name
+    MAX(UD.first_traffic_source_name) OVER(user_dimensions_window) AS first_traffic_source_name,
+    -- The user first traffic source source
+    MAX(UD.first_traffic_source_source) OVER(user_dimensions_window) AS first_traffic_source_source,
+    -- Whether the user has signed in with user ID
+    MAX(UD.has_signed_in_with_user_id) OVER(user_dimensions_window) AS has_signed_in_with_user_id,
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` UD
+WHERE
+  -- Filter feature dates according to the defined date interval
+  UD.feature_date BETWEEN start_date AND end_date
+WINDOW 
+  user_dimensions_window AS (PARTITION BY UD.user_pseudo_id, UD.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+-- This is a temp table consolidating user rolling metrics over the dates intervals.
+CREATE OR REPLACE TEMP TABLE training_preparation_uwlm as (
+  SELECT DISTINCT
+    -- User pseudo id
+    UWLM.user_pseudo_id,
+    -- Feature date
+    UWLM.feature_date{% for feature in short_list_features %},
+    -- Calculate the maximum value for each metric over the window
+    MAX(UWLM.{{feature.feature_name}}_past_1_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_1_day,
+    MAX(UWLM.{{feature.feature_name}}_past_2_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_2_day,
+    MAX(UWLM.{{feature.feature_name}}_past_3_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_3_day,
+    MAX(UWLM.{{feature.feature_name}}_past_4_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_4_day,
+    MAX(UWLM.{{feature.feature_name}}_past_5_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_5_day{% endfor %}
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lead_metrics` UWLM
+WHERE
+  -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
+  UWLM.feature_date BETWEEN start_date AND end_date
+WINDOW 
+  user_rolling_lead_window AS (PARTITION BY UWLM.user_pseudo_id, UWLM.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+-- This is a temp table consolidating user labels over the dates intervals.
+CREATE OR REPLACE TEMP TABLE training_preparation_label as (
+  SELECT DISTINCT
+  LABEL.user_pseudo_id, -- The unique identifier for the user.
+  LABEL.feature_date, -- The date for which the features are extracted.
+  MAX(LABEL.{{target_event}}_day_1) OVER(lead_score_propensity_label_window) AS {{target_event}}_day_1, -- Whether the user made a {{target_event}} on day 1.
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.lead_score_propensity_label` LABEL
+WHERE
+  -- Define the training subset interval
+  LABEL.feature_date BETWEEN start_date AND end_date
+WINDOW 
+  lead_score_propensity_label_window AS (PARTITION BY LABEL.user_pseudo_id, LABEL.feature_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+-- This is a temp table consolidating all features and labels over the dates intervals.
+CREATE OR REPLACE TEMP TABLE training_preparation as (
+  SELECT DISTINCT
+    UD.user_pseudo_id,
+    UD.user_id,
+    UD.feature_date,
+    COALESCE(UD.user_ltv_revenue, 0.0) AS user_ltv_revenue,
+    UD.device_category,
+    UD.device_mobile_brand_name,
+    UD.device_mobile_model_name,
+    UD.device_os,
+    UD.device_language,
+    UD.device_web_browser,
+    UD.geo_sub_continent,
+    UD.geo_country,
+    UD.geo_region,
+    UD.geo_city,
+    UD.geo_metro,
+    UD.last_traffic_source_medium,
+    UD.last_traffic_source_name,
+    UD.last_traffic_source_source,
+    UD.first_traffic_source_medium,
+    UD.first_traffic_source_name,
+    UD.first_traffic_source_source,
+    UD.has_signed_in_with_user_id,{% for feature in short_list_features %}
+    UWLM.{{feature.feature_name}}_past_1_day,
+    UWLM.{{feature.feature_name}}_past_2_day,
+    UWLM.{{feature.feature_name}}_past_3_day,
+    UWLM.{{feature.feature_name}}_past_4_day,
+    UWLM.{{feature.feature_name}}_past_5_day,{% endfor %}
+    LABEL.{{target_event}}_day_1
+FROM
+  training_preparation_ud UD
+INNER JOIN
+  training_preparation_uwlm UWLM
+ON
+  UWLM.user_pseudo_id = UD.user_pseudo_id
+  AND UWLM.feature_date = UD.feature_date
+INNER JOIN
+  training_preparation_label LABEL
+ON
+  LABEL.user_pseudo_id = UD.user_pseudo_id
+  AND LABEL.feature_date = UD.feature_date
+);
+
+-- This is a temp table split the rows in each different data_split (TRAIN, VALIDATE, TEST) split
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS(
+  SELECT DISTINCT
+  CASE 
+    WHEN (ABS(MOD(FARM_FINGERPRINT(user_pseudo_id), 10)) BETWEEN 0 AND train_split_end_number) THEN "TRAIN" 
+    WHEN (ABS(MOD(FARM_FINGERPRINT(user_pseudo_id), 10)) BETWEEN train_split_end_number AND validation_split_end_number) THEN "VALIDATE" 
+    WHEN (ABS(MOD(FARM_FINGERPRINT(user_pseudo_id), 10)) BETWEEN validation_split_end_number AND 9) THEN "TEST"
+  END as data_split,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  {{target_event}}_day_1
+  FROM training_preparation);
+
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.lead_score_propensity_training_full_dataset` AS
+SELECT DISTINCT * FROM DataForTargetTable
+WHERE data_split IS NOT NULL;
+
+
+-- This is a table preparing rows for lead score propensity modelling looking back 5 days and looking ahead 1 day.
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.lead_score_propensity_training_5_1` AS(
+  SELECT DISTINCT
+  CURRENT_TIMESTAMP() AS processed_timestamp, 
+  data_split,
+  feature_date,
+  user_pseudo_id,
+  LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_id,
+  LAST_VALUE(user_ltv_revenue) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS user_ltv_revenue,
+  LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_category,
+  LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_brand_name,
+  LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_mobile_model_name,
+  LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_os,
+  LAST_VALUE(device_language) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_language,
+  LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS device_web_browser,
+  LAST_VALUE(geo_sub_continent) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_sub_continent,
+  LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_country,
+  LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_region,
+  LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_city,
+  LAST_VALUE(geo_metro) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS geo_metro,
+  LAST_VALUE(last_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_medium,
+  LAST_VALUE(last_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_name,
+  LAST_VALUE(last_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS last_traffic_source_source,
+  LAST_VALUE(first_traffic_source_medium) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_medium,
+  LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_name,
+  LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS first_traffic_source_source,
+  LAST_VALUE(has_signed_in_with_user_id) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS has_signed_in_with_user_id,{% for feature in short_list_features %}
+  LAST_VALUE({{feature.feature_name}}_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_1_day,
+  LAST_VALUE({{feature.feature_name}}_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_2_day,
+  LAST_VALUE({{feature.feature_name}}_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_3_day,
+  LAST_VALUE({{feature.feature_name}}_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_4_day,
+  LAST_VALUE({{feature.feature_name}}_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_5_day,{% endfor %}
+  -- Calculate the will {{target_event}} label.
+  -- Label for a lead score propensity model. It indicates whether a user made a lead score within the next 30 days based on their lead score history. 
+  -- This label is then used to train a model that can predict the likelihood of future {{target_event}}s for other users.
+  LAST_VALUE(CASE WHEN ({{target_event}}_day_1) = 0 THEN 0 ELSE 1 END) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) as will_{{target_event}}
+  FROM `{{project_id}}.{{dataset}}.lead_score_propensity_training_full_dataset`
+);
+
+
+-- This is a view preparing rows for lead score propensity modelling looking back 5 days and looking ahead 1 days.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_lead_score_propensity_training_5_1`
+(processed_timestamp, 
+  data_split,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}})
+OPTIONS(
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  friendly_name="v_lead_score_propensity_training_5_1",
+  description="View Lead Score Propensity Training dataset using 5 days back to predict 1 day ahead. View expires after 48h and should run daily.",
+  labels=[("org_unit", "development")]
+) AS 
+SELECT DISTINCT
+ * EXCEPT(feature_date, row_order_peruser_persplit) 
+FROM (
+SELECT DISTINCT
+  processed_timestamp, 
+  user_pseudo_id,
+  data_split,
+  feature_date,
+  -- Now, I want to skip rows per user, per split every 1 day.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_{{target_event}} ORDER BY feature_date ASC) AS row_order_peruser_persplit,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}}
+FROM(
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}},
+  -- Number of rows per user, per day, per split. Only one row per user, per day, per slip.
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, feature_date, data_split, will_{{target_event}} ORDER BY feature_date DESC) AS row_order_peruser_perday_persplit
+  FROM `{{project_id}}.{{dataset}}.lead_score_propensity_training_5_1`
+)
+WHERE
+  row_order_peruser_perday_persplit = 1
+)
+WHERE
+  --Skipping windows of 5 days, which is the past window size.
+  MOD(row_order_peruser_persplit-1, 5) = 0;
+
+
+-- This is a view preparing rows for lead score propensity modelling looking back 5 days and looking ahead 1 day.
+-- This specifically filter rows which are most recent for each user.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_lead_score_propensity_training_5_1_last_window`
+(processed_timestamp, 
+  data_split,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}})
+OPTIONS(
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  friendly_name="v_lead_score_propensity_training_5_1_last_window",
+  description="View Lead Score Propensity Training dataset using 5 days back to predict 1 day ahead.",
+  labels=[("org_unit", "development")]
+) AS 
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}}
+FROM(
+SELECT DISTINCT
+  processed_timestamp, 
+  data_split,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}},
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split, will_{{target_event}} ORDER BY feature_date DESC) AS user_row_order
+  --ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
+  FROM `{{project_id}}.{{dataset}}.lead_score_propensity_training_5_1`
+)
+WHERE
+  user_row_order = 1;
+
+
+-- This is a view preparing rows for lead score propensity modelling looking back 5 days and looking ahead 1 day.
+-- This is to be used in case recently no {{target_event}}s are registered, and you don't have a way to train the classification model.
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_lead_score_propensity_training_5_1_rare_{{target_event}}s`
+(processed_timestamp, 
+  data_split,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}})
+OPTIONS(
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 48 HOUR),
+  friendly_name="v_lead_score_propensity_training_5_1_rare_{{target_event}}s",
+  description="View Lead Score Propensity Training dataset using 5 days back to predict 1 day ahead.",
+  labels=[("org_unit", "development")]
+) AS 
+SELECT DISTINCT
+    processed_timestamp, 
+    data_split,
+    user_pseudo_id,
+    user_id,
+    user_ltv_revenue,
+    device_category,
+    device_mobile_brand_name,
+    device_mobile_model_name,
+    device_os,
+    device_language,
+    device_web_browser,
+    geo_sub_continent,
+    geo_country,
+    geo_region,
+    geo_city,
+    geo_metro,
+    last_traffic_source_medium,
+    last_traffic_source_name,
+    last_traffic_source_source,
+    first_traffic_source_medium,
+    first_traffic_source_name,
+    first_traffic_source_source,
+    has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  will_{{target_event}}
+  FROM
+  (SELECT DISTINCT
+  *
+  FROM `{{project_id}}.{{dataset}}.v_lead_score_propensity_training_5_1_last_window`
+    )
+  UNION ALL
+  (
+  SELECT DISTINCT
+   * EXCEPT(user_row_order, feature_date)
+  FROM(
+  SELECT DISTINCT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY user_pseudo_id, data_split ORDER BY feature_date DESC) AS user_row_order
+    FROM `{{project_id}}.{{dataset}}.lead_score_propensity_training_5_1`
+    WHERE will_{{target_event}} = 1
+  )
+  WHERE
+    user_row_order = 1
+  LIMIT 100
+    )
+;

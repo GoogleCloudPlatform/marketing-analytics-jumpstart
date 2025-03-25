@@ -1,0 +1,39 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- This script sets up a date range, calls a stored procedure with this range and a variable to 
+-- store a result, and then returns the result of the stored procedure. This pattern is common 
+-- for orchestrating data processing tasks within BigQuery using stored procedures.
+
+DECLARE input_date DATE;
+DECLARE end_date DATE;
+DECLARE users_added INT64 DEFAULT NULL;
+
+SET end_date= CURRENT_DATE();
+SET input_date= (SELECT DATE_SUB(end_date, INTERVAL {{interval_input_date}} DAY));
+
+-- This code block ensures that the end_date used in subsequent operations is not later than one day after the latest available data in 
+-- the specified events table. This prevents potential attempts to process data for a date range that extends beyond the actual data availability.
+IF (SELECT DATE_SUB(end_date, INTERVAL 1 DAY)) > (SELECT MAX(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
+  SET end_date = (SELECT DATE_ADD(MAX(event_date), INTERVAL 1 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+END IF;
+
+-- This code block ensures that the input_date used in subsequent operations is not before the earliest available data in the 
+-- specified events table. This prevents potential errors or unexpected behavior that might occur when trying to process data 
+-- for a date range that precedes the actual data availability.
+IF input_date < (SELECT MIN(event_date) FROM `{{mds_project_id}}.{{mds_dataset}}.event`) THEN
+  SET input_date = (SELECT DATE_ADD(MIN(event_date), INTERVAL 1 DAY) FROM `{{mds_project_id}}.{{mds_dataset}}.event`);
+END IF;
+
+CALL `{{project_id}}.{{dataset}}.{{stored_procedure}}`(input_date, end_date, users_added);

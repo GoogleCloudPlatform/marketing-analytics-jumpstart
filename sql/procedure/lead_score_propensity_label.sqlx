@@ -1,0 +1,107 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- Run these windows aggregations every day. For each date in training and inference date ranges.
+-- Setting procedure to lookback from the day before `input_date` until the day before `end_date`
+SET input_date = DATE_SUB(input_date, INTERVAL 1 DAY);
+SET end_date = DATE_SUB(end_date, INTERVAL 1 DAY);
+
+
+-- Users who have never purchased, outside the 72h past window
+CREATE OR REPLACE TEMP TABLE user_never_{{target_event}}ed AS (
+  SELECT
+    DISTINCT user_pseudo_id,
+  FROM
+    `{{mds_project_id}}.{{mds_dataset}}.event`
+  WHERE
+    user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id,
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.event`
+    WHERE
+      LOWER(event_name) IN ('{{target_event}}') )
+    AND user_pseudo_id NOT IN (
+    SELECT
+      DISTINCT user_pseudo_id
+    FROM
+      `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` )
+);
+
+
+-- Future User metrics: 1-day future {{target_event}}s per user
+CREATE OR REPLACE TEMP TABLE future_{{target_event}}s_per_user AS (
+  SELECT
+    -- User's unique identifier
+    user_pseudo_id,
+    -- The date for which future {{target_event}}s are being calculated
+    input_date as event_date,
+    -- Calculates the maximum count of distinct events for users who made a {{target_event}}s 1 day after `input_date`
+    MAX(COUNT(DISTINCT CASE DATE_DIFF(event_date, input_date, DAY) = 1 WHEN TRUE THEN event_timestamp END)) OVER(PARTITION BY user_pseudo_id) AS {{target_event}}_day_1
+  FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
+  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
+    ON E.device_type_id = D.device_type_id
+  -- Filters events to be within the date range defined by input_date and end_date from dates_interval
+  WHERE event_date BETWEEN input_date AND end_date
+    -- Filter event with event name {{target_event}}
+    AND LOWER(E.event_name) IN ('{{target_event}}')
+    AND E.ga_session_id IS NOT NULL
+    AND D.device_os IS NOT NULL
+  -- Grouping by user pseudo ids
+  GROUP BY user_pseudo_id
+);
+
+CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
+SELECT DISTINCT
+  -- Timestamp when the data was processed
+  CURRENT_TIMESTAMP() AS processed_timestamp,
+  -- The date for which {{target_event}}s are being considered
+  A.event_date as feature_date,
+  -- User's unique identifier
+  A.user_pseudo_id,
+  -- The maximum of 0 and the {{target_event}} count for day 1 (if it exists)
+  LEAST(COALESCE(A.{{target_event}}_day_1, 0), 1) AS {{target_event}}_day_1
+FROM future_{{target_event}}s_per_user AS A
+INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` AS B
+ON B.user_pseudo_id = A.user_pseudo_id
+WHERE A.user_pseudo_id NOT IN (SELECT user_pseudo_id FROM user_never_{{target_event}}ed)
+;
+
+-- Updates or inserts data into the target table
+MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I
+USING DataForTargetTable T
+ON I.feature_date = T.feature_date 
+  AND I.user_pseudo_id = T.user_pseudo_id
+WHEN MATCHED THEN
+  -- Updates existing records
+  UPDATE SET 
+    -- Updates the processed timestamp
+    I.processed_timestamp = T.processed_timestamp,
+    -- Updates {{target_event}} counts for each day
+    I.{{target_event}}_day_1 = T.{{target_event}}_day_1
+WHEN NOT MATCHED THEN
+  -- Inserts new records
+  INSERT 
+    (processed_timestamp,
+     feature_date,
+     user_pseudo_id,
+     {{target_event}}_day_1)
+  VALUES
+    (T.processed_timestamp,
+     T.feature_date,
+     T.user_pseudo_id,
+     T.{{target_event}}_day_1)
+;
+
+SET rows_added = (SELECT COUNT(DISTINCT user_pseudo_id) FROM `{{project_id}}.{{dataset}}.{{insert_table}}`);

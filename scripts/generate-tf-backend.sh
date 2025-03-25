@@ -19,15 +19,15 @@ set -o nounset
 
 . scripts/common.sh
 
-section_open "Check if the necessary dependencies are available: gcloud, gsutil, terraform, poetry"
+section_open "Check if the necessary dependencies are available: gcloud, gsutil, terraform, uv"
     check_exec_dependency "gcloud"
     check_exec_version "gcloud"
     check_exec_dependency "gsutil"
     check_exec_version "gsutil"
     check_exec_dependency "terraform"
     check_exec_version "terraform"
-    check_exec_dependency "poetry"
-    check_exec_version "poetry"
+    check_exec_dependency "uv"
+    check_exec_version "uv"
 section_close
 
 section_open "Check if the necessary variables are set: PROJECT_ID"
@@ -51,10 +51,6 @@ section_open "Enable all the required APIs"
     enable_all_apis
 section_close
 
-section_open "Install poetry libraries in the virtual environment for Terraform"
-    poetry install
-section_close
-
 section_open "Creating a new Google Cloud Storage bucket to store the Terraform state in ${TF_STATE_PROJECT} project, bucket: ${TF_STATE_BUCKET}"
     if gsutil ls -b gs://"${TF_STATE_BUCKET}" >/dev/null 2>&1; then
         printf "The ${TF_STATE_BUCKET} Google Cloud Storage bucket already exists. \n"
@@ -67,6 +63,11 @@ section_close
 section_open "Creating terraform backend.tf configuration file"
     TERRAFORM_RUN_DIR="infrastructure/terraform"
     create_terraform_backend_config_file "${TERRAFORM_RUN_DIR}" "${TF_STATE_BUCKET}"
+section_close
+
+section_open "Creating BigQuery and Vertex AI connection"
+    create_bigquery_connection "${PROJECT_ID}" "${LOCATION}" "vertex_ai_conn"
+    create_bigquery_connection "${PROJECT_ID}" "US" "vertex_ai_conn"
 section_close
 
 printf "$DIVIDER"

@@ -43,52 +43,18 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     gcloud config set project $PROJECT_ID
     ```
 
-1. Install or update Python3
-    Install a compatible version of Python 3.8-3.10 and set the CLOUDSDK_PYTHON environment variable to point to it.
+1. Install update uv for running python scripts
+    Install [uv](https://docs.astral.sh/uv/) that manages the python version and dependecies for the solution.
 
-    ```bash
-    sudo apt-get install python3.10
-    CLOUDSDK_PYTHON=python3.10
+    ```sh
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
     ```
-    If you are installing on a Mac:
-   ```shell
-   brew install python@3.10
-   CLOUDSDK_PYTHON=python3.10
-   ```
 
-1. Install Python's Poetry and set Poetry to use Python 3.10 version
-
-   [Poetry](https://python-poetry.org/docs/) is a Python's tool for dependency management and packaging.
-
-   If you are installing on in Cloud Shell use the following commands:
-   ```shell
-   pipx install poetry
-   ```
-   If you don't have pipx installed - follow the [Pipx installation guide](https://pipx.pypa.io/stable/installation/)
-   ```shell
-   sudo apt update
-   sudo apt install pipx
-   pipx ensurepath
-   pipx install poetry
-   ```
-   Verify that `poetry` is on your $PATH variable:
-   ```shell
-   poetry --version
-   ```
-   If it fails - add it to your $PATH variable:
-   ```shell
-   export PATH="$HOME/.local/bin:$PATH" 
-   ```
-   If you are installing on a Mac:
-   ```shell
-   brew install poetry
-   ```
-   Set poetry to use your latest python3
-   ```shell
-   SOURCE_ROOT=${HOME}/${REPO}
-   cd ${SOURCE_ROOT}
-   poetry env use python3
-   ```
+    Check uv installation:
+    ```sh
+    uv --version
+    ```
 
 1. Authenticate with additional OAuth 2.0 scopes needed to use the Google Analytics Admin API:
    ```shell
@@ -121,6 +87,14 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     terraform --version
     ```
 
+    **Note:** If you have a Apple Silicon Macbook, you should install terraform by setting the `TFENV_ARCH` environment variable:
+    ```shell
+    TFENV_ARCH=amd64 tfenv install 1.9.7
+    tfenv use 1.9.7
+    terraform --version
+    ```
+    If not properly terraform version for your architecture is installed, `terraform .. init` will fail.
+
     For instance, the output on MacOS should be like:
     ```shell
     Terraform v1.9.7
@@ -132,6 +106,7 @@ Also, this method allows you to extend this solution and develop it to satisfy y
     Terraform stores state about managed infrastructure to map real-world resources to the configuration, keep track of metadata, and improve performance. Terraform stores this state in a local file by default, but you can also use a Terraform remote backend to store state remotely. [Remote state](https://developer.hashicorp.com/terraform/cdktf/concepts/remote-backends) makes it easier for teams to work together because all members have access to the latest state data in the remote store.
 
     ```bash
+    SOURCE_ROOT="${HOME}/${REPO}"
     cd ${SOURCE_ROOT}
     scripts/generate-tf-backend.sh
     ```
@@ -188,10 +163,10 @@ Because a Cloud Shell session is ephemeral, your Cloud Shell session could termi
 
 Reset your Google Cloud Project ID variables:
 
-    ```shell
-    export PROJECT_ID="[your Google Cloud project id]"
-    gcloud config set project $PROJECT_ID
-    ```
+   ```bash
+   export PROJECT_ID="[your Google Cloud project id]"
+   gcloud config set project $PROJECT_ID
+   ```
 
 Follow the authentication workflow, since your credentials expires daily:
 

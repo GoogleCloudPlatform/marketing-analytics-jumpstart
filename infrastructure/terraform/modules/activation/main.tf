@@ -15,7 +15,6 @@
 locals {
   app_prefix                                     = "activation"
   source_root_dir                                = "../.."
-  poetry_run_alias                               = "${var.poetry_cmd} run"
   template_dir                                   = "${local.source_root_dir}/templates"
   pipeline_source_dir                            = "${local.source_root_dir}/python/activation"
   trigger_function_dir                           = "${local.source_root_dir}/python/function"
@@ -25,6 +24,8 @@ locals {
   cltv_query_template_file                       = "cltv_query_template.sqlx"
   purchase_propensity_query_template_file        = "purchase_propensity_query_template.sqlx"
   purchase_propensity_vbb_query_template_file    = "purchase_propensity_vbb_query_template.sqlx"
+  lead_score_propensity_query_template_file      = "lead_score_propensity_query_template.sqlx"
+  lead_score_propensity_vbb_query_template_file  = "lead_score_propensity_vbb_query_template.sqlx"
   churn_propensity_query_template_file           = "churn_propensity_query_template.sqlx"
   activation_container_image_id                  = "activation-pipeline"
   docker_repo_prefix                             = "${var.location}-docker.pkg.dev/${var.project_id}"
@@ -61,6 +62,17 @@ locals {
   ga4_setup_source_file              = "${local.source_root_dir}/python/ga4_setup/setup.py"
   ga4_setup_source_file_content_hash = filesha512(local.ga4_setup_source_file)
   ga4_stream_id_set = toset(var.ga4_stream_id)
+
+  # GCP Cloud Build is not available in all regions.
+  cloud_build_available_locations = [
+    "us-central1",
+    "us-west2",
+    "europe-west1",
+    "asia-east1",
+    "australia-southeast1",
+    "southamerica-east1"
+  ]
+
 }
 
 data "google_project" "activation_project" {
@@ -69,7 +81,7 @@ data "google_project" "activation_project" {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "17.0.0"
+  version = "18.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
@@ -302,6 +314,16 @@ resource "null_resource" "check_cloudbuild_api" {
   depends_on = [
     module.project_services
   ]
+
+  # The lifecycle block of the google_artifact_registry_repository resource defines a precondition that 
+  # checks if the specified region is included in the vertex_pipelines_available_locations list. 
+  # If the condition is not met, an error message is displayed and the Terraform configuration will fail.
+  lifecycle {
+    precondition {
+      condition     = contains(local.cloud_build_available_locations, var.location)
+      error_message = "Cloud Build is not available in your default region: ${var.location}.\nSet 'google_default_region' variable to a valid Cloud Build location, see Restricted Regions in https://cloud.google.com/build/docs/locations."
+    }
+  }
 }
 
 # This resource executes gcloud commands to check whether the IAM API is enabled.
@@ -332,7 +354,7 @@ resource "null_resource" "check_cloudkms_api" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id                 = local.app_prefix
   dataset_name               = local.app_prefix
@@ -354,7 +376,7 @@ resource "null_resource" "create_custom_events" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
+    ${var.uv_run_alias} ga4-setup --ga4_resource=custom_events --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
     EOT
     working_dir = local.source_root_dir
   }
@@ -373,7 +395,7 @@ resource "null_resource" "create_custom_dimensions" {
   }
   provisioner "local-exec" {
     command     = <<-EOT
-    ${local.poetry_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
+    ${var.uv_run_alias} ga4-setup --ga4_resource=custom_dimensions --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}
     EOT
     working_dir = local.source_root_dir
   }
@@ -390,7 +412,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.0"
+  version    = "4.4.3"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.pipeline_service_account_name]
@@ -407,7 +429,7 @@ module "pipeline_service_account" {
 
 module "trigger_function_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.0"
+  version    = "4.4.3"
   project_id = null_resource.check_pubsub_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.trigger_function_account_name]
@@ -430,7 +452,7 @@ module "trigger_function_account" {
 # This informatoin can then be used in other parts of the Terraform configuration to access the retrieved information.
 data "external" "ga4_measurement_properties" {
   for_each    = local.ga4_stream_id_set
-  program     = ["bash", "-c", "${local.poetry_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}"]
+  program     = ["bash", "-c", "${var.uv_run_alias} ga4-setup --ga4_resource=measurement_properties --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${each.value}"]
   working_dir = local.source_root_dir
 
   depends_on = [
@@ -449,13 +471,13 @@ resource "random_id" "random_suffix" {
 # to interact with other Google Cloud services on your behalf.
 resource "google_project_service_identity" "secretmanager_sa" {
   provider = google-beta
-  project = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
-  service = "secretmanager.googleapis.com"
+  project  = null_resource.check_cloudkms_api.id != "" ? module.project_services.project_id : var.project_id
+  service  = "secretmanager.googleapis.com"
 }
- # This Key Ring can then be used to store and manage encryption keys for various purposes, 
- # such as encrypting data at rest or protecting secrets.
+# This Key Ring can then be used to store and manage encryption keys for various purposes, 
+# such as encrypting data at rest or protecting secrets.
 resource "google_kms_key_ring" "key_ring_regional" {
-  name     = "key_ring_regional-${random_id.random_suffix.hex}"
+  name = "key_ring_regional-${random_id.random_suffix.hex}"
   # If you want your replicas in other locations, change the location in the var.location variable passed as a parameter to this submodule.
   # if you your replicas stored global, set the location = "global".
   location = var.location
@@ -494,7 +516,7 @@ data "google_iam_policy" "crypto_key_encrypter_decrypter" {
 # in another data source.
 resource "google_kms_crypto_key_iam_policy" "crypto_key" {
   crypto_key_id = google_kms_crypto_key.crypto_key_regional.id
-  policy_data = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
+  policy_data   = data.google_iam_policy.crypto_key_encrypter_decrypter.policy_data
 }
 
 # It sets the IAM policy for a KMS Key Ring, granting specific permissions defined 
@@ -508,7 +530,7 @@ resource "google_kms_key_ring_iam_policy" "key_ring" {
 module "data_stream_secrets" {
   for_each   = local.ga4_stream_id_set
   source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "0.4.0"
+  version    = "0.7.0"
   project_id = google_kms_crypto_key_iam_policy.crypto_key.etag != "" && google_kms_key_ring_iam_policy.key_ring.etag != "" ? module.project_services.project_id : var.project_id
   secrets = [
     {
@@ -531,7 +553,7 @@ module "data_stream_secrets" {
       # If you want your replicas in other locations, uncomment the following lines and add them here.
       # Check this example, as reference: https://github.com/GoogleCloudPlatform/terraform-google-secret-manager/blob/main/examples/multiple/main.tf#L91
       {
-        location = var.location
+        location     = var.location
         kms_key_name = google_kms_crypto_key.crypto_key_regional.id
       }
     ]
@@ -550,7 +572,7 @@ module "data_stream_secrets" {
 # This module creates a Cloud Storage bucket to be used by the Activation Application
 module "pipeline_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "9.0.1"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-app-${module.project_services.project_id}"
   location   = var.location
@@ -636,7 +658,7 @@ data "google_project" "project" {
 # This module creates a Cloud Storage bucket to be used by the Cloud Build Log Bucket
 module "build_logs_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "9.0.1"
   project_id = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-logs-${module.project_services.project_id}"
   location   = var.location
@@ -725,7 +747,7 @@ data "template_file" "churn_propensity_query_template_file" {
   }
 }
 
-# This resource creates a bucket object using as content the purchase_propensity_query_template_file file.
+# This resource creates a bucket object using as content the churn_propensity_query_template_file file.
 resource "google_storage_bucket_object" "churn_propensity_query_template_file" {
   name    = "${local.configuration_folder}/${local.churn_propensity_query_template_file}"
   content = data.template_file.churn_propensity_query_template_file.rendered
@@ -766,6 +788,40 @@ resource "google_storage_bucket_object" "purchase_propensity_vbb_query_template_
   bucket  = module.pipeline_bucket.name
 }
 
+data "template_file" "lead_score_propensity_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.lead_score_propensity_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
+}
+
+# This resource creates a bucket object using as content the lead_score_propensity_query_template_file file.
+resource "google_storage_bucket_object" "lead_score_propensity_query_template_file" {
+  name    = "${local.configuration_folder}/${local.lead_score_propensity_query_template_file}"
+  content = data.template_file.lead_score_propensity_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+# This resource creates a bucket object using as content the lead_score_propensity_vbb_query_template_file file.
+data "template_file" "lead_score_propensity_vbb_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.lead_score_propensity_vbb_query_template_file}")
+
+  vars = {
+    mds_project_id        = var.mds_project_id
+    mds_dataset_suffix    = var.mds_dataset_suffix
+    activation_project_id = var.project_id
+    dataset               = module.bigquery.bigquery_dataset.dataset_id
+  }
+}
+
+resource "google_storage_bucket_object" "lead_score_propensity_vbb_query_template_file" {
+  name    = "${local.configuration_folder}/${local.lead_score_propensity_vbb_query_template_file}"
+  content = data.template_file.lead_score_propensity_vbb_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
 # This data resources creates a data resource that renders a template file and stores the rendered content in a variable.
 data "template_file" "activation_type_configuration" {
   template = file("${local.template_dir}/activation_type_configuration_template.tpl")
@@ -777,6 +833,8 @@ data "template_file" "activation_type_configuration" {
     purchase_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_query_template_file.output_name}"
     purchase_propensity_vbb_query_template_gcs_path    = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_vbb_query_template_file.output_name}"
     churn_propensity_query_template_gcs_path           = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.churn_propensity_query_template_file.output_name}"
+    lead_score_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.lead_score_propensity_query_template_file.output_name}"
+    lead_score_propensity_vbb_query_template_gcs_path    = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.lead_score_propensity_vbb_query_template_file.output_name}"
   }
 }
 
@@ -796,8 +854,15 @@ module "activation_pipeline_container" {
 
   platform = "linux"
 
-  #create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest ${local.pipeline_source_dir}"
-  create_cmd_body  = "builds submit --project=${module.project_services.project_id} --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest --gcs-log-dir=gs://${module.build_logs_bucket.name} ${local.pipeline_source_dir}"
+  create_cmd_body  = <<-EOT
+    builds submit \
+      --project=${module.project_services.project_id} \
+      --region ${var.location} \
+      --default-buckets-behavior=regional-user-owned-bucket \
+      --tag ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest \
+      --gcs-log-dir=gs://${module.build_logs_bucket.name} \
+      ${local.pipeline_source_dir}
+  EOT
   destroy_cmd_body = "artifacts docker images delete --project=${module.project_services.project_id} ${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name} --delete-tags"
 
   create_cmd_triggers = {
@@ -811,8 +876,8 @@ module "activation_pipeline_container" {
 
 # This module executes a gcloud command to build a dataflow flex template and uploads it to Dataflow
 module "activation_pipeline_template" {
-  source                = "terraform-google-modules/gcloud/google"
-  version               = "3.5.0"
+  source  = "terraform-google-modules/gcloud/google"
+  version = "3.5.0"
 
   platform         = "linux"
   create_cmd_body  = "dataflow flex-template build --project=${module.project_services.project_id} \"gs://${module.pipeline_bucket.name}/dataflow/templates/${local.activation_container_image_id}.json\" --image \"${local.docker_repo_prefix}/${google_artifact_registry_repository.activation_repository.name}/${local.activation_container_name}:latest\" --sdk-language \"PYTHON\" --metadata-file \"${local.pipeline_source_dir}/metadata.json\""
@@ -843,7 +908,7 @@ data "archive_file" "activation_trigger_source" {
 # This module creates a Cloud Sorage bucket and sets the trigger_function_account_email as the admin.
 module "function_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "9.0.1"
   project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-trigger-${module.project_services.project_id}"
   location   = var.location

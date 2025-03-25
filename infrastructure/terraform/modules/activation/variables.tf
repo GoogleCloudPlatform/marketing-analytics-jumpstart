@@ -43,8 +43,8 @@ variable "trigger_function_location" {
   type        = string
 }
 
-variable "poetry_cmd" {
-  description = "alias for poetry command on the current system"
+variable "uv_run_alias" {
+  description = "alias for uv run command on the current system"
   type        = string
 }
 
@@ -70,11 +70,6 @@ variable "ga4_property_id" {
 variable "ga4_stream_id" {
   description = "Google Analytics data stream id:s for activation"
   type        = list(string)
-}
-
-variable "poetry_installed" {
-  description = "Construct to specify dependency to poetry installed"
-  type        = string
 }
 
 variable "mds_project_id" {

@@ -1,0 +1,352 @@
+-- Copyright 2023 Google LLC
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+DECLARE lastest_processed_time_ud TIMESTAMP;
+DECLARE lastest_processed_time_useam TIMESTAMP;
+DECLARE lastest_processed_time_uwlm TIMESTAMP;
+DECLARE lastest_processed_time_um TIMESTAMP;
+
+-- Setting procedure to lookback from the day before `inference_date`
+SET inference_date = DATE_SUB(inference_date, INTERVAL 1 DAY);
+
+SET lastest_processed_time_ud = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_useam = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_session_event_aggregated_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_uwlm = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lead_metrics` WHERE feature_date = inference_date LIMIT 1);
+SET lastest_processed_time_um = (SELECT MAX(processed_timestamp) FROM `{{feature_store_project_id}}.{{feature_store_dataset}}.user_scoped_metrics` WHERE feature_date = inference_date LIMIT 1);
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_ud as (
+  SELECT DISTINCT
+    -- The user pseudo id
+    UD.user_pseudo_id,
+    -- The user id 
+    MAX(UD.user_id) OVER(user_dimensions_window) AS user_id,
+    -- The feature date
+    UD.feature_date,
+    -- The user lifetime value revenue
+    MAX(UD.user_ltv_revenue) OVER(user_dimensions_window) AS user_ltv_revenue,
+    -- The device category
+    MAX(UD.device_category) OVER(user_dimensions_window) AS device_category,
+    -- The device brand name
+    MAX(UD.device_mobile_brand_name) OVER(user_dimensions_window) AS device_mobile_brand_name,
+    -- The device model name
+    MAX(UD.device_mobile_model_name) OVER(user_dimensions_window) AS device_mobile_model_name,
+    -- The device operating system
+    MAX(UD.device_os) OVER(user_dimensions_window) AS device_os,
+    -- The device language
+    MAX(UD.device_language) OVER(user_dimensions_window) AS device_language,
+    -- The device web browser
+    MAX(UD.device_web_browser) OVER(user_dimensions_window) AS device_web_browser,
+    -- The user sub continent
+    MAX(UD.geo_sub_continent) OVER(user_dimensions_window) AS geo_sub_continent,
+    -- The user country
+    MAX(UD.geo_country) OVER(user_dimensions_window) AS geo_country,
+    -- The user region
+    MAX(UD.geo_region) OVER(user_dimensions_window) AS geo_region,
+    -- The user city
+    MAX(UD.geo_city) OVER(user_dimensions_window) AS geo_city,
+    -- The user metro
+    MAX(UD.geo_metro) OVER(user_dimensions_window) AS geo_metro,
+    -- The user last traffic source medium
+    MAX(UD.last_traffic_source_medium) OVER(user_dimensions_window) AS last_traffic_source_medium,
+    -- The user last traffic source name
+    MAX(UD.last_traffic_source_name) OVER(user_dimensions_window) AS last_traffic_source_name,
+    -- The user last traffic source source
+    MAX(UD.last_traffic_source_source) OVER(user_dimensions_window) AS last_traffic_source_source,
+    -- The user first traffic source medium
+    MAX(UD.first_traffic_source_medium) OVER(user_dimensions_window) AS first_traffic_source_medium,
+    -- The user first traffic source name
+    MAX(UD.first_traffic_source_name) OVER(user_dimensions_window) AS first_traffic_source_name,
+    -- The user first traffic source source
+    MAX(UD.first_traffic_source_source) OVER(user_dimensions_window) AS first_traffic_source_source,
+    -- Whether the user has signed in with user ID
+    MAX(UD.has_signed_in_with_user_id) OVER(user_dimensions_window) AS has_signed_in_with_user_id,
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_dimensions` UD
+INNER JOIN
+  `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
+ON
+  UD.user_pseudo_id = LEU.user_pseudo_id
+WHERE
+  -- In the future consider `feature_date BETWEEN start_date AND end_date`, to process multiple days. Modify Partition BY
+  UD.feature_date = inference_date 
+  AND UD.processed_timestamp = lastest_processed_time_ud
+WINDOW 
+  user_dimensions_window AS (PARTITION BY UD.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+
+CREATE OR REPLACE TEMP TABLE inference_preparation_uwlm as (
+  SELECT DISTINCT
+    -- User pseudo id
+    UWLM.user_pseudo_id,
+    -- Feature date
+    UWLM.feature_date{% for feature in short_list_features %},
+    -- Calculate the maximum value for each metric over the window
+    MAX(UWLM.{{feature.feature_name}}_past_1_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_1_day,
+    MAX(UWLM.{{feature.feature_name}}_past_2_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_2_day,
+    MAX(UWLM.{{feature.feature_name}}_past_3_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_3_day,
+    MAX(UWLM.{{feature.feature_name}}_past_4_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_4_day,
+    MAX(UWLM.{{feature.feature_name}}_past_5_day) OVER(user_rolling_lead_window) AS {{feature.feature_name}}_past_5_day{% endfor %}
+FROM
+  `{{feature_store_project_id}}.{{feature_store_dataset}}.user_rolling_window_lead_metrics` UWLM
+INNER JOIN
+  `{{project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` LEU
+ON
+  UWLM.user_pseudo_id = LEU.user_pseudo_id
+WHERE
+  -- Filter for the features in the inferecen date
+  UWLM.feature_date = inference_date
+  AND UWLM.processed_timestamp = lastest_processed_time_uwlm
+WINDOW 
+  user_rolling_lead_window AS (PARTITION BY UWLM.user_pseudo_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)
+);
+
+-- This is a temp table consolidating all features over the dates intervals.
+CREATE OR REPLACE TEMP TABLE inference_preparation as (
+  SELECT DISTINCT
+    UD.user_pseudo_id,
+    UD.user_id,
+    UD.feature_date,
+    UD.user_ltv_revenue,
+    UD.device_category,
+    UD.device_mobile_brand_name,
+    UD.device_mobile_model_name,
+    UD.device_os,
+    UD.device_language,
+    UD.device_web_browser,
+    UD.geo_sub_continent,
+    UD.geo_country,
+    UD.geo_region,
+    UD.geo_city,
+    UD.geo_metro,
+    UD.last_traffic_source_medium,
+    UD.last_traffic_source_name,
+    UD.last_traffic_source_source,
+    UD.first_traffic_source_medium,
+    UD.first_traffic_source_name,
+    UD.first_traffic_source_source,
+    UD.has_signed_in_with_user_id{% for feature in short_list_features %},
+    UWLM.{{feature.feature_name}}_past_1_day,
+    UWLM.{{feature.feature_name}}_past_2_day,
+    UWLM.{{feature.feature_name}}_past_3_day,
+    UWLM.{{feature.feature_name}}_past_4_day,
+    UWLM.{{feature.feature_name}}_past_5_day{% endfor %}
+FROM
+  inference_preparation_ud UD
+INNER JOIN
+  inference_preparation_uwlm UWLM
+ON
+  UWLM.user_pseudo_id = UD.user_pseudo_id
+  AND UWLM.feature_date = UD.feature_date
+);
+
+DELETE FROM `{{project_id}}.{{dataset}}.{{insert_table}}` WHERE TRUE;
+
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+(
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id{% for feature in short_list_features %},
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day{% endfor %}
+)
+SELECT DISTINCT 
+feature_date,
+  user_pseudo_id,
+  user_id,
+  MIN(user_ltv_revenue) OVER(PARTITION BY user_pseudo_id, feature_date) as user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id{% for feature in short_list_features %},
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day{% endfor %}
+FROM inference_preparation;
+
+
+CREATE OR REPLACE TABLE `{{project_id}}.{{dataset}}.lead_score_propensity_inference_5_1` AS(
+  SELECT DISTINCT
+  CURRENT_TIMESTAMP() AS processed_timestamp,
+  feature_date,
+  user_pseudo_id,
+  LAST_VALUE(user_id) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_id,
+  LAST_VALUE(user_ltv_revenue) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_ltv_revenue,
+  LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_category,
+  LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_mobile_brand_name,
+  LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_mobile_model_name,
+  LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_os,
+  LAST_VALUE(device_language) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_language,
+  LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS device_web_browser,
+  LAST_VALUE(geo_sub_continent) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_sub_continent,
+  LAST_VALUE(geo_country) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_country,
+  LAST_VALUE(geo_region) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_region,
+  LAST_VALUE(geo_city) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_city,
+  LAST_VALUE(geo_metro) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS geo_metro,
+  LAST_VALUE(last_traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_medium,
+  LAST_VALUE(last_traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_name,
+  LAST_VALUE(last_traffic_source_source) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS last_traffic_source_source,
+  LAST_VALUE(first_traffic_source_medium) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_medium,
+  LAST_VALUE(first_traffic_source_name) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_name,
+  LAST_VALUE(first_traffic_source_source) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS first_traffic_source_source,
+  LAST_VALUE(has_signed_in_with_user_id) OVER(PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS has_signed_in_with_user_id{% for feature in short_list_features %},
+  LAST_VALUE({{feature.feature_name}}_past_1_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_1_day,
+  LAST_VALUE({{feature.feature_name}}_past_2_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_2_day,
+  LAST_VALUE({{feature.feature_name}}_past_3_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_3_day,
+  LAST_VALUE({{feature.feature_name}}_past_4_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_4_day,
+  LAST_VALUE({{feature.feature_name}}_past_5_day) OVER(PARTITION BY user_pseudo_id, feature_date ORDER BY feature_date DESC) AS {{feature.feature_name}}_past_5_day{% endfor %}
+  FROM `{{project_id}}.{{dataset}}.{{insert_table}}`
+);
+
+
+CREATE OR REPLACE VIEW `{{project_id}}.{{dataset}}.v_lead_score_propensity_inference_5_1`
+(processed_timestamp, 
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id{% for feature in short_list_features %},
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day{% endfor %})
+OPTIONS(
+  --expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL {{expiration_duration_hours}} HOUR),
+  friendly_name="v_lead_score_propensity_inference_5_1",
+  description="View Lead Score Propensity Inference dataset using 5 days back to predict 1 day ahead. View expires after 48h and should run daily.",
+  labels=[("org_unit", "development")]
+) AS 
+SELECT DISTINCT
+  processed_timestamp, 
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id{% for feature in short_list_features %},
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day{% endfor %}
+FROM (
+SELECT DISTINCT
+  processed_timestamp, 
+  feature_date,
+  user_pseudo_id,
+  user_id,
+  user_ltv_revenue,
+  device_category,
+  device_mobile_brand_name,
+  device_mobile_model_name,
+  device_os,
+  device_language,
+  device_web_browser,
+  geo_sub_continent,
+  geo_country,
+  geo_region,
+  geo_city,
+  geo_metro,
+  last_traffic_source_medium,
+  last_traffic_source_name,
+  last_traffic_source_source,
+  first_traffic_source_medium,
+  first_traffic_source_name,
+  first_traffic_source_source,
+  has_signed_in_with_user_id,{% for feature in short_list_features %}
+  {{feature.feature_name}}_past_1_day,
+  {{feature.feature_name}}_past_2_day,
+  {{feature.feature_name}}_past_3_day,
+  {{feature.feature_name}}_past_4_day,
+  {{feature.feature_name}}_past_5_day,{% endfor %}
+  -- Row number partitioned by user pseudo id ordered by feature date descending
+  ROW_NUMBER() OVER (PARTITION BY user_pseudo_id ORDER BY feature_date DESC) AS user_row_order
+  FROM `{{project_id}}.{{dataset}}.lead_score_propensity_inference_5_1`
+)
+WHERE
+  -- Filter only for the most recent user example
+  user_row_order = 1;
+

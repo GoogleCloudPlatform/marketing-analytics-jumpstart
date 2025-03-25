@@ -13,7 +13,8 @@
 # limitations under the License.
 
 locals {
-  vbb_activation_configuration_file = "vbb_activation_configuration.jsonl"
+  config_id = "vbb_activation_configuration"
+  vbb_activation_configuration_file = "${local.config_id}.jsonl"
 }
 
 # JSON configuration file for smart bidding based activation
@@ -25,7 +26,7 @@ resource "google_storage_bucket_object" "vbb_activation_configuration_file" {
 
 # This data resources creates a data resource that renders a template file and stores the rendered content in a variable.
 data "template_file" "load_vbb_activation_configuration_proc" {
-  template = file("${local.template_dir}/load_vbb_activation_configuration.sql.tpl")
+  template = file("${local.template_dir}/load_${local.config_id}.sql.tpl")
   vars = {
     project_id      = module.project_services.project_id
     dataset         = module.bigquery.bigquery_dataset.dataset_id
@@ -37,9 +38,32 @@ data "template_file" "load_vbb_activation_configuration_proc" {
 resource "google_bigquery_routine" "load_vbb_activation_configuration_proc" {
   project         = module.project_services.project_id
   dataset_id      = module.bigquery.bigquery_dataset.dataset_id
-  routine_id      = "load_vbb_activation_configuration"
+  routine_id      = "load_${local.config_id}"
   routine_type    = "PROCEDURE"
   language        = "SQL"
   definition_body = data.template_file.load_vbb_activation_configuration_proc.rendered
   description     = "Procedure for loading vbb activation configuration from GCS bucket"
+}
+
+# This resource creates a BigQuery table named vbb_activation_configuration
+resource "google_bigquery_table" "smart_bidding_configuration" {
+  project     = module.project_services.project_id
+  dataset_id  = module.bigquery.bigquery_dataset.dataset_id
+  table_id    = local.config_id
+  description = "stores configuration settings used to translate predicted deciles into monetary values for Smart Bidding strategies."
+
+  # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
+  deletion_protection = false
+  labels = {
+    version = "prod"
+  }
+
+  # The schema attribute specifies the schema of the table. In this case, the schema is defined in the JSON file.
+  schema = file("${local.source_root_dir}/sql/schema/table/${local.config_id}.json")
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore
+  # any changes to the table and will not attempt to update the table.
+  lifecycle {
+    ignore_changes  = all
+  }
 }

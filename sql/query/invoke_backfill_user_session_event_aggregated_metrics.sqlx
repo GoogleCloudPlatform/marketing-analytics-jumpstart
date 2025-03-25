@@ -354,7 +354,45 @@ CREATE OR REPLACE TEMP TABLE events_users_days as (
 -- user_events_per_day_event_scoped (UEPDES): Contains user-level event metrics aggregated on a daily basis. Metrics include add_to_carts, cart_to_view_rate, checkouts, ecommerce_purchases, etc.
 -- repeated_purchase (R): Stores information about whether a user has made previous purchases, indicated by the how_many_purchased_before column.
 -- cart_to_purchase (CP): Contains a flag (has_abandoned_cart) indicating whether a user abandoned their cart on a given day.
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
+  processed_timestamp,
+  feature_date,
+  user_pseudo_id,
+  engagement_rate,
+  engaged_sessions_per_user,
+  session_conversion_rate,
+  bounces,
+  bounce_rate_per_user,
+  sessions_per_user,
+  avg_views_per_session,
+  sum_engagement_time_seconds,
+  avg_engagement_time_seconds,
+  new_visits,
+  returning_visits,
+  add_to_carts,
+  cart_to_view_rate,
+  checkouts,
+  ecommerce_purchases,
+  ecommerce_quantity,
+  ecommerce_revenue,
+  item_revenue,
+  item_quantity,
+  item_refund_amount,
+  item_view_events,
+  items_clicked_in_promotion,
+  items_clicked_in_list,
+  items_checked_out,
+  items_added_to_cart,
+  item_list_click_events,
+  item_list_view_events,
+  purchase_revenue,
+  purchase_to_view_rate,
+  refunds,
+  transactions_per_purchaser,
+  user_conversion_rate,
+  how_many_purchased_before,
+  has_abandoned_cart
+)
   SELECT
     CURRENT_TIMESTAMP() AS processed_timestamp,
     EUD.feature_date,
