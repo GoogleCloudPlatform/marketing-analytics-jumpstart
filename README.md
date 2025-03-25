@@ -7,7 +7,7 @@ Customers in the online sales and lead generation business are looking to drive 
 
 | Version Name | Branch | Purpose |
 | ------------ | ------ | ------- |
-| Multi Stream Activation | [multi-stream-activation](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/tree/multi-stream-activation) | Activate to multiple Google Analytics 4 data streams (websites and application). |
+| Multi Stream | [multi-stream-activation](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/tree/multi-stream) | Activate to multiple Google Analytics 4 data streams (websites and application). |
 | Multi Property | [multi-property](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/tree/multi-property) | Deployment of multiple MAJ resources per each Google Analytics 4 property in the same Google Cloud project. |
 
 ## Quick Installation ⏰
