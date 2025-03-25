@@ -136,7 +136,7 @@ resource "local_file" "global_configuration" {
 }
 
 data "external" "check_ga4_property_type" {
-  program     = ["bash", "-c", "${local.uv_run_alias} ga4-setup --ga4_resource=check_property_type --ga4_property_id=${var.ga4_property_id} --ga4_stream_id=${var.ga4_stream_id}"]
+  program     = ["bash", "-c", "${local.uv_run_alias} ga4-setup --ga4_resource=check_property_type --ga4_property_id=${var.ga4_property_id}"]
   working_dir = local.source_root_dir
 }
 

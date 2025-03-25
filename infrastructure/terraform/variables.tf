@@ -165,7 +165,7 @@ variable "ga4_property_id" {
 
 variable "ga4_stream_id" {
   description = "Google Analytics data stream id"
-  type        = string
+  type        = list(string)
 }
 
 variable "ga4_measurement_id" {

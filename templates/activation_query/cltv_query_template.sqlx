@@ -9,5 +9,6 @@ FROM
   `${mds_project_id}.marketing_ga4_v1_${mds_dataset_suffix}.latest_event_per_user_last_72_hours` b,
   `{{source_table}}` a
 WHERE
-  a.user_pseudo_id = b.user_pseudo_id
+  b.stream_id = '{{ga4_data_stream_id}}'
+  AND a.user_pseudo_id = b.user_pseudo_id
   AND a.prediction > 0

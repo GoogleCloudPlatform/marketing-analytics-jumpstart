@@ -28,6 +28,11 @@
       "helpText": "Pipeline temporary storage location."
     },
     {
+      "name": "ga4_data_stream_id",
+      "label": "Data Stream ID",
+      "helpText": "Data stream for activation."
+    },
+    {
       "name": "ga4_measurement_id",
       "label": "Measurement Protocol ID",
       "helpText": "Measurement ID in GA4."
