@@ -25,25 +25,25 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   -- Unique identifier for the user
   user_pseudo_id,
   -- Last recorded lifetime value revenue for the user within the specified date range
-  LAST_VALUE(user_ltv_revenue) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) AS user_ltv_revenue,
+  LAST_VALUE(user_ltv_revenue) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) AS user_ltv_revenue,
   -- Last recorded traffic source medium for the user within the specified date range
-  LAST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) AS last_traffic_source_medium,
+  LAST_VALUE(T.traffic_source_medium) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) AS last_traffic_source_medium,
   -- Last recorded traffic source name for the user within the specified date range
-  LAST_VALUE(T.traffic_source_name) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) AS last_traffic_source_name,
+  LAST_VALUE(T.traffic_source_name) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) AS last_traffic_source_name,
   -- Last recorded traffic source for the user within the specified date range
-  LAST_VALUE(T.traffic_source) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) AS last_traffic_source_source,
+  LAST_VALUE(T.traffic_source) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) AS last_traffic_source_source,
   -- Whether the user is new or existing based on the time difference between the event and their first touch timestamp within the specified date range
-  LAST_VALUE(CASE WHEN (TIMESTAMP_DIFF(event_timestamp, user_first_touch_timestamp, DAY) < 7) OR (user_first_touch_timestamp IS NULL) THEN 'new' ELSE 'existing' END) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) AS new_or_established_user,
+  LAST_VALUE(CASE WHEN (TIMESTAMP_DIFF(event_timestamp, user_first_touch_timestamp, DAY) < 7) OR (user_first_touch_timestamp IS NULL) THEN 'new' ELSE 'existing' END) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) AS new_or_established_user,
   -- Last recorded subcontinent for the user within the specified date range
-  LAST_VALUE(L.subcontinent) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as geo_sub_continent,
+  LAST_VALUE(L.subcontinent) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as geo_sub_continent,
   -- Last recorded country for the user within the specified date range
-  LAST_VALUE(L.country) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as geo_country,
+  LAST_VALUE(L.country) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as geo_country,
   -- Last recorded region for the user within the specified date range
-  LAST_VALUE(L.region) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as geo_region,
+  LAST_VALUE(L.region) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as geo_region,
   -- Last recorded city for the user within the specified date range
-  LAST_VALUE(L.city) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as geo_city,
+  LAST_VALUE(L.city) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as geo_city,
   -- Last recorded metro area for the user within the specified date range
-  LAST_VALUE(L.metro) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as geo_metro,
+  LAST_VALUE(L.metro) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as geo_metro,
   -- First recorded traffic source medium for the user within the specified date range
   FIRST_VALUE(T.traffic_source_medium) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp ASC) AS first_traffic_source_medium,
   -- First recorded traffic source name for the user within the specified date range
@@ -53,19 +53,19 @@ CREATE OR REPLACE TEMP TABLE user_dimensions_event_session_scoped as (
   -- Whether the user has signed in with a user ID within the specified date range
   MAX(CASE WHEN user_id IS NOT NULL THEN TRUE ELSE FALSE END) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp ASC) AS has_signed_in_with_user_id,
   -- Last recorded device category for the user within the specified date range
-  LAST_VALUE(device_category) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as device_category,
+  LAST_VALUE(device_category) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as device_category,
   -- Last recorded mobile brand name for the user within the specified date range
-  LAST_VALUE(device_mobile_brand_name) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as device_mobile_brand_name,
+  LAST_VALUE(device_mobile_brand_name) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as device_mobile_brand_name,
   -- Last recorded mobile model name for the user within the specified date range
-  LAST_VALUE(device_mobile_model_name) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as device_mobile_model_name,
+  LAST_VALUE(device_mobile_model_name) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as device_mobile_model_name,
   -- Last recorded device operating system for the user within the specified date range
-  LAST_VALUE(device_os) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as device_os,
+  LAST_VALUE(device_os) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as device_os,
   -- Last recorded device language for the user within the specified date range
-  LAST_VALUE(language) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) AS device_language,
+  LAST_VALUE(language) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) AS device_language,
   -- Last recorded web browser for the user within the specified date range
-  LAST_VALUE(device_web_browser) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as device_web_browser,
+  LAST_VALUE(device_web_browser) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as device_web_browser,
   -- Last recorded advertising ID for the user's device within the specified date range
-  LAST_VALUE(device_advertising_id) OVER(PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp DESC) as device_advertising_id
+  LAST_VALUE(device_advertising_id) OVER (PARTITION BY user_pseudo_id, input_date ORDER BY event_timestamp) as device_advertising_id
   FROM `{{mds_project_id}}.{{mds_dataset}}.event` as E
   INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.traffic_source` as T
   ON E.traffic_source_id = T.traffic_source_id
