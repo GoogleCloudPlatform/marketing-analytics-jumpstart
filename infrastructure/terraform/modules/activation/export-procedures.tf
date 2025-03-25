@@ -130,7 +130,7 @@ resource "google_bigquery_routine" "export_churn_propensity_procedure" {
 data "template_file" "lead_score_propensity_csv_export_query" {
   template = file("${local.source_root_dir}/templates/activation_user_import/lead_score_propensity_csv_export.sqlx")
   vars = {
-    ga4_stream_id = var.ga4_stream_id
+    ga4_stream_id = var.ga4_stream_id.0
     export_bucket = module.pipeline_bucket.name
   }
 }
