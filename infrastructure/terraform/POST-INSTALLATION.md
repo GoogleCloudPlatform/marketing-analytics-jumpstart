@@ -192,5 +192,22 @@ To manually start the data flow you must perform the following tasks:
     ## For training purposes, your dataset must always include at least 1,000 rows for tabular training data.
     SELECT COUNT(user_pseudo_id) FROM `churn_propensity.churn_propensity_training_full_dataset`;
     ```
+### Adjustment of the Dataform Scheduled Import Job
+The Dataform pipeline, by default, runs every two hours to import data from the GA4 export dataset. To optimize this schedule, consider the following adjustments:
+
+* GA4 Export Completion Time: Align the Dataform schedule with the typical completion time of your GA4 data export process.
+
+* Pipeline Cadence: Adjust the pipeline frequency based on your reporting and prediction needs. For instance, if intraday predictions are not required, reduce the cadence to a daily run. By reducing the number of pipeline runs, you will also reduce the operational costs of running the solution. This is configured by modifying the `daily_schedule` value within the `data-store` module's [main.tf](modules/data-store/main.tf) file.
+
+* Time Zone Alignment: Ensure the solution's time zone is consistent with your business operations by setting the `time_zone` Terraform variable. For example, to set the time zone to Stockholm, add the following line to your `terraform.tfvars` file:
+    ```
+    time_zone = "Europe/Stockholm"
+    ```
+**Example:** If your GA4 export usually finishes at 7 PM, schedule the Dataform pipeline to run daily at 7:30 PM, set the daily_schedule variable in the data-store module's [main.tf](modules/data-store/main.tf) file to `30 19 * * *`.
+
+To apply these changes, execute a Terraform apply targeting the dataform-workflow-prod module within the data_store module:
+```
+terraform apply -target=module.data_store[0].module.dataform-workflow-prod
+```
 
 Your Marketing Analytics Jumpstart solution is ready for daily operation. Plan for the days you want your model(s) to be trained, change the scheduler dates in the `config.yaml.tftpl` file or manually trigger training whenever you want. For more information, read the documentations in the [docs/ folder](../../docs/).
