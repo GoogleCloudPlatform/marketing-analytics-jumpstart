@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,10 +51,10 @@ resource "google_bigquery_table" "customer_lifetime_value_inference_preparation"
 }
 
 # This resource creates a BigQuery table named customer_lifetime_value_label 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "customer_lifetime_value_label" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.customer_lifetime_value_label.table_name
   description = local.config_bigquery.table.customer_lifetime_value_label.table_description
 
@@ -72,26 +72,8 @@ resource "google_bigquery_table" "customer_lifetime_value_label" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
-}
-
-# This resource creates a BigQuery table named purchase_propensity_inference_preparation 
-# in the dataset specified by google_bigquery_dataset.purchase_propensity.dataset_id.
-resource "google_bigquery_table" "purchase_propensity_inference_preparation" {
-  project     = google_bigquery_dataset.purchase_propensity.project
-  dataset_id  = google_bigquery_dataset.purchase_propensity.dataset_id
-  table_id    = local.config_bigquery.table.purchase_propensity_inference_preparation.table_name
-  description = local.config_bigquery.table.purchase_propensity_inference_preparation.table_description
-
-  # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
-  deletion_protection = false
-  labels = {
-    version = "prod"
-  }
-
-  # The schema attribute specifies the schema of the table. In this case, the schema is defined in the JSON file.
-  schema = file("${local.sql_dir}/schema/table/purchase_propensity_inference_preparation.json")
 }
 
 # This resource creates a BigQuery table named churn_propensity_inference_preparation 
@@ -130,36 +112,11 @@ resource "google_bigquery_table" "lead_score_propensity_inference_preparation" {
   schema = file("${local.sql_dir}/schema/table/lead_score_propensity_inference_preparation.json")
 }
 
-# This resource creates a BigQuery table named purchase_propensity_label 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
-resource "google_bigquery_table" "purchase_propensity_label" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
-  table_id    = local.config_bigquery.table.purchase_propensity_label.table_name
-  description = local.config_bigquery.table.purchase_propensity_label.table_description
-
-  # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
-  deletion_protection = false
-  labels = {
-    version = "prod"
-  }
-
-  # The schema attribute specifies the schema of the table. In this case, the schema is defined in the JSON file.
-  schema = file("${local.sql_dir}/schema/table/purchase_propensity_label.json")
-
-  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
-  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
-  lifecycle {
-    ignore_changes  = all
-    prevent_destroy = true
-  }
-}
-
 # This resource creates a BigQuery table named churn_propensity_label 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "churn_propensity_label" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.churn_propensity_label.table_name
   description = local.config_bigquery.table.churn_propensity_label.table_description
 
@@ -176,15 +133,15 @@ resource "google_bigquery_table" "churn_propensity_label" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named lead_score_propensity_label 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "lead_score_propensity_label" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.lead_score_propensity_label.table_name
   description = local.config_bigquery.table.lead_score_propensity_label.table_description
 
@@ -201,40 +158,15 @@ resource "google_bigquery_table" "lead_score_propensity_label" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
-  }
-}
-
-# This resource creates a BigQuery table named user_dimensions 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
-resource "google_bigquery_table" "user_dimensions" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
-  table_id    = local.config_bigquery.table.user_dimensions.table_name
-  description = local.config_bigquery.table.user_dimensions.table_description
-
-  # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
-  deletion_protection = false
-  labels = {
-    version = "prod"
-  }
-
-  # The schema attribute specifies the schema of the table. In this case, the schema is defined in the JSON file.
-  schema = file("${local.sql_dir}/schema/table/user_dimensions.json")
-
-  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
-  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
-  lifecycle {
-    ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_lifetime_dimensions 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_lifetime_dimensions" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_lifetime_dimensions.table_name
   description = local.config_bigquery.table.user_lifetime_dimensions.table_description
 
@@ -251,15 +183,15 @@ resource "google_bigquery_table" "user_lifetime_dimensions" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_lookback_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_lookback_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_lookback_metrics.table_name
   description = local.config_bigquery.table.user_lookback_metrics.table_description
 
@@ -276,15 +208,15 @@ resource "google_bigquery_table" "user_lookback_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_rolling_window_lifetime_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_rolling_window_lifetime_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_rolling_window_lifetime_metrics.table_name
   description = local.config_bigquery.table.user_rolling_window_lifetime_metrics.table_description
 
@@ -301,40 +233,15 @@ resource "google_bigquery_table" "user_rolling_window_lifetime_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
-  }
-}
-
-# This resource creates a BigQuery table named user_rolling_window_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
-resource "google_bigquery_table" "user_rolling_window_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
-  table_id    = local.config_bigquery.table.user_rolling_window_metrics.table_name
-  description = local.config_bigquery.table.user_rolling_window_metrics.table_description
-
-  # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
-  deletion_protection = false
-  labels = {
-    version = "prod"
-  }
-
-  # The schema attribute specifies the schema of the table. In this case, the schema is defined in the JSON file.
-  schema = file("${local.sql_dir}/schema/table/user_rolling_window_metrics.json")
-
-  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
-  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
-  lifecycle {
-    ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_rolling_window_lead_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_rolling_window_lead_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_rolling_window_lead_metrics.table_name
   description = local.config_bigquery.table.user_rolling_window_lead_metrics.table_description
 
@@ -351,15 +258,15 @@ resource "google_bigquery_table" "user_rolling_window_lead_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_scoped_lifetime_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_scoped_lifetime_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_scoped_lifetime_metrics.table_name
   description = local.config_bigquery.table.user_scoped_lifetime_metrics.table_description
 
@@ -376,15 +283,15 @@ resource "google_bigquery_table" "user_scoped_lifetime_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_scoped_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_scoped_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_scoped_metrics.table_name
   description = local.config_bigquery.table.user_scoped_metrics.table_description
 
@@ -401,15 +308,15 @@ resource "google_bigquery_table" "user_scoped_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_scoped_segmentation_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_scoped_segmentation_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_scoped_segmentation_metrics.table_name
   description = local.config_bigquery.table.user_scoped_segmentation_metrics.table_description
 
@@ -426,15 +333,15 @@ resource "google_bigquery_table" "user_scoped_segmentation_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_segmentation_dimensions 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_segmentation_dimensions" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_segmentation_dimensions.table_name
   description = local.config_bigquery.table.user_segmentation_dimensions.table_description
 
@@ -451,15 +358,15 @@ resource "google_bigquery_table" "user_segmentation_dimensions" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
 # This resource creates a BigQuery table named user_session_event_aggregated_metrics 
-# in the dataset specified by google_bigquery_dataset.feature_store.dataset_id.
+# in the dataset specified by var.feature_store_dataset_id.
 resource "google_bigquery_table" "user_session_event_aggregated_metrics" {
-  project     = google_bigquery_dataset.feature_store.project
-  dataset_id  = google_bigquery_dataset.feature_store.dataset_id
+  project     = var.feature_store_project_id
+  dataset_id  = var.feature_store_dataset_id
   table_id    = local.config_bigquery.table.user_session_event_aggregated_metrics.table_name
   description = local.config_bigquery.table.user_session_event_aggregated_metrics.table_description
 
@@ -476,31 +383,8 @@ resource "google_bigquery_table" "user_session_event_aggregated_metrics" {
   # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = true
+    #prevent_destroy = true
   }
 }
 
-# This resource creates a BigQuery table named predictions_placeholder
-# in the dataset specified by google_bigquery_dataset.purchase_propensity
-resource "google_bigquery_table" "purchase_propurchase_propensity_predictions_placeholder" {
-  project     = google_bigquery_dataset.purchase_propensity.project
-  dataset_id  = google_bigquery_dataset.purchase_propensity.dataset_id
-  table_id    = "predictions_placeholder"
-  description = "Dummy table to facilitate the creation of down stream dependent views"
-
-  # The deletion_protection attribute specifies whether the table should be protected from deletion. In this case, it's set to false, which means that the table can be deleted.
-  deletion_protection = false
-  labels = {
-    version = "prod"
-  }
-
-  # The schema attribute specifies the schema of the table. In this case, the schema is defined in the JSON file.
-  schema = file("${local.sql_dir}/schema/table/purchase_propensity_predictions_placeholder.json")
-
-  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore
-  # any changes to the table and will not attempt to update the table.
-  lifecycle {
-    ignore_changes  = all
-  }
-}
 
