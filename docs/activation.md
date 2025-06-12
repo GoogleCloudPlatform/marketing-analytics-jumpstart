@@ -169,12 +169,18 @@ Now you have a custom audience that is automatically updated as new activation e
 **Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering.
 
 ## Activation through Smart Bidding Strategy
-To activate purchase propensity predictions via [Smart Bidding Strategy](https://support.google.com/google-ads/answer/7065882), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use Google Ads strategies for [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
+To activate lead score propensity predictions via [Smart Bidding Strategy](https://support.google.com/google-ads/answer/7065882), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use Google Ads strategies for [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
 
-This also allows you to use [Search Ads 360 bid strategies](https://support.google.com/searchads/answer/6231813?hl=en)
+This also allows you to use [Search Ads 360 bid strategies](https://support.google.com/searchads/answer/6231813?hl=en).
+
+**DISCLAIMER:**
+
+**1. If you are using a bidding strategy for branded Search campigns (or any other lower funnel), this bidding strategy is not best suited.**
+
+**2. If you are bidding towards online purchases which are tracked via [GA4 Key conversion events](https://support.google.com/analytics/answer/12844695?hl=en), this bidding strategy is not best suited.**
 
 ### Configure translation values
-This section explains how to configure the translation of purchase propensity predictions into monetary values for Smart Bidding.
+This section explains how to configure the translation of event propensity predictions into monetary values for Smart Bidding.
 
 #### Understanding the Configuration File:
 The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configuration.jsonl) file controls how predicted deciles are converted into monetary values. It contains two key fields:
@@ -186,7 +192,7 @@ The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configurati
 
 1. Set `value_norm`:
     - Open the [vbb_activation_configuration.jsonl](../templates/vbb_activation_configuration.jsonl) file.
-    - Locate the entry where `"activation_type":"purchase-propensity"`.
+    - Locate the entry where `"activation_type":"event-propensity"`.
     - Modify the `value_norm` field to reflect the average transaction value specific to your GA4 property. For example, if your average transaction value is $200, set `value_norm` to 200.
 
 1. Set `decile_multiplier`:s:
