@@ -38,11 +38,12 @@ For each use case, a corresponding SQL query template dictates how prediction va
 | Use Case |	Query Template |
 | -------- | --------- |
 | Purchase Propensity | [purchase_propensity_query_template.sqlx](../templates/activation_query/purchase_propensity_query_template.sqlx)|
-| Purchase Propensity for Smart Bidding | [purchase_propensity_vbb_query_template.sqlx](../templates/activation_query/purchase_propensity_vbb_query_template.sqlx)|
 | Customer Lifetime Value  | [cltv_query_template.sqlx](../templates/activation_query/cltv_query_template.sqlx) |
 | Demographic Audience Segmentation | [audience_segmentation_query_template.sqlx](../templates/activation_query/audience_segmentation_query_template.sqlx) |
 | Interest based Audience Segmentation | [auto_audience_segmentation_query_template.sqlx](../templates/activation_query/auto_audience_segmentation_query_template.sqlx) |
 | Churn Propensity | [churn_propensity_query_template.sqlx](../templates/activation_query/churn_propensity_query_template.sqlx)|
+| Lead Score Propensity | [lead_score_propensity_query_template.sqlx](../templates/activation_query/purchase_propensity_query_template.sqlx)|
+| Lead Score Propensity for Smart Bidding | [lead_score_propensity_vbb_query_template.sqlx](../templates/activation_query/lead_score_propensity_vbb_query_template.sqlx)|
 
 **Note:** The dynamic fields in the query template need to be prefixed with `user_prop_` or `event_param_` prefix inorder for the activation process to parse the value into measurement protocol payload.
 
