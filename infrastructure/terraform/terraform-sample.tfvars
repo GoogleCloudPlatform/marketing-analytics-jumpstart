@@ -64,7 +64,7 @@ pipeline_configuration = {
     feature-creation-purchase-propensity = {
       execution = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -92,7 +92,7 @@ pipeline_configuration = {
     feature-creation-lead-score-propensity = {
       execution = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -111,12 +111,12 @@ pipeline_configuration = {
     purchase_propensity = {
       training = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
       prediction = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
@@ -178,12 +178,12 @@ pipeline_configuration = {
     lead_score_propensity = {
       training = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
       prediction = {
         schedule = {
-          state                    = "ACTIVE"
+          state                    = "PAUSED"
         }
       }
     }
