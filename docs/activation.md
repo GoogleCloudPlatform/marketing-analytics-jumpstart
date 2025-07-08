@@ -111,7 +111,25 @@ The following changes will enable your system to send activation data (presumabl
 
 **Note:** There is no need to modify the Dataflow job to use the new queries and send activation data to Google Analytics 4.
 
-## Activation using User Data Import
+## Build custom audiences in GA4
+**Note:**  It can take up to 24 hours after sending data through the Measurement Protocol before the activation user data becomes available in GA4.
+
+To build your custom audience, follow the [Create an audience guide](https://support.google.com/analytics/answer/9267572?#create-an-audience) to navigate to the "Build new audience" view and select **Create a custom audience** option. 
+![alt text](images/build_audience.png)
+1. Choose the relevant custom event you want to target (e.g., `maj_purchase_propensity_30_15`)
+1. Further refine your audience by selecting the custom user property that matches the use case (e.g., `MAJ Purchase Propensity p_p_decile`) and choose the specific user property values to include. **Note:** Decile values are in descending order, with the first decile (value: `1`) containing users with the highest propensity or lifetime value.
+1. Give your audience a clear and descriptive name.
+1. Click the save button to create the custom audience.
+
+Now you have a custom audience that is automatically updated as new activation events are sent by the activation process. This custom audience can then be used for targeted remarketing campaigns in Google Ads or other platforms. Follow the [Share audiences guide](https://support.google.com/analytics/answer/12800258) to learn how to export your audience for use in external platforms.
+
+**Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering.
+
+## Alternative 1 - Activation through Google Ads Audience Manager Manual Import and Google Tag Dynamic Remarketing events
+
+
+
+## Alternative 2 - Activation using User Data Import
 GA4 [user-data import](https://support.google.com/analytics/answer/10071143?hl=en) is a file based batch import manually initiated through the GA4 console. Do the following steps for the user-data import.
 
 - Export the prediction data by calling a stored procedure. For each of the use cases the corresponde procedure call are listed in the following table:
@@ -155,21 +173,7 @@ GA4 [user-data import](https://support.google.com/analytics/answer/10071143?hl=e
 
 7. Choose **Import**
 
-## Build custom audiences in GA4
-**Note:**  It can take up to 24 hours after sending data through the Measurement Protocol before the activation user data becomes available in GA4.
-
-To build your custom audience, follow the [Create an audience guide](https://support.google.com/analytics/answer/9267572?#create-an-audience) to navigate to the "Build new audience" view and select **Create a custom audience** option. 
-![alt text](images/build_audience.png)
-1. Choose the relevant custom event you want to target (e.g., `maj_purchase_propensity_30_15`)
-1. Further refine your audience by selecting the custom user property that matches the use case (e.g., `MAJ Purchase Propensity p_p_decile`) and choose the specific user property values to include. **Note:** Decile values are in descending order, with the first decile (value: `1`) containing users with the highest propensity or lifetime value.
-1. Give your audience a clear and descriptive name.
-1. Click the save button to create the custom audience.
-
-Now you have a custom audience that is automatically updated as new activation events are sent by the activation process. This custom audience can then be used for targeted remarketing campaigns in Google Ads or other platforms. Follow the [Share audiences guide](https://support.google.com/analytics/answer/12800258) to learn how to export your audience for use in external platforms.
-
-**Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering.
-
-## Activation through Smart Bidding Strategy
+## Alternative 3 - Activation through Smart Bidding Strategy
 To activate lead score propensity predictions via [Smart Bidding Strategy](https://support.google.com/google-ads/answer/7065882), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use Google Ads strategies for [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
 
 This also allows you to use [Search Ads 360 bid strategies](https://support.google.com/searchads/answer/6231813?hl=en).
