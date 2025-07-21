@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "ma_components"}]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12.0"
+python = ">=3.13,<3.14"
 pip = "23.3.2"
 kfp = "2.4.0"
 ## Fixing this error: https://stackoverflow.com/questions/76175487/sudden-importerror-cannot-import-name-appengine-from-requests-packages-urlli
