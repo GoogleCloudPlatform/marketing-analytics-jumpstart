@@ -91,7 +91,7 @@ pytest = "7.4.4"
 pytest-env = "0.8.2"
 pytest-mock = "3.14.0"
 pytest-variables = {extras = ["yaml"], version = "^2.0.0"}
-coverage = {extras = ["toml"], version = "^6.5.0"}
+coverage = {extras = ["toml"], version = "^7.0.0"}
 pytest-cov = "^4.0.0"
 pytest-xdist = "^3.0.2"
 
