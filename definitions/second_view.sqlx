@@ -1,0 +1,6 @@
+config { type: "view" }
+
+-- Use the ref() function to manage dependencies.
+-- Learn more about ref() and other built in functions here: https://cloud.google.com/dataform/docs/dataform-core
+
+SELECT test from ${ref("first_view")}
