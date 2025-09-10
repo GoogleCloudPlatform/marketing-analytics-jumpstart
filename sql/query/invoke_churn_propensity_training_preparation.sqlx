@@ -57,14 +57,14 @@ SET churners = (SELECT COUNT(DISTINCT user_pseudo_id)
                 );
 
 -- Setting Training Dates
--- If there are churners in the training set, then keep the user-defined dates, or else set
--- the start and end dates instead.
+-- If there are churners in the training set, then keep the calculated dates, or else set
+-- the start and end dates to a fixed interval preventing `train_start_date` and `train_end_date` from being NULL.
 IF churners > 0 THEN
-    SET train_start_date =  GREATEST(train_start_date, min_date);
-    SET train_end_date = LEAST(train_end_date, max_date);
-ELSE
     SET train_start_date =  min_date;
     SET train_end_date = max_date;
+ELSE
+    SET train_start_date =  DATE_SUB(CURRENT_DATE(), INTERVAL 3 YEAR);
+    SET train_end_date = DATE_SUB(CURRENT_DATE(), INTERVAL 5 DAY);
 END IF;
 
 -- Finally, the script calls a stored procedure, passing the adjusted training dates and split numbers as arguments. 

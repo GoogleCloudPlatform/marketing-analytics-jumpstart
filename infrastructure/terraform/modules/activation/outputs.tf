@@ -16,3 +16,8 @@ output "trigger_topic" {
   description = "activation trigger topic"
   value       = google_pubsub_topic.activation_trigger.name
 }
+
+output "configuration_table_name" {
+  description = "smart bidding configuration table name"
+  value       = split("/", google_bigquery_table.smart_bidding_configuration.id)[5]
+}

@@ -62,6 +62,7 @@ class ActivationOptions(GoogleCloudOptions):
         - purchase-propensity-15-15
         - purchase-propensity-15-7
         - churn-propensity-30-15
+        - lead-score-propensity-5-1
       activation_type_configuration: The GCS path to the configuration file for all activation types.
     """
 
@@ -110,6 +111,7 @@ class ActivationOptions(GoogleCloudOptions):
         purchase-propensity-15-15
         purchase-propensity-15-7
         churn-propensity-30-15
+        lead-score-propensity-5-1
       ''',
       required=True
     )
@@ -384,7 +386,7 @@ class TransformToPayload(beam.DoFn):
     if element['user_id']:
       result['user_id'] = element['user_id']
     result['timestamp_micros'] = self.date_to_micro(element["inference_date"])
-    result['nonPersonalizedAds'] = False
+    result['non_personalized_ads'] = False
     result['consent'] = self.consent_obj
     result['user_properties'] = self.extract_user_properties(element)
     result['events'] = [self.extract_event(element)]

@@ -32,7 +32,7 @@ locals {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "17.0.0"
+  version = "18.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
@@ -72,7 +72,7 @@ resource "null_resource" "check_bigquery_api" {
 
 module "dashboard_bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id                 = local.dashboard_dataset_name
   dataset_name               = local.dashboard_dataset_name
@@ -95,7 +95,7 @@ module "dashboard_bigquery" {
 
 module "load_bucket" {
   source        = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version       = "6.1.0"
+  version       = "9.0.1"
   project_id    = module.project_services.project_id
   name          = "maj-monitor-${module.project_services.project_id}"
   location      = var.location
@@ -163,7 +163,7 @@ locals {
 
 module "log_export_bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id                 = local.log_dataset_name
   dataset_name               = local.log_dataset_name
@@ -250,12 +250,36 @@ data "template_file" "looker_studio_dashboard_url" {
     mds_ga4_product_dataset        = "marketing_ga4_v1_${var.mds_dataset_suffix}"
     mds_ga4_base_dataset           = "marketing_ga4_base_${var.mds_dataset_suffix}"
     mds_ads_product_dataset        = "marketing_ads_v1_${var.mds_dataset_suffix}"
+    mds_ads_base_dataset           = "marketing_ads_base_${var.mds_dataset_suffix}"
     logs_dataset                   = module.log_export_bigquery.bigquery_dataset.dataset_id
     aggregated_vbb_dataset         = "aggregated_vbb"
     aggregated_predictions_dataset = "aggregated_predictions"
     gemini_insights_dataset        = "gemini_insights"
+    purchase_propensity_dataset    = var.purchase_propensity_dataset_id
     dataform_log_table_id          = local.dataform_log_table_id
     vertex_pipelines_log_table_id  = local.vertex_pipelines_log_table_id
     dataflow_log_table_id          = local.dataflow_log_table_id
+  }
+}
+
+data "template_file" "purchase_propensity_prediction_stats_query" {
+  template = file("${local.source_root_dir}/templates/purchase_propensity_smart_bidding_view.sql.tpl")
+  vars = {
+    project_id                        = var.feature_store_project_id
+    purchase_propensity_dataset       = var.purchase_propensity_dataset_id
+    activation_dataset                = "activation"
+    smart_bidding_configuration_table = var.smart_bidding_configuration_table
+  }
+}
+
+resource "google_bigquery_table" "purchase_propensity_prediction_stats" {
+  project             = var.feature_store_project_id
+  dataset_id          = var.purchase_propensity_dataset_id
+  table_id            = "purchase_propensity_prediction_stats"
+  deletion_protection = false
+
+  view {
+    query          = data.template_file.purchase_propensity_prediction_stats_query.rendered
+    use_legacy_sql = false
   }
 }

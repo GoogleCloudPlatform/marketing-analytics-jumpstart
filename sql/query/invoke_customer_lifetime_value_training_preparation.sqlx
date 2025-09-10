@@ -54,17 +54,18 @@ SET validation_split_end_number = {{validation_split_end_number}};
 -- IF there are no users in the time interval selected, then set "train_start_date" and "train_end_date" as "max_date" and "min_date".
 SET purchasers = (SELECT COUNT(DISTINCT user_pseudo_id) 
                 FROM `{{mds_project_id}}.{{mds_dataset}}.event`
-                WHERE event_date BETWEEN train_start_date AND train_end_date
+                WHERE event_date BETWEEN min_date AND max_date
                 );
 
--- If there are purchasers no changes to the train_start_date and train_end_date
--- Else, expand the interval, hopefully a purchaser will be in the interval
+-- Setting Training Dates
+-- If there are churners in the training set, then keep the calculated dates, or else set
+-- the start and end dates to a fixed interval preventing `train_start_date` and `train_end_date` from being NULL.
 IF purchasers > 0 THEN
-    SET train_start_date =  train_start_date;
-    SET train_end_date = train_end_date;
-ELSE
     SET train_start_date =  min_date;
     SET train_end_date = max_date;
+ELSE
+    SET train_start_date =  DATE_SUB(CURRENT_DATE(), INTERVAL 3 YEAR);
+    SET train_end_date = DATE_SUB(CURRENT_DATE(), INTERVAL 5 DAY);
 END IF;
 
 -- Finally, the script calls a stored procedure, passing the adjusted training dates and split numbers as arguments. This stored procedure likely handles the actual data preparation for the model.

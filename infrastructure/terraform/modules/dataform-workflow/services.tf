@@ -15,7 +15,7 @@
 # https://registry.terraform.io/modules/terraform-google-modules/project-factory/google/latest/submodules/project_services
 module "data_processing_project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "17.0.0"
+  version = "18.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
@@ -37,108 +37,8 @@ module "data_processing_project_services" {
   ]
 }
 
-
-# This resource executes gcloud commands to check whether the BigQuery API is enabled.
-# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_bigquery_api" {
-  provisioner "local-exec" {
-    command = <<-EOT
-    COUNTER=0
-    MAX_TRIES=100
-    while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "bigquery.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
-    do
-      sleep 6
-      printf "."
-      COUNTER=$((COUNTER + 1))
-    done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "bigquery api is not enabled, terraform can not continue!"
-      exit 1
-    fi
-    sleep 20
-    EOT
-  }
-
-  depends_on = [
-    module.data_processing_project_services
-  ]
-}
-
-# This resource executes gcloud commands to check whether the Workflows API is enabled.
-# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_workflows_api" {
-  provisioner "local-exec" {
-    command = <<-EOT
-    COUNTER=0
-    MAX_TRIES=100
-    while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "workflows.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
-    do
-      sleep 6
-      printf "."
-      COUNTER=$((COUNTER + 1))
-    done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "workflows api is not enabled, terraform can not continue!"
-      exit 1
-    fi
-    sleep 20
-    EOT
-  }
-
-  depends_on = [
-    module.data_processing_project_services
-  ]
-}
-
-
-# This resource executes gcloud commands to check whether the Dataform API is enabled.
-# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_dataform_api" {
-  provisioner "local-exec" {
-    command = <<-EOT
-    COUNTER=0
-    MAX_TRIES=100
-    while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "dataform.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
-    do
-      sleep 6
-      printf "."
-      COUNTER=$((COUNTER + 1))
-    done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "dataform api is not enabled, terraform can not continue!"
-      exit 1
-    fi
-    sleep 20
-    EOT
-  }
-
-  depends_on = [
-    module.data_processing_project_services
-  ]
-}
-
-
-# This resource executes gcloud commands to check whether the Cloud Scheduler API is enabled.
-# Since enabling APIs can take a few seconds, we need to make the deployment wait until the API is enabled before resuming.
-resource "null_resource" "check_cloudscheduler_api" {
-  provisioner "local-exec" {
-    command = <<-EOT
-    COUNTER=0
-    MAX_TRIES=100
-    while ! gcloud services list --project=${module.data_processing_project_services.project_id} | grep -i "cloudscheduler.googleapis.com" && [ $COUNTER -lt $MAX_TRIES ]
-    do
-      sleep 6
-      printf "."
-      COUNTER=$((COUNTER + 1))
-    done
-    if [ $COUNTER -eq $MAX_TRIES ]; then
-      echo "cloud scheduler api is not enabled, terraform can not continue!"
-      exit 1
-    fi
-    sleep 20
-    EOT
-  }
-
+resource "time_sleep" "wait_for_project_services_activation" {
+  create_duration = "60s"
   depends_on = [
     module.data_processing_project_services
   ]

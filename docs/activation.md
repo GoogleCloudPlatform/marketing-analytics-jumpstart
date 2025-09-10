@@ -38,11 +38,12 @@ For each use case, a corresponding SQL query template dictates how prediction va
 | Use Case |	Query Template |
 | -------- | --------- |
 | Purchase Propensity | [purchase_propensity_query_template.sqlx](../templates/activation_query/purchase_propensity_query_template.sqlx)|
-| Purchase Propensity for Smart Bidding | [purchase_propensity_vbb_query_template.sqlx](../templates/activation_query/purchase_propensity_vbb_query_template.sqlx)|
 | Customer Lifetime Value  | [cltv_query_template.sqlx](../templates/activation_query/cltv_query_template.sqlx) |
 | Demographic Audience Segmentation | [audience_segmentation_query_template.sqlx](../templates/activation_query/audience_segmentation_query_template.sqlx) |
 | Interest based Audience Segmentation | [auto_audience_segmentation_query_template.sqlx](../templates/activation_query/auto_audience_segmentation_query_template.sqlx) |
 | Churn Propensity | [churn_propensity_query_template.sqlx](../templates/activation_query/churn_propensity_query_template.sqlx)|
+| Lead Score Propensity | [lead_score_propensity_query_template.sqlx](../templates/activation_query/purchase_propensity_query_template.sqlx)|
+| Lead Score Propensity for Smart Bidding | [lead_score_propensity_vbb_query_template.sqlx](../templates/activation_query/lead_score_propensity_vbb_query_template.sqlx)|
 
 **Note:** The dynamic fields in the query template need to be prefixed with `user_prop_` or `event_param_` prefix inorder for the activation process to parse the value into measurement protocol payload.
 
@@ -110,7 +111,25 @@ The following changes will enable your system to send activation data (presumabl
 
 **Note:** There is no need to modify the Dataflow job to use the new queries and send activation data to Google Analytics 4.
 
-## Activation using User Data Import
+## Build custom audiences in GA4
+**Note:**  It can take up to 24 hours after sending data through the Measurement Protocol before the activation user data becomes available in GA4.
+
+To build your custom audience, follow the [Create an audience guide](https://support.google.com/analytics/answer/9267572?#create-an-audience) to navigate to the "Build new audience" view and select **Create a custom audience** option. 
+![alt text](images/build_audience.png)
+1. Choose the relevant custom event you want to target (e.g., `maj_purchase_propensity_30_15`)
+1. Further refine your audience by selecting the custom user property that matches the use case (e.g., `MAJ Purchase Propensity p_p_decile`) and choose the specific user property values to include. **Note:** Decile values are in descending order, with the first decile (value: `1`) containing users with the highest propensity or lifetime value.
+1. Give your audience a clear and descriptive name.
+1. Click the save button to create the custom audience.
+
+Now you have a custom audience that is automatically updated as new activation events are sent by the activation process. This custom audience can then be used for targeted remarketing campaigns in Google Ads or other platforms. Follow the [Share audiences guide](https://support.google.com/analytics/answer/12800258) to learn how to export your audience for use in external platforms.
+
+**Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering.
+
+## Alternative 1 - Activation through Google Ads Audience Manager Manual Import and Google Tag Dynamic Remarketing events
+
+
+
+## Alternative 2 - Activation using User Data Import
 GA4 [user-data import](https://support.google.com/analytics/answer/10071143?hl=en) is a file based batch import manually initiated through the GA4 console. Do the following steps for the user-data import.
 
 - Export the prediction data by calling a stored procedure. For each of the use cases the corresponde procedure call are listed in the following table:
@@ -154,27 +173,19 @@ GA4 [user-data import](https://support.google.com/analytics/answer/10071143?hl=e
 
 7. Choose **Import**
 
-## Build custom audiences in GA4
-**Note:**  It can take up to 24 hours after sending data through the Measurement Protocol before the activation user data becomes available in GA4.
+## Alternative 3 - Activation through Smart Bidding Strategy
+To activate lead score propensity predictions via [Smart Bidding Strategy](https://support.google.com/google-ads/answer/7065882), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use Google Ads strategies for [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
 
-To build your custom audience, follow the [Create an audience guide](https://support.google.com/analytics/answer/9267572?#create-an-audience) to navigate to the "Build new audience" view and select **Create a custom audience** option. 
-![alt text](images/build_audience.png)
-1. Choose the relevant custom event you want to target (e.g., `maj_purchase_propensity_30_15`)
-1. Further refine your audience by selecting the custom user property that matches the use case (e.g., `MAJ Purchase Propensity p_p_decile`) and choose the specific user property values to include. **Note:** Decile values are in descending order, with the first decile (value: `1`) containing users with the highest propensity or lifetime value.
-1. Give your audience a clear and descriptive name.
-1. Click the save button to create the custom audience.
+This also allows you to use [Search Ads 360 bid strategies](https://support.google.com/searchads/answer/6231813?hl=en).
 
-Now you have a custom audience that is automatically updated as new activation events are sent by the activation process. This custom audience can then be used for targeted remarketing campaigns in Google Ads or other platforms. Follow the [Share audiences guide](https://support.google.com/analytics/answer/12800258) to learn how to export your audience for use in external platforms.
+**DISCLAIMER:**
 
-**Important:** If you are using User Data Import only use the customer user properties and remove the custom event filtering.
+**1. If you are using a bidding strategy for branded Search campigns (or any other lower funnel), this bidding strategy is not best suited.**
 
-## Activation through Smart Bidding Strategy
-To activate purchase propensity predictions via [Smart Bidding Strategy](https://support.google.com/google-ads/answer/7065882), we translate predicted decile segments into monetary values, sent as conversion events to GA4. This allows you to use Google Ads strategies for [maximizing conversion value](https://support.google.com/google-ads/answer/7684216) and [target ROAS](https://support.google.com/google-ads/answer/6268637) with custom event values as the target.
-
-This also allows you to use [Search Ads 360 bid strategies](https://support.google.com/searchads/answer/6231813?hl=en)
+**2. If you are bidding towards online purchases which are tracked via [GA4 Key conversion events](https://support.google.com/analytics/answer/12844695?hl=en), this bidding strategy is not best suited.**
 
 ### Configure translation values
-This section explains how to configure the translation of purchase propensity predictions into monetary values for Smart Bidding.
+This section explains how to configure the translation of event propensity predictions into monetary values for Smart Bidding.
 
 #### Understanding the Configuration File:
 The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configuration.jsonl) file controls how predicted deciles are converted into monetary values. It contains two key fields:
@@ -186,7 +197,7 @@ The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configurati
 
 1. Set `value_norm`:
     - Open the [vbb_activation_configuration.jsonl](../templates/vbb_activation_configuration.jsonl) file.
-    - Locate the entry where `"activation_type":"purchase-propensity"`.
+    - Locate the entry where `"activation_type":"event-propensity"`.
     - Modify the `value_norm` field to reflect the average transaction value specific to your GA4 property. For example, if your average transaction value is $200, set `value_norm` to 200.
 
 1. Set `decile_multiplier`:s:
@@ -194,6 +205,45 @@ The [vbb_activation_configuration.jsonl](../templates/vbb_activation_configurati
     - A higher multiplier signifies a higher value. For example, a multiplier of 3.5 for decile 1 means you value users in that decile 3.5 times more than the average customer.
 
 **Important**: To exclude lower-value deciles from smart bidding, set their decile_multiplier to 0. This prevents predictions for those deciles from being sent to GA4.
+
+**Calculate multiplier example:**
+The following example provide a way to use quantative analysis to derived the multiplier value for each decile. The query uses the prediction result table, which contains purchase propensity predictions and associated user data.
+```sql
+WITH
+  base AS (
+  SELECT
+    user_ltv_revenue,
+    NTILE(10) OVER (ORDER BY prediction_prob DESC) AS p_p_decile,
+  FROM
+    `purchase_propensity.predictions_YYYY_MM_DDTHH_mm_ss_xxxx_xxx_view`),
+  segments_ltv AS (
+  SELECT
+    SUM(user_ltv_revenue) AS seg_total_revenue,
+    AVG(user_ltv_revenue) AS avg_seg_revenue,
+    p_p_decile
+  FROM
+    base
+  GROUP BY
+    p_p_decile),
+  total_avg AS (
+  SELECT
+    AVG(user_ltv_revenue) AS avg_revenue
+  FROM
+    base
+  WHERE
+    p_p_decile IS NOT NULL)
+SELECT
+  sg.*,
+  sg.avg_seg_revenue/t.avg_revenue AS multiplier
+FROM
+  segments_ltv AS sg,
+  total_avg AS t
+ORDER BY
+  sg.p_p_decile ASC
+```
+The SQL query calculates the `multiplier` by dividing `avg_seg_revenue` (average revenue per decile) by `avg_revenue` (overall average revenue)
+
+In the example `user_ltv_revenue` field is used, but you can replace it with other relevant numeric metrics depending on their business goals. For example, if the goal is to maximize conversions, the query could use a conversion value metric instead. The key is to choose a metric that aligns with the desired optimization strategy.
 
 **Example:**
 ```json

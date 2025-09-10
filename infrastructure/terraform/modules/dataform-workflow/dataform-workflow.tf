@@ -21,11 +21,11 @@ locals {
 
 # This resources creates a workflow that runs the Dataform incremental pipeline.
 resource "google_workflows_workflow" "dataform-incremental-workflow" {
-  project         = null_resource.check_workflows_api.id != "" ? module.data_processing_project_services.project_id : var.project_id
+  project         = module.data_processing_project_services.project_id
   name            = "dataform-${var.property_id}-incremental"
   region          = var.region
   description     = "Dataform incremental workflow for ${var.property_id} ga4 property"
-  service_account = google_service_account.workflow-dataform.email
+  service_account = module.workflow-dataform.email
   # The source code includes the following steps:
   # Init: This step initializes the workflow by assigning the value of the dataform_repository_id variable to the repository variable.
   # Create Compilation Result: This step creates a compilation result for the Dataform repository. The compilation result includes the git commit hash and the code compilation configuration.
@@ -62,7 +62,7 @@ main:
         auth:
           type: OAuth2
         headers:
-          User-Agent: "cloud-solutions/marketing-analytics-jumpstart-usage-v1"
+          User-Agent: "cloud-solutions/mas-marketing-analytics-jumpstart-usage-v1"
         body:
           compilationResult: $${compilationResult.body.name}
           invocationConfig:${local.tagSection}
@@ -71,4 +71,6 @@ main:
   - complete:
       return: $${workflowInvocation.body.name}
 EOF
+
+depends_on = [time_sleep.wait_for_project_services_activation]
 }

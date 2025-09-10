@@ -68,20 +68,6 @@ CREATE OR REPLACE TEMP TABLE future_revenue_per_user AS (
   GROUP BY user_pseudo_id
 );
 
--- All users in the platform
-CREATE OR REPLACE TEMP TABLE events_users_days as (
-  SELECT DISTINCT
-  -- User's unique identifier
-  Users.user_pseudo_id
-  FROM `{{mds_project_id}}.{{mds_dataset}}.event` Users 
-  INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.device` as D
-  ON Users.device_type_id = D.device_type_id
-  WHERE Users.ga_session_id IS NOT NULL
-  AND D.device_os IS NOT NULL
-  -- Ensure events fall within the defined date range
-  AND Users.event_date BETWEEN input_date AND end_date
-);
-
 CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
   SELECT DISTINCT
     -- Current timestamp of the processing
@@ -91,13 +77,13 @@ CREATE OR REPLACE TEMP TABLE DataForTargetTable AS
     -- User's pseudo ID
     A.user_pseudo_id,
     -- Predicted LTV revenue for the next 30 days
-    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_30, 0.0) - COALESCE(B.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_30_days,
+    GREATEST(0.0, COALESCE(COALESCE(A.user_ltv_revenue_1_30, 0.0) - COALESCE(A.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_30_days,
     -- Predicted LTV revenue for the next 90 days
-    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_90, 0.0) - COALESCE(B.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_90_days,
+    GREATEST(0.0, COALESCE(COALESCE(A.user_ltv_revenue_1_90, 0.0) - COALESCE(A.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_90_days,
     -- Predicted LTV revenue for the next 180 days
-    GREATEST(0.0, COALESCE(COALESCE(B.user_ltv_revenue_1_180, 0.0) - COALESCE(B.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_180_days
-    FROM events_users_days AS A
-    LEFT JOIN future_revenue_per_user AS B
+    GREATEST(0.0, COALESCE(COALESCE(A.user_ltv_revenue_1_180, 0.0) - COALESCE(A.user_ltv_revenue_today, 0.0), 0.0)) AS pltv_revenue_180_days
+    FROM future_revenue_per_user AS A
+    INNER JOIN `{{mds_project_id}}.{{mds_dataset}}.latest_event_per_user_last_72_hours` AS B
     ON A.user_pseudo_id = B.user_pseudo_id;
 
 MERGE `{{project_id}}.{{dataset}}.{{insert_table}}` I

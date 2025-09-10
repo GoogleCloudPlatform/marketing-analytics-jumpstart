@@ -109,7 +109,14 @@ CREATE OR REPLACE TEMP TABLE future_revenue_per_user AS (
 );
 
 -- Insert data into the target table
-INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}`
+INSERT INTO `{{project_id}}.{{dataset}}.{{insert_table}}` (
+  processed_timestamp,
+  feature_date,
+  user_pseudo_id,
+  pltv_revenue_30_days,
+  pltv_revenue_90_days,
+  pltv_revenue_180_days
+)
   SELECT DISTINCT
     -- Current timestamp of the processing
     CURRENT_TIMESTAMP() AS processed_timestamp,

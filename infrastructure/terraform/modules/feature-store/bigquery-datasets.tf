@@ -16,7 +16,7 @@
 resource "google_bigquery_dataset" "feature_store" {
   dataset_id    = local.config_bigquery.dataset.feature_store.name
   friendly_name = local.config_bigquery.dataset.feature_store.friendly_name
-  project       = null_resource.check_bigquery_api.id != "" ? local.feature_store_project_id : var.project_id
+  project       = local.feature_store_project_id
   description   = local.config_bigquery.dataset.feature_store.description
   location      = local.config_bigquery.dataset.feature_store.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -42,7 +42,7 @@ resource "google_bigquery_dataset" "feature_store" {
 resource "google_bigquery_dataset" "purchase_propensity" {
   dataset_id    = local.config_bigquery.dataset.purchase_propensity.name
   friendly_name = local.config_bigquery.dataset.purchase_propensity.friendly_name
-  project       = null_resource.check_bigquery_api.id != "" ? local.purchase_propensity_project_id : local.feature_store_project_id
+  project       = local.purchase_propensity_project_id
   description   = local.config_bigquery.dataset.purchase_propensity.description
   location      = local.config_bigquery.dataset.purchase_propensity.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -68,7 +68,7 @@ resource "google_bigquery_dataset" "purchase_propensity" {
 resource "google_bigquery_dataset" "churn_propensity" {
   dataset_id    = local.config_bigquery.dataset.churn_propensity.name
   friendly_name = local.config_bigquery.dataset.churn_propensity.friendly_name
-  project       = null_resource.check_bigquery_api.id != "" ? local.churn_propensity_project_id : local.feature_store_project_id
+  project       = local.churn_propensity_project_id
   description   = local.config_bigquery.dataset.churn_propensity.description
   location      = local.config_bigquery.dataset.churn_propensity.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -90,11 +90,37 @@ resource "google_bigquery_dataset" "churn_propensity" {
   }
 }
 
+# This resource creates a BigQuery dataset called `lead_score_propensity`.
+resource "google_bigquery_dataset" "lead_score_propensity" {
+  dataset_id    = local.config_bigquery.dataset.lead_score_propensity.name
+  friendly_name = local.config_bigquery.dataset.lead_score_propensity.friendly_name
+  project       = local.lead_score_propensity_project_id
+  description   = local.config_bigquery.dataset.lead_score_propensity.description
+  location      = local.config_bigquery.dataset.lead_score_propensity.location
+  # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
+  # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.feature_store.max_time_travel_hours configuration.
+  max_time_travel_hours = local.config_bigquery.dataset.lead_score_propensity.max_time_travel_hours
+  # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
+  # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
+  delete_contents_on_destroy = false
+
+  labels = {
+    version = "prod"
+  }
+
+  # The lifecycle block allows you to configure the lifecycle of the dataset. 
+  # In this case, the ignore_changes attribute is set to all, which means that 
+  # Terraform will ignore any changes to the dataset and will not attempt to update the dataset.
+  lifecycle {
+    ignore_changes = all
+  }
+}
+
 # This resource creates a BigQuery dataset called `customer_lifetime_value`.
 resource "google_bigquery_dataset" "customer_lifetime_value" {
   dataset_id    = local.config_bigquery.dataset.customer_lifetime_value.name
   friendly_name = local.config_bigquery.dataset.customer_lifetime_value.friendly_name
-  project       = null_resource.check_bigquery_api.id != "" ? local.customer_lifetime_value_project_id : local.feature_store_project_id
+  project       = local.customer_lifetime_value_project_id
   description   = local.config_bigquery.dataset.customer_lifetime_value.description
   location      = local.config_bigquery.dataset.customer_lifetime_value.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -120,7 +146,7 @@ resource "google_bigquery_dataset" "customer_lifetime_value" {
 resource "google_bigquery_dataset" "audience_segmentation" {
   dataset_id    = local.config_bigquery.dataset.audience_segmentation.name
   friendly_name = local.config_bigquery.dataset.audience_segmentation.friendly_name
-  project       = null_resource.check_bigquery_api.id != "" ? local.audience_segmentation_project_id : local.feature_store_project_id
+  project       = local.audience_segmentation_project_id
   description   = local.config_bigquery.dataset.audience_segmentation.description
   location      = local.config_bigquery.dataset.audience_segmentation.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -146,7 +172,7 @@ resource "google_bigquery_dataset" "audience_segmentation" {
 resource "google_bigquery_dataset" "auto_audience_segmentation" {
   dataset_id    = local.config_bigquery.dataset.auto_audience_segmentation.name
   friendly_name = local.config_bigquery.dataset.auto_audience_segmentation.friendly_name
-  project       = null_resource.check_bigquery_api.id != "" ? local.auto_audience_segmentation_project_id : local.feature_store_project_id
+  project       = local.auto_audience_segmentation_project_id
   description   = local.config_bigquery.dataset.auto_audience_segmentation.description
   location      = local.config_bigquery.dataset.auto_audience_segmentation.location
   # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries. 
@@ -200,12 +226,12 @@ locals {
 
 module "aggregated_vbb" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id   = local.config_bigquery.dataset.aggregated_vbb.name
   dataset_name = local.config_bigquery.dataset.aggregated_vbb.friendly_name
   description  = local.config_bigquery.dataset.aggregated_vbb.description
-  project_id   = null_resource.check_bigquery_api.id != "" ? local.aggregated_vbb_project_id : local.feature_store_project_id
+  project_id   = local.aggregated_vbb_project_id
   location     = local.config_bigquery.dataset.aggregated_vbb.location
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
@@ -236,7 +262,7 @@ module "aggregated_vbb" {
 # the aggregated predictions generated by the predictions pipelines.
 module "aggregated_predictions" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id   = local.config_bigquery.dataset.aggregated_predictions.name
   dataset_name = local.config_bigquery.dataset.aggregated_predictions.friendly_name
@@ -270,7 +296,7 @@ module "aggregated_predictions" {
 # it failed to create resources that are already exist. To resolve you 
 # need to import the the existing dataset and tables to terraform using 
 # the following commands:
-# > `terraform -chdir="${TERRAFORM_RUN_DIR}" import module.feature_store[0].module.gemini_insights.google_bigquery_dataset.main 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/gemini_insights'`
+# > `terraform -chdir="${TERRAFORM_RUN_DIR}" import 'module.feature_store[0].module.gemini_insights.google_bigquery_dataset.main' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/gemini_insights'`
 #
 # > `terraform -chdir="${TERRAFORM_RUN_DIR}" import 'module.feature_store[0].module.gemini_insights.google_bigquery_table.main["user_behaviour_revenue_insights_monthly"]' 'projects/${MAJ_FEATURE_STORE_PROJECT_ID}/datasets/gemini_insights/tables/user_behaviour_revenue_insights_monthly'`
 #
@@ -291,16 +317,17 @@ locals {
 
 module "gemini_insights" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id   = local.config_bigquery.dataset.gemini_insights.name
   dataset_name = local.config_bigquery.dataset.gemini_insights.friendly_name
   description  = local.config_bigquery.dataset.gemini_insights.description
-  project_id   = null_resource.check_bigquery_api.id != "" ? local.gemini_insights_project_id : local.feature_store_project_id
+  project_id   = local.gemini_insights_project_id
   location     = local.config_bigquery.dataset.gemini_insights.location
   # The delete_contents_on_destroy attribute specifies whether the contents of the dataset should be deleted when the dataset is destroyed. 
   # In this case, the delete_contents_on_destroy attribute is set to false, which means that the contents of the dataset will not be deleted when the dataset is destroyed.
-  delete_contents_on_destroy = true
+  delete_contents_on_destroy = false
+  deletion_protection = true
 
   dataset_labels = {
     version    = "prod",
@@ -314,7 +341,7 @@ module "gemini_insights" {
       # The max_time_travel_hours attribute specifies the maximum number of hours that data in the dataset can be accessed using time travel queries.
       # In this case, the maximum time travel hours is set to the value of the local file config.yaml section bigquery.dataset.gemini_insights.max_time_travel_hours configuration.
       max_time_travel_hours = local.config_bigquery.dataset.gemini_insights.max_time_travel_hours
-      deletion_protection   = false
+      deletion_protection   = true
       time_partitioning     = null,
       range_partitioning    = null,
       expiration_time       = null,
@@ -330,7 +357,7 @@ resource "null_resource" "check_gemini_insights_dataset_exists" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! bq ls --filter labels.dataset_id:${local.config_bigquery.dataset.gemini_insights.name} --max_results 1 --format=json --project_id ${module.gemini_insights.project} && [ $COUNTER -lt $MAX_TRIES ]
+    while ! bq ls --filter labels.dataset_id:${local.config_bigquery.dataset.gemini_insights.name} --max_results 1 --format=json --project_id ${local.gemini_insights_project_id} && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 6
       printf "."

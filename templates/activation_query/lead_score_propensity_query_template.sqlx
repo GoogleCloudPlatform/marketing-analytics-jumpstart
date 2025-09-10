@@ -1,0 +1,14 @@
+SELECT
+  a.prediction AS user_prop_l_s_p_prediction,
+  NTILE(10) OVER (ORDER BY a.prediction_prob DESC) AS user_prop_l_s_p_decile,
+  b.user_pseudo_id AS client_id,
+  b.user_id AS user_id,
+  b.ga_session_id AS event_param_session_id,
+  '100' AS event_param_engagement_time_msec,
+  CASE WHEN EXTRACT(MICROSECOND FROM b.event_timestamp) = 1 THEN b.event_timestamp ELSE TIMESTAMP_SUB(b.event_timestamp, INTERVAL 1 MICROSECOND) END AS inference_date
+FROM
+  `${mds_project_id}.marketing_ga4_v1_${mds_dataset_suffix}.latest_event_per_user_last_72_hours` b,
+  `{{source_table}}` a
+WHERE
+  COALESCE(a.user_id, "") = COALESCE(b.user_id, "")
+  AND a.user_pseudo_id = b.user_pseudo_id

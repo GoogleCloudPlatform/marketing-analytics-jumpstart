@@ -18,6 +18,14 @@ resource "google_service_account" "service_account" {
   account_id   = local.pipeline_vars.service_account_id
   display_name = local.pipeline_vars.service_account_id
   description  = "Service Account to run Vertex AI Pipelines"
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # Wait for the pipelines service account to be created
@@ -72,6 +80,14 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
     "roles/compute.networkUser"
   ])
   role = each.key
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource binds the service account to the required roles in the mds project
@@ -89,6 +105,14 @@ resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
     "roles/bigquery.dataViewer"
   ])
   role = each.key
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource creates a service account to run the dataflow jobs
@@ -97,6 +121,14 @@ resource "google_service_account" "dataflow_worker_service_account" {
   account_id   = local.dataflow_vars.worker_service_account_id
   display_name = local.dataflow_vars.worker_service_account_id
   description  = "Service Account to run Dataflow jobs"
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # Wait for the dataflow worker service account to be created
@@ -143,6 +175,14 @@ resource "google_project_iam_member" "dataflow_worker_sa_roles" {
     "roles/storage.objectAdmin",
   ])
   role = each.key
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource binds the service account to the required roles
@@ -157,6 +197,14 @@ resource "google_service_account_iam_member" "dataflow_sa_iam" {
   service_account_id = "projects/${module.project_services.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.service_account.email}"
+
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
+  lifecycle {
+    ignore_changes  = all
+    #prevent_destroy = true
+    create_before_destroy = true
+  }
 }
 
 # This resource creates a Cloud Storage Bucket for the pipeline artifacts
@@ -170,12 +218,12 @@ resource "google_storage_bucket" "pipelines_bucket" {
   # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
   force_destroy = false
 
-  # The lifecycle block allows you to configure the lifecycle of the bucket. 
-  # In this case, the ignore_changes attribute is set to all, which means that Terraform 
-  # will ignore any changes to the bucket's lifecycle configuration. The prevent_destroy attribute is set to false, which means that the bucket can be destroyed.
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = false ##true
+    #prevent_destroy = true
+    create_before_destroy = true
   }
 }
 
@@ -190,12 +238,12 @@ resource "google_storage_bucket" "custom_model_bucket" {
   # even if it contains objects. In this case, it's set to false, which means that the bucket will not be destroyed if it contains objects.
   force_destroy = false
 
-  # The lifecycle block allows you to configure the lifecycle of the bucket. 
-  # In this case, the ignore_changes attribute is set to all, which means that Terraform 
-  # will ignore any changes to the bucket's lifecycle configuration. The prevent_destroy attribute is set to false, which means that the bucket can be destroyed.
+  # The lifecycle block is used to configure the lifecycle of the table. In this case, the ignore_changes attribute is set to all, which means that Terraform will ignore 
+  # any changes to the table and will not attempt to update the table. The prevent_destroy attribute is set to true, which means that Terraform will prevent the table from being destroyed.
   lifecycle {
     ignore_changes  = all
-    prevent_destroy = false ##true
+    #prevent_destroy = true
+    create_before_destroy = true
   }
 }
 
@@ -350,6 +398,31 @@ resource "null_resource" "check_pipeline_docker_image_pushed" {
 ## Feature Engineering Pipelines
 #######
 
+# This resource is used to compile and upload the Vertex AI pipeline for feature engineering - lead score propensity use case
+resource "null_resource" "compile_feature_engineering_lead_score_propensity_pipeline" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    pipelines_repo_id            = google_artifact_registry_repository.pipelines-repo.id
+    pipelines_repo_create_time   = google_artifact_registry_repository.pipelines-repo.create_time
+    source_content_hash          = local.pipelines_content_hash
+    upstream_resource_dependency = null_resource.check_pipeline_docker_image_pushed.id
+  }
+
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-lead-score-propensity.execution -o fe_lead_score_propensity.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f fe_lead_score_propensity.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.feature-creation-lead-score-propensity.execution -i fe_lead_score_propensity.yaml
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+
 # This resource is used to compile and upload the Vertex AI pipeline for feature engineering - auto audience segmentation use case
 resource "null_resource" "compile_feature_engineering_auto_audience_segmentation_pipeline" {
   triggers = {
@@ -358,7 +431,7 @@ resource "null_resource" "compile_feature_engineering_auto_audience_segmentation
     pipelines_repo_id            = google_artifact_registry_repository.pipelines-repo.id
     pipelines_repo_create_time   = google_artifact_registry_repository.pipelines-repo.create_time
     source_content_hash          = local.pipelines_content_hash
-    upstream_resource_dependency = null_resource.build_push_pipelines_components_image.id
+    upstream_resource_dependency = null_resource.compile_feature_engineering_lead_score_propensity_pipeline.id
   }
 
   # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
@@ -498,12 +571,54 @@ resource "null_resource" "compile_feature_engineering_customer_lifetime_value_pi
 ## Training and Inference Pipelines
 ###
 
+# This resource is used to compile and upload the Vertex AI pipeline for training the propensity model - lead score propensity use case
+resource "null_resource" "compile_lead_score_propensity_training_pipelines" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_feature_engineering_customer_lifetime_value_pipeline.id
+  }
+
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.lead_score_propensity.training -o lead_score_propensity_training.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f lead_score_propensity_training.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.lead_score_propensity.training -i lead_score_propensity_training.yaml
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
+# This resource is used to compile and upload the Vertex AI pipeline for prediction using the propensity model - lead score propensity use case
+resource "null_resource" "compile_lead_score_propensity_prediction_pipelines" {
+  triggers = {
+    working_dir                  = "${local.source_root_dir}/python"
+    tag                          = local.compile_pipelines_tag
+    upstream_resource_dependency = null_resource.compile_lead_score_propensity_training_pipelines.id
+  }
+
+  # The provisioner block specifies the command that will be executed to compile and upload the pipeline.
+  # This command will execute the compiler function in the pipelines module, which will compile the pipeline YAML file, and the uploader function, 
+  # which will upload the pipeline YAML file to the specified Artifact Registry repository. The scheduler function will then schedule the pipeline to run on a regular basis.
+  provisioner "local-exec" {
+    command     = <<-EOT
+    ${var.uv_run_alias} python -m pipelines.compiler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.lead_score_propensity.prediction -o lead_score_propensity_prediction.yaml
+    ${var.uv_run_alias} python -m pipelines.uploader -c ${local.config_file_path_relative_python_run_dir} -f lead_score_propensity_prediction.yaml -t ${self.triggers.tag} -t latest
+    ${var.uv_run_alias} python -m pipelines.scheduler -c ${local.config_file_path_relative_python_run_dir} -p vertex_ai.pipelines.lead_score_propensity.prediction -i lead_score_propensity_prediction.yaml
+    EOT
+    working_dir = self.triggers.working_dir
+  }
+}
+
 # This resource is used to compile and upload the Vertex AI pipeline for training the propensity model - purchase propensity use case
 resource "null_resource" "compile_purchase_propensity_training_pipelines" {
   triggers = {
     working_dir                  = "${local.source_root_dir}/python"
     tag                          = local.compile_pipelines_tag
-    upstream_resource_dependency = null_resource.compile_feature_engineering_customer_lifetime_value_pipeline.id
+    upstream_resource_dependency = null_resource.compile_lead_score_propensity_prediction_pipelines.id
   }
 
   # The provisioner block specifies the command that will be executed to compile and upload the pipeline.

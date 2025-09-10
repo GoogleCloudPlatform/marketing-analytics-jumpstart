@@ -65,6 +65,11 @@ section_open "Creating terraform backend.tf configuration file"
     create_terraform_backend_config_file "${TERRAFORM_RUN_DIR}" "${TF_STATE_BUCKET}"
 section_close
 
+section_open "Creating BigQuery and Vertex AI connection"
+    create_bigquery_connection "${PROJECT_ID}" "${LOCATION}" "vertex_ai_conn"
+    create_bigquery_connection "${PROJECT_ID}" "US" "vertex_ai_conn"
+section_close
+
 printf "$DIVIDER"
 printf "You got the end the of your generate-tf-backend script with everything working. \n"
 printf "$DIVIDER"

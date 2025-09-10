@@ -48,7 +48,40 @@ declare -a apis_array=("cloudresourcemanager.googleapis.com"
                 "dataform.googleapis.com"
                 "cloudkms.googleapis.com"
                 "servicenetworking.googleapis.com"
+                "artifactregistry.googleapis.com"
+                "cloudbuild.googleapis.com"
+                "aiplatform.googleapis.com"
+                "storage-api.googleapis.com"
+                "bigqueryconnection.googleapis.com"
                 )
+
+create_bigquery_connection() {
+    _PROJECT_ID=$1
+    _LOCATION=$2
+    _CONNECTION_TYPE='CLOUD_RESOURCE'
+    _CONNECTION_NAME=$3
+
+    CONNECTION_EXISTS=$(bq ls --connection --location=$_LOCATION --project_id=$_PROJECT_ID)
+    if [ "$CONNECTION_EXISTS" = "No connections found." ]; then
+      bq mk --connection --location=$_LOCATION --project_id=$_PROJECT_ID --connection_type=$_CONNECTION_TYPE $_CONNECTION_NAME
+
+      SERVICE_ACCT_EMAIL=$(bq show --format=prettyjson --connection $_LOCATION.$_CONNECTION_NAME | grep "serviceAccountId" | cut -d '"' -f 4 | cut -d '?' -f 1)
+      echo $SERVICE_ACCT_EMAIL
+
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/serviceusage.serviceUsageConsumer"
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/bigquery.connectionUser"
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/bigquery.connectionAdmin"
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/aiplatform.user"
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/bigquery.jobUser"
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/bigquery.dataEditor"
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/storage.admin"
+      gcloud projects add-iam-policy-binding $PROJECT_ID --condition=None --no-user-output-enabled --member="serviceAccount:$SERVICE_ACCT_EMAIL" --role="roles/storage.objectViewer"
+      return 0
+    else
+      echo "BQ Connection already exists: $CONNECTION_EXISTS"
+      return 0
+    fi
+}
 
 get_project_id() {
     local __resultvar=$1

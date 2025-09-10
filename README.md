@@ -1,7 +1,14 @@
 # Marketing Analytics Jumpstart
 Marketing Analytics Jumpstart (MAJ) is a terraform automated, quick-to-deploy, customizable end-to-end marketing solution on Google Cloud Platform (GCP). This solution aims at helping customer better understand and better use their digital advertising budget.
 
-Customers are looking to drive revenue and increase media efficiency be identifying, predicting and targeting valuable users through the use of machine learning. However, marketers first have to solve the challenge of having a number of disparate data sources that prevent them from having a holistic view of customers. Marketers also often don't have the expertise and/or resources in their marketing departments to train, run, and activate ML models on paid channels. Without this solution that enables innovation through predictive analytics, marketers are missing opportunities to advance their marketing program and accelerate key goals and objectives (e.g. acquire new customers, improve customer retention, etc).
+Customers in the online sales and lead generation business are looking to drive revenue and increase media efficiency be identifying, predicting and targeting valuable users through the use of machine learning. However, marketers first have to solve the challenge of having a number of disparate data sources that prevent them from having a holistic view of customers. Marketers also often don't have the expertise and/or resources in their marketing departments to train, run, and activate ML models on paid channels. Without this solution that enables innovation through predictive analytics, marketers are missing opportunities to advance their marketing program and accelerate key goals and objectives (e.g. acquire new customers, generate leads, improve customer retention, etc).
+
+## Version Variants
+
+| Version Name | Branch | Purpose |
+| ------------ | ------ | ------- |
+| Multi Stream | [multi-stream](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/tree/multi-stream) | Activate to multiple Google Analytics 4 data streams (websites and application). |
+| Multi Property | [multi-property](https://github.com/GoogleCloudPlatform/marketing-analytics-jumpstart/tree/multi-property) | Deployment of multiple MAJ resources per each Google Analytics 4 property in the same Google Cloud project. |
 
 ## Version Variants
 
@@ -12,7 +19,7 @@ Customers are looking to drive revenue and increase media efficiency be identify
 
 ## Quick Installation ⏰
 
-Want to quickly install and use it? Run this [installation notebook 📔](https://colab.sandbox.google.com/github/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/notebooks/quick_installation.ipynb) on Google Colaboratory and leverage Marketing Analytics Jumpstart in under 30 minutes.
+Want to quickly install and use it? Run this [installation notebook 📔](https://colab.sandbox.google.com/github/GoogleCloudPlatform/marketing-analytics-jumpstart/blob/main/notebooks/quick_installation.ipynb) on Google Colaboratory and leverage Marketing Analytics Jumpstart in between 30-45 minutes.
 
 If that was just too fast, continue reading this document to learn more in details.
 
@@ -26,14 +33,14 @@ After installing the solution users will get:
 
 
 ## Who can benefit from this solution? 🙇‍♀️
-This solution is intended for Marketing Technologist teams using GA4 and GAds products. It facilitates efforts to store, transform, analyze marketing data, and programmatically creates audiences segments in Google Ads to support conversion optimization and remarketing campaigns.
+This solution is intended for Marketing Technology teams working in online sales and lead generation business using GA4 and GAds products. It facilitates efforts to store, transform, analyze marketing data, and programmatically creates audiences segments and optimize your bids in Google Ads with the goal of conversion optimization and efficiency of your ad spend.
 
 | Role | User Journeys | Skillset | Can Deploy? |
 |-------|-------------|----------|-------------|
-| Marketing Scientist | Using an isolated and secure sandbox infrastructure to perform and monitor explorations with sensitive data. Using automated machine learning to accelerate time-to-value on building use cases solutions. Faster learning curve to quickly and easily access and analyze data from the marketing data store. Ability to collaborate with other teams by reusing similar components. | Vertex AI, Python, SQL, Data Science | No |
-| Marketing Analyst | Simplifying the operation of the marketing data store (data assertions), machine learning pipelines (model training, prediction, explanation) and the activation application. Monitoring Ads Campaigns Performance, Web Traffic and Predictive Insights Reports. Interpreting the insights provided to plan and activate Ads campaigns. Defining audience segments using predictive metrics. | BigQuery, Looker Studio, Google Analytics 4, Google Ads | Yes |
- | Digital Marketing Manager | Gaining insights into customer behavior to improve marketing campaigns. Identifying and targeting new customers. Measuring the effectiveness of marketing campaigns. | Looker Studio, Google Analytics 4, Google Ads | No |
-| IT/Data Engineer | Building and maintaining marketing data store transformation jobs. Developing and deploying custom marketing use cases reusing a consistent infrastructure. Integrating 1st party data and Google 3rd party data by extending the marketing data store. | Python, SQL, Google Cloud Platform, Data Engineering | Yes |
+| Marketing Scientist 👩‍🔬 | Using an isolated and secure sandbox infrastructure to perform and monitor explorations with sensitive data. Using automated machine learning to accelerate time-to-value on building use cases solutions. Faster learning curve to quickly and easily access and analyze data from the marketing data store. Ability to collaborate with other teams by reusing similar components. | Vertex AI, Python, SQL, Data Science | No |
+| Marketing Analyst 🧑‍💼 | Simplifying the operation of the marketing data store (data assertions), machine learning pipelines (model training, prediction, explanation) and the activation application. Monitoring Ads Campaigns Performance, Web Traffic and Predictive Insights Reports. Interpreting the insights provided to plan and activate Ads campaigns. Defining audience segments using predicted values and optimizing bidding using conversion values. | BigQuery, Looker Studio, Google Analytics 4, Google Ads | Yes |
+ | Digital Marketing Manager 🤵‍♂️ | Gaining insights into customer behavior to improve marketing campaigns. Democratizing access to digital marketing insights and strategizing campaign execution. Measuring the effectiveness of marketing campaigns. | Looker Studio, Google Analytics 4, Google Ads | No |
+| IT/Data Engineer 👩‍💻 | Building and maintaining marketing data store transformation jobs. Developing and deploying custom marketing use cases reusing a consistent infrastructure. Integrating 1st party data and Google 3rd party data by extending the marketing data store. | Python, SQL, Google Cloud Platform, Data Engineering | Yes |
 
 
 ## Use Cases 🖱️
@@ -45,14 +52,24 @@ These insights are used to serve as a basis to optimize paid media efforts and i
 * Driving a more personalized experience for your highly valued customers and improve return on ads spend (ROAS) via customer lifetime value
 * Attributing bidding values to specific users according to their journeys through the conversion funnel which Ads platform uses to guide maximize conversions in specific markets
 
+### Ecommerce Use Cases
 | Use Case | Data Sources | Model | Looker Report Name | Google Ads Campaign Optimization |
 |-------|-------|-------|--------|--------|
-| Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
-| Customer Lifetime Value | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Customer Lifetime Value | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
 | Purchase Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Purchase | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
-| Churn Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Churn | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Customer Lifetime Value | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Customer Lifetime Value | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
 | Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) |
+| Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Churn Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Propensity to Churn | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+
+
+### Lead Generation (Non-ecommerce) Use Cases
+| Use Case | Data Sources | Model | Looker Report Name | Google Ads Campaign Optimization |
+|-------|-------|-------|--------|--------|
+| Lead Score Propensity | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | Lead Score Propensity | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) <br><br> Bid Adjustment (maximize conversions) [1](https://support.google.com/google-ads/answer/7068417?hl=en#zippy=%2Ctips-for-setting-up-data-segments-for-search-ads%2Csetting-bids-tailoring-ads-and-copying-campaigns) [2](https://support.google.com/google-ads/answer/2732132?sjid=8368074830549837931-NA#zippy=%2Cremarketing-lists-for-search-ads-advanced) |
+| Aggregated Value Based Bidding | Google Analytics 4 | Vertex AI Tabular Wokflows AutoML | High Value Action | [Static Conversion Values](https://support.google.com/google-ads/answer/13064107?sjid=13060303839552593837-NA#zippy=%2Cset-a-conversion-value%2Cchange-a-conversion-value) |
+| Auto Audience Segmentation | Google Analytics 4 | BQML Kmeans | Interest based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
+| Audience Segmentation | Google Analytics 4 | BQML Kmeans | Demographic based Audience Segmentation | [Custom Data Segments](https://support.google.com/google-ads/answer/2497941?sjid=12303667953034547771-NC#zippy=%2Cyour-data-segments-formerly-known-as-remarketing) |
 
 ## Repository Structure 🏗️
 The solution's source code is written in Terraform, Python, SQL, YAML and JSON; and it is organized into five main folders:
@@ -115,7 +132,7 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 
 ## Installation Pre-Requisites
 - [ ] [Create GCP project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project) and [Enable Billing](https://cloud.google.com/billing/docs/how-to/modify-project)
-- [ ] Set up [Google Analyics 4 Export](https://support.google.com/analytics/answer/9823238?hl=en#zippy=%2Cin-this-article) and [Google Ads Export](https://cloud.google.com/bigquery/docs/google-ads-transfer) to Bigquery
+- [ ] Set up [Google Analyics 4 Export](https://support.google.com/analytics/answer/9823238?hl=en#zippy=%2Cin-this-article) and [Google Ads Data Transfer Service](https://cloud.google.com/bigquery/docs/google-ads-transfer) to Bigquery
 - [ ] [Backfill](https://cloud.google.com/bigquery/docs/google-ads-transfer) BigQuery Data Transfer service for Google Ads
 - [ ] Have existing Google Analytics 4 Property with [Measurement ID](https://support.google.com/analytics/answer/12270356?hl=en)
 

@@ -38,6 +38,170 @@ source_ads_export_data = [
 ####################  FEATURE STORE VARIABLES  #################################
 
 feature_store_project_id = "Project ID where feature store resources will be created"
+# These variables are going to become optional with future deployment
+# List of comma separated events used in the lead score feature engineering e.g. (["scroll_50", "scroll_90", "view_search_results", ..])
+non_ecomm_events_list = ["scroll_50", "view_search_results"]
+# A target event for the lead score propensity feature engineering e.g. "login"
+non_ecomm_target_event = "login"
+
+###################  PIPELINE CONFIGURATIONS  ##################################
+
+pipeline_configuration = {
+    feature-creation-auto-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-purchase-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-churn-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-customer-ltv = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-aggregated-value-based-bidding = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-lead-score-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    value_based_bidding = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      explanation = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    purchase_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    churn_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    auto_segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    propensity_clv = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    clv = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    lead_score_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+
+    gemini_insights = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    reporting_preparation = {
+    execution = {
+      schedule = {
+        state                    = "PAUSED"
+      }
+    }
+}
 
 ####################     ML MODEL VARIABLES    #################################
 

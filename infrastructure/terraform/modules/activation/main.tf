@@ -24,6 +24,8 @@ locals {
   cltv_query_template_file                       = "cltv_query_template.sqlx"
   purchase_propensity_query_template_file        = "purchase_propensity_query_template.sqlx"
   purchase_propensity_vbb_query_template_file    = "purchase_propensity_vbb_query_template.sqlx"
+  lead_score_propensity_query_template_file      = "lead_score_propensity_query_template.sqlx"
+  lead_score_propensity_vbb_query_template_file  = "lead_score_propensity_vbb_query_template.sqlx"
   churn_propensity_query_template_file           = "churn_propensity_query_template.sqlx"
   activation_container_image_id                  = "activation-pipeline"
   docker_repo_prefix                             = "${var.location}-docker.pkg.dev/${var.project_id}"
@@ -78,7 +80,7 @@ data "google_project" "activation_project" {
 
 module "project_services" {
   source  = "terraform-google-modules/project-factory/google//modules/project_services"
-  version = "17.0.0"
+  version = "18.0.0"
 
   disable_dependent_services  = false
   disable_services_on_destroy = false
@@ -351,7 +353,7 @@ resource "null_resource" "check_cloudkms_api" {
 
 module "bigquery" {
   source  = "terraform-google-modules/bigquery/google"
-  version = "8.1.0"
+  version = "9.0.0"
 
   dataset_id                 = local.app_prefix
   dataset_name               = local.app_prefix
@@ -407,7 +409,7 @@ resource "google_artifact_registry_repository" "activation_repository" {
 
 module "pipeline_service_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.0"
+  version    = "4.4.3"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.pipeline_service_account_name]
@@ -424,7 +426,7 @@ module "pipeline_service_account" {
 
 module "trigger_function_account" {
   source     = "terraform-google-modules/service-accounts/google"
-  version    = "4.4.0"
+  version    = "4.4.3"
   project_id = null_resource.check_pubsub_api.id != "" ? module.project_services.project_id : var.project_id
   prefix     = local.app_prefix
   names      = [local.trigger_function_account_name]
@@ -527,7 +529,7 @@ resource "google_kms_key_ring_iam_policy" "key_ring" {
 # This module stores the values ga4-measurement-id and ga4-measurement-secret in Google Cloud Secret Manager.
 module "secret_manager" {
   source     = "GoogleCloudPlatform/secret-manager/google"
-  version    = "0.4.0"
+  version    = "0.7.0"
   project_id = google_kms_crypto_key_iam_policy.crypto_key.etag != "" && google_kms_key_ring_iam_policy.key_ring.etag != "" ? module.project_services.project_id : var.project_id
   secrets = [
     {
@@ -575,7 +577,7 @@ module "secret_manager" {
 # This module creates a Cloud Storage bucket to be used by the Activation Application
 module "pipeline_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "9.0.1"
   project_id = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-app-${module.project_services.project_id}"
   location   = var.location
@@ -661,7 +663,7 @@ data "google_project" "project" {
 # This module creates a Cloud Storage bucket to be used by the Cloud Build Log Bucket
 module "build_logs_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "9.0.1"
   project_id = null_resource.check_cloudbuild_api != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-logs-${module.project_services.project_id}"
   location   = var.location
@@ -750,7 +752,7 @@ data "template_file" "churn_propensity_query_template_file" {
   }
 }
 
-# This resource creates a bucket object using as content the purchase_propensity_query_template_file file.
+# This resource creates a bucket object using as content the churn_propensity_query_template_file file.
 resource "google_storage_bucket_object" "churn_propensity_query_template_file" {
   name    = "${local.configuration_folder}/${local.churn_propensity_query_template_file}"
   content = data.template_file.churn_propensity_query_template_file.rendered
@@ -791,6 +793,40 @@ resource "google_storage_bucket_object" "purchase_propensity_vbb_query_template_
   bucket  = module.pipeline_bucket.name
 }
 
+data "template_file" "lead_score_propensity_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.lead_score_propensity_query_template_file}")
+
+  vars = {
+    mds_project_id     = var.mds_project_id
+    mds_dataset_suffix = var.mds_dataset_suffix
+  }
+}
+
+# This resource creates a bucket object using as content the lead_score_propensity_query_template_file file.
+resource "google_storage_bucket_object" "lead_score_propensity_query_template_file" {
+  name    = "${local.configuration_folder}/${local.lead_score_propensity_query_template_file}"
+  content = data.template_file.lead_score_propensity_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
+# This resource creates a bucket object using as content the lead_score_propensity_vbb_query_template_file file.
+data "template_file" "lead_score_propensity_vbb_query_template_file" {
+  template = file("${local.template_dir}/activation_query/${local.lead_score_propensity_vbb_query_template_file}")
+
+  vars = {
+    mds_project_id        = var.mds_project_id
+    mds_dataset_suffix    = var.mds_dataset_suffix
+    activation_project_id = var.project_id
+    dataset               = module.bigquery.bigquery_dataset.dataset_id
+  }
+}
+
+resource "google_storage_bucket_object" "lead_score_propensity_vbb_query_template_file" {
+  name    = "${local.configuration_folder}/${local.lead_score_propensity_vbb_query_template_file}"
+  content = data.template_file.lead_score_propensity_vbb_query_template_file.rendered
+  bucket  = module.pipeline_bucket.name
+}
+
 # This data resources creates a data resource that renders a template file and stores the rendered content in a variable.
 data "template_file" "activation_type_configuration" {
   template = file("${local.template_dir}/activation_type_configuration_template.tpl")
@@ -802,6 +838,8 @@ data "template_file" "activation_type_configuration" {
     purchase_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_query_template_file.output_name}"
     purchase_propensity_vbb_query_template_gcs_path    = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.purchase_propensity_vbb_query_template_file.output_name}"
     churn_propensity_query_template_gcs_path           = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.churn_propensity_query_template_file.output_name}"
+    lead_score_propensity_query_template_gcs_path        = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.lead_score_propensity_query_template_file.output_name}"
+    lead_score_propensity_vbb_query_template_gcs_path    = "gs://${module.pipeline_bucket.name}/${google_storage_bucket_object.lead_score_propensity_vbb_query_template_file.output_name}"
   }
 }
 
@@ -875,7 +913,7 @@ data "archive_file" "activation_trigger_source" {
 # This module creates a Cloud Sorage bucket and sets the trigger_function_account_email as the admin.
 module "function_bucket" {
   source     = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version    = "6.1.0"
+  version    = "9.0.1"
   project_id = null_resource.check_cloudfunctions_api.id != "" ? module.project_services.project_id : var.project_id
   name       = "${local.app_prefix}-trigger-${module.project_services.project_id}"
   location   = var.location

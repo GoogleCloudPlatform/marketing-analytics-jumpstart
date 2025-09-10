@@ -17,6 +17,11 @@ variable "tf_state_project_id" {
   type        = string
 }
 
+variable "main_project_id" {
+  type        = string
+  description = "Project ID where feature store resources are created"
+}
+
 variable "data_project_id" {
   description = "Default project to contain the MDS BigQuery datasets"
   type        = string
@@ -213,8 +218,8 @@ variable "mds_dataset_prefix" {
   default     = "marketing_ga4_v1"
 }
 
-variable "feature_store_config_env" {
-  description = "determine which config file is used for feature store deployment"
+variable "global_config_env" {
+  description = "determine which config file is used for globaly for deployment"
   type        = string
   default     = "config"
 }
@@ -240,4 +245,191 @@ variable "time_zone" {
   description = "Timezone for scheduled jobs"
   type        = string
   default     = "America/New_York"
+}
+
+variable "pipeline_configuration" {
+  description = "Pipeline configuration that will alternate certain settings in the config.yaml.tftpl"
+  type = map(
+    map(
+      object({
+        schedule        = object({
+          # The `state` defines the state of the pipeline.
+          # In case you don't want to schedule the pipeline, set the state to `PAUSED`.
+          state                    = string
+        })
+      })
+    )
+  )
+
+  default = {
+    feature-creation-auto-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-audience-segmentation = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-purchase-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-churn-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-customer-ltv = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-aggregated-value-based-bidding = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    feature-creation-lead-score-propensity = {
+      execution = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    value_based_bidding = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      explanation = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    purchase_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    churn_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    auto_segmentation = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    propensity_clv = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    clv = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+    lead_score_propensity = {
+      training = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+      prediction = {
+        schedule = {
+          state                    = "PAUSED"
+        }
+      }
+    }
+  }
+  validation {
+    condition = alltrue([
+      for p in keys(var.pipeline_configuration) : alltrue([
+        for c in keys(var.pipeline_configuration[p]) : (
+          try(var.pipeline_configuration[p][c].schedule.state, "") == "ACTIVE" ||
+          try(var.pipeline_configuration[p][c].schedule.state, "") == "PAUSED"
+        )
+      ])
+    ])
+    error_message = "The 'state' field must be either 'PAUSED' or 'ACTIVE' for all pipeline configurations."
+  }
+}
+
+
+variable "non_ecomm_events_list" {
+  description = "Short list of prioritized events that are correlated to the non ecommerce target event"
+  type = list(string)
+  default = ["scroll_50", "view_search_results"]
+}
+
+variable "non_ecomm_target_event" {
+  description = "Non ecommerce target event for the lead score propensity feature transformation"
+  type        = string
+  default     = "login"
 }
