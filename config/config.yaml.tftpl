@@ -2154,10 +2154,10 @@ bigquery:
     create_gemini_model:
       project_id: "${project_id}"
       dataset: "gemini_insights"
-      model_name: "gemini_1_5_pro"
+      model_name: "gemini_2_5_flash"
       connection_name: "vertex_ai_conn"
       region: "${location}"
-      endpoint_name: "gemini-1.5-pro-001"
+      endpoint_name: "gemini-2.5-flash"
     # This is a stored procedure that CALLs the Aggregated Value Based Bidding Training Preparation stored procedure.
     invoke_aggregated_value_based_bidding_training_preparation:
       project_id: "${project_id}"
@@ -2553,7 +2553,7 @@ bigquery:
       project_id: "${project_id}"
       dataset: "gemini_insights"
       insert_table: "user_behaviour_revenue_insights"
-      model_name: "gemini_1_5_pro"
+      model_name: "gemini_2_5_flash"
     # This is a stored procedure that CALLS the User Behaviour Revenue Insights stored procedure.
     invoke_user_behaviour_revenue_insights:
       project_id: "${project_id}"

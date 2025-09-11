@@ -122,7 +122,7 @@ feature_date,
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
   -- The LLM model used
-  MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.gemini_2_5_flash`,
   (
     SELECT 
     -- Date for which metrics are calculated
@@ -176,7 +176,7 @@ feature_week_number,
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
   -- The LLM model used
-  MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.gemini_2_5_flash`,
   (
     SELECT 
     -- Date for which metrics are calculated
@@ -233,7 +233,7 @@ feature_month,
 ml_generate_text_llm_result AS gemini_insights, 
 FROM ML.GENERATE_TEXT(
   -- The LLM model used
-  MODEL `{{project_id}}.{{dataset}}.gemini_1_5_pro`,
+  MODEL `{{project_id}}.{{dataset}}.gemini_2_5_flash`,
   (
     SELECT 
     feature_date, 

@@ -1647,7 +1647,7 @@ resource "null_resource" "create_gemini_model" {
 
     # The destroy command deletes the model.
     destroy_command = <<-EOT
-    ${var.uv_run_alias} bq rm -f --model ${local.gemini_insights_project_id}:${local.config_bigquery.dataset.gemini_insights.name}.gemini_1_5_pro
+    ${var.uv_run_alias} bq rm -f --model ${local.gemini_insights_project_id}:${local.config_bigquery.dataset.gemini_insights.name}.gemini_2_5_flash
     EOT
   }
 
@@ -1685,7 +1685,7 @@ resource "null_resource" "check_gemini_model_exists" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! bq --project_id=${local.gemini_insights_project_id} ls -m --format=pretty ${local.gemini_insights_project_id}:${local.config_bigquery.dataset.gemini_insights.name} | grep -i "gemini_1_5_pro" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! bq --project_id=${local.gemini_insights_project_id} ls -m --format=pretty ${local.gemini_insights_project_id}:${local.config_bigquery.dataset.gemini_insights.name} | grep -i "gemini_2_5_flash" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 5
       printf "."
