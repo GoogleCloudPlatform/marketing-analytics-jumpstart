@@ -137,7 +137,7 @@ This high-level architecture demonstrates how Marketing Analytics Jumpstart inte
 - [ ] Project Owner* for a Google Cloud Project
 - [ ] GitHub or GitLab account priviledges for repo creation and access token. [Details](https://cloud.google.com/dataform/docs/connect-repository)
 
-**Note:** Project Owner for a Google Cloud Project is only required to speed up the deployment process. Consult this [guide]() for a more fine-grained permission list, not including the Owner role, to adhere to your company policies.
+**Note:** Project Owner for a Google Cloud Project is only required to speed up the deployment process. Consult this [deployer roles list](scripts/deployer_roles.txt) for a more fine-grained set of roles, not including the Owner role, to adhere to your company policies.
 
 ## Compute regions and data locations compatibility
 
@@ -192,4 +192,3 @@ This a list of public websites you can use to learn more about the Google Analyt
 ## Disclaimer
 This is not an officially supported Google product.
 This solution in a work in progress and currently in the preview stage.
-
