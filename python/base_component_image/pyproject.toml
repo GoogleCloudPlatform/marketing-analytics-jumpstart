@@ -10,7 +10,7 @@ packages = [{include = "ma_components"}]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12.0"
 pip = "23.3.2"
-kfp = "2.4.0"
+kfp = "2.15.2"
 ## Fixing this error: https://stackoverflow.com/questions/76175487/sudden-importerror-cannot-import-name-appengine-from-requests-packages-urlli
 #kfp = "2.0.0-rc.2"
 #kfp = {version = "2.0.0-b12", allow-prereleases = true}
