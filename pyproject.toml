@@ -53,7 +53,7 @@ kfp = "2.4.0"
 #kfp = "2.0.0-rc.2"
 #kfp = {version = "2.0.0-b12", allow-prereleases = true}
 #kfp = {version = "2.0.0-b16", allow-prereleases = true}
-kfp-server-api = "2.0.5"
+kfp-server-api = "2.15.2"
 #kfp-server-api = "2.0.0-rc.1"
 #kfp-server-api = "2.0.0.a6"
 #kfp-server-api = "2.0.0b1"
