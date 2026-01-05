@@ -29,7 +29,7 @@ compile: ## Compile the pipeline to training.json or prediction.json. Must speci
 
 run: ## Compile pipeline, copy assets to GCS, and run pipeline in sandbox environment. Must specify pipeline=<training|prediction>
 	@ $(MAKE) compile && \
-	gsutil -m rsync -r -d ./python/pipelines/${PIPELINE_TEMPLATE}/$(pipeline)/assets ${PIPELINE_FILES_GCS_PATH}/$(pipeline)/assets && \
+	gcloud storage rsync --recursive --delete-unmatched-destination-objects ./python/pipelines/${PIPELINE_TEMPLATE}/$(pipeline)/assets ${PIPELINE_FILES_GCS_PATH}/$(pipeline)/assets && \
 	poetry run python -m python.pipelines.trigger.main --payload=./pipelines/${PIPELINE_TEMPLATE}/$(pipeline)/payloads/${PAYLOAD}
 
 e2e-tests: ## Compile pipeline, trigger pipeline and perform end-to-end (E2E) pipeline tests. Must specify pipeline=<training|prediction>
