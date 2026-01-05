@@ -52,11 +52,11 @@ section_open "Enable all the required APIs"
 section_close
 
 section_open "Creating a new Google Cloud Storage bucket to store the Terraform state in ${TF_STATE_PROJECT} project, bucket: ${TF_STATE_BUCKET}"
-    if gsutil ls -b gs://"${TF_STATE_BUCKET}" >/dev/null 2>&1; then
+    if gcloud storage ls --buckets gs://"${TF_STATE_BUCKET}" >/dev/null 2>&1; then
         printf "The ${TF_STATE_BUCKET} Google Cloud Storage bucket already exists. \n"
     else
-        gsutil mb -p "${TF_STATE_PROJECT}" --pap enforced -l "${LOCATION}" -b on gs://"${TF_STATE_BUCKET}"
-        gsutil versioning set on gs://"${TF_STATE_BUCKET}"
+        gcloud storage buckets create gs://"${TF_STATE_BUCKET}" --project="${TF_STATE_PROJECT}" --public-access-prevention --location="${LOCATION}" --uniform-bucket-level-access
+        gcloud storage buckets update gs://"${TF_STATE_BUCKET}" --versioning
     fi
 section_close
 
