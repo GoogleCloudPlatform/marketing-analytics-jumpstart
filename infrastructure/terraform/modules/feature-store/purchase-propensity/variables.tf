@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,14 +43,14 @@ variable "uv_run_alias" {
   default     = "uv run"
 }
 
-variable "deploy_purchase_propensity" {
-  description = "Toggler for purchase propensity module"
-  type        = bool
-  default     = true
+variable "feature_store_dataset_id" {
+  description = "feature store dataset id"
+  type        = string
+  default     = "feature_store"
 }
 
-variable "deploy_optional" {
-  description = "Toggler for optional use cases module"
-  type        = bool
-  default     = false
+variable "feature_store_project_id" {
+  description = "feature store project id"
+  type        = string
+  default     = ""
 }

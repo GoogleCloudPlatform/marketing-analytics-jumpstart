@@ -34,3 +34,45 @@ locals {
   gemini_insights_project_id            = local.config_vars.bigquery.dataset.gemini_insights.project_id
 }
 
+
+module "purchase_propensity" {
+  # The source is the path to the feature store module.
+  source           = "./purchase-propensity"
+  config_file_path = var.config_file_path
+  enabled          = var.deploy_purchase_propensity
+  # the count determines if the feature store is created or not.
+  # If the count is 1, the feature store is created.
+  # If the count is 0, the feature store is not created.
+  # This is done to avoid creating the feature store if the `deploy_purchase_propensity` variable is set to false in the terraform.tfvars file.
+  count      = var.deploy_purchase_propensity ? 1 : 0
+  project_id = var.project_id
+  # The region is the region in which the feature store is created.
+  # This is set to the default region in the terraform.tfvars file.
+  region = var.region
+  # The sql_dir_input is the path to the sql directory.
+  # This is set to the path to the sql directory in the feature store module.
+  sql_dir_input = var.sql_dir_input
+  feature_store_dataset_id = google_bigquery_dataset.feature_store.dataset_id
+  feature_store_project_id = google_bigquery_dataset.feature_store.project
+}
+
+module "optional" {
+  # The source is the path to the feature store module.
+  source           = "./optional"
+  config_file_path = var.config_file_path
+  enabled          = var.deploy_optional
+  # the count determines if the feature store is created or not.
+  # If the count is 1, the feature store is created.
+  # If the count is 0, the feature store is not created.
+  # This is done to avoid creating the feature store if the `deploy_optional` variable is set to false in the terraform.tfvars file.
+  count      = var.deploy_optional ? 1 : 0
+  project_id = var.project_id
+  # The region is the region in which the feature store is created.
+  # This is set to the default region in the terraform.tfvars file.
+  region = var.region
+  # The sql_dir_input is the path to the sql directory.
+  # This is set to the path to the sql directory in the feature store module.
+  sql_dir_input = var.sql_dir_input
+  feature_store_dataset_id = google_bigquery_dataset.feature_store.dataset_id
+  feature_store_project_id = google_bigquery_dataset.feature_store.project
+}

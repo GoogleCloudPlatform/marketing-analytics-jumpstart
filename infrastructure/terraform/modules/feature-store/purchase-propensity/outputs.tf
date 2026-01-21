@@ -12,13 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 output "purchase_propensity_dataset_id" {
   description = "Purchase Propensity use case dataset"
-  value       = module.purchase_propensity[0].purchase_propensity_dataset_id
-}
-
-output "feature_store_dataset_id" {
-  description = "feature store dataset id"
-  value       = google_bigquery_dataset.feature_store.dataset_id
-
+  value       = google_bigquery_dataset.purchase_propensity.dataset_id
 }

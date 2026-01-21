@@ -14,7 +14,7 @@
 
 # This resource creates a service account to run the Vertex AI pipelines
 resource "google_service_account" "service_account" {
-  project      = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project      = local.pipeline_vars.project_id
   account_id   = local.pipeline_vars.service_account_id
   display_name = local.pipeline_vars.service_account_id
   description  = "Service Account to run Vertex AI Pipelines"
@@ -34,7 +34,7 @@ resource "null_resource" "wait_for_vertex_pipelines_sa_creation" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud iam service-accounts list --project=${module.project_services.project_id} --filter="EMAIL:${local.pipeline_vars.service_account} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud iam service-accounts list --project=${local.pipeline_vars.project_id} --filter="EMAIL:${local.pipeline_vars.service_account} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -49,8 +49,7 @@ resource "null_resource" "wait_for_vertex_pipelines_sa_creation" {
   }
 
   depends_on = [
-    module.project_services,
-    null_resource.check_aiplatform_api
+    google_service_account.service_account
   ]
 }
 
@@ -58,12 +57,10 @@ resource "null_resource" "wait_for_vertex_pipelines_sa_creation" {
 # This resource binds the service account to the required roles
 resource "google_project_iam_member" "pipelines_sa_roles" {
   depends_on = [
-    module.project_services,
-    null_resource.check_aiplatform_api,
     null_resource.wait_for_vertex_pipelines_sa_creation
   ]
 
-  project = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project = local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.service_account.email}"
 
   for_each = toset([
@@ -93,12 +90,10 @@ resource "google_project_iam_member" "pipelines_sa_roles" {
 # This resource binds the service account to the required roles in the mds project
 resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
   depends_on = [
-    module.project_services,
-    null_resource.check_aiplatform_api,
     null_resource.wait_for_vertex_pipelines_sa_creation
   ]
 
-  project = null_resource.check_bigquery_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project = local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.service_account.email}"
 
   for_each = toset([
@@ -117,7 +112,7 @@ resource "google_project_iam_member" "pipelines_sa_mds_project_roles" {
 
 # This resource creates a service account to run the dataflow jobs
 resource "google_service_account" "dataflow_worker_service_account" {
-  project      = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project      = local.pipeline_vars.project_id
   account_id   = local.dataflow_vars.worker_service_account_id
   display_name = local.dataflow_vars.worker_service_account_id
   description  = "Service Account to run Dataflow jobs"
@@ -137,7 +132,7 @@ resource "null_resource" "wait_for_dataflow_worker_sa_creation" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud iam service-accounts list --project=${module.project_services.project_id} --filter="EMAIL:${local.dataflow_vars.worker_service_account} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud iam service-accounts list --project=${local.pipeline_vars.project_id} --filter="EMAIL:${local.dataflow_vars.worker_service_account} AND DISABLED:False" --format="table(EMAIL, DISABLED)" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 3
       printf "."
@@ -152,20 +147,17 @@ resource "null_resource" "wait_for_dataflow_worker_sa_creation" {
   }
 
   depends_on = [
-    module.project_services,
-    null_resource.check_dataflow_api
+    google_service_account.dataflow_worker_service_account
   ]
 }
 
 # This resource binds the service account to the required roles
 resource "google_project_iam_member" "dataflow_worker_sa_roles" {
   depends_on = [
-    module.project_services,
-    null_resource.check_dataflow_api,
     null_resource.wait_for_dataflow_worker_sa_creation
   ]
 
-  project = null_resource.check_dataflow_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project = local.pipeline_vars.project_id
   member  = "serviceAccount:${google_service_account.dataflow_worker_service_account.email}"
 
   for_each = toset([
@@ -189,12 +181,10 @@ resource "google_project_iam_member" "dataflow_worker_sa_roles" {
 # Allow pipelines SA service account use dataflow worker SA
 resource "google_service_account_iam_member" "dataflow_sa_iam" {
   depends_on = [
-    module.project_services,
-    null_resource.check_dataflow_api,
     null_resource.wait_for_dataflow_worker_sa_creation
   ]
 
-  service_account_id = "projects/${module.project_services.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
+  service_account_id = "projects/${local.pipeline_vars.project_id}/serviceAccounts/${google_service_account.dataflow_worker_service_account.email}"
   role               = "roles/iam.serviceAccountUser"
   member             = "serviceAccount:${google_service_account.service_account.email}"
 
@@ -209,7 +199,7 @@ resource "google_service_account_iam_member" "dataflow_sa_iam" {
 
 # This resource creates a Cloud Storage Bucket for the pipeline artifacts
 resource "google_storage_bucket" "pipelines_bucket" {
-  project                     = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project                     = local.pipeline_vars.project_id
   name                        = local.pipeline_vars.bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
@@ -229,7 +219,7 @@ resource "google_storage_bucket" "pipelines_bucket" {
 
 # This resource creates a Cloud Storage Bucket for the model assets
 resource "google_storage_bucket" "custom_model_bucket" {
-  project                     = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project                     = local.pipeline_vars.project_id
   name                        = local.pipeline_vars.model_bucket_name
   storage_class               = "REGIONAL"
   location                    = local.pipeline_vars.region
@@ -290,7 +280,7 @@ locals {
 
 # This resource creates an Artifact Registry repository for the pipeline artifacts
 resource "google_artifact_registry_repository" "pipelines-repo" {
-  project       = null_resource.check_aiplatform_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project       = local.pipeline_vars.project_id
   location      = local.artifact_registry_vars.pipelines_repo.region
   repository_id = local.artifact_registry_vars.pipelines_repo.name
   description   = "Pipelines Repository"
@@ -310,7 +300,7 @@ resource "google_artifact_registry_repository" "pipelines-repo" {
 
 # This resource creates an Artifact Registry repository for the pipeline docker images
 resource "google_artifact_registry_repository" "pipelines_docker_repo" {
-  project       = null_resource.check_artifactregistry_api.id != "" ? module.project_services.project_id : local.pipeline_vars.project_id
+  project       = local.pipeline_vars.project_id
   location      = local.artifact_registry_vars.pipelines_docker_repo.region
   repository_id = local.artifact_registry_vars.pipelines_docker_repo.name
   description   = "Docker Images Repository"
@@ -374,7 +364,7 @@ resource "null_resource" "check_pipeline_docker_image_pushed" {
     command = <<-EOT
     COUNTER=0
     MAX_TRIES=100
-    while ! gcloud artifacts docker images list --project=${module.project_services.project_id} ${local.artifact_registry_vars.pipelines_docker_repo.region}-docker.pkg.dev/${module.project_services.project_id}/${local.artifact_registry_vars.pipelines_docker_repo.name} --format="table(IMAGE, CREATE_TIME, UPDATE_TIME)" && [ $COUNTER -lt $MAX_TRIES ]
+    while ! gcloud artifacts docker images list --project=${local.pipeline_vars.project_id} ${local.artifact_registry_vars.pipelines_docker_repo.region}-docker.pkg.dev/${local.pipeline_vars.project_id}/${local.artifact_registry_vars.pipelines_docker_repo.name} --format="table(IMAGE, CREATE_TIME, UPDATE_TIME)" && [ $COUNTER -lt $MAX_TRIES ]
     do
       sleep 5
       printf "."
@@ -389,7 +379,6 @@ resource "null_resource" "check_pipeline_docker_image_pushed" {
   }
 
   depends_on = [
-    module.project_services,
     null_resource.build_push_pipelines_components_image
   ]
 }
