@@ -33,7 +33,7 @@ packages = [{include = "python"}]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12.0"
 #google-cloud-aiplatform = "1.52.0"
-google-cloud-aiplatform = "1.77.0"
+google-cloud-aiplatform = "1.135.0"
 shapely = "<2.0.0"
 google-cloud = "^0.34.0"
 jinja2 = ">=3.0.1,<4.0.0"
@@ -79,7 +79,7 @@ sympy="1.13.3"
 google-cloud-resource-manager="1.14.0"
 
 [tool.poetry.group.component_vertex.dependencies]
-google-cloud-aiplatform = "1.77.0"
+google-cloud-aiplatform = "1.135.0"
 shapely = "<2.0.0"
 toml = "0.10.2"
 
